@@ -1,6 +1,6 @@
 """
-Unit tests for JH-Agent OS Model Adapters
-Verifies adapter contracts, error handling, and mock compliance.
+Unit tests for JH-Agent OS Model Adapters v1.1.0
+Verifies adapter contracts, error handling, mock compliance, and schema alignment.
 """
 
 import json
@@ -32,6 +32,9 @@ class TestModelAdapters(unittest.TestCase):
                     "role": "worker",
                     "tool_dependencies": [],
                     "risk_level": "read_only",
+                    "complexity": "low",
+                    "uncertainty": "low",
+                    "rationale": "只读安全探测",
                     "expected_outcome": "完成",
                     "status": "pending"
                 }
@@ -54,7 +57,6 @@ class TestModelAdapters(unittest.TestCase):
         self.assertEqual(resp.parsed_json["plan_id"], "plan_test12345678")
 
     def test_gemini_adapter_missing_credentials(self):
-        # Ensure temporary env var absence
         old_key = os.environ.pop("GEMINI_API_KEY", None)
         old_gkey = os.environ.pop("GOOGLE_API_KEY", None)
         try:

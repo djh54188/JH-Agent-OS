@@ -1,7 +1,7 @@
 """
-JH-Agent OS Phase 1: Minimal Verification Runner
-Performs live calls (Codex, DeepSeek) and contract/mock verifications (Gemini, Muse),
-recording structured evidence to tests/verification_results.json.
+JH-Agent OS Phase 1: Minimal Verification Runner v1.1.0
+Performs live calls (Codex with --json event stream & token extraction, DeepSeek live structured output)
+and contract/mock verifications (Gemini, Muse), recording structured evidence to tests/verification_results.json.
 """
 
 import json
@@ -41,15 +41,15 @@ def run_verifications() -> Dict[str, Any]:
     review_schema = load_schema("review_result.v1.json")
 
     # -------------------------------------------------------------
-    # 1. Codex CLI Live Verification
+    # 1. Codex CLI Live Verification (with --json and usage parsing)
     # -------------------------------------------------------------
-    print("[1/4] Verifying OpenAI Codex CLI (Live Call)...")
+    print("[1/4] Verifying OpenAI Codex CLI (Live Call with --json event stream)...")
     codex_adapter = CodexCliAdapter({
         "role": "worker",
         "model_id": "gpt-6.1-sol",
         "workspace_root": results["environment"]["workspace"],
         "sandbox_mode": "read-only",
-        "timeout_seconds": 120
+        "timeout_seconds": 180
     })
     health = codex_adapter.check_health()
     if health["healthy"]:
@@ -61,12 +61,14 @@ def run_verifications() -> Dict[str, Any]:
                 "status": "PASSED",
                 "model_id": resp.model_id,
                 "latency_ms": resp.latency_ms,
-                "tokens_used": resp.total_tokens,
+                "tokens_prompt": resp.tokens_prompt,
+                "tokens_completion": resp.tokens_completion,
+                "total_tokens": resp.total_tokens,
                 "output_excerpt": resp.content[:300],
                 "is_mock": False,
-                "notes": "成功通过 Codex CLI 子进程完成沙箱只读调用与 Token 统计"
+                "notes": "成功通过 Codex CLI 子进程调用（启用 --json），解析 JSONL 事件流与真实 Token Usage"
             }
-            print("  -> Codex CLI Live Call: PASSED")
+            print(f"  -> Codex CLI Live Call: PASSED (Tokens: {resp.total_tokens}, Latency: {resp.latency_ms}ms)")
         except Exception as e:
             results["verifications"]["codex_cli"] = {
                 "type": "REAL_LIVE_CALL",
@@ -103,11 +105,16 @@ def run_verifications() -> Dict[str, Any]:
             req_messages = [
                 {
                     "role": "system",
-                    "content": "You are a software engineering planner for JH-Agent OS."
+                    "content": "You are a software engineering planner for JH-Agent OS. Output strictly valid JSON."
                 },
                 {
                     "role": "user",
-                    "content": "Create a minimal 1-step Plan for task_12345678abcdef to verify file readability."
+                    "content": (
+                        "Create a minimal 1-step Plan for task_12345678abcdef to verify file readability. "
+                        "Include step_id, title, description, role='worker', tool_dependencies=['read_file'], "
+                        "risk_level='read_only', complexity='low', uncertainty='low', rationale='read-only check', "
+                        "expected_outcome='ok', status='pending'. Set created_at to current ISO timestamp 2026-10-09T22:00:00Z."
+                    )
                 }
             ]
             resp = ds_adapter.invoke_structured(req_messages, schema=plan_schema)
@@ -122,9 +129,9 @@ def run_verifications() -> Dict[str, Any]:
                 "validated_plan_id": resp.parsed_json.get("plan_id"),
                 "parsed_plan_sample": resp.parsed_json,
                 "is_mock": False,
-                "notes": "真实调用 DeepSeek API，成功返回且通过 plan.v1.json Schema 校验"
+                "notes": "真实调用 DeepSeek API，成功返回且通过 plan.v1.json (含三维评估) Schema 校验"
             }
-            print("  -> DeepSeek Live Call: PASSED (Schema validated)")
+            print(f"  -> DeepSeek Live Call: PASSED (Tokens: {resp.total_tokens}, Schema validated)")
         except Exception as e:
             results["verifications"]["deepseek_live"] = {
                 "type": "REAL_LIVE_CALL",
@@ -148,10 +155,9 @@ def run_verifications() -> Dict[str, Any]:
     print("[3/4] Verifying Gemini Worker (Live Cred Check & Contract Test)...")
     gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
     if gemini_key:
-        # If credentials present, execute live
         gemini_adapter = GeminiAdapter({
             "role": "worker",
-            "model_id": "gemini-1.5-flash",
+            "model_id": "gemini-1.5-pro",
             "api_key_env": "GEMINI_API_KEY",
             "timeout_seconds": 30
         })
@@ -172,7 +178,6 @@ def run_verifications() -> Dict[str, Any]:
                 "is_mock": False
             }
     else:
-        # Missing credentials: run strict Mock contract verification
         canned_worker_plan = {
             "schema_version": "1.0.0",
             "plan_id": "plan_gemini_mock01",
@@ -187,6 +192,9 @@ def run_verifications() -> Dict[str, Any]:
                     "role": "worker",
                     "tool_dependencies": ["read_file"],
                     "risk_level": "read_only",
+                    "complexity": "low",
+                    "uncertainty": "low",
+                    "rationale": "静态分析只读无副作用",
                     "expected_outcome": "产出依赖分析清单",
                     "status": "pending"
                 }
@@ -209,7 +217,7 @@ def run_verifications() -> Dict[str, Any]:
             "contract_validation": "PASSED",
             "validated_plan_id": resp.parsed_json["plan_id"],
             "is_mock": True,
-            "notes": "严格基于 plan.v1.json 完成 Mock 契约验证，真实调用待补齐凭据后激活"
+            "notes": "严格基于 plan.v1.json (含三维评估) 完成 Mock 契约验证，真实调用待补齐凭据后激活"
         }
         print("  -> Gemini Worker: BLOCKED for Live (Missing key) | MOCK CONTRACT PASSED")
 
@@ -220,8 +228,12 @@ def run_verifications() -> Dict[str, Any]:
     muse_key = os.environ.get("MUSE_API_KEY")
     muse_endpoint = os.environ.get("MUSE_API_ENDPOINT")
     if muse_key and muse_endpoint:
-        # If credentials present, execute live
-        pass
+        results["verifications"]["muse_reviewer"] = {
+            "type": "REAL_LIVE_CALL",
+            "status": "BLOCKED_API_NOT_IMPLEMENTED",
+            "error": "Muse 供应商正式接口协议尚未在架构路线图中明确，无法发起针对具体端点的请求",
+            "is_mock": False
+        }
     else:
         canned_review_result = {
             "schema_version": "1.0.0",
@@ -263,7 +275,7 @@ def run_verifications() -> Dict[str, Any]:
             "contract_validation": "PASSED",
             "validated_review_id": resp.parsed_json["review_id"],
             "is_mock": True,
-            "notes": "严格基于 review_result.v1.json 完成 Mock 契约验证，真实调用待架构师明确接口信息后激活"
+            "notes": "严格基于 review_result.v1.json (含四级 verdict: pass/revise/reject/needs_human) 完成 Mock 契约验证"
         }
         print("  -> Muse Reviewer: BLOCKED for Live (Missing endpoint/key) | MOCK CONTRACT PASSED")
 

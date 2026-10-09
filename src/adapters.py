@@ -1,20 +1,21 @@
 """
-JH-Agent OS Model Adapter Implementations v1.0.0
+JH-Agent OS Model Adapter Implementations v1.1.0
 Provides unified abstractions for Codex CLI, OpenAI-compatible (DeepSeek), Google Gemini, and Mock adapters.
+Supports --json event stream processing and --output-schema structured outputs.
 """
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import json
 import os
+import shutil
 import subprocess
+import tempfile
 import time
 import urllib.request
 import urllib.error
 from typing import Dict, Any, List, Optional
 from jsonschema import validate, ValidationError
-
-import shutil
 
 @dataclass
 class AdapterResponse:
@@ -48,7 +49,7 @@ class ModelAdapter(ABC):
         self.config = config
         self.role = config.get("role", "worker")
         self.model_id = config.get("model_id", "unknown")
-        self.timeout_seconds = config.get("timeout_seconds", 60)
+        self.timeout_seconds = config.get("timeout_seconds", 180)
 
     @abstractmethod
     def invoke(self, messages: List[Dict[str, str]], **kwargs) -> AdapterResponse:
@@ -154,9 +155,11 @@ class OpenAICompatibleAdapter(ModelAdapter):
         **kwargs
     ) -> AdapterResponse:
         # Augment system instructions with schema definition
+        current_date_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
         schema_prompt = (
             "\n\nCRITICAL REQUIREMENT: You MUST respond with ONLY a valid, parseable JSON object "
             f"conforming strictly to this JSON Schema:\n{json.dumps(schema, ensure_ascii=False)}\n"
+            f"Note: Use current timestamp '{current_date_iso}' for any created_at/updated_at fields.\n"
             "Do NOT include markdown formatting or backticks around the json. Output raw JSON only."
         )
         augmented_messages = list(messages)
@@ -194,13 +197,17 @@ class OpenAICompatibleAdapter(ModelAdapter):
 
 
 class CodexCliAdapter(ModelAdapter):
-    """Adapter for local OpenAI Codex CLI subprocess harness."""
+    """
+    Adapter for local OpenAI Codex CLI subprocess harness.
+    Communicates via subprocess with --json event streams and --output-schema enforcement.
+    """
 
     def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
         self.workspace_root = config.get("workspace_root", os.getcwd())
         self.sandbox_mode = config.get("sandbox_mode", "read-only")
         self.codex_bin = shutil.which("codex") or "codex"
+        self.timeout_seconds = config.get("timeout_seconds", 180)
 
     def check_health(self) -> Dict[str, Any]:
         try:
@@ -216,58 +223,87 @@ class CodexCliAdapter(ModelAdapter):
         except Exception as e:
             return {"healthy": False, "version": None, "error": str(e)}
 
-    def invoke(self, messages: List[Dict[str, str]], **kwargs) -> AdapterResponse:
-        prompt_parts = []
-        for m in messages:
-            prompt_parts.append(f"[{m['role'].upper()}]: {m['content']}")
-        combined_prompt = "\n".join(prompt_parts)
-
+    def _execute_codex(self, prompt: str, schema_file: Optional[str] = None) -> AdapterResponse:
         cmd = [
             self.codex_bin, "exec",
             "--ephemeral",
             "--skip-git-repo-check",
             "--sandbox", self.sandbox_mode,
             "-C", self.workspace_root,
-            combined_prompt
+            "--json"
         ]
+        if schema_file:
+            cmd.extend(["--output-schema", schema_file])
+        cmd.append(prompt)
 
         start = time.perf_counter()
         try:
-            res = subprocess.run(
+            proc = subprocess.Popen(
                 cmd,
-                capture_output=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
                 text=True,
-                timeout=self.timeout_seconds,
-                check=True,
                 shell=(os.name == "nt")
             )
+            stdout, stderr = proc.communicate(timeout=self.timeout_seconds)
             duration_ms = int((time.perf_counter() - start) * 1000)
+            if proc.returncode != 0:
+                raise AdapterError(f"Codex CLI exited with code {proc.returncode}: {stderr}")
         except subprocess.TimeoutExpired:
-            raise AdapterError("Codex CLI invocation timed out")
-        except subprocess.CalledProcessError as e:
-            raise AdapterError(f"Codex CLI failed with code {e.returncode}: {e.stderr}")
+            proc.kill()
+            raise AdapterError(f"Codex CLI invocation timed out after {self.timeout_seconds}s")
+        except Exception as e:
+            raise AdapterError(f"Codex CLI execution failed: {e}")
 
-        # Parse token count from stdout if present
-        stdout = res.stdout
-        tokens_used = 0
-        lines = stdout.splitlines()
-        for i, line in enumerate(lines):
-            if "tokens used" in line.lower() and i + 1 < len(lines):
-                token_str = lines[i + 1].strip().replace(",", "")
-                if token_str.isdigit():
-                    tokens_used = int(token_str)
+        # Parse JSONL events
+        collected_texts = []
+        tokens_prompt = 0
+        tokens_completion = 0
+        total_tokens = 0
+        last_agent_text = ""
+
+        for line in stdout.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                ev = json.loads(line)
+                ev_type = ev.get("type")
+                if ev_type == "turn.completed":
+                    usage = ev.get("usage", {})
+                    tokens_prompt = usage.get("input_tokens", 0)
+                    tokens_completion = usage.get("output_tokens", 0)
+                    total_tokens = tokens_prompt + tokens_completion
+                elif ev_type == "item.completed":
+                    item = ev.get("item", {})
+                    if item.get("type") == "agent_message":
+                        txt = item.get("text", "")
+                        collected_texts.append(txt)
+                        last_agent_text = txt
+            except Exception:
+                # Non-JSON status lines (e.g. initial connection logs)
+                pass
+
+        final_content = last_agent_text if last_agent_text else "\n".join(collected_texts)
+        if not final_content and stdout:
+            final_content = stdout
 
         return AdapterResponse(
-            content=stdout,
+            content=final_content,
             parsed_json=None,
             model_id=self.model_id,
-            tokens_prompt=0,
-            tokens_completion=tokens_used,
-            total_tokens=tokens_used,
+            tokens_prompt=tokens_prompt,
+            tokens_completion=tokens_completion,
+            total_tokens=total_tokens,
             latency_ms=duration_ms,
             is_mock=False,
-            raw_response={"stdout": stdout, "stderr": res.stderr}
+            raw_response={"stdout_lines": len(stdout.splitlines()), "stderr": stderr}
         )
+
+    def invoke(self, messages: List[Dict[str, str]], **kwargs) -> AdapterResponse:
+        prompt_parts = [f"[{m['role'].upper()}]: {m['content']}" for m in messages]
+        combined_prompt = "\n".join(prompt_parts)
+        return self._execute_codex(combined_prompt, schema_file=None)
 
     def invoke_structured(
         self,
@@ -275,29 +311,46 @@ class CodexCliAdapter(ModelAdapter):
         schema: Dict[str, Any],
         **kwargs
     ) -> AdapterResponse:
-        # Uses JSON Schema constraint instructions
-        prompt_parts = []
-        for m in messages:
-            prompt_parts.append(f"[{m['role'].upper()}]: {m['content']}")
-        prompt_parts.append(
-            f"Respond strictly in valid JSON matching this schema:\n{json.dumps(schema)}"
-        )
+        prompt_parts = [f"[{m['role'].upper()}]: {m['content']}" for m in messages]
         combined_prompt = "\n".join(prompt_parts)
 
-        resp = self.invoke([{"role": "user", "content": combined_prompt}], **kwargs)
-        # Extract json from code fence or body
-        text = resp.content
-        import re
-        m = re.search(r"```json\s*(\{.*?\})\s*```", text, re.DOTALL)
-        if not m:
-            m = re.search(r"(\{.*\})", text, re.DOTALL)
-        if not m:
-            raise SchemaValidationError(f"No JSON object extracted from Codex output")
-        raw_json = m.group(1).strip()
-        parsed = json.loads(raw_json)
-        validate(instance=parsed, schema=schema)
-        resp.parsed_json = parsed
-        return resp
+        # Write schema to a temporary file
+        tf = tempfile.NamedTemporaryFile("w", suffix=".json", delete=False, encoding="utf-8")
+        try:
+            json.dump(schema, tf, ensure_ascii=False)
+            tf_path = tf.name
+            tf.close()
+
+            resp = self._execute_codex(combined_prompt, schema_file=tf_path)
+            raw_text = resp.content.strip()
+
+            # Clean markdown code fences if present
+            if raw_text.startswith("```json"):
+                raw_text = raw_text[7:]
+            elif raw_text.startswith("```"):
+                raw_text = raw_text[3:]
+            if raw_text.endswith("```"):
+                raw_text = raw_text[:-3]
+            raw_text = raw_text.strip()
+
+            try:
+                parsed = json.loads(raw_text)
+            except Exception as e:
+                raise SchemaValidationError(f"Failed to parse JSON from Codex structured output: {e}\nRaw: {raw_text[:200]}")
+
+            try:
+                validate(instance=parsed, schema=schema)
+            except ValidationError as e:
+                raise SchemaValidationError(f"Schema validation failed: {e.message}")
+
+            resp.parsed_json = parsed
+            return resp
+        finally:
+            if os.path.exists(tf_path):
+                try:
+                    os.remove(tf_path)
+                except OSError:
+                    pass
 
 
 class GeminiAdapter(ModelAdapter):
@@ -310,6 +363,7 @@ class GeminiAdapter(ModelAdapter):
             "https://generativelanguage.googleapis.com/v1beta"
         ).rstrip("/")
         self.api_key_env = config.get("api_key_env", "GEMINI_API_KEY")
+        self.model_id = config.get("model_id", "gemini-1.5-pro")
 
     def _get_api_key(self) -> str:
         key = os.environ.get(self.api_key_env, "").strip()
@@ -336,7 +390,6 @@ class GeminiAdapter(ModelAdapter):
     def invoke(self, messages: List[Dict[str, str]], **kwargs) -> AdapterResponse:
         key = self._get_api_key()
         url = f"{self.endpoint_url}/models/{self.model_id}:generateContent?key={key}"
-        # Convert messages to Gemini contents structure
         contents = []
         for m in messages:
             role = "user" if m["role"] in ["user", "system"] else "model"
@@ -382,7 +435,6 @@ class GeminiAdapter(ModelAdapter):
         schema: Dict[str, Any],
         **kwargs
     ) -> AdapterResponse:
-        # When called live, appends schema prompt and parses response
         schema_prompt = f"Respond in valid JSON adhering to:\n{json.dumps(schema)}"
         augmented = list(messages) + [{"role": "user", "content": schema_prompt}]
         resp = self.invoke(augmented, **kwargs)
@@ -425,6 +477,5 @@ class MockModelAdapter(ModelAdapter):
         schema: Dict[str, Any],
         **kwargs
     ) -> AdapterResponse:
-        # Validate canned payload against requested schema
         validate(instance=self.canned_payload, schema=schema)
         return self.invoke(messages, **kwargs)

@@ -38,8 +38,20 @@ class TestJsonSchemas(unittest.TestCase):
             "task_id": "task_12345678abcdef",
             "title": "实现基础配置解析器",
             "description": "解析 YAML/JSON 配置文件并进行字段边界检查",
+            "acceptance_criteria": [
+                "能正确加载合法 JSON 配置文件",
+                "对缺少必要字段的非法配置抛出明确异常",
+                "单元测试覆盖率达 100%"
+            ],
             "priority": "high",
-            "status": "pending",
+            "status": "created",
+            "risk_assessment": {
+                "risk_level": "workspace_write",
+                "complexity": "medium",
+                "uncertainty": "low",
+                "risk_basis": "仅在受限工作区写入配置文件，无系统级权限请求",
+                "routing_basis": "标准解析逻辑，路由至 Gemini Worker 与 Muse Reviewer"
+            },
             "budget": {
                 "max_turns": 10,
                 "max_tokens": 50000,
@@ -52,6 +64,10 @@ class TestJsonSchemas(unittest.TestCase):
                 "env_vars_whitelist": ["PYTHONPATH"],
                 "reference_docs": ["docs/architecture-roadmap-v1.1.md"]
             },
+            "artifact_refs": ["configs/adapters.example.json"],
+            "tool_execution_evidence": [],
+            "review_verdict": None,
+            "error_info": None,
             "assigned_worker": "gemini_worker",
             "assigned_reviewer": "muse_reviewer",
             "metadata": {"tag": "phase1"},
@@ -61,15 +77,26 @@ class TestJsonSchemas(unittest.TestCase):
         # Positive case
         validate(instance=valid_task, schema=schema)
 
-        # Negative case: illegal status
-        bad_task = dict(valid_task, status="unknown_status")
+        # Negative case: missing acceptance_criteria
+        bad_task_no_criteria = dict(valid_task)
+        del bad_task_no_criteria["acceptance_criteria"]
         with self.assertRaises(ValidationError):
-            validate(instance=bad_task, schema=schema)
+            validate(instance=bad_task_no_criteria, schema=schema)
+
+        # Negative case: empty acceptance_criteria
+        bad_task_empty_criteria = dict(valid_task, acceptance_criteria=[])
+        with self.assertRaises(ValidationError):
+            validate(instance=bad_task_empty_criteria, schema=schema)
+
+        # Negative case: illegal status (e.g. old "pending")
+        bad_task_status = dict(valid_task, status="pending")
+        with self.assertRaises(ValidationError):
+            validate(instance=bad_task_status, schema=schema)
 
         # Negative case: additional property
-        bad_task2 = dict(valid_task, unknown_field="unexpected")
+        bad_task_extra = dict(valid_task, unknown_field="unexpected")
         with self.assertRaises(ValidationError):
-            validate(instance=bad_task2, schema=schema)
+            validate(instance=bad_task_extra, schema=schema)
 
     def test_plan_schema_validation(self):
         schema = self.load_schema("plan.v1.json")
@@ -87,6 +114,9 @@ class TestJsonSchemas(unittest.TestCase):
                     "role": "worker",
                     "tool_dependencies": ["read_file"],
                     "risk_level": "read_only",
+                    "complexity": "low",
+                    "uncertainty": "low",
+                    "rationale": "只读操作，确定性高",
                     "expected_outcome": "获得适配器字典",
                     "status": "completed"
                 },
@@ -97,6 +127,9 @@ class TestJsonSchemas(unittest.TestCase):
                     "role": "worker",
                     "tool_dependencies": ["execute_command"],
                     "risk_level": "workspace_write",
+                    "complexity": "medium",
+                    "uncertainty": "medium",
+                    "rationale": "测试执行涉及文件写入与进程调度",
                     "expected_outcome": "产出验证证据",
                     "status": "in_progress"
                 }
@@ -164,7 +197,7 @@ class TestJsonSchemas(unittest.TestCase):
             "task_id": "task_12345678abcdef",
             "target_artifact_type": "code",
             "target_artifact_path": "tests/test_schemas.py",
-            "verdict": "needs_revision",
+            "verdict": "revise",
             "overall_score": 78.5,
             "issues": [
                 {
@@ -184,6 +217,15 @@ class TestJsonSchemas(unittest.TestCase):
             "created_at": "2026-10-09T20:15:00Z"
         }
         validate(instance=valid_review, schema=schema)
+
+        # Negative case: old verdict "needs_revision" must be rejected
+        bad_verdict = dict(valid_review, verdict="needs_revision")
+        with self.assertRaises(ValidationError):
+            validate(instance=bad_verdict, schema=schema)
+
+        # Positive case: needs_human verdict must be accepted
+        human_review = dict(valid_review, verdict="needs_human")
+        validate(instance=human_review, schema=schema)
 
         # Negative case: score > 100
         bad_review = dict(valid_review, overall_score=105.0)

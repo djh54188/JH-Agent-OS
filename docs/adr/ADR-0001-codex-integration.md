@@ -1,6 +1,6 @@
 # ADR-0001: Codex 接入方式与职责边界
 
-- **状态**：已提议 / 阶段 1 实施基线（Proposed for Phase 1 Baseline）
+- **状态**：已提议 / 阶段 1 实施基线（Proposed for Phase 1 Baseline - Rev 2）
 - **日期**：2026-10-09
 - **决策者**：JH-Agent OS 架构与执行团队
 - **适用版本**：JH-Agent OS v1.0 - v1.1
@@ -53,9 +53,11 @@ JH-Agent OS 采用四层架构：
 
 JH-Agent OS 在阶段 1 至阶段 3（MVP 阶段）选定 **方案 A（`codex exec` CLI 驱动）** 作为 Codex 的内核接入实现方式：
 1. **调用形态**：由 JH Orchestrator 派生独立子进程，调用 `codex exec`。
-2. **结构化契约保障**：通过 `--output-schema` 强制指定目标 JSON Schema 约束其输出形态；通过 `--json` 采集结构化事件流（JSONL）。
+2. **结构化契约保障**：
+   - 通过 `--output-schema <FILE>` 强制指定目标 JSON Schema 约束其输出形态（在 `CodexCliAdapter.invoke_structured` 中将 Schema 写入临时文件传入）；
+   - 通过 `--json` 采集结构化事件流（JSONL），精确解析 `turn.completed` 中的 `usage`（输入/输出/总 Token）与 `item.completed` 中的正文。
 3. **安全沙箱受控**：统一通过 `-s read-only` 或 `-s workspace-write` 施加沙箱限制，严禁在自动化流程中默认启用 `--dangerously-bypass-approvals-and-sandbox`。
-4. **工作区约束**：显式指定 `-C <WORKSPACE_PATH>` 与 `--ephemeral`（或托管 Session ID），确保任务执行完全在受限项目目录内闭环。
+4. **工作区约束**：显式指定 `-C <WORKSPACE_PATH>` 与 `--ephemeral`，确保任务执行完全在受限项目目录内闭环。
 
 ### 3.2 抽象层预留（`CodexHarness` 接口）
 
@@ -73,22 +75,20 @@ JH-Agent OS 在阶段 1 至阶段 3（MVP 阶段）选定 **方案 A（`codex ex
 | **模型推理与生成** | 负责 GPT-6.x 代码推理、文件上下文定位、补丁草案生成 | 负责将任务按契约组装 Prompt，调度 Worker / Reviewer / Meta Planner |
 | **工具与命令提议** | 在沙箱内生成 ToolRequest 或执行只读分析 | 集中校验工具请求参数、白名单过滤、风险等级评估 |
 | **执行权限判定** | 遵从启动参数传入的 sandbox 策略 | 具有**最终执行裁决权**；危险命令（如越界删除、写系统盘、外部网络请求）直接拦截 |
-| **任务状态流转** | 仅管理单次 turn 或单会话生命周期 | 维护 `PENDING -> PLANNING -> RUNNING -> REVIEWING -> COMPLETED/FAILED` 全局状态机 |
+| **任务状态流转** | 仅管理单次 turn 或单会话生命周期 | 维护 `created -> classified -> planning -> awaiting_approval -> executing -> reviewing -> repairing -> succeeded / failed / needs_attention` 全局状态机 |
 | **独立审核** | 不负责对自身代码产出进行独立无偏见的 Review | 调度独立 Reviewer 角色（如 Muse / 专用 Review 模型）执行代码审查与证据收集 |
 | **记忆与经验** | 仅维持单会话 context window | 管理 SQLite 本地持久化，提炼并存储 `MemoryRecord`，管理经验检索 |
 
 ### 4.1 核心纪律原则
 
-1. **执行权与建议权绝不混淆**：Codex 产出的任何“执行脚本”必须由 JH Orchestrator 的受控执行器（Tool Executor）接管并校验。
-2. **双重风险闸门**：
-   - 闸门 1（静态）：JH 控制层根据《危险动作策略》进行 AST / 正则 / 路径边界校验；
-   - 闸门 2（动态）：超出只读或白名单范围的操作，必须暂停任务流并向人类架构师（Meta Planner）抛出批准请求。
-3. **单用户本地串行**：MVP 架构明确单用户、本地宿主机运行、串行队列处理，不引入分布式并发协调复杂性。
+1. **执行权与建议权绝不混淆**：Codex 产出的任何“执行脚本”必须由 JH Orchestrator 的受控执行器（Tool Executor）接管并在执行前瞬时完成参数与权限检查。
+2. **逐调用动态鉴权**：禁止单次静态放行，每次工具调用前必须校验实际参数与权限；计划变更必须对增量动作重取授权。
+3. **Level 3 绝对禁止优先于一切路由**：不得通过模型建议、评分或加权平均将 Level 3 危险动作降级；放行必须由本地代码规则裁决。
+4. **单用户本地串行**：MVP 架构明确单用户、本地宿主机运行、串行队列处理，不引入分布式并发协调复杂性。
 
 ---
 
 ## 5. 局限性与风险控制
 
-- **局限 1：进程启动开销**：单次 `codex exec` 启动及认证握手需要约 1~3 秒。对于 MVP 离线批处理与串行代码任务，该延迟属于可接受范围。
-- **局限 2：网络波动回退**：在当前环境下 WebSocket 可能偶发超时并自动降级为 HTTPS。控制层需设置合理的超时阈值（建议缺省 120 秒，长任务 300 秒），并捕获重试事件。
-- **局限 3：实验特性隔离**：当前放弃接入 `app-server` 避免了协议频繁变动导致的开发阻塞。
+- **局限 1：进程启动开销与网络降级**：本地网络下 Codex 连接 responses WebSocket 会发生超时重连并降级为 HTTPS 传输，单次冷启动+执行耗时约 120 秒。控制层需设置 180~300 秒超时容忍度，并在后台异步执行。
+- **局限 2：实验特性隔离**：当前放弃接入 `app-server` 避免了协议频繁变动导致的开发阻塞。

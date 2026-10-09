@@ -59,7 +59,8 @@
         "workspace_write",
         "system_sensitive",
         "danger_external"
-      ]
+      ],
+      "description": "Maps to danger policy levels: read_only->Level 0, workspace_write->Level 1, system_sensitive->Level 2 (approval), danger_external->Level 3 (forbidden)"
     },
     "requires_human_approval": {
       "type": "boolean"

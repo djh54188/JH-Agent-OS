@@ -1,6 +1,6 @@
 # 模型适配器统一契约与配置规范
 
-- **版本**：v1.0.0
+- **版本**：v1.1.0
 - **适用角色**：Worker (Gemini / 备选)、Reviewer (Muse / 备选)、Meta Planner (人工 / 专有模型)
 - **设计目标**：将上层 Orchestrator 业务编排与底层具体供应商 API 解耦，保证协议一致性、安全凭据隔离与可插拔扩展。
 
@@ -22,6 +22,7 @@ class AdapterResponse:
     tokens_completion: int
     total_tokens: int
     latency_ms: int
+    is_mock: bool
     raw_response: Optional[Dict[str, Any]]
 
 class ModelAdapter(ABC):
@@ -46,7 +47,8 @@ class ModelAdapter(ABC):
     ) -> AdapterResponse:
         """
         结构化约束输出：强制模型按照指定的 JSON Schema 产生结果，
-        并对模型输出进行本地 Schema 验证，验证不通过则抛出 ContractViolationError。
+        并对模型输出进行本地 Schema 验证，验证不通过则抛出 SchemaValidationError。
+        Codex 适配器通过 --output-schema 与 --json 实现原生受约束解析。
         """
         pass
 
@@ -64,8 +66,8 @@ class ModelAdapter(ABC):
 
 | 维度 | Gemini (首选 Worker) | Muse (首选 Reviewer) | 备选/本地可用项 (DeepSeek) | 内核引擎 (OpenAI Codex) |
 | :--- | :--- | :--- | :--- | :--- |
-| **供应商** | Google (Google AI / Vertex AI) | 待定（未在路线图与环境提供） | 深度求索 (DeepSeek) | OpenAI |
-| **推荐模型 ID** | `gemini-1.5-pro` / `gemini-2.0-flash` | 待定 (如 `muse-code-review-v1`) | `deepseek-v4-pro` / `deepseek-flash` | `gpt-6.1-sol` |
+| **供应商** | Google (Google AI / Vertex AI) | 待架构师提供（未在环境提供） | 深度求索 (DeepSeek) | OpenAI |
+| **基准模型 ID** | `gemini-1.5-pro`（可选 `2.0-flash`） | 占位 `muse-v1`（未经验证） | `deepseek-flash` / `v4-pro` | `gpt-6.1-sol` |
 | **API 端点** | `https://generativelanguage.googleapis.com/v1beta` | 待架构师提供 | `https://api.deepseek.com/v1` | 本地 CLI / `stdio://` |
 | **认证方式** | HTTP Header `x-goog-api-key` 或 Bearer Token | 待定（常规 Bearer Token） | HTTP Header `Authorization: Bearer <KEY>` | OAuth Bearer / API Key |
 | **凭据环境变量** | `GEMINI_API_KEY` 或 `GOOGLE_API_KEY` | `MUSE_API_KEY` | `DEEPSEEK_API_KEY` | `~/.codex/auth.json` |
@@ -74,29 +76,33 @@ class ModelAdapter(ABC):
 
 ---
 
-## 3. Worker 与 Reviewer 差异化配置规范
+## 3. Worker 与 Reviewer 差异化配置与原则铁律
 
-### 3.1 Worker (首选 Gemini)
+### 3.1 核心原则铁律
+1. **Worker 完成不等于任务成功**：Worker 生成的代码、计划或测试通过，仅代表执行产出；必须经过 Reviewer 独立质量审核出具 `pass` 或满足显式 `acceptance_criteria` 方可进入 `succeeded`。
+2. **Reviewer 不可用绝不得自动视为通过**：当 Reviewer 遭遇超时、API 故障或格式错误时，控制层严禁静默放行，必须转为 `needs_attention` 或受控置为 `failed`。
+3. **审核结论四级处置分野**：
+   - `pass` -> 任务成功（`succeeded`）
+   - `revise` -> 缺陷可修复，触发有限修复重审闭环（`repairing`，最多 2 轮）
+   - `reject` -> 严重缺陷或方向性违背，不可修复终态（`failed`）
+   - `needs_human` -> 规则争议或人工审批分歧，转交人工介入（`needs_attention`）
+
+### 3.2 Worker (首选 Gemini)
 - **职责**：接收任务，编写计划、生成代码补丁、产出 `ToolRequest`。
+- **推荐基准模型**：`gemini-1.5-pro`（深度推理）；探索/速度场景可用 `gemini-2.0-flash`。
 - **参数倾向**：
   - `temperature`: 0.2（代码与工程任务需稳定输出）
   - `max_tokens`: 8192
   - `structured_output`: 启用（输出 Plan Schema 与 ToolRequest Schema）
-- **安全拦截策略**：Worker 生成的所有工具调用请求必须经由控制层拦截与风险审查，Worker 本身无直接执行权。
+- **安全拦截策略**：Worker 生成的所有工具调用请求必须经由控制层逐调用动态鉴权，Worker 本身无直接执行权。
 
-### 3.2 Reviewer (首选 Muse)
+### 3.3 Reviewer (首选 Muse)
 - **职责**：独立于 Worker 的无偏见质量与安全审核。针对 Worker 产出的代码补丁或方案，生成严格符合 `review_result.v1.json` 的判定结果。
 - **参数倾向**：
   - `temperature`: 0.0（完全确定性评判）
   - `max_tokens`: 4096
-  - `structured_output`: 强制启用（必须产出包含 `evidence` 的 issue 列表）
+  - `structured_output`: 强制启用（必须产出包含 `evidence` 的 Issue 列表）
 - **纪律约束**：不参与任务编写；不直接修改代码；发现缺陷必须给出具体行号与复现证据。
-
-### 3.3 Meta Planner 人工介入通道与契约
-- **职责**：架构定稿、跨项目写入裁决、高危操作批准、失败复盘。
-- **交互方式**：
-  - 命令行交互确认提示（CLI Prompt: Y/N/Modify）；
-  - 结构化工单导出（可输出为 `Task` 异常审批单供人工签署）。
 
 ---
 

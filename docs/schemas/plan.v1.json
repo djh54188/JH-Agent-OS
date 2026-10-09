@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://jh-agent-os.local/schemas/plan.v1.json",
   "title": "PlanSchemaV1",
-  "description": "JH-Agent OS Plan entity contract defining structured execution steps and risk mitigation.",
+  "description": "JH-Agent OS Plan entity contract defining structured execution steps, 3D assessment, and risk mitigation.",
   "type": "object",
   "required": [
     "schema_version",
@@ -48,6 +48,8 @@
           "role",
           "tool_dependencies",
           "risk_level",
+          "complexity",
+          "uncertainty",
           "expected_outcome",
           "status"
         ],
@@ -81,6 +83,20 @@
               "system_sensitive",
               "danger_external"
             ]
+          },
+          "complexity": {
+            "type": "string",
+            "enum": ["low", "medium", "high", "expert"],
+            "default": "medium"
+          },
+          "uncertainty": {
+            "type": "string",
+            "enum": ["low", "medium", "high", "exploratory"],
+            "default": "medium"
+          },
+          "rationale": {
+            "type": "string",
+            "description": "Optional step-level reason for chosen parameters"
           },
           "expected_outcome": {
             "type": "string",

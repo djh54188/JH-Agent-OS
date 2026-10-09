@@ -2,17 +2,19 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://jh-agent-os.local/schemas/task.v1.json",
   "title": "TaskSchemaV1",
-  "description": "JH-Agent OS Task entity contract defining unit of work lifecycle and metadata.",
+  "description": "JH-Agent OS Task entity contract defining unit of work lifecycle, acceptance criteria, 3D risk assessment, and metadata.",
   "type": "object",
   "required": [
     "schema_version",
     "task_id",
     "title",
     "description",
+    "acceptance_criteria",
     "priority",
     "status",
     "budget",
     "context",
+    "risk_assessment",
     "created_at",
     "updated_at"
   ],
@@ -34,6 +36,15 @@
       "type": "string",
       "minLength": 1
     },
+    "acceptance_criteria": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Explicit, verifiable conditions required for task completion."
+    },
     "priority": {
       "type": "string",
       "enum": ["low", "medium", "high", "critical"]
@@ -41,16 +52,61 @@
     "status": {
       "type": "string",
       "enum": [
-        "pending",
+        "created",
+        "classified",
         "planning",
-        "planned",
+        "awaiting_approval",
         "executing",
         "reviewing",
-        "completed",
+        "repairing",
+        "succeeded",
         "failed",
-        "blocked",
-        "cancelled"
+        "cancelled",
+        "needs_attention"
       ]
+    },
+    "risk_assessment": {
+      "type": "object",
+      "required": [
+        "risk_level",
+        "complexity",
+        "uncertainty",
+        "risk_basis",
+        "routing_basis"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "risk_level": {
+          "type": "string",
+          "enum": [
+            "read_only",
+            "workspace_write",
+            "system_sensitive",
+            "danger_external"
+          ],
+          "description": "Determines execution authorization and approval gates."
+        },
+        "complexity": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "expert"],
+          "description": "Determines planning depth and decomposition."
+        },
+        "uncertainty": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "exploratory"],
+          "description": "Determines verification stringency and repair budget."
+        },
+        "risk_basis": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Concrete rationale for assigned risk level."
+        },
+        "routing_basis": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Rationale for assigned model, worker, and reviewer routing."
+        }
+      }
     },
     "budget": {
       "type": "object",
@@ -103,6 +159,25 @@
           "default": []
         }
       }
+    },
+    "artifact_refs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "tool_execution_evidence": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "review_verdict": {
+      "type": ["string", "null"],
+      "enum": ["pass", "revise", "reject", "needs_human", null],
+      "default": null
+    },
+    "error_info": {
+      "type": ["string", "null"],
+      "default": null
     },
     "assigned_worker": {
       "type": ["string", "null"]

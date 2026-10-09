@@ -23,6 +23,7 @@
       }
     },
     "muse_reviewer": {
+      "_note": "示例占位配置，未经验证，待架构师提供真实接口参数后替换",
       "role": "reviewer",
       "provider": "custom_muse",
       "model_id": "muse-v1",
@@ -40,7 +41,7 @@
     "deepseek_worker": {
       "role": "worker",
       "provider": "openai_compatible",
-      "model_id": "deepseek-v4-pro",
+      "model_id": "deepseek-flash",
       "endpoint_url": "https://api.deepseek.com/v1",
       "api_key_env": "DEEPSEEK_API_KEY",
       "temperature": 0.2,
@@ -55,7 +56,7 @@
     "deepseek_reviewer": {
       "role": "reviewer",
       "provider": "openai_compatible",
-      "model_id": "deepseek-v4-pro",
+      "model_id": "deepseek-flash",
       "endpoint_url": "https://api.deepseek.com/v1",
       "api_key_env": "DEEPSEEK_API_KEY",
       "temperature": 0.0,
