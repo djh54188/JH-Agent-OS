@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://jh-agent-os.local/schemas/tool_result.v1.json",
+  "title": "ToolResultSchemaV1",
+  "description": "JH-Agent OS Tool Result contract capturing real execution output and sandbox enforcement feedback.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "result_id",
+    "request_id",
+    "task_id",
+    "tool_name",
+    "status",
+    "execution_time_ms",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": ["1.0.0"]
+    },
+    "result_id": {
+      "type": "string",
+      "pattern": "^tres_[a-zA-Z0-9_-]{8,64}$"
+    },
+    "request_id": {
+      "type": "string",
+      "pattern": "^treq_[a-zA-Z0-9_-]{8,64}$"
+    },
+    "task_id": {
+      "type": "string",
+      "pattern": "^task_[a-zA-Z0-9_-]{8,64}$"
+    },
+    "tool_name": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_.-]{2,64}$"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "failed",
+        "denied_by_policy",
+        "denied_by_user",
+        "timeout",
+        "aborted"
+      ]
+    },
+    "stdout": {
+      "type": ["string", "null"]
+    },
+    "stderr": {
+      "type": ["string", "null"]
+    },
+    "structured_data": {
+      "description": "Optional parsed structured output returned by specialized tools"
+    },
+    "execution_time_ms": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "error_message": {
+      "type": ["string", "null"]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false
+}

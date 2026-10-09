@@ -1,0 +1,127 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://jh-agent-os.local/schemas/task.v1.json",
+  "title": "TaskSchemaV1",
+  "description": "JH-Agent OS Task entity contract defining unit of work lifecycle and metadata.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "task_id",
+    "title",
+    "description",
+    "priority",
+    "status",
+    "budget",
+    "context",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": ["1.0.0"]
+    },
+    "task_id": {
+      "type": "string",
+      "pattern": "^task_[a-zA-Z0-9_-]{8,64}$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "planning",
+        "planned",
+        "executing",
+        "reviewing",
+        "completed",
+        "failed",
+        "blocked",
+        "cancelled"
+      ]
+    },
+    "budget": {
+      "type": "object",
+      "required": ["max_turns", "max_tokens", "max_execution_time_seconds"],
+      "additionalProperties": false,
+      "properties": {
+        "max_turns": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        },
+        "max_tokens": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 5000000
+        },
+        "max_execution_time_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 86400
+        },
+        "max_cost_usd": {
+          "type": "number",
+          "minimum": 0.0
+        }
+      }
+    },
+    "context": {
+      "type": "object",
+      "required": ["workspace_root"],
+      "additionalProperties": false,
+      "properties": {
+        "workspace_root": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_files": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": []
+        },
+        "env_vars_whitelist": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": []
+        },
+        "reference_docs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": []
+        }
+      }
+    },
+    "assigned_worker": {
+      "type": ["string", "null"]
+    },
+    "assigned_reviewer": {
+      "type": ["string", "null"]
+    },
+    "metadata": {
+      "type": "object",
+      "default": {}
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false
+}

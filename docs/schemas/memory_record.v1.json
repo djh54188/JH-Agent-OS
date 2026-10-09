@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://jh-agent-os.local/schemas/memory_record.v1.json",
+  "title": "MemoryRecordSchemaV1",
+  "description": "JH-Agent OS Memory Record contract representing verified experiences, negative patterns, and domain facts for long-term learning.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "memory_id",
+    "task_id",
+    "category",
+    "title",
+    "key",
+    "content",
+    "tags",
+    "confidence",
+    "verification_status",
+    "source_event",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": ["1.0.0"]
+    },
+    "memory_id": {
+      "type": "string",
+      "pattern": "^mem_[a-zA-Z0-9_-]{8,64}$"
+    },
+    "task_id": {
+      "type": "string",
+      "pattern": "^task_[a-zA-Z0-9_-]{8,64}$"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "negative_result",
+        "successful_pattern",
+        "tool_quirk",
+        "domain_constraint",
+        "rule_clarification"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "key": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_.:/-]{3,128}$",
+      "description": "Lookup index key (e.g. tools.powershell.quote_escaping)"
+    },
+    "content": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Detailed lessons learned and operational implications"
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": ["unverified", "verified", "refuted"]
+    },
+    "source_event": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Evidence citation or run identifier"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false
+}

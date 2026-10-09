@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://jh-agent-os.local/schemas/tool_request.v1.json",
+  "title": "ToolRequestSchemaV1",
+  "description": "JH-Agent OS Tool Request contract representing an agent proposal to invoke an external capability.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "request_id",
+    "task_id",
+    "step_id",
+    "caller_role",
+    "tool_name",
+    "parameters",
+    "timeout_ms",
+    "risk_level",
+    "requires_human_approval",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": ["1.0.0"]
+    },
+    "request_id": {
+      "type": "string",
+      "pattern": "^treq_[a-zA-Z0-9_-]{8,64}$"
+    },
+    "task_id": {
+      "type": "string",
+      "pattern": "^task_[a-zA-Z0-9_-]{8,64}$"
+    },
+    "step_id": {
+      "type": "string",
+      "pattern": "^step_[a-zA-Z0-9_-]{2,32}$"
+    },
+    "caller_role": {
+      "type": "string",
+      "enum": ["worker", "reviewer", "meta_planner", "orchestrator"]
+    },
+    "tool_name": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_.-]{2,64}$"
+    },
+    "parameters": {
+      "type": "object",
+      "description": "Tool-specific keyword arguments"
+    },
+    "timeout_ms": {
+      "type": "integer",
+      "minimum": 100,
+      "maximum": 600000,
+      "default": 30000
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": [
+        "read_only",
+        "workspace_write",
+        "system_sensitive",
+        "danger_external"
+      ]
+    },
+    "requires_human_approval": {
+      "type": "boolean"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false
+}
