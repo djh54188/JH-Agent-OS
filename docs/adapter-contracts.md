@@ -18,9 +18,9 @@ class AdapterResponse:
     content: str
     parsed_json: Optional[Dict[str, Any]]
     model_id: str
-    tokens_prompt: int
-    tokens_completion: int
-    total_tokens: int
+    tokens_prompt: Optional[int]
+    tokens_completion: Optional[int]
+    total_tokens: Optional[int]
     latency_ms: int
     is_mock: bool
     raw_response: Optional[Dict[str, Any]]
@@ -66,13 +66,13 @@ class ModelAdapter(ABC):
 
 | 维度 | Gemini (首选 Worker) | Muse (首选 Reviewer) | 备选/本地可用项 (DeepSeek) | 内核引擎 (OpenAI Codex) |
 | :--- | :--- | :--- | :--- | :--- |
-| **供应商** | Google (Google AI / Vertex AI) | 待架构师提供（未在环境提供） | 深度求索 (DeepSeek) | OpenAI |
-| **基准模型 ID** | `gemini-1.5-pro`（可选 `2.0-flash`） | 占位 `muse-v1`（未经验证） | `deepseek-flash` / `v4-pro` | `gpt-6.1-sol` |
-| **API 端点** | `https://generativelanguage.googleapis.com/v1beta` | 待架构师提供 | `https://api.deepseek.com/v1` | 本地 CLI / `stdio://` |
-| **认证方式** | HTTP Header `x-goog-api-key` 或 Bearer Token | 待定（常规 Bearer Token） | HTTP Header `Authorization: Bearer <KEY>` | OAuth Bearer / API Key |
+| **供应商** | Google (Google AI / Vertex AI) | 用户提供的本地 Muse 代理（上游供应商未核实） | 深度求索 (DeepSeek) | OpenAI |
+| **基准模型 ID** | `gemini-1.5-pro`（可选 `2.0-flash`） | `muse-spark-1.3-contributor-free` | `deepseek-flash` / `v4-pro` | `gpt-6.1-sol` |
+| **API 端点** | `https://generativelanguage.googleapis.com/v1beta` | `http://127.0.0.1:8787/v1`（Responses） | `https://api.deepseek.com/v1` | 本地 CLI / `stdio://` |
+| **认证方式** | HTTP Header `x-goog-api-key` 或 Bearer Token | `Authorization: Bearer <KEY>` | HTTP Header `Authorization: Bearer <KEY>` | OAuth Bearer / API Key |
 | **凭据环境变量** | `GEMINI_API_KEY` 或 `GOOGLE_API_KEY` | `MUSE_API_KEY` | `DEEPSEEK_API_KEY` | `~/.codex/auth.json` |
 | **核心必要能力** | 结构化输出 (JSON Schema)、大上下文、工具调用 | 严格结构化输出 (`ReviewResult`)、Diff 审查 | 结构化输出 (JSON Mode)、代码理解 | 代码编辑沙箱、执行环境反射 |
-| **本地环境现状** | **未配置凭据**（阻塞真实调用） | **完全缺少接口信息与凭据**（阻塞真实调用） | **已具备有效 API 凭据并连通验证** | **已安装 CLI 0.160.1 并实测连通** |
+| **本地环境现状** | **未配置凭据**（阻塞真实调用） | **已配置；两项最小真实审核通过**（见 `reports/muse-verification.json`） | **已具备有效 API 凭据并连通验证** | **已安装 CLI 0.160.1 并实测连通** |
 
 ---
 
@@ -99,8 +99,8 @@ class ModelAdapter(ABC):
 ### 3.3 Reviewer (首选 Muse)
 - **职责**：独立于 Worker 的无偏见质量与安全审核。针对 Worker 产出的代码补丁或方案，生成严格符合 `review_result.v1.json` 的判定结果。
 - **参数倾向**：
-  - `temperature`: 0.0（完全确定性评判）
-  - `max_tokens`: 4096
+  - `reasoning.effort`: `max`（用户指定；不声明完全确定性）
+  - `max_output_tokens`: 131072（用户提供的上限；最小验证使用 8192）
   - `structured_output`: 强制启用（必须产出包含 `evidence` 的 Issue 列表）
 - **纪律约束**：不参与任务编写；不直接修改代码；发现缺陷必须给出具体行号与复现证据。
 
@@ -111,3 +111,10 @@ class ModelAdapter(ABC):
 1. **绝对禁令**：禁止在代码库、Git 提交、日志记录及 Markdown 报告中硬编码任何 API 密钥或 Token。
 2. **安全读取**：适配器配置仅声明环境变量名称（如 `api_key_env: "GEMINI_API_KEY"`），运行时由进程从系统安全环境变量中读取。
 3. **日志脱敏**：任何涉及请求头或响应调试输出的模块，必须对 `Authorization`、`x-goog-api-key` 等敏感字段实施自动掩码（Masking: `mkt_***` 或 `AIza***`）。
+
+## 5. Muse Responses 实际配置（2026-10-10）
+
+实际配置读取 `configs/adapters.local.json`，不存在时使用示例配置。
+调用入口为 `src.model_config.load_model_adapter("reviewer")`；Responses 适配器只调用 `/responses`，不自动改用 Chat Completions。
+上下文 1,000,000 与输出上限 131,072 来自用户配置，尚未进行满容量压测。
+详细操作与限制见 `docs/muse-setup.md`；最小真实验证结果见 `reports/muse-verification.json`。

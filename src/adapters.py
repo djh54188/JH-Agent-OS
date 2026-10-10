@@ -22,9 +22,9 @@ class AdapterResponse:
     content: str
     parsed_json: Optional[Dict[str, Any]]
     model_id: str
-    tokens_prompt: int
-    tokens_completion: int
-    total_tokens: int
+    tokens_prompt: Optional[int]
+    tokens_completion: Optional[int]
+    total_tokens: Optional[int]
     latency_ms: int
     is_mock: bool
     raw_response: Optional[Dict[str, Any]] = None
