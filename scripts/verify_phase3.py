@@ -26,7 +26,8 @@ sys.path.insert(0, str(ROOT))
 
 from jsonschema import Draft7Validator, FormatChecker
 from src.acceptance import transform_acceptance_evaluator
-from src.adapters import AdapterError, CredentialMissingError
+from src.adapters import AdapterError, CredentialMissingError, SchemaValidationError
+from src.control_guards import verify_closed_loop_success
 from src.mock_components import ScriptedWorkerAdapter
 from src.model_config import has_credential, load_adapter_settings, load_model_adapter
 from src.orchestrator import Orchestrator
@@ -203,6 +204,15 @@ def verify_gemini_access():
     return record
 
 
+def _closed_loop_gate(orch, task_id, result, bindings, status):
+    """Rectification #1: strict success gate over persisted records only."""
+    try:
+        verify_closed_loop_success(result, orch.storage.get_latest_artifact(task_id), bindings, status)
+        return None
+    except SchemaValidationError as exc:
+        return str(exc)
+
+
 def run_deepseek_supplementary_loop():
     """Full loop with REAL DeepSeek worker + REAL Muse reviewer.
 
@@ -271,6 +281,7 @@ def run_deepseek_supplementary_loop():
     status = orch.get_task_status(task_id)
     versions = orch.storage.list_artifact_versions(task_id)
     bindings = orch.storage.list_review_bindings(task_id)
+    gate_error = _closed_loop_gate(orch, task_id, result, bindings, status)
     record["cases"].append({
         "case": "full_loop_deepseek_worker_muse_reviewer",
         "final_status": result["status"],
@@ -285,7 +296,10 @@ def run_deepseek_supplementary_loop():
         ],
         "review_ids": [b["review_id"] for b in bindings],
         "review_verdicts": [b["review"]["verdict"] for b in bindings],
-        "passed": result["status"] in {"succeeded", "needs_attention", "failed"},
+        "closed_loop_gate": gate_error or "passed",
+        # Rectification #1: only the strict gate counts as a normal closed-loop pass;
+        # failed / needs_attention / revise / missing evidence are reported as failures.
+        "passed": gate_error is None,
     })
     record["passed"] = all(c["passed"] for c in record["cases"])
     record["status"] = "completed"
@@ -364,6 +378,7 @@ def run_gemini_muse_primary_loop():
     status = orch.get_task_status(task_id)
     versions = orch.storage.list_artifact_versions(task_id)
     bindings = orch.storage.list_review_bindings(task_id)
+    gate_error = _closed_loop_gate(orch, task_id, result, bindings, status)
     record["cases"].append({
         "case": "full_loop_gemini_worker_muse_reviewer",
         "final_status": result["status"],
@@ -378,7 +393,10 @@ def run_gemini_muse_primary_loop():
         ],
         "review_ids": [b["review_id"] for b in bindings],
         "review_verdicts": [b["review"]["verdict"] for b in bindings],
-        "passed": result["status"] in {"succeeded", "needs_attention", "failed"},
+        "closed_loop_gate": gate_error or "passed",
+        # Rectification #1: only the strict gate counts as a normal closed-loop pass;
+        # failed / needs_attention / revise / missing evidence are reported as failures.
+        "passed": gate_error is None,
     })
     record["passed"] = all(c["passed"] for c in record["cases"])
     record["status"] = "completed"
@@ -423,11 +441,37 @@ def main():
     print("[4/4] DeepSeek+Muse supplementary loop (not acceptance evidence)...")
     report["deepseek_supplementary_loop"] = run_deepseek_supplementary_loop()
 
+    # Rectification #1: the repair-chain evidence is REQUIRED and produced by
+    # scripts/verify_phase3_repair.py into a separate report file.
+    repair_path = ROOT / "reports" / "phase3-repair-verification.json"
+    if repair_path.exists():
+        repair_data = json.loads(repair_path.read_text(encoding="utf-8"))
+        repair_ok = repair_data.get("passed") is True
+        report["gemini_muse_repair_loop"] = {
+            "source": str(repair_path), "passed": repair_ok,
+            "counts_as_acceptance_evidence": True,
+            "final_status": (repair_data.get("result") or {}).get("final_status"),
+            "repair_count": (repair_data.get("result") or {}).get("repair_count"),
+        }
+    else:
+        repair_ok = False
+        report["gemini_muse_repair_loop"] = {
+            "source": str(repair_path), "passed": False,
+            "error": "repair-chain evidence has not been produced yet",
+        }
+
     muse_ok = report["live_muse_reviewer"].get("passed") is True
     gemini_blocked = report["gemini_worker_access"].get("status") == "BLOCKED_MISSING_CREDENTIAL"
     muse_blocked = report["live_muse_reviewer"].get("status") == "BLOCKED_ENDPOINT_UNAVAILABLE"
     primary_loop = report["gemini_muse_primary_loop"]
     primary_ok = primary_loop.get("passed") is True and primary_loop.get("status") == "completed"
+    report["overall_required_checks"] = {
+        "offline_unit_tests": report["offline_unit_tests"]["passed"],
+        "live_muse_reviewer": muse_ok,
+        "gemini_muse_primary_loop": primary_ok,
+        "gemini_muse_repair_loop": repair_ok,
+    }
+    report["overall_phase3_evidence_complete"] = all(report["overall_required_checks"].values())
     if muse_ok and primary_ok:
         report["phase3_acceptance_verdict"] = (
             "REAL_GEMINI_MUSE_CLOSED_LOOP_EVIDENCE_RECORDED: the primary loop ran with the real "
@@ -462,10 +506,13 @@ def main():
         "muse_passed": report["live_muse_reviewer"].get("passed"),
         "gemini_status": report["gemini_worker_access"].get("status"),
         "supplementary_passed": report["deepseek_supplementary_loop"].get("passed"),
+        "repair_passed": report["gemini_muse_repair_loop"].get("passed"),
+        "overall_required_checks": report["overall_required_checks"],
         "verdict": report["phase3_acceptance_verdict"],
         "report": str(out),
     }, indent=2))
-    return 0
+    # Rectification #1: non-zero exit unless every required check passed.
+    return 0 if report["overall_phase3_evidence_complete"] else 1
 
 
 if __name__ == "__main__":

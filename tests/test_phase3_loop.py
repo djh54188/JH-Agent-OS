@@ -23,6 +23,7 @@ import unittest
 
 from src.acceptance import transform_acceptance_evaluator
 from src.artifacts import content_sha256
+from src.control_guards import verify_closed_loop_success
 from src.mock_components import (
     MockToolExecutor,
     ScriptedReviewerAdapter,
@@ -76,6 +77,116 @@ def mock_pass_evaluator(task, tool_executions, artifact_store=None):
     evidence = [f"artifact:{latest['artifact_id']}@v{latest['version']}:sha256={latest['sha256']}"] if latest else []
     return [{"criterion": c, "passed": bool(evidence), "evidence": evidence}
             for c in task["acceptance_criteria"]]
+
+
+class TestClosedLoopSuccessGate(unittest.TestCase):
+    """Rectification #1 offline counterexamples: a failed, blocked, revise-ended,
+    or stale-evidence run must never satisfy the strict closed-loop success gate.
+    Pure in-memory fixtures; no network, no providers."""
+
+    def _evidence(self, tid):
+        content = correct_content(tid)
+        sha = content_sha256(content)
+        artifact = {"task_id": tid, "version": 1, "artifact_id": "art_gate00000001",
+                    "artifact_type": "text_transformation", "content": content,
+                    "sha256": sha, "created_at": "2026-10-11T12:00:00Z"}
+        binding = {
+            "review_id": "rev_gate00000001", "attempt_id": "attempt_gate000001",
+            "review": {"verdict": "pass", "issues": []},
+            "acceptance": [{"criterion": c, "passed": True, "evidence": [f"artifact:x@v1:sha256={sha}"]}
+                           for c in make_task_payload(tid)["acceptance_criteria"]],
+            "artifacts": {"mem://" + tid + "/art_gate00000001": {"content": content, "sha256": sha}},
+        }
+        runtime = {"tokens_unknown_count": 0, "has_unconfirmed_side_effect": False}
+        return artifact, binding, runtime
+
+    def test_gate_accepts_complete_success(self):
+        tid = "task_gate_ok000001"
+        artifact, binding, runtime = self._evidence(tid)
+        task = make_task_payload(tid)
+        task["status"] = "succeeded"
+        task["review_verdict"] = "pass"
+        verify_closed_loop_success(task, artifact, [binding], runtime)  # must not raise
+
+    def test_gate_rejects_non_succeeded_status(self):
+        tid = "task_gate_bad00001"
+        artifact, binding, runtime = self._evidence(tid)
+        for status in ("failed", "needs_attention", "executing", "reviewing"):
+            with self.subTest(status=status):
+                task = make_task_payload(tid)
+                task["status"] = status
+                task["review_verdict"] = "pass"
+                with self.assertRaisesRegex(Exception, "not 'succeeded'"):
+                    verify_closed_loop_success(task, artifact, [binding], runtime)
+
+    def test_gate_rejects_revise_latest_binding(self):
+        tid = "task_gate_rev00001"
+        artifact, binding, runtime = self._evidence(tid)
+        task = make_task_payload(tid)
+        task["status"] = "succeeded"
+        # Task-level verdict not pass
+        task["review_verdict"] = "revise"
+        with self.assertRaisesRegex(Exception, "no current 'pass' review verdict"):
+            verify_closed_loop_success(task, artifact, [binding], runtime)
+        # Task claims pass but the LATEST binding is revise (stale claim)
+        task["review_verdict"] = "pass"
+        binding["review"]["verdict"] = "revise"
+        with self.assertRaisesRegex(Exception, "latest review verdict is 'revise'"):
+            verify_closed_loop_success(task, artifact, [binding], runtime)
+
+    def test_gate_rejects_missing_binding(self):
+        tid = "task_gate_nob00001"
+        artifact, _binding, runtime = self._evidence(tid)
+        task = make_task_payload(tid)
+        task["status"] = "succeeded"
+        task["review_verdict"] = "pass"
+        with self.assertRaisesRegex(Exception, "no review binding"):
+            verify_closed_loop_success(task, artifact, [], runtime)
+
+    def test_gate_rejects_stale_artifact_hash(self):
+        tid = "task_gate_stale001"
+        artifact, binding, runtime = self._evidence(tid)
+        # Current artifact changed after the review: binding snapshot no longer covers it.
+        artifact["sha256"] = content_sha256("changed after review")
+        task = make_task_payload(tid)
+        task["status"] = "succeeded"
+        task["review_verdict"] = "pass"
+        with self.assertRaisesRegex(Exception, "current artifact version"):
+            verify_closed_loop_success(task, artifact, [binding], runtime)
+
+    def test_gate_rejects_incomplete_acceptance(self):
+        tid = "task_gate_acc00001"
+        artifact, binding, runtime = self._evidence(tid)
+        binding["acceptance"] = [{"criterion": task_criteria(tid)[0], "passed": False, "evidence": []}]
+        task = make_task_payload(tid)
+        task["status"] = "succeeded"
+        task["review_verdict"] = "pass"
+        with self.assertRaisesRegex(Exception, "acceptance evidence"):
+            verify_closed_loop_success(task, artifact, [binding], runtime)
+
+    def test_gate_rejects_unknown_usage(self):
+        tid = "task_gate_unk00001"
+        artifact, binding, runtime = self._evidence(tid)
+        runtime["tokens_unknown_count"] = 1
+        task = make_task_payload(tid)
+        task["status"] = "succeeded"
+        task["review_verdict"] = "pass"
+        with self.assertRaisesRegex(Exception, "unknown token usage"):
+            verify_closed_loop_success(task, artifact, [binding], runtime)
+
+    def test_gate_rejects_unconfirmed_side_effect(self):
+        tid = "task_gate_side0001"
+        artifact, binding, runtime = self._evidence(tid)
+        runtime["has_unconfirmed_side_effect"] = True
+        task = make_task_payload(tid)
+        task["status"] = "succeeded"
+        task["review_verdict"] = "pass"
+        with self.assertRaisesRegex(Exception, "side effect"):
+            verify_closed_loop_success(task, artifact, [binding], runtime)
+
+
+def task_criteria(tid):
+    return make_task_payload(tid)["acceptance_criteria"]
 
 
 class TestPhase3Loop(unittest.TestCase):

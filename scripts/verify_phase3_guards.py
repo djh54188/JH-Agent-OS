@@ -50,6 +50,34 @@ MUTATIONS = [
         "replacement": '            task_id, "successful_pattern", "verified",',
         "test": "test_a_generation_success_full_loop",
     },
+    {
+        "name": "gate_status_check_relaxed",
+        "module": "src/control_guards.py",
+        "original": '    if task.get("status") != "succeeded":',
+        "replacement": '    if False:',
+        "test": "test_gate_rejects_non_succeeded_status",
+    },
+    {
+        "name": "gate_artifact_linkage_relaxed",
+        "module": "src/control_guards.py",
+        "original": '        raise SchemaValidationError(\n            "closed-loop gate: latest review does not cover the current artifact version (stale SHA-256)")',
+        "replacement": "        pass",
+        "test": "test_gate_rejects_stale_artifact_hash",
+    },
+    {
+        "name": "gate_acceptance_check_relaxed",
+        "module": "src/control_guards.py",
+        "original": '        raise SchemaValidationError("closed-loop gate: acceptance evidence missing or failed")',
+        "replacement": "        pass",
+        "test": "test_gate_rejects_incomplete_acceptance",
+    },
+    {
+        "name": "gate_unknown_usage_relaxed",
+        "module": "src/control_guards.py",
+        "original": '    if runtime.get("tokens_unknown_count"):',
+        "replacement": '    if False:',
+        "test": "test_gate_rejects_unknown_usage",
+    },
 ]
 
 
@@ -78,8 +106,17 @@ def main():
         elif module_name == "src.memory":
             import src.orchestrator as live
             patches.append(unittest.mock.patch.object(live, "record_task_outcome_memory", mutant.record_task_outcome_memory))
+        elif module_name == "src.control_guards":
+            patches.append(unittest.mock.patch.object(
+                phase3_tests, "verify_closed_loop_success", mutant.verify_closed_loop_success))
 
-        suite = unittest.TestSuite([phase3_tests.TestPhase3Loop(mutation["test"])])
+        def _find_test(test_name):
+            for cls in (phase3_tests.TestPhase3Loop, phase3_tests.TestClosedLoopSuccessGate):
+                if hasattr(cls, test_name):
+                    return cls(test_name)
+            raise RuntimeError("test not found: " + test_name)
+
+        suite = unittest.TestSuite([_find_test(mutation["test"])])
         for p in patches:
             p.start()
         try:

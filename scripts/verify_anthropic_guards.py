@@ -37,12 +37,18 @@ MUTATIONS = [
      "pass", "test_invalid_review_is_rejected"),
     ("empty_output", "if not content.strip():",
      "if False:", "test_empty_output_rejected"),
-    ("usage", "            total_tokens = usage.get(\"total_tokens\")  # None stays unknown",
-     "            total_tokens = usage.get(\"total_tokens\", 0)", "test_missing_usage_stays_unknown"),
     ("budget", "not 1 <= max_output <= self.max_output_tokens",
      "False", "test_output_budget_limit"),
     ("redaction", 'f"Messages endpoint returned HTTP {error.code}"',
      'f"Messages endpoint returned {error}"', "test_http_error_does_not_expose_key_or_body"),
+    ("usage_valid_gate", "    return isinstance(value, int) and not isinstance(value, bool) and value >= 0",
+     "    return isinstance(value, int)", "test_usage_validation_matrix"),
+    ("fallback_total_salvage",
+     '            # field is deliberately ignored: it must not mask missing counters.' + "\n" +
+     '            total_tokens = None',
+     '            # field is deliberately ignored: it must not mask missing counters.' + "\n" +
+     '            total_tokens = usage.get("total_tokens")',
+     "test_usage_validation_matrix"),
 ]
 
 records = []

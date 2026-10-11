@@ -3,11 +3,9 @@
 - **日期**：2026-10-11（Asia/Shanghai）
 - **开发基线**：`28b1f4611a2c4f1eda57e92cf87a95ca626dcba2`（阶段 2 收口提交）
 - **工作分支**：`phase3-real-dual-model-loop`
-- **结论（负面优先）**：**阶段 3 实现已交付；真实 Muse 审核证据与 DeepSeek+Muse 补充闭环证据已取得；真实 Gemini+Muse 闭环验收仍未完成，不宣称通过。**
-  Gemini 缺 `GEMINI_API_KEY`（blocked，未发起任何调用）。Muse 本地代理首轮验证时返回 HTTP 502
-  （上游瞬时波动），复认时已恢复（HTTP 200），随后完成两项真实审核与一次真实补充闭环；
-  协议/模型/审核通道全程未改动。依据任务书第八节，阶段 3 验收以 Gemini 通道恢复为前提，
-  当前只交付实现、真实 Muse 证据与阻塞清单。
+- **结论（负面优先；本节为 2026-10-11 早间状态，已被 §7/§8 补遗取代）**：~~真实 Gemini+Muse 闭环验收仍未完成~~
+  → **最新状态见 §7/§8**：Gemini 通道经 ADR-0002 本地代理接通后，真实 Gemini+Muse 主闭环与修复闭环证据均已取得。
+  以下历史段落保留原始取证过程，其中"缺密钥/阻塞"的描述均为当时状态，不再反映现状。
 
 ---
 
@@ -57,10 +55,10 @@
 - **变异守卫**：`python scripts/verify_phase3_guards.py` → **4/4 全部检出**（产物关联校验跳过、验收证据引用篡改、修复上下文降级、泛化经验误标 verified）。
 - **既有守卫复用**：`verify_phase2_hardening.py`（14 变异检出）、`verify_phase2_guards.py`（5/5）、`verify_responses_guards.py`（8/8）在本分支复跑全部通过。
 
-### 2.2 真实调用（is_mock=false）——Muse 与补充闭环已取证，Gemini 仍阻塞（详见 §3）
+### 2.2 真实调用（is_mock=false）——Muse 与补充闭环已取证；Gemini 当时阻塞（历史状态，已由 §7 补遗解除）
 - Muse 复认两项真实审核通过（正确产物 pass；注入缺陷被 revise 且证据引用缺陷表达式）；
   DeepSeek（worker）+ Muse（reviewer）补充闭环真实跑通至 succeeded。
-- 真实 Gemini+Muse 闭环（场景 A/B 的验收路径）因缺少凭据未执行。
+- 真实 Gemini+Muse 闭环（场景 A/B 的验收路径）当时因缺少凭据未执行（已由 §7/§8 补遗补齐）。
 ### 2.3 故障注入（is_mock=false 的故障模式，不破坏宿主网络）
 - 截断/拒绝/超时/非法 JSON 均通过适配器故障模式与进程内变异注入，未对宿主网络或供应商制造故障。
 
@@ -70,7 +68,7 @@
 
 | 通道 | 供应商/模型 | 端点/协议 | 调用次数 | 结果 |
 | :--- | :--- | :--- | :--- | :--- |
-| Gemini Worker | Google / `gemini-3.8-flash`（型号经官方文档核实修正） | `generativelanguage.googleapis.com/v1beta` | **0**（未发起） | **BLOCKED_MISSING_CREDENTIAL**：`GEMINI_API_KEY`/`GOOGLE_API_KEY` 不存在。执行 AI 自身会话模型接入与 JH Runtime 的 API 接入相互独立，不得以会话凭据替代 |
+| Gemini Worker（历史状态） | Google / `gemini-3.8-flash` | `generativelanguage.googleapis.com/v1beta` | **0**（未发起） | 当时 **BLOCKED_MISSING_CREDENTIAL**。→ 2026-10-11 已由 ADR-0002 本地代理接通（`gemini-3.8-flash-high`），最新证据见 §7/§8 |
 | Muse Reviewer | 用户本地 Muse 代理 / `muse-spark-1.3-contributor-free` | `http://127.0.0.1:8787/v1`（Responses 协议，沿用已批准配置，未切换协议/模型/通道） | **2** 次真实审核 | **已取证**：正确产物 `pass`（`rev_p3_muse_ok01`，2663 tokens，4.9s）；注入缺陷被 `revise` 且证据引用缺陷表达式（`rev_p3_muse_bad02`，3070 tokens，9.4s）。注入元数据（第 4 行 `a / b`→`a * b`、前后 SHA-256、非模型生成声明）见验证 JSON。首轮探测曾遇 HTTP 502，复认时恢复 200，属上游瞬时波动 |
 | DeepSeek+Muse 补充联调 | DeepSeek `deepseek-flash`（worker）+ Muse（reviewer） | DeepSeek Chat Completions + Muse Responses | **完整闭环 1 次**（规划+生成+审核各 1，共 3 turns，6513 tokens） | **真实跑通至 succeeded**：产物 v1 `dbc8bf65…` 经控制层验收与 Muse `pass`（`rev_a9ce485b25fb`）。按裁决明确标注**不作为阶段 3 验收证据**，仅证明新调用链在真实模型上端到端可用 |
 
@@ -80,7 +78,7 @@
 
 ## 4. 阻塞项与架构师所需输入
 
-1. **GEMINI_API_KEY 缺失**（阻塞 Gemini 真实 Worker 通道，唯一剩余阻塞项）：请在运行进程的用户环境变量配置密钥后，重跑 `python scripts/verify_phase3.py` 即可自动补测场景 A/B 的真实闭环，随后方可申请阶段 3 验收裁决。
+1. ~~GEMINI_API_KEY 缺失~~ **已解除（2026-10-11）**：按用户裁决改经本地代理接入（ADR-0002），令牌已持久化为 `GEMINI_API_KEY` 用户环境变量；真实闭环证据见 §7/§8。
 2. ~~Muse 本地代理上游 502~~ **已解除**：复认时代理恢复（HTTP 200），真实审核与补充闭环证据已取得；期间未对代理/协议/模型做任何改动。
 
 ## 5. 新发现的架构问题（登记，不擅自扩大范围）

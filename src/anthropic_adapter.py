@@ -47,6 +47,11 @@ class _NoRedirect(urllib.request.HTTPRedirectHandler):
         return None
 
 
+def _valid_token_count(value) -> bool:
+    """Only non-bool, non-negative ints are trustworthy usage counts."""
+    return isinstance(value, int) and not isinstance(value, bool) and value >= 0
+
+
 class AnthropicMessagesAdapter(ModelAdapter):
     """Call /v1/messages without protocol fallback or automatic retries."""
 
@@ -153,10 +158,25 @@ class AnthropicMessagesAdapter(ModelAdapter):
         usage = raw.get("usage") or {}
         input_tokens = usage.get("input_tokens")
         output_tokens = usage.get("output_tokens")
-        if isinstance(input_tokens, int) and isinstance(output_tokens, int):
+        if _valid_token_count(input_tokens) and _valid_token_count(output_tokens):
+            # Both counts individually valid (legal zero included) -> sum is trustworthy.
             total_tokens: Any = input_tokens + output_tokens
+        elif input_tokens is None and output_tokens is None:
+            # Usage absent or fields missing -> unknown. The fallback total_tokens
+            # field is deliberately ignored: it must not mask missing counters.
+            total_tokens = None
+        elif _valid_token_count(input_tokens) and output_tokens is None:
+            # Partially missing -> cannot sum; keep unknown rather than a partial guess.
+            input_tokens = None
+            total_tokens = None
+        elif input_tokens is None and _valid_token_count(output_tokens):
+            output_tokens = None
+            total_tokens = None
         else:
-            total_tokens = usage.get("total_tokens")  # None stays unknown
+            # Present but illegal (bool / negative / string / float): raise per the
+            # existing illegal-usage rule. Never salvage via summing or the
+            # fallback total_tokens field.
+            raise AdapterError("Provider returned invalid token usage; refusing to report a summed total")
         return AdapterResponse(
             content=content, parsed_json=None,
             model_id=raw.get("model") or self.model_id,

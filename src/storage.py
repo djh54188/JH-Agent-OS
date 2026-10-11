@@ -718,6 +718,23 @@ class TaskStorage:
             for r in cur.fetchall()
         ]
 
+    def list_model_attempts(self, task_id: str) -> List[Dict[str, Any]]:
+        """Ordered model attempts with status and context (read-only evidence view)."""
+        cur = self._conn.execute(
+            "SELECT * FROM model_attempts WHERE task_id = ? ORDER BY rowid ASC",
+            (task_id,),
+        )
+        return [
+            {
+                "attempt_id": r["attempt_id"],
+                "actor_role": r["actor_role"],
+                "status": r["status"],
+                "context": json.loads(r["context_json"]),
+                "response": json.loads(r["response_json"]) if r["response_json"] else None,
+            }
+            for r in cur.fetchall()
+        ]
+
     def _validate_success(self, task_id):
         task = self.get_task(task_id)
         control = self.get_control(task_id)

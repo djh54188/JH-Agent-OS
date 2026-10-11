@@ -101,6 +101,43 @@ class TestAnthropicAdapter(unittest.TestCase):
         self.assertIsNone(response.tokens_prompt)
         self.assertIsNone(response.tokens_completion)
 
+    def test_usage_validation_matrix(self):
+        """Rectification #2: illegal usage can never become a trusted total."""
+        cases = [
+            # (usage payload, expectation) — "unknown" | ("total", n) | "raise"
+            (None, "unknown"),
+            ({}, "unknown"),
+            ({"input_tokens": 10, "output_tokens": 5}, ("total", 15)),
+            ({"input_tokens": 0, "output_tokens": 0}, ("total", 0)),  # legal zero values
+            ({"input_tokens": 10}, "unknown"),  # partially missing
+            ({"output_tokens": 5}, "unknown"),
+            ({"input_tokens": True, "output_tokens": True}, "raise"),  # bools must not sum to 2
+            ({"input_tokens": -10, "output_tokens": 20}, "raise"),  # negatives must not net to 10
+            ({"input_tokens": "10", "output_tokens": 5}, "raise"),  # strings
+            ({"input_tokens": 1.5, "output_tokens": 2}, "raise"),
+            ({"input_tokens": True, "output_tokens": None}, "raise"),
+            ({"total_tokens": 99}, "unknown"),  # fallback total must not mask missing counters
+        ]
+        for usage, expectation in cases:
+            with self.subTest(usage=usage):
+                raw = copy.deepcopy(RESPONSE)
+                if usage is None:
+                    raw.pop("usage")
+                else:
+                    raw["usage"] = usage
+                with self.fake_response(raw):
+                    if expectation == "raise":
+                        with self.assertRaisesRegex(AdapterError, "invalid token usage"):
+                            self.adapter.invoke([{"role": "user", "content": "ping"}])
+                    elif expectation == "unknown":
+                        response = self.adapter.invoke([{"role": "user", "content": "ping"}])
+                        self.assertIsNone(response.total_tokens)
+                        self.assertIsNone(response.tokens_prompt)
+                        self.assertIsNone(response.tokens_completion)
+                    else:
+                        response = self.adapter.invoke([{"role": "user", "content": "ping"}])
+                        self.assertEqual(response.total_tokens, expectation[1])
+
     def test_output_budget_limit(self):
         with self.assertRaises(AdapterError):
             self.adapter.invoke([{"role": "user", "content": "ping"}], max_output_tokens=64001)

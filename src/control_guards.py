@@ -64,3 +64,53 @@ def validate_acceptance(task, results, evidence):
                 or result.get("passed") is not True or not result.get("evidence")
                 or any(ref not in evidence for ref in result["evidence"])):
             raise SchemaValidationError(f"Required acceptance condition failed or lacks evidence: {criterion}")
+
+
+def verify_closed_loop_success(task, latest_artifact, bindings, runtime):
+    """Independent re-verification, from persisted records only, that a task is a
+    NORMAL closed-loop success. Raises SchemaValidationError otherwise.
+
+    Rectification #1: evidence scripts must use this gate so a failed, blocked,
+    or revise-ended run can never be reported as a passed closed loop. A normal
+    success requires ALL of:
+    - final status == 'succeeded' and current verdict == 'pass';
+    - the latest review binding is a pass with no unresolved blocking issues;
+    - the reviewed artifact snapshot matches the CURRENT artifact SHA-256;
+    - acceptance evidence complete (every criterion passed with traceable refs);
+    - no unknown token usage and no unconfirmed side effects.
+    Fault scenarios (failed / needs_attention / revise / missing evidence) are
+    reported separately and never satisfy this gate.
+    """
+    if task.get("status") != "succeeded":
+        raise SchemaValidationError(
+            f"closed-loop gate: final status is '{task.get('status')}', not 'succeeded'")
+    if task.get("review_verdict") != "pass":
+        raise SchemaValidationError("closed-loop gate: no current 'pass' review verdict")
+    if runtime.get("tokens_unknown_count"):
+        raise SchemaValidationError("closed-loop gate: unknown token usage unresolved")
+    if runtime.get("has_unconfirmed_side_effect"):
+        raise SchemaValidationError("closed-loop gate: unconfirmed side effect unresolved")
+    if not bindings:
+        raise SchemaValidationError("closed-loop gate: no review binding recorded")
+    latest_binding = bindings[-1]
+    review = latest_binding.get("review") or {}
+    if review.get("verdict") != "pass":
+        raise SchemaValidationError(
+            f"closed-loop gate: latest review verdict is '{review.get('verdict')}', not 'pass'")
+    for issue in review.get("issues") or []:
+        if issue.get("severity") in {"p0_blocker", "p1_critical", "p2_major"}:
+            raise SchemaValidationError("closed-loop gate: latest pass review carries unresolved blocking issues")
+    acceptance = latest_binding.get("acceptance") or []
+    criteria = task.get("acceptance_criteria") or []
+    if len(acceptance) != len(criteria) or any(
+            item.get("criterion") != criterion or item.get("passed") is not True or not item.get("evidence")
+            for criterion, item in zip(criteria, acceptance)):
+        raise SchemaValidationError("closed-loop gate: acceptance evidence missing or failed")
+    if not latest_artifact:
+        raise SchemaValidationError("closed-loop gate: no artifact version persisted")
+    snapshot = latest_binding.get("artifacts") or {}
+    if not snapshot or not any(
+            isinstance(value, dict) and value.get("sha256") == latest_artifact.get("sha256")
+            for value in snapshot.values()):
+        raise SchemaValidationError(
+            "closed-loop gate: latest review does not cover the current artifact version (stale SHA-256)")
