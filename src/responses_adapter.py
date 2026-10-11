@@ -8,7 +8,7 @@ from typing import Any, Dict, List
 from urllib.parse import urlsplit
 
 from jsonschema import Draft7Validator, FormatChecker, ValidationError
-from src.adapters import AdapterError, AdapterResponse, CredentialMissingError, ModelAdapter, SchemaValidationError
+from src.adapters import AdapterError, AdapterResponse, CredentialMissingError, ModelAdapter, SchemaValidationError, invocation_timeout
 
 
 class _NoRedirect(urllib.request.HTTPRedirectHandler):
@@ -44,7 +44,7 @@ class OpenAIResponsesAdapter(ModelAdapter):
             body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
         request = urllib.request.Request(self.endpoint_url + route, data=body, headers=headers)
         try:
-            with self._opener.open(request, timeout=timeout or self.timeout_seconds) as response:
+            with self._opener.open(request, timeout=invocation_timeout(self.timeout_seconds, timeout)) as response:
                 raw = json.load(response)
         except urllib.error.HTTPError as error:
             # Error bodies/URLs can echo credentials or prompts; do not include them.
@@ -84,7 +84,7 @@ class OpenAIResponsesAdapter(ModelAdapter):
                 "schema": schema, "strict": False,
             }}
         started = time.perf_counter()
-        raw = self._request("/responses", payload)
+        raw = self._request("/responses", payload, timeout=kwargs.get("timeout"))
         latency_ms = int((time.perf_counter() - started) * 1000)
         if raw.get("error") or raw.get("status") != "completed":
             raise AdapterError("Responses generation did not complete successfully")

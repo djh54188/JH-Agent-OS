@@ -16,8 +16,8 @@ spec.loader.exec_module(tests)
 source = (ROOT / "src/responses_adapter.py").read_text(encoding="utf-8")
 
 mutations = [
-    ("route", 'raw = self._request("/responses", payload)',
-     'raw = self._request("/chat/completions", payload)', "test_responses_request_and_usage"),
+    ("route", 'raw = self._request("/responses", payload,',
+     'raw = self._request("/chat/completions", payload,', "test_responses_request_and_usage"),
     ("status", 'if raw.get("error") or raw.get("status") != "completed":',
      "if False:", "test_incomplete_or_failed_response_is_rejected"),
     ("schema", "Draft7Validator(schema, format_checker=FormatChecker()).validate(parsed)",

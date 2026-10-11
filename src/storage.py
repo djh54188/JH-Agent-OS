@@ -8,14 +8,17 @@ Enforces:
 """
 
 from datetime import datetime, timezone
+from contextlib import contextmanager
+from functools import wraps
 import json
 from pathlib import Path
 import sqlite3
+import threading
 from typing import Any, Dict, List, Optional
 import uuid
 
 from jsonschema import Draft7Validator, FormatChecker
-from src.state_machine import is_terminal_state, validate_transition
+from src.state_machine import InvalidStateTransitionError, is_terminal_state, validate_transition
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SCHEMAS_DIR = PROJECT_ROOT / "docs" / "schemas"
@@ -30,15 +33,45 @@ def _load_json_schema(name: str) -> Dict[str, Any]:
         return json.load(f)
 
 
+class StaleAttemptError(Exception):
+    """A delayed response belongs to an obsolete attempt or a finished task."""
+
+
+def atomic(method):
+    @wraps(method)
+    def wrapped(self, *args, **kwargs):
+        with self.transaction():
+            return method(self, *args, **kwargs)
+    return wrapped
+
+
 class TaskStorage:
     """SQLite-backed store for tasks, task_events, tool_executions, and reviews."""
 
     def __init__(self, db_path: str | Path = ":memory:"):
         self.db_path = str(db_path)
+        self._lock = threading.RLock()
         self._conn = sqlite3.connect(self.db_path, check_same_thread=False)
         self._conn.row_factory = sqlite3.Row
+        self._conn.execute("PRAGMA foreign_keys = ON")
         self._task_schema = _load_json_schema("task.v1.json")
         self._init_db()
+
+    @contextmanager
+    def transaction(self):
+        # Nested storage operations share the outer transaction, including audit events.
+        with self._lock:
+            outer = not self._conn.in_transaction
+            if outer:
+                self._conn.execute("BEGIN IMMEDIATE")
+            try:
+                yield
+                if outer:
+                    self._conn.commit()
+            except BaseException:
+                if outer:
+                    self._conn.rollback()
+                raise
 
     def _init_db(self) -> None:
         with self._conn:
@@ -103,6 +136,24 @@ class TaskStorage:
                     created_at TEXT NOT NULL,
                     FOREIGN KEY (task_id) REFERENCES tasks(task_id)
                 );
+
+                CREATE TABLE IF NOT EXISTS task_control (
+                    task_id TEXT PRIMARY KEY REFERENCES tasks(task_id),
+                    deadline REAL, owner_id TEXT, active_attempt_id TEXT,
+                    pending_json TEXT, approvals_json TEXT NOT NULL DEFAULT '{}'
+                );
+                CREATE TABLE IF NOT EXISTS model_attempts (
+                    attempt_id TEXT PRIMARY KEY,
+                    task_id TEXT NOT NULL REFERENCES tasks(task_id),
+                    actor_role TEXT NOT NULL, status TEXT NOT NULL,
+                    context_json TEXT NOT NULL, response_json TEXT
+                );
+                CREATE TABLE IF NOT EXISTS review_bindings (
+                    review_id TEXT PRIMARY KEY REFERENCES reviews(review_id),
+                    task_id TEXT NOT NULL, attempt_id TEXT NOT NULL,
+                    artifacts_json TEXT NOT NULL, acceptance_json TEXT NOT NULL
+                );
+                INSERT OR IGNORE INTO task_control(task_id) SELECT task_id FROM tasks;
                 """
             )
 
@@ -118,13 +169,14 @@ class TaskStorage:
     def validate_task_dict(self, task: Dict[str, Any]) -> None:
         Draft7Validator(self._task_schema, format_checker=FormatChecker()).validate(task)
 
+    @atomic
     def create_task(self, task: Dict[str, Any], actor_role: str = "orchestrator") -> Dict[str, Any]:
         """Validate and persist a new task in 'created' state."""
         self.validate_task_dict(task)
         if task["status"] != "created":
             raise ValueError(f"New task must start in 'created' status, got '{task['status']}'")
         now = task.get("created_at") or _utc_now_iso()
-        with self._conn:
+        with self.transaction():
             self._conn.execute(
                 """
                 INSERT INTO tasks (
@@ -150,6 +202,7 @@ class TaskStorage:
                     task.get("updated_at") or now,
                 ),
             )
+            self._conn.execute("INSERT INTO task_control(task_id) VALUES (?)", (task["task_id"],))
         self.record_event(
             task_id=task["task_id"],
             event_type="task_created",
@@ -176,6 +229,7 @@ class TaskStorage:
         }
         return task_dict
 
+    @atomic
     def transition_task_state(
         self,
         task_id: str,
@@ -202,6 +256,9 @@ class TaskStorage:
 
         current_state = row["status"]
         effective_verdict = review_verdict if review_verdict is not None else row["review_verdict"]
+
+        if target_state == "succeeded":
+            self._validate_success(task_id)
 
         try:
             validate_transition(current_state, target_state, review_verdict=effective_verdict)
@@ -250,9 +307,9 @@ class TaskStorage:
         tokens_unknown_count = row["tokens_unknown_count"]
 
         if tokens_delta is not None:
-            current_tokens = (current_tokens or 0) + tokens_delta
+            current_tokens = None if tokens_unknown_count else (current_tokens or 0) + tokens_delta
 
-        with self._conn:
+        with self.transaction():
             self._conn.execute(
                 """
                 UPDATE tasks
@@ -299,6 +356,7 @@ class TaskStorage:
         )
         return self.get_task(task_id)
 
+    @atomic
     def record_usage(
         self,
         task_id: str,
@@ -307,12 +365,17 @@ class TaskStorage:
         tokens_used: Optional[int],
         increment_turn: bool = True,
         details: Optional[Dict[str, Any]] = None,
+        event_id: Optional[str] = None,
     ) -> None:
         """
         Record model/tool invocation usage.
-        If tokens_used is None (unknown), increments tokens_unknown_count and keeps tokens_used NULL if no prior known tokens exist.
+        Unknown usage increments tokens_unknown_count and keeps the aggregate NULL thereafter.
         Never defaults unknown token usage to 0.
         """
+        if tokens_used is not None and (isinstance(tokens_used, bool) or not isinstance(tokens_used, int) or tokens_used < 0):
+            raise ValueError("Invalid provider token usage")
+        if event_id and self._conn.execute("SELECT 1 FROM task_events WHERE event_id = ?", (event_id,)).fetchone():
+            return
         cur = self._conn.execute("SELECT * FROM tasks WHERE task_id = ?", (task_id,))
         row = cur.fetchone()
         if not row:
@@ -324,10 +387,11 @@ class TaskStorage:
 
         if tokens_used is None:
             unknown_count += 1
+            current_tokens = None
         else:
-            current_tokens = (current_tokens or 0) + tokens_used
+            current_tokens = None if unknown_count else (current_tokens or 0) + tokens_used
 
-        with self._conn:
+        with self.transaction():
             self._conn.execute(
                 """
                 UPDATE tasks
@@ -347,21 +411,34 @@ class TaskStorage:
             actor_role=actor_role,
             tokens_used=tokens_used,
             details=ev_details,
+            event_id=event_id,
         )
 
+    @atomic
     def record_tool_start(
         self,
         tool_request: Dict[str, Any],
         *,
         has_side_effect: bool,
-    ) -> None:
+    ) -> bool:
         """Mark a tool execution as in_flight BEFORE executing it, enabling crash/restart detection."""
         now = _utc_now_iso()
         task_id = tool_request["task_id"]
-        with self._conn:
+        task = self.get_task(task_id)
+        if task["status"] != "executing":
+            self.record_event(task_id=task_id, event_type="late_tool_request_rejected",
+                              from_state=task["status"], to_state=task["status"],
+                              actor_role="orchestrator", details={"request_id": tool_request["request_id"]})
+            return False
+        prior = self._conn.execute("SELECT * FROM tool_executions WHERE request_id = ?", (tool_request["request_id"],)).fetchone()
+        if prior:
+            if json.loads(prior["request_json"]) != tool_request or prior["status"] != "success":
+                raise ValueError("Tool request ID reused with changed parameters or uncertain result")
+            return False
+        with self.transaction():
             self._conn.execute(
                 """
-                INSERT OR REPLACE INTO tool_executions (
+                INSERT INTO tool_executions (
                     request_id, task_id, step_id, tool_name, risk_level,
                     has_side_effect, status, request_json, result_json, created_at, updated_at
                 ) VALUES (?, ?, ?, ?, ?, ?, 'in_flight', ?, NULL, ?, ?)
@@ -383,7 +460,9 @@ class TaskStorage:
                     "UPDATE tasks SET has_unconfirmed_side_effect = 1, updated_at = ? WHERE task_id = ?",
                     (now, task_id),
                 )
+        return True
 
+    @atomic
     def record_tool_completion(
         self,
         tool_result: Dict[str, Any],
@@ -395,7 +474,10 @@ class TaskStorage:
         req_id = tool_result["request_id"]
         task_id = tool_result["task_id"]
         status = tool_result["status"]
-        with self._conn:
+        prior = self._conn.execute("SELECT * FROM tool_executions WHERE request_id = ?", (req_id,)).fetchone()
+        if not prior or prior["task_id"] != task_id or prior["tool_name"] != tool_result["tool_name"]:
+            raise ValueError("Tool result does not match the recorded request")
+        with self.transaction():
             self._conn.execute(
                 """
                 UPDATE tool_executions
@@ -419,9 +501,10 @@ class TaskStorage:
                         (now, task_id),
                     )
 
+    @atomic
     def record_review(self, review_result: Dict[str, Any]) -> None:
         now = review_result.get("created_at") or _utc_now_iso()
-        with self._conn:
+        with self.transaction():
             self._conn.execute(
                 """
                 INSERT INTO reviews (
@@ -439,6 +522,7 @@ class TaskStorage:
                 ),
             )
 
+    @atomic
     def record_event(
         self,
         *,
@@ -449,10 +533,11 @@ class TaskStorage:
         actor_role: str,
         tokens_used: Optional[int] = None,
         details: Optional[Dict[str, Any]] = None,
+        event_id: Optional[str] = None,
     ) -> str:
-        event_id = f"evt_{uuid.uuid4().hex[:12]}"
+        event_id = event_id or f"evt_{uuid.uuid4().hex[:12]}"
         now = _utc_now_iso()
-        with self._conn:
+        with self.transaction():
             self._conn.execute(
                 """
                 INSERT INTO task_events (
@@ -514,6 +599,112 @@ class TaskStorage:
             })
         return items
 
+    def get_control(self, task_id):
+        with self._lock:
+            row = self._conn.execute("SELECT * FROM task_control WHERE task_id = ?", (task_id,)).fetchone()
+            if row is None:
+                raise KeyError(f"Task '{task_id}' has no control record")
+            return dict(row)
+
+    def has_uncertain_attempt(self, task_id):
+        return self._conn.execute(
+            "SELECT 1 FROM model_attempts WHERE task_id = ? AND status IN ('in_flight', 'interrupted_unconfirmed') LIMIT 1",
+            (task_id,),
+        ).fetchone() is not None
+
+    @atomic
+    def set_deadline(self, task_id, deadline):
+        self._conn.execute("UPDATE task_control SET deadline = COALESCE(deadline, ?) WHERE task_id = ?", (deadline, task_id))
+
+    @atomic
+    def claim_task(self, task_id, owner_id):
+        return self._conn.execute(
+            "UPDATE task_control SET owner_id = ? WHERE task_id = ? AND owner_id IS NULL",
+            (owner_id, task_id),
+        ).rowcount == 1
+
+    @atomic
+    def release_task(self, task_id, owner_id):
+        self._conn.execute("UPDATE task_control SET owner_id = NULL WHERE task_id = ? AND owner_id = ?", (task_id, owner_id))
+
+    @atomic
+    def hold_request(self, task_id, request):
+        self._conn.execute("UPDATE task_control SET pending_json = ? WHERE task_id = ?", (json.dumps(request), task_id))
+
+    @atomic
+    def approve_request(self, task_id, request_id, fingerprint):
+        control = self.get_control(task_id)
+        pending = json.loads(control["pending_json"] or "null")
+        if not pending or pending["request_id"] != request_id:
+            raise ValueError("Approval does not identify the pending request")
+        approvals = json.loads(control["approvals_json"])
+        approvals[request_id] = fingerprint(pending)
+        self._conn.execute("UPDATE task_control SET approvals_json = ?, pending_json = NULL WHERE task_id = ?", (json.dumps(approvals), task_id))
+
+    @atomic
+    def begin_attempt(self, task_id, actor_role, context):
+        task = self.get_task(task_id)
+        if is_terminal_state(task["status"]):
+            raise StaleAttemptError("Cannot start a model attempt for a terminal task")
+        attempt_id = f"attempt_{uuid.uuid4().hex}"
+        self._conn.execute("INSERT INTO model_attempts VALUES (?, ?, ?, 'in_flight', ?, NULL)",
+                           (attempt_id, task_id, actor_role, json.dumps(context)))
+        self._conn.execute("UPDATE task_control SET active_attempt_id = ? WHERE task_id = ?", (attempt_id, task_id))
+        return attempt_id
+
+    @atomic
+    def complete_attempt(self, task_id, attempt_id, response, tokens_used):
+        attempt = self._conn.execute("SELECT * FROM model_attempts WHERE attempt_id = ? AND task_id = ?", (attempt_id, task_id)).fetchone()
+        if not attempt:
+            raise StaleAttemptError("Unknown attempt")
+        if attempt["status"] == "completed":
+            return False  # Duplicate completion cannot double-charge usage.
+        if self.get_control(task_id)["active_attempt_id"] != attempt_id or is_terminal_state(self.get_task(task_id)["status"]):
+            raise StaleAttemptError("Response belongs to a stale attempt")
+        self._conn.execute("UPDATE model_attempts SET status = 'completed', response_json = ? WHERE attempt_id = ?",
+                           (json.dumps(response), attempt_id))
+        self.record_usage(task_id, actor_role=attempt["actor_role"], tokens_used=tokens_used,
+                          event_id=f"usage_{attempt_id}", details={"attempt_id": attempt_id})
+        return True
+
+    @atomic
+    def bind_review(self, review, attempt_id, artifacts, acceptance):
+        task_id = review["task_id"]
+        attempt = self._conn.execute("SELECT task_id, actor_role, status FROM model_attempts WHERE attempt_id = ?", (attempt_id,)).fetchone()
+        if not attempt or attempt["task_id"] != task_id or attempt["actor_role"] != "reviewer" or attempt["status"] != "completed":
+            raise StaleAttemptError("Review does not match a completed reviewer attempt")
+        if self.get_control(task_id)["active_attempt_id"] != attempt_id:
+            raise StaleAttemptError("Review belongs to a stale attempt")
+        self.record_review(review)
+        self._conn.execute("INSERT INTO review_bindings VALUES (?, ?, ?, ?, ?)",
+                           (review["review_id"], task_id, attempt_id, json.dumps(artifacts), json.dumps(acceptance)))
+
+    def _validate_success(self, task_id):
+        task = self.get_task(task_id)
+        control = self.get_control(task_id)
+        proof = self._conn.execute(
+            "SELECT r.review_json, b.acceptance_json FROM review_bindings b JOIN reviews r USING(review_id) "
+            "WHERE b.task_id = ? AND b.attempt_id = ?", (task_id, control["active_attempt_id"]),
+        ).fetchone()
+        reason = None
+        if not proof:
+            reason = "Missing current independent review and acceptance evidence"
+        else:
+            review = json.loads(proof["review_json"])
+            acceptance = json.loads(proof["acceptance_json"])
+            if review["verdict"] != "pass" or any(i["severity"] in {"p0_blocker", "p1_critical", "p2_major"} for i in review["issues"]):
+                reason = "Current review does not provide an unblocked pass"
+            elif len(acceptance) != len(task["acceptance_criteria"]) or any(
+                item.get("criterion") != criterion or item.get("passed") is not True or not item.get("evidence")
+                for criterion, item in zip(task["acceptance_criteria"], acceptance)
+            ):
+                reason = "Required acceptance evidence is missing or failed"
+        if control["pending_json"] or task["_runtime"]["has_unconfirmed_side_effect"] or task["_runtime"]["tokens_unknown_count"]:
+            reason = "Unresolved approval, side effect, or unknown model usage"
+        if reason:
+            raise InvalidStateTransitionError(task["status"], "succeeded", reason)
+
+    @atomic
     def recover_interrupted_tasks(self) -> List[Dict[str, Any]]:
         """
         Inspect non-terminal tasks after a process restart.
@@ -538,10 +729,16 @@ class TaskStorage:
             )
             in_flight_tools = t_cur.fetchall()
             any_side_effect_in_flight = any(bool(t["has_side_effect"]) for t in in_flight_tools)
+            uncertain_attempts = self._conn.execute(
+                "SELECT COUNT(*) FROM model_attempts WHERE task_id = ? AND status = 'in_flight'", (task_id,)
+            ).fetchone()[0]
+            # Recovery never adopts or terminates a process based on a stored PID.
+            self._conn.execute("UPDATE task_control SET owner_id = NULL WHERE task_id = ?", (task_id,))
 
-            if has_unconfirmed or any_side_effect_in_flight or status in {"executing", "repairing"}:
+            if has_unconfirmed or any_side_effect_in_flight or uncertain_attempts or status in {"planning", "reviewing", "executing", "repairing"}:
                 now = _utc_now_iso()
-                with self._conn:
+                with self.transaction():
+                    self._conn.execute("UPDATE model_attempts SET status = 'interrupted_unconfirmed' WHERE task_id = ? AND status = 'in_flight'", (task_id,))
                     self._conn.execute(
                         """
                         UPDATE tool_executions

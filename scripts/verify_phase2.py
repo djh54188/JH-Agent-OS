@@ -24,7 +24,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from jsonschema import Draft7Validator, FormatChecker
-from src.mock_components import ScriptedReviewerAdapter, ScriptedWorkerAdapter
+from src.mock_components import ScriptedReviewerAdapter, ScriptedWorkerAdapter, mock_acceptance
 from src.model_config import has_credential, load_model_adapter
 from src.orchestrator import Orchestrator
 
@@ -146,6 +146,7 @@ def run_live_reviewer_checks(profile_name: str, adapter) -> dict:
     orch = Orchestrator(
         worker_adapter=ScriptedWorkerAdapter(mode="normal", tokens_per_call=100),
         reviewer_adapter=adapter,
+        acceptance_evaluator=mock_acceptance,
     )
     orch_task = {
         "schema_version": "1.0.0",
@@ -190,11 +191,12 @@ def run_live_reviewer_checks(profile_name: str, adapter) -> dict:
 
     record["cases"].append({
         "case": "orchestrator_mock_worker_live_reviewer_e2e",
+        "tools_and_acceptance_are_mock": True,
         "final_status": final_task["status"],
         "review_verdict": final_task["review_verdict"],
         "turns_used": st["turns_used"],
         "tokens_used": st["tokens_used"],
-        "passed": final_task["status"] in {"succeeded", "repairing", "needs_attention"} and final_task["review_verdict"] is not None,
+        "passed": final_task["status"] == "succeeded" and final_task["review_verdict"] == "pass",
     })
 
     record["passed"] = all(c["passed"] for c in record["cases"])

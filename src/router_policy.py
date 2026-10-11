@@ -8,6 +8,8 @@ Enforces:
 """
 
 from dataclasses import dataclass
+import hashlib
+import json
 import os
 from pathlib import Path
 import re
@@ -98,6 +100,12 @@ def _normalize_path(raw_path: str, workspace_root: str) -> Path:
     return p
 
 
+def request_fingerprint(request: Dict[str, Any]) -> str:
+    """Authorization binds to the complete action, excluding only its display timestamp."""
+    action = {key: value for key, value in request.items() if key != "created_at"}
+    return hashlib.sha256(json.dumps(action, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+
 def _is_within_workspace(target: Path, workspace_root: str) -> bool:
     ws = Path(workspace_root).resolve()
     try:
@@ -142,6 +150,7 @@ class RiskPolicyEngine:
         tool_request: Dict[str, Any],
         *,
         approved_request_ids: Optional[Set[str]] = None,
+        approved_fingerprints: Optional[Dict[str, str]] = None,
         authorized_files: Optional[Set[str]] = None,
     ) -> PolicyDecision:
         """
@@ -149,7 +158,8 @@ class RiskPolicyEngine:
         Order of precedence: Level 3 (Forbidden) -> Level 2 (Approval) -> Level 1 (Write) -> Level 0 (Read).
         Model confidence or low declared risk_level NEVER downgrades a detected higher-level risk.
         """
-        approved_ids = approved_request_ids or set()
+        # Bare IDs are retained for API compatibility but cannot grant permissions.
+        approved = approved_fingerprints or {}
         req_id = tool_request.get("request_id", "")
         tool_name = tool_request.get("tool_name", "")
         params = tool_request.get("parameters") or {}
@@ -228,6 +238,11 @@ class RiskPolicyEngine:
         # ---------------------------------------------------------
         level2_reasons: List[Tuple[str, str]] = []
 
+        if tool_name not in READ_ONLY_TOOLS | WRITE_TOOLS | {"delete_file", "execute_external_binary"}:
+            level2_reasons.append(("L2-UNRECOGNIZED-TOOL", "Tool has no verified action classification"))
+        if tool_name in WRITE_TOOLS and not raw_paths:
+            level2_reasons.append(("L2-UNRESOLVED-TARGET", "Write target cannot be determined from parameters"))
+
         if declared_level == 2 or tool_request.get("requires_human_approval") is True:
             level2_reasons.append(("L2-DECLARED-SENSITIVE", "ToolRequest requires human approval or system_sensitive"))
 
@@ -242,7 +257,7 @@ class RiskPolicyEngine:
                 if ext in FORBIDDEN_WRITE_EXTENSIONS or (ext and ext not in ALLOWED_WRITE_EXTENSIONS):
                     level2_reasons.append(("L2-UNAPPROVED-EXTENSION", f"Writing file with extension '{ext}' requires approval"))
                 # Incremental authorization check: if authorized_files scope is strictly enforced
-                if authorized_files is not None and len(authorized_files) > 0:
+                if authorized_files is not None:
                     rel_or_abs = {str(resolved), rp.replace("\\", "/")}
                     try:
                         rel_str = str(resolved.relative_to(Path(self.workspace_root).resolve())).replace("\\", "/")
@@ -265,7 +280,7 @@ class RiskPolicyEngine:
             level2_reasons.append(("L2-SENSITIVE-TOOL", f"Tool '{tool_name}' requires explicit human approval"))
 
         if level2_reasons:
-            if req_id and req_id in approved_ids:
+            if req_id and approved.get(req_id) == request_fingerprint(tool_request):
                 return PolicyDecision(
                     level=2,
                     level_name="REQUIRES_APPROVAL",

@@ -42,6 +42,13 @@ class SchemaValidationError(AdapterError):
     pass
 
 
+def invocation_timeout(configured, requested=None):
+    value = min(float(configured), float(configured if requested is None else requested))
+    if not 0 < value < float("inf"):
+        raise AdapterError("Invocation timeout budget must be positive and finite")
+    return value
+
+
 class ModelAdapter(ABC):
     """Abstract Base Class for all model adapters."""
 
@@ -104,12 +111,13 @@ class OpenAICompatibleAdapter(ModelAdapter):
 
     def invoke(self, messages: List[Dict[str, str]], **kwargs) -> AdapterResponse:
         api_key = self._get_api_key()
+        timeout = invocation_timeout(self.timeout_seconds, kwargs.get("timeout"))
         url = f"{self.endpoint_url}/chat/completions"
         payload = {
             "model": self.model_id,
             "messages": messages,
             "temperature": kwargs.get("temperature", self.temperature),
-            "max_tokens": kwargs.get("max_tokens", self.max_tokens),
+            "max_tokens": min(self.max_tokens, kwargs.get("max_output_tokens", kwargs.get("max_tokens", self.max_tokens))),
         }
         json_data = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(
@@ -123,7 +131,7 @@ class OpenAICompatibleAdapter(ModelAdapter):
 
         start = time.perf_counter()
         try:
-            with urllib.request.urlopen(req, timeout=self.timeout_seconds) as resp:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
                 duration_ms = int((time.perf_counter() - start) * 1000)
                 raw = json.loads(resp.read().decode("utf-8"))
         except urllib.error.HTTPError as e:
@@ -392,19 +400,21 @@ class GeminiAdapter(ModelAdapter):
 
     def invoke(self, messages: List[Dict[str, str]], **kwargs) -> AdapterResponse:
         key = self._get_api_key()
+        timeout = invocation_timeout(self.timeout_seconds, kwargs.get("timeout"))
         url = f"{self.endpoint_url}/models/{self.model_id}:generateContent?key={key}"
         contents = []
         for m in messages:
             role = "user" if m["role"] in ["user", "system"] else "model"
             contents.append({"role": role, "parts": [{"text": m["content"]}]})
 
-        payload = {"contents": contents}
+        payload = {"contents": contents, "generationConfig": {
+            "maxOutputTokens": min(self.config.get("max_output_tokens", 8192), kwargs.get("max_output_tokens", 8192))}}
         data = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"})
 
         start = time.perf_counter()
         try:
-            with urllib.request.urlopen(req, timeout=self.timeout_seconds) as resp:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
                 duration_ms = int((time.perf_counter() - start) * 1000)
                 raw = json.loads(resp.read().decode("utf-8"))
         except urllib.error.HTTPError as e:

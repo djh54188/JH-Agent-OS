@@ -1,0 +1,8 @@
+{
+  "method": "PowerShell JSON parsing and Get-FileHash, independent from Python runner",
+  "case_ids_match_specification": true,
+  "passed_cases": 29,
+  "deferred_cases": 1,
+  "mutation_assertions_passed": 14,
+  "source_fingerprints_verified": 18
+}

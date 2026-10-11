@@ -5,6 +5,7 @@ budget, review, timeout, and crash-interruption scenarios.
 """
 
 from datetime import datetime, timezone
+import copy
 import json
 from typing import Any, Callable, Dict, List, Optional
 import uuid
@@ -28,6 +29,13 @@ class SimulatedInterruptionError(Exception):
     pass
 
 
+def mock_acceptance(task, executions):
+    """Explicit test fixture; never a production validator for arbitrary user criteria."""
+    evidence = [f"{item['request_id']}:{item['tool_name']}:success" for item in executions if item["status"] == "success"]
+    return [{"criterion": criterion, "passed": bool(evidence), "evidence": evidence, "is_mock": True}
+            for criterion in task["acceptance_criteria"]]
+
+
 class ScriptedWorkerAdapter(ModelAdapter):
     """Configurable Mock Worker that produces schema-valid Plans and ToolRequests or simulates faults."""
 
@@ -46,6 +54,7 @@ class ScriptedWorkerAdapter(ModelAdapter):
         self.tokens_per_call = tokens_per_call  # Can be None to test unknown token handling
         self.simulated_latency_ms = simulated_latency_ms
         self.call_count = 0
+        self.calls = []
 
     def get_role(self) -> str:
         return "worker"
@@ -94,6 +103,7 @@ class ScriptedWorkerAdapter(ModelAdapter):
             raise SchemaValidationError("Worker output is not valid JSON or failed schema validation")
 
         task_id = kwargs.get("task_id", "task_default12345")
+        self.calls.append(dict(kwargs))
         now = _utc_now_iso()
         plan_payload = {
             "schema_version": "1.0.0",
@@ -165,6 +175,7 @@ class ScriptedReviewerAdapter(ModelAdapter):
         self.tokens_per_call = tokens_per_call
         self.simulated_latency_ms = simulated_latency_ms
         self.call_count = 0
+        self.calls = []
 
     def get_role(self) -> str:
         return "reviewer"
@@ -205,6 +216,7 @@ class ScriptedReviewerAdapter(ModelAdapter):
         schema: Dict[str, Any],
         **kwargs
     ) -> AdapterResponse:
+        self.calls.append(dict(kwargs))
         if self.mode == "invalid_schema":
             self.call_count += 1
             raise SchemaValidationError("Reviewer output does not match ReviewResult Schema")
@@ -239,8 +251,8 @@ class ScriptedReviewerAdapter(ModelAdapter):
                 "description": "Missing boundary validation in generated artifact",
                 "evidence": f"{target_path}:10-25 lacks null/empty check",
                 "file_path": target_path,
-                "line_start": 10,
-                "line_end": 25,
+                "line_start": 1,
+                "line_end": 1,
                 "recommendation": "Add explicit guard clause and unit test",
             })
 
@@ -257,6 +269,7 @@ class ScriptedReviewerAdapter(ModelAdapter):
             "reviewer_role": self.model_id,
             "created_at": _utc_now_iso(),
         }
+        review_payload.update(kwargs.get("review_metadata", {}))
         Draft7Validator(schema, format_checker=FormatChecker()).validate(review_payload)
         resp = self.invoke(messages, _canned_payload=review_payload, **kwargs)
         resp.parsed_json = review_payload
@@ -273,6 +286,10 @@ class MockToolExecutor:
     def __init__(self, mode: str = "normal"):
         self.mode = mode
         self.executed_requests: List[Dict[str, Any]] = []
+        self.artifacts: Dict[str, str] = {}
+
+    def snapshot_artifacts(self, paths):
+        return {path: self.artifacts[path] for path in paths if path in self.artifacts}
 
     def execute(self, tool_request: Dict[str, Any]) -> Dict[str, Any]:
         req_id = tool_request["request_id"]
@@ -285,7 +302,7 @@ class MockToolExecutor:
                 f"Process crashed mid-execution of tool '{tool_name}' ({req_id}); side effect unconfirmed"
             )
 
-        self.executed_requests.append(tool_request)
+        self.executed_requests.append(copy.deepcopy(tool_request))
 
         if self.mode == "timeout":
             return {
@@ -319,6 +336,12 @@ class MockToolExecutor:
                 "created_at": now,
             }
 
+        path = tool_request.get("parameters", {}).get("path")
+        if path:
+            if tool_name in {"write_file", "edit_file", "create_file", "apply_patch"}:
+                self.artifacts[path] = tool_request.get("parameters", {}).get("content", "Mock artifact fixture\n")
+            else:
+                self.artifacts.setdefault(path, "Mock artifact fixture\n")
         return {
             "schema_version": "1.0.0",
             "result_id": f"tres_{uuid.uuid4().hex[:12]}",

@@ -15,6 +15,7 @@ Covers all 11 mandatory offline verification scenarios:
 """
 
 import os
+from functools import partial
 from pathlib import Path
 import tempfile
 import unittest
@@ -26,10 +27,14 @@ from src.mock_components import (
     ScriptedReviewerAdapter,
     ScriptedWorkerAdapter,
     SimulatedInterruptionError,
+    mock_acceptance,
 )
 from src.orchestrator import Orchestrator
 from src.state_machine import InvalidStateTransitionError
 from src.storage import TaskStorage
+
+# Successful Phase 2 cases explicitly install a simulated acceptance evaluator.
+Orchestrator = partial(Orchestrator, acceptance_evaluator=mock_acceptance)
 
 
 def make_task_payload(
@@ -237,8 +242,10 @@ class TestPhase2ControlLayer(unittest.TestCase):
         with self.assertRaises(InvalidStateTransitionError):
             orch.storage.transition_task_state("task_illegal_st01", "succeeded", review_verdict="revise")
 
-        # Valid transition to succeeded
-        orch.storage.transition_task_state("task_illegal_st01", "succeeded", review_verdict="pass")
+        # A bare verdict cannot manufacture a persisted independent review.
+        with self.assertRaises(InvalidStateTransitionError):
+            orch.storage.transition_task_state("task_illegal_st01", "succeeded", review_verdict="pass")
+        orch.cancel_task("task_illegal_st01")
         # Terminal state cannot transition anywhere
         with self.assertRaises(InvalidStateTransitionError):
             orch.storage.transition_task_state("task_illegal_st01", "executing")
@@ -355,10 +362,11 @@ class TestPhase2ControlLayer(unittest.TestCase):
         orch_u = Orchestrator(worker_adapter=w_unknown, reviewer_adapter=r_unknown)
         orch_u.submit_task(make_task_payload("task_unk_tokens10"))
         res_u = orch_u.run_task("task_unk_tokens10")
-        self.assertEqual(res_u["status"], "succeeded")
+        self.assertEqual(res_u["status"], "needs_attention")
         st_u = orch_u.get_task_status("task_unk_tokens10")
         self.assertIsNone(st_u["tokens_used"])
-        self.assertEqual(st_u["tokens_unknown_count"], 2)
+        self.assertEqual(st_u["tokens_unknown_count"], 1)
+        self.assertEqual(r_unknown.call_count, 0)
 
         # 10b: Token budget exhaustion after planning
         w_heavy = ScriptedWorkerAdapter(tokens_per_call=5000)
@@ -367,7 +375,7 @@ class TestPhase2ControlLayer(unittest.TestCase):
         orch_b.submit_task(make_task_payload("task_tok_exhaust", max_tokens=1000))
         res_b = orch_b.run_task("task_tok_exhaust")
         self.assertEqual(res_b["status"], "failed")
-        self.assertIn("token budget exhausted", res_b["error_info"].lower())
+        self.assertIn("budget", res_b["error_info"].lower())
 
     def test_11_restart_recovery_blocks_unconfirmed_side_effect_replay(self):
         """Scenario 11: Process crash mid-write is recovered from SQLite into 'needs_attention' without blind replay."""

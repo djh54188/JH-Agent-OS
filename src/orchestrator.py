@@ -26,13 +26,14 @@ from src.mock_components import (
     SimulatedInterruptionError,
 )
 from src.model_config import has_credential, load_model_adapter
-from src.router_policy import RiskPolicyEngine, RuleBasedRouter
+from src.router_policy import RiskPolicyEngine, RuleBasedRouter, request_fingerprint
+from src.control_guards import artifact_snapshot, call_limits, input_reserve, validate_acceptance, validate_review
 from src.state_machine import (
     InvalidStateTransitionError,
     is_terminal_state,
     resolve_review_transition,
 )
-from src.storage import TaskStorage
+from src.storage import StaleAttemptError, TaskStorage
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SCHEMAS_DIR = PROJECT_ROOT / "docs" / "schemas"
@@ -73,6 +74,7 @@ class Orchestrator:
         clock: Optional[Callable[[], float]] = None,
         enforce_target_files_scope: bool = False,
         task_deadline_seconds: float = DEFAULT_TASK_DEADLINE_SECONDS,
+        acceptance_evaluator: Optional[Callable] = None,
     ):
         self.workspace_root = str(Path(workspace_root).resolve())
         self.storage = storage or TaskStorage(":memory:")
@@ -95,7 +97,8 @@ class Orchestrator:
                 auto_restart_retries=DEFAULT_AUTO_RESTART_RETRIES,
             )
         )
-        self._clock = clock or time.monotonic
+        self._clock = clock or time.time
+        self.acceptance_evaluator = acceptance_evaluator
         self.enforce_target_files_scope = enforce_target_files_scope
         self.task_deadline_seconds = task_deadline_seconds
 
@@ -103,11 +106,6 @@ class Orchestrator:
         self._tool_req_schema = _load_schema("tool_request.v1.json")
         self._tool_res_schema = _load_schema("tool_result.v1.json")
         self._review_schema = _load_schema("review_result.v1.json")
-
-        # Track approved Level 2 request IDs and task start clocks
-        self._approved_requests: Dict[str, Set[str]] = {}
-        self._pending_approval_requests: Dict[str, Dict[str, Any]] = {}
-        self._task_start_clocks: Dict[str, float] = {}
 
     # ------------------------------------------------------------------
     # Entrypoints: Submit, Status Query, Cancel, Approve, Recover
@@ -121,9 +119,11 @@ class Orchestrator:
             raise SchemaValidationError(f"Invalid Task payload rejected: {exc.message}") from None
 
         task_id = task_payload["task_id"]
-        self._approved_requests.setdefault(task_id, set())
-        self._task_start_clocks[task_id] = self._clock()
-        return self.storage.create_task(task_payload)
+        with self.storage.transaction():
+            task = self.storage.create_task(task_payload)
+            self.storage.set_deadline(task_id, self._clock() + min(
+                task_payload["budget"]["max_execution_time_seconds"], self.task_deadline_seconds))
+        return task
 
     def get_task_status(self, task_id: str) -> Dict[str, Any]:
         """Query current task snapshot, runtime counters, and remaining budget."""
@@ -145,7 +145,7 @@ class Orchestrator:
             "repair_count": runtime.get("repair_count", 0),
             "has_unconfirmed_side_effect": runtime.get("has_unconfirmed_side_effect", False),
             "remaining_budget_seconds": remaining_sec,
-            "pending_approval_request": self._pending_approval_requests.get(task_id),
+            "pending_approval_request": json.loads(self.storage.get_control(task_id)["pending_json"] or "null"),
             "artifact_refs": task.get("artifact_refs", []),
             "tool_execution_evidence": task.get("tool_execution_evidence", []),
             "updated_at": task.get("updated_at"),
@@ -173,17 +173,17 @@ class Orchestrator:
                 "executing",
                 "Task is not currently in 'awaiting_approval' state",
             )
-        self._approved_requests.setdefault(task_id, set()).add(request_id)
-        self._pending_approval_requests.pop(task_id, None)
-        self.storage.record_event(
-            task_id=task_id,
-            event_type="human_approval_granted",
-            from_state="awaiting_approval",
-            to_state="awaiting_approval",
-            actor_role=approver,
-            tokens_used=None,
-            details={"approved_request_id": request_id},
-        )
+        with self.storage.transaction():
+            self.storage.approve_request(task_id, request_id, request_fingerprint)
+            self.storage.record_event(
+                task_id=task_id,
+                event_type="human_approval_granted",
+                from_state="awaiting_approval",
+                to_state="awaiting_approval",
+                actor_role=approver,
+                tokens_used=None,
+                details={"approved_request_id": request_id},
+            )
         return self.run_task(task_id)
 
     def reject_task_request(self, task_id: str, request_id: str, reason: str = "Rejected by human") -> Dict[str, Any]:
@@ -195,7 +195,6 @@ class Orchestrator:
                 "failed",
                 "Task is not currently in 'awaiting_approval' state",
             )
-        self._pending_approval_requests.pop(task_id, None)
         return self.storage.transition_task_state(
             task_id,
             "failed",
@@ -213,17 +212,11 @@ class Orchestrator:
     # ------------------------------------------------------------------
 
     def get_remaining_budget_seconds(self, task_id: str, task: Optional[Dict[str, Any]] = None) -> float:
-        task_obj = task or self.storage.get_task(task_id)
-        budget = task_obj.get("budget") or {}
-        task_max_sec = float(budget.get("max_execution_time_seconds", self.task_deadline_seconds))
-        effective_deadline = min(task_max_sec, float(self.task_deadline_seconds))
-        start_clock = self._task_start_clocks.get(task_id)
-        if start_clock is None:
-            return effective_deadline
-        elapsed = max(0.0, self._clock() - start_clock)
-        return max(0.0, effective_deadline - elapsed)
+        deadline = self.storage.get_control(task_id)["deadline"]
+        # Legacy databases without a recorded deadline require explicit reconciliation.
+        return 0.0 if deadline is None else max(0.0, deadline - self._clock())
 
-    def _check_budget_or_fail(self, task_id: str) -> Optional[Dict[str, Any]]:
+    def _check_budget_or_fail(self, task_id: str, *, before_call: bool = True) -> Optional[Dict[str, Any]]:
         """Check turns, tokens, and time budget. If exhausted, transition task to 'failed'."""
         task = self.storage.get_task(task_id)
         if is_terminal_state(task["status"]):
@@ -237,6 +230,11 @@ class Orchestrator:
         tokens_used = runtime["tokens_used"]
         remaining_sec = self.get_remaining_budget_seconds(task_id, task)
 
+        if runtime["tokens_unknown_count"]:
+            return self.storage.transition_task_state(
+                task_id, "needs_attention", reason="unknown_usage_blocks_further_calls",
+                error_info="Model token usage is unknown; cannot assume zero cost or continue automatically")
+
         if remaining_sec <= 0:
             return self.storage.transition_task_state(
                 task_id,
@@ -245,7 +243,7 @@ class Orchestrator:
                 reason="task_timeout_budget_exhausted",
                 error_info="Task execution time budget exhausted (timeout)",
             )
-        if turns_used >= max_turns:
+        if turns_used > max_turns or (before_call and turns_used == max_turns):
             return self.storage.transition_task_state(
                 task_id,
                 "failed",
@@ -253,7 +251,7 @@ class Orchestrator:
                 reason="max_turns_budget_exhausted",
                 error_info=f"Task turn budget exhausted ({turns_used}/{max_turns})",
             )
-        if tokens_used is not None and tokens_used >= max_tokens:
+        if tokens_used is not None and (tokens_used > max_tokens or (before_call and tokens_used == max_tokens)):
             return self.storage.transition_task_state(
                 task_id,
                 "failed",
@@ -280,16 +278,54 @@ class Orchestrator:
     # ------------------------------------------------------------------
 
     def run_task(self, task_id: str) -> Dict[str, Any]:
+        owner_id = uuid.uuid4().hex
+        if not self.storage.claim_task(task_id, owner_id):
+            return self.storage.get_task(task_id)
+        try:
+            return self._run_task(task_id)
+        except StaleAttemptError as exc:
+            task = self.storage.get_task(task_id)
+            self.storage.record_event(task_id=task_id, event_type="stale_attempt_rejected",
+                                      from_state=task["status"], to_state=task["status"],
+                                      actor_role="orchestrator", details={"reason": str(exc)})
+            return task
+        finally:
+            self.storage.release_task(task_id, owner_id)
+
+    def _invoke_model(self, task_id, role, adapter, messages, schema, **kwargs):
+        task = self.storage.get_task(task_id)
+        reserved = input_reserve(messages, schema)
+        limits = call_limits(adapter, task["budget"]["max_tokens"] - (task["_runtime"]["tokens_used"] or 0),
+                             self.get_remaining_budget_seconds(task_id), reserved)
+        attempt_id = self.storage.begin_attempt(task_id, role, {
+            "input_reservation": reserved, "input_reservation_is_estimate": True,
+            "deadline": self.storage.get_control(task_id)["deadline"], **limits, **kwargs})
+        try:
+            response = adapter.invoke_structured(messages, schema, task_id=task_id, **limits, **kwargs)
+        except AdapterError:
+            self.storage.complete_attempt(task_id, attempt_id, {"error": "adapter_failed"}, None)
+            raise
+        usage = response.total_tokens
+        if usage is not None and (isinstance(usage, bool) or not isinstance(usage, int) or usage < 0):
+            self.storage.complete_attempt(task_id, attempt_id, {"error": "invalid_usage"}, None)
+            raise SchemaValidationError("Provider returned invalid token usage; budget cannot be trusted")
+        self.storage.complete_attempt(task_id, attempt_id, response.parsed_json, response.total_tokens)
+        return response, attempt_id
+
+    def _run_task(self, task_id: str) -> Dict[str, Any]:
         """Drive task through its lifecycle until terminal state or approval/attention gate."""
-        self._task_start_clocks.setdefault(task_id, self._clock())
         task = self.storage.get_task(task_id)
 
         if is_terminal_state(task["status"]) or task["status"] == "needs_attention":
             return task
-
         budget_failed = self._check_budget_or_fail(task_id)
         if budget_failed is not None:
             return budget_failed
+        if self.storage.has_uncertain_attempt(task_id):
+            return self.storage.transition_task_state(task_id, "needs_attention", reason="uncertain_attempt_no_auto_replay",
+                                                       error_info="Previous model attempt has no confirmed result; reconcile before retry")
+        if task["status"] == "awaiting_approval" and self.storage.get_control(task_id)["pending_json"]:
+            return task
 
         # 1. Classification & Routing
         routing = self.router.route_task(task)
@@ -340,19 +376,10 @@ class Orchestrator:
                     {"role": "system", "content": "Generate a valid execution Plan for the task."},
                     {"role": "user", "content": json.dumps({"title": task["title"], "description": task["description"]})},
                 ]
-                plan_resp = worker.invoke_structured(
-                    plan_messages,
-                    self._plan_schema,
-                    task_id=task_id,
-                    timeout=remaining_sec,
-                )
-                self.storage.record_usage(
-                    task_id,
-                    actor_role="worker",
-                    tokens_used=plan_resp.total_tokens,
-                    increment_turn=True,
-                    details={"phase": "planning", "model_id": plan_resp.model_id, "is_mock": plan_resp.is_mock},
-                )
+                plan_resp, _ = self._invoke_model(task_id, "worker", worker, plan_messages, self._plan_schema)
+                Draft7Validator(self._plan_schema, format_checker=FormatChecker()).validate(plan_resp.parsed_json)
+                if plan_resp.parsed_json["task_id"] != task_id:
+                    raise SchemaValidationError("Plan task_id correlation mismatch")
             except CredentialMissingError as exc:
                 return self.storage.transition_task_state(
                     task_id,
@@ -361,7 +388,7 @@ class Orchestrator:
                     reason="worker_credential_missing",
                     error_info=str(exc),
                 )
-            except (AdapterError, SchemaValidationError) as exc:
+            except (AdapterError, SchemaValidationError, ValidationError) as exc:
                 err_str = str(exc)
                 reason_code = "worker_timeout" if "timed out" in err_str.lower() else "worker_planning_failed"
                 return self.storage.transition_task_state(
@@ -410,9 +437,19 @@ class Orchestrator:
             execution_evidence: List[str] = []
 
             for tool_req in proposed_requests:
+                current = self.storage.get_task(task_id)
+                if current["status"] != "executing":
+                    self.storage.record_event(task_id=task_id, event_type="late_tool_request_rejected",
+                                              from_state=current["status"], to_state=current["status"], actor_role="orchestrator")
+                    return current
+                budget_failed = self._check_budget_or_fail(task_id, before_call=False)
+                if budget_failed is not None:
+                    return budget_failed
                 # Validate ToolRequest schema
                 try:
                     Draft7Validator(self._tool_req_schema, format_checker=FormatChecker()).validate(tool_req)
+                    if tool_req["task_id"] != task_id:
+                        raise ValidationError("ToolRequest task_id correlation mismatch")
                 except ValidationError as exc:
                     return self.storage.transition_task_state(
                         task_id,
@@ -425,7 +462,7 @@ class Orchestrator:
                 # Per-call dynamic parameter & permission check
                 decision = self.policy_engine.evaluate_tool_request(
                     tool_req,
-                    approved_request_ids=self._approved_requests.get(task_id, set()),
+                    approved_fingerprints=json.loads(self.storage.get_control(task_id)["approvals_json"]),
                     authorized_files=authorized_files,
                 )
 
@@ -469,36 +506,47 @@ class Orchestrator:
                     )
 
                 if decision.action == "hold_for_approval":
-                    self._pending_approval_requests[task_id] = {
-                        "request_id": tool_req["request_id"],
-                        "tool_name": tool_req["tool_name"],
-                        "parameters": tool_req.get("parameters"),
-                        "violated_rule_id": decision.violated_rule_id,
-                        "reason": decision.reason,
-                    }
-                    return self.storage.transition_task_state(
-                        task_id,
-                        "awaiting_approval",
-                        actor_role="orchestrator",
-                        reason=decision.reason,
-                        details={
-                            "pending_request_id": tool_req["request_id"],
-                            "violated_rule_id": decision.violated_rule_id,
-                        },
-                    )
+                    with self.storage.transaction():
+                        self.storage.hold_request(task_id, tool_req)
+                        return self.storage.transition_task_state(
+                            task_id,
+                            "awaiting_approval",
+                            actor_role="orchestrator",
+                            reason=decision.reason,
+                            details={
+                                "pending_request_id": tool_req["request_id"],
+                                "violated_rule_id": decision.violated_rule_id,
+                            },
+                        )
 
                 # Execute allowed Level 0 / Level 1 / Approved Level 2 tool
                 has_side_effect = decision.level >= 1
-                self.storage.record_tool_start(tool_req, has_side_effect=has_side_effect)
                 try:
-                    tool_res = self.tool_executor.execute(tool_req)
+                    started = self.storage.record_tool_start(tool_req, has_side_effect=has_side_effect)
+                except ValueError as exc:
+                    return self.storage.transition_task_state(task_id, "needs_attention", error_info=str(exc))
+                try:
+                    if started:
+                        tool_res = self.tool_executor.execute(tool_req)
+                    else:
+                        if self.storage.get_task(task_id)["status"] != "executing":
+                            return self.storage.get_task(task_id)
+                        tool_res = next(item["result"] for item in self.storage.list_tool_executions(task_id)
+                                        if item["request_id"] == tool_req["request_id"])
                 except SimulatedInterruptionError:
                     # Do NOT mark tool completed; re-raise to simulate unexpected process termination
                     raise
+                except Exception as exc:
+                    return self.storage.transition_task_state(
+                        task_id, "needs_attention", reason="tool_result_uncertain",
+                        error_info=f"Tool invocation failed before confirmation: {type(exc).__name__}")
 
-                Draft7Validator(self._tool_res_schema, format_checker=FormatChecker()).validate(tool_res)
-                is_clean = tool_res["status"] == "success"
-                self.storage.record_tool_completion(tool_res, confirmed_clean=is_clean)
+                try:
+                    Draft7Validator(self._tool_res_schema, format_checker=FormatChecker()).validate(tool_res)
+                    is_clean = tool_res["status"] == "success"
+                    self.storage.record_tool_completion(tool_res, confirmed_clean=is_clean)
+                except (ValidationError, ValueError) as exc:
+                    return self.storage.transition_task_state(task_id, "needs_attention", error_info=str(exc))
 
                 if tool_res["status"] != "success":
                     return self.storage.transition_task_state(
@@ -513,6 +561,9 @@ class Orchestrator:
                 if isinstance(path_param, str) and path_param:
                     produced_artifacts.append(path_param)
                 execution_evidence.append(f"{tool_req['request_id']}:{tool_req['tool_name']}:success")
+
+            if self.storage.get_task(task_id)["status"] != "executing":
+                return self.storage.get_task(task_id)
 
             # 4. Transition to Independent Review (Worker completion != Task success)
             task = self.storage.transition_task_state(
@@ -530,6 +581,8 @@ class Orchestrator:
 
             try:
                 reviewer = self._resolve_reviewer(routing)
+                if reviewer is worker or reviewer.model_id == worker.model_id:
+                    raise SchemaValidationError("Reviewer must be independent from Worker")
                 remaining_sec = self.get_remaining_budget_seconds(task_id, task)
                 if remaining_sec <= 0:
                     return self.storage.transition_task_state(
@@ -541,6 +594,7 @@ class Orchestrator:
                     )
 
                 target_artifact = (task.get("artifact_refs") or ["workspace"])[0]
+                snapshots = artifact_snapshot(self.tool_executor, task.get("artifact_refs", []))
                 review_metadata = {
                     "schema_version": "1.0.0",
                     "review_id": f"rev_{uuid.uuid4().hex[:12]}",
@@ -557,6 +611,7 @@ class Orchestrator:
                     "description": task["description"],
                     "acceptance_criteria": task["acceptance_criteria"],
                     "artifact_refs": task.get("artifact_refs", []),
+                    "artifacts": snapshots,
                     "tool_execution_evidence": task.get("tool_execution_evidence", []),
                     "note": "Independent review context; worker summary is excluded from primary evidence.",
                 }
@@ -575,24 +630,27 @@ class Orchestrator:
                     },
                     {"role": "user", "content": json.dumps(independent_review_context, ensure_ascii=False)},
                 ]
-                review_resp = reviewer.invoke_structured(
-                    review_messages,
-                    self._review_schema,
-                    task_id=task_id,
+                review_resp, review_attempt = self._invoke_model(
+                    task_id, "reviewer", reviewer, review_messages, self._review_schema,
                     target_artifact_path=target_artifact,
-                    timeout=remaining_sec,
-                    max_output_tokens=8192,
-                )
-                self.storage.record_usage(
-                    task_id,
-                    actor_role="reviewer",
-                    tokens_used=review_resp.total_tokens,
-                    increment_turn=True,
-                    details={"phase": "reviewing", "model_id": review_resp.model_id, "is_mock": review_resp.is_mock},
+                    review_metadata=review_metadata,
+                    artifact_hashes={p: a["sha256"] for p, a in snapshots.items()},
                 )
                 review_json = review_resp.parsed_json
                 Draft7Validator(self._review_schema, format_checker=FormatChecker()).validate(review_json)
-                self.storage.record_review(review_json)
+                validate_review(review_json, review_metadata, snapshots,
+                                artifact_snapshot(self.tool_executor, task.get("artifact_refs", [])))
+                budget_failed = self._check_budget_or_fail(task_id, before_call=False)
+                if budget_failed is not None:
+                    return budget_failed
+                acceptance = []
+                if review_json["verdict"] == "pass":
+                    if self.acceptance_evaluator is not None:
+                        acceptance = self.acceptance_evaluator(task, self.storage.list_tool_executions(task_id))
+                    validate_acceptance(task, acceptance, task["tool_execution_evidence"])
+                    validate_review(review_json, review_metadata, snapshots,
+                                    artifact_snapshot(self.tool_executor, task.get("artifact_refs", [])))
+                self.storage.bind_review(review_json, review_attempt, snapshots, acceptance)
             except (CredentialMissingError, AdapterError, SchemaValidationError, ValidationError) as exc:
                 # Iron Rule: Reviewer unavailability, timeout, or invalid JSON MUST NEVER auto-pass!
                 return self.storage.transition_task_state(
@@ -612,13 +670,21 @@ class Orchestrator:
             )
 
             if next_state == "succeeded":
-                return self.storage.transition_task_state(
-                    task_id,
-                    "succeeded",
-                    actor_role="reviewer",
-                    reason=transition_reason,
-                    review_verdict="pass",
-                )
+                try:
+                    return self.storage.transition_task_state(
+                        task_id,
+                        "succeeded",
+                        actor_role="reviewer",
+                        reason=transition_reason,
+                        review_verdict="pass",
+                    )
+                except InvalidStateTransitionError as exc:
+                    current = self.storage.get_task(task_id)
+                    if is_terminal_state(current["status"]):
+                        return current
+                    return self.storage.transition_task_state(
+                        task_id, "needs_attention", reason="success_evidence_gate_rejected",
+                        error_info=f"Success gate blocked: {exc.reason}")
 
             if next_state == "repairing":
                 task = self.storage.transition_task_state(
