@@ -63,6 +63,20 @@ class ApplyBlockedError(Exception):
     """A post-review staged-write apply was refused or left uncertain."""
 
 
+class _DispatchSnapshotView:
+    """Snapshot view that dispatches mem:// artifacts and real tool-produced
+    files, so control-owned acceptance evaluators can read either kind."""
+
+    def __init__(self, snapshot_fn):
+        self._snapshot_fn = snapshot_fn
+
+    def snapshot_artifacts(self, paths):
+        return self._snapshot_fn(paths)
+
+    def get_latest(self, task_id):
+        return None  # file tasks have no mem lineage; evaluators use snapshot_artifacts
+
+
 class Orchestrator:
     """
     Central control layer for JH-Agent OS.
@@ -983,8 +997,12 @@ class Orchestrator:
                 acceptance = []
                 if review_json["verdict"] == "pass":
                     if self.acceptance_evaluator is not None:
+                        refs = task.get("artifact_refs", [])
+                        evidence_view = (self.artifact_store
+                                         if refs and all(is_mem_artifact_path(r) for r in refs)
+                                         else _DispatchSnapshotView(self._snapshot_artifacts))
                         acceptance = self.acceptance_evaluator(
-                            task, self.storage.list_tool_executions(task_id), self.artifact_store)
+                            task, self.storage.list_tool_executions(task_id), evidence_view)
                     validate_acceptance(task, acceptance, task["tool_execution_evidence"])
                     validate_review(review_json, review_metadata, snapshots,
                                     self._snapshot_artifacts(task.get("artifact_refs", [])))

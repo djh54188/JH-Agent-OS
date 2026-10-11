@@ -62,27 +62,30 @@ def main():
         return 1
 
     # Isolated in-project test workspace (never project sources, never user files).
-    ws = ROOT / "data" / "test-workspaces" / "phase4-live-" + utc_now().replace(":", "")
+    ws = ROOT / "data" / "test-workspaces" / ("phase4-live-" + utc_now().replace(":", ""))
     (ws / "out").mkdir(parents=True, exist_ok=True)
     target = "out/notice.json"
     task_id = "task_p4_file_loop01"
-    # Control-owned expectation for the acceptance evaluator.
-    expected_content = json.dumps({
+    # Control-owned expectation for the acceptance evaluator: the exact object
+    # the task instructs the worker to write (values verbatim from input_data).
+    expected_object = {
         "notice": "JH-Agent OS phase 4 file tool loop",
         "generated_by": "gemini-3.8-flash-high via local proxy",
         "items": [1, 2, 3],
-    }, ensure_ascii=False, indent=2)
+    }
+    expected_content = json.dumps(expected_object, ensure_ascii=False, sort_keys=True)
 
     task = {
         "schema_version": "1.0.0",
         "task_id": task_id,
         "title": "Stage and apply a workspace notice file",
-        "description": ("Propose a stage_write tool request whose content is a JSON object with keys "
-                        "notice, generated_by, items (exactly as specified in input_data), then the "
-                        "control layer stages, reviews and applies it to the authorized target."),
+        "description": ("Propose a stage_write tool request whose content is EXACTLY the JSON "
+                        "object given in input_data.notice_object (same keys, same values, same "
+                        "array order); the control layer stages, reviews and applies it to the "
+                        "authorized target."),
         "acceptance_criteria": [
             "Worker 通过 stage_write 提交目标文件的写入请求且执行成功",
-            "暂存内容与控制层独立计算的期望内容逐字节一致",
+            "暂存内容 JSON 解析后与期望结构一致（notice/generated_by/items 键值完全相同）",
             "目标路径位于工作区内且在授权文件清单中",
         ],
         "priority": "high",
@@ -100,7 +103,8 @@ def main():
         "error_info": None,
         "assigned_worker": "gemini_worker",
         "assigned_reviewer": "muse_reviewer",
-        "metadata": {"execution_mode": "file_tools", "input_data": {"expected_keys": ["notice", "generated_by", "items"]}},
+        "metadata": {"execution_mode": "file_tools",
+                     "input_data": {"notice_object": expected_object}},
         "created_at": utc_now(),
         "updated_at": utc_now(),
     }
@@ -123,7 +127,16 @@ def main():
     attempts = orchestrator.storage.list_model_attempts(task_id)
     gate_error = None
     try:
-        verify_closed_loop_success(result, orchestrator.storage.get_latest_artifact(task_id), bindings, status)
+        # File tasks keep their artifact lineage in tool_executions (the staged
+        # content hash recorded by the control layer), not in the mem lineage
+        # table; construct the current artifact state from that record.
+        stage_execs = [t for t in orchestrator.storage.list_tool_executions(task_id)
+                       if t["tool_name"] == "stage_write" and t["status"] == "success"]
+        current_artifact = None
+        if stage_execs:
+            latest_stage = stage_execs[-1]["result"]["structured_data"]
+            current_artifact = {"sha256": latest_stage["content_sha256"], "version": len(stage_execs)}
+        verify_closed_loop_success(result, current_artifact, bindings, status)
     except Exception as exc:
         gate_error = str(exc)
     orchestrator.storage.close()

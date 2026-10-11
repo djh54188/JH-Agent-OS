@@ -86,10 +86,11 @@ def file_write_acceptance_evaluator(expected_content: str, expected_target: str)
     three, in order):
       1. A successful stage_write for the expected target exists (evidence ref
          cites the recorded tool execution in tool_execution_evidence).
-      2. The executor-recorded staged content SHA-256 equals the SHA-256 the
-         control layer computes independently from its own expected content.
-         (The review binding additionally snapshots the same staged file, and
-         validate_review proves the content unchanged through review.)
+      2. The staged content decodes to exactly the JSON structure the control
+         layer computes independently from its own expected content (semantic
+         equality; byte formatting may vary between models). The review binding
+         additionally snapshots the staged file, and validate_review proves the
+         content unchanged through review.
       3. The target path is relative (inside the workspace by contract) and
          equals an authorized target_files entry.
     Any other criterion count/order fail-closes.
@@ -109,8 +110,31 @@ def file_write_acceptance_evaluator(expected_content: str, expected_target: str)
                     .replace("\\", "/").endswith(target_norm)]
         stage_evidence = [f"{t['request_id']}:{t['tool_name']}:success" for t in matching]
 
-        content_ok = bool(matching) and \
-            matching[0]["result"]["structured_data"].get("content_sha256") == expected_sha
+        # Semantic equality: the staged content must decode to exactly the
+        # expected JSON structure (byte formatting may vary between models).
+        content_ok = False
+        if matching:
+            staged_path_rel = matching[0]["result"]["structured_data"].get("staged_path")
+            if artifact_store is not None and staged_path_rel:
+                try:
+                    snap_value = artifact_store.snapshot_artifacts([staged_path_rel]).get(staged_path_rel)
+                except (KeyError, ValueError):
+                    snap_value = None
+                # Control-guards snapshots wrap {content, sha256}; tool executors
+                # return plain strings. Accept both shapes.
+                if isinstance(snap_value, dict):
+                    staged_text = snap_value.get("content")
+                else:
+                    staged_text = snap_value
+                if staged_text is not None:
+                    try:
+                        produced_norm = json.dumps(json.loads(staged_text),
+                                                   ensure_ascii=False, sort_keys=True)
+                        expected_norm = json.dumps(json.loads(expected_content),
+                                                   ensure_ascii=False, sort_keys=True)
+                        content_ok = produced_norm == expected_norm
+                    except ValueError:
+                        content_ok = False
 
         target_files = (task.get("context") or {}).get("target_files") or []
         authorized = any(
@@ -122,7 +146,7 @@ def file_write_acceptance_evaluator(expected_content: str, expected_target: str)
             {"criterion": criteria[0], "passed": bool(stage_evidence), "evidence": stage_evidence},
             {"criterion": criteria[1], "passed": content_ok,
              "evidence": stage_evidence if content_ok else [],
-             "note": f"expected_sha256={expected_sha}"},
+             "note": "semantic JSON equality against the control-owned expected structure"},
             {"criterion": criteria[2], "passed": authorized and within_scope,
              "evidence": [f"target_path:{expected_target}"] if (authorized and within_scope) else []},
         ]
