@@ -133,3 +133,35 @@ Anthropic Messages 协议（POST /v1/messages）、模型 `gemini-3.8-flash-high
 ### 7.4 结论更新
 阶段 3 的判定性证据（真实 Gemini 产物 + 真实 Muse 审核 + 控制层验收 + 持久化）
 已取得。**验收结论不自我宣称**：提交独立审查，由架构师作出阶段结项裁决。
+
+---
+
+## 8. 补遗（2026-10-11 深夜）：结项整改三项完成（裁决基线 a279b8f）
+
+按架构师整改指令（阶段 3 结项暂缓），以 `a279b8f` 为基线完成以下整改与补证：
+
+### 8.1 整改一：取证成功判定修复（提交 `f54ac16`）
+- 新增 `src/control_guards.py::verify_closed_loop_success`：仅当 **succeeded + 当前 pass 审核 + 审核覆盖当前产物哈希 + 验收证据完整 + 无未知用量/未确认副作用** 才判定正常闭环通过；`failed`/`needs_attention`/`revise`/缺失绑定一律拒绝。
+- `scripts/verify_phase3.py` 主闭环与补充闭环均接入门禁；汇总结论新增 `overall_required_checks`（离线测试 + Muse + 主闭环 + 修复链），任一未过 **退出码非零**。
+- 离线反例测试 9 项（`TestClosedLoopSuccessGate`，纯内存不访问网络）；变异守卫扩展至 **8/8 全检出**（`verify_phase3_guards.py`）。
+- **实测故障场景被正确拒绝**：代理限流（HTTP 429）期间两次运行，脚本均如实报 `passed: false` 并返回退出码 1（`reports/phase3-repair-fault-429.json`，独立保留）。
+
+### 8.2 整改二：Anthropic 适配器用量校验（提交 `f54ac16`）
+- `input_tokens`/`output_tokens` 必须各自为**非布尔、非负整数**才允许求和；布尔 `true+true=2`、负数 `-10+20=10` 不再产生可信总数。
+- 缺失/部分缺失 → 全部记 `None`（未知），**不通过备用 `total_tokens` 字段掩盖**；存在但非法 → `AdapterError`（按既有非法用量规则受控停止）。
+- 用量矩阵测试 12 例（布尔/负数/字符串/浮点/缺失/部分缺失/合法零值/仅 total_tokens）+ 变异守卫扩展至 **10/10 全检出**（`verify_anthropic_guards.py`）。
+
+### 8.3 整改三：真实修复闭环取证（`reports/phase3-repair-verification.json`，验收证据）
+`scripts/verify_phase3_repair.py`，任务 `task_p3_repair_loop1`，全链真实调用：
+1. 真实 Gemini（`gemini-3.8-flash-high`）生成排序产物（SHA-256 `96441364…`，与主闭环产物一致）；
+2. **测试夹具注入缺陷**（交换前两条记录破坏升序；`injected_by` 明确标注非模型生成；原始/注入内容与哈希全量保留）→ v1 SHA `c9bb1471…`；
+3. 真实 Muse 审核出具 **revise**，p1_critical 证据直接引用注入后的错误产物内容；
+4. 真实 Gemini 按修复上下文（Reviewer 问题+当前产物+验收失败证据）重新生成 → v2 SHA `e9870454…`（内容已正确排序，`gemini_repair_changed_the_artifact: true`）；
+5. 控制层重新验收通过 → 真实 Muse 复审 **pass（100 分）** → 任务终态 **succeeded**，repair_count=1（原预算与 2 轮上限内，未另建任务）。
+
+关联完整性：2 个产物版本、2 条审核绑定、5 次 attempt（worker 1315/778/1116、reviewer 4164/6023 tokens，全部已知）逐条关联；**v1/v2 完整内容**、审核 issues 原文、逐 attempt 用量均在报告中，可离线复查（SQLite：`data/phase3-repair-loop.sqlite3`，CLI 查询入口 `python -m src.cli --db data/phase3-repair-loop.sqlite3 artifact task_p3_repair_loop1`）。
+
+### 8.4 最终验证状态（提交 `f54ac16` + 证据提交后复验）
+- 离线：**110/110 测试**通过（新增门禁反例 9 项 + 用量矩阵 12 例）；守卫 8/8、10/10、14、5、8 全检出。
+- 真实：主闭环 succeeded（严格门禁）、修复链 succeeded（revise→修复→pass→succeeded）、Muse 复认通过；全量 `verify_phase3.py` **退出码 0**，`overall_required_checks` 四项全 true。
+- 期间代理限流（HTTP 429）引发的两次失败运行被脚本如实拒绝并单独留证，未混入成功证据。

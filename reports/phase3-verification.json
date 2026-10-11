@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-10-11T12:08:08Z",
+  "timestamp": "2026-10-11T13:19:23Z",
   "phase": 3,
   "baseline_commit": "28b1f4611a2c4f1eda57e92cf87a95ca626dcba2",
   "offline_unit_tests": {
     "is_mock": true,
-    "total_tests": 101,
+    "total_tests": 110,
     "failures": 0,
     "errors": 0,
     "skipped": 1,
@@ -20,8 +20,8 @@
         "verdict": "pass",
         "issues": 0,
         "schema_valid": true,
-        "latency_ms": 4574,
-        "tokens_used": 2564,
+        "latency_ms": 6430,
+        "tokens_used": 2645,
         "review_id": "rev_p3_muse_ok01",
         "passed": true
       },
@@ -38,8 +38,8 @@
         "issues": 1,
         "evidence_cites_defect": true,
         "schema_valid": true,
-        "latency_ms": 10116,
-        "tokens_used": 3269,
+        "latency_ms": 10580,
+        "tokens_used": 3090,
         "review_id": "rev_p3_muse_bad02",
         "passed": true
       }
@@ -57,7 +57,7 @@
       "error": null,
       "probes": [
         {
-          "probed_at": "2026-10-11T12:08:08Z",
+          "probed_at": "2026-10-11T13:19:23Z",
           "http_status": 200
         }
       ]
@@ -102,7 +102,7 @@
         "review_verdict": "pass",
         "repair_count": 0,
         "turns_used": 3,
-        "tokens_used": 5768,
+        "tokens_used": 5400,
         "tokens_unknown_count": 0,
         "artifact_versions": [
           {
@@ -112,11 +112,12 @@
           }
         ],
         "review_ids": [
-          "rev_acfdfa7e66b1"
+          "rev_37f95433522d"
         ],
         "review_verdicts": [
           "pass"
         ],
+        "closed_loop_gate": "passed",
         "passed": true
       }
     ],
@@ -145,21 +146,22 @@
         "review_verdict": "pass",
         "repair_count": 0,
         "turns_used": 3,
-        "tokens_used": 6325,
+        "tokens_used": 6316,
         "tokens_unknown_count": 0,
         "artifact_versions": [
           {
             "version": 1,
-            "sha256": "dbc8bf6551205869aacd0b8fb8c044f9b223bdc094690f32772d133096f7be57",
+            "sha256": "96441364e9d6db604166fb9506e085aebd4fc5d5832736b5c277c7b0d0feb8b0",
             "artifact_type": "data_conversion"
           }
         ],
         "review_ids": [
-          "rev_c203939306e1"
+          "rev_f67399f61d3b"
         ],
         "review_verdicts": [
           "pass"
         ],
+        "closed_loop_gate": "passed",
         "passed": true
       }
     ],
@@ -177,5 +179,19 @@
     "passed": true,
     "status": "completed"
   },
-  "phase3_acceptance_verdict": "REAL_GEMINI_MUSE_CLOSED_LOOP_EVIDENCE_RECORDED: the primary loop ran with the real configured Gemini worker and real Muse reviewer (counts as acceptance evidence), with the offline suite and all mutation guards green. Submit for independent review and the phase-closure ruling; acceptance itself is not self-declared."
+  "phase3_acceptance_verdict": "REAL_GEMINI_MUSE_CLOSED_LOOP_EVIDENCE_RECORDED: the primary loop ran with the real configured Gemini worker and real Muse reviewer (counts as acceptance evidence), with the offline suite and all mutation guards green. Submit for independent review and the phase-closure ruling; acceptance itself is not self-declared.",
+  "gemini_muse_repair_loop": {
+    "source": "D:\\JH-Agent OS\\reports\\phase3-repair-verification.json",
+    "passed": true,
+    "counts_as_acceptance_evidence": true,
+    "final_status": "succeeded",
+    "repair_count": 1
+  },
+  "overall_required_checks": {
+    "offline_unit_tests": true,
+    "live_muse_reviewer": true,
+    "gemini_muse_primary_loop": true,
+    "gemini_muse_repair_loop": true
+  },
+  "overall_phase3_evidence_complete": true
 }
