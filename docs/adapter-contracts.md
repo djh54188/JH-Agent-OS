@@ -66,13 +66,13 @@ class ModelAdapter(ABC):
 
 | 维度 | Gemini (首选 Worker) | Muse (首选 Reviewer) | 备选/本地可用项 (DeepSeek) | 内核引擎 (OpenAI Codex) |
 | :--- | :--- | :--- | :--- | :--- |
-| **供应商** | Google (Google AI / Vertex AI) | 用户提供的本地 Muse 代理（上游供应商未核实） | 深度求索 (DeepSeek) | OpenAI |
-| **基准模型 ID** | `gemini-3.8-flash`（2026-10-11 经官方文档核实，替代已退役的 `gemini-1.5-pro`） | `muse-spark-1.3-contributor-free` | `deepseek-flash` / `v4-pro` | `gpt-6.1-sol` |
-| **API 端点** | `https://generativelanguage.googleapis.com/v1beta` | `http://127.0.0.1:8787/v1`（Responses） | `https://api.deepseek.com/v1` | 本地 CLI / `stdio://` |
-| **认证方式** | HTTP Header `x-goog-api-key` 或 Bearer Token | `Authorization: Bearer <KEY>` | HTTP Header `Authorization: Bearer <KEY>` | OAuth Bearer / API Key |
-| **凭据环境变量** | `GEMINI_API_KEY` 或 `GOOGLE_API_KEY` | `MUSE_API_KEY` | `DEEPSEEK_API_KEY` | `~/.codex/auth.json` |
-| **核心必要能力** | 结构化输出 (JSON Schema)、大上下文、工具调用 | 严格结构化输出 (`ReviewResult`)、Diff 审查 | 结构化输出 (JSON Mode)、代码理解 | 代码编辑沙箱、执行环境反射 |
-| **本地环境现状** | **未配置凭据**（阻塞真实调用） | **已配置；两项最小真实审核通过**（见 `reports/muse-verification.json`） | **已具备有效 API 凭据并连通验证** | **已安装 CLI 0.160.1 并实测连通** |
+| **供应商** | Google 模型，经用户本地代理接入（ADR-0002，2026-10-11 用户裁决） | 用户提供的本地 Muse 代理（上游供应商未核实） | 深度求索 (DeepSeek) | OpenAI |
+| **基准模型 ID** | `gemini-3.8-flash-high`（本地代理分层变体；官方直连配置已退役） | `muse-spark-1.3-contributor-free` | `deepseek-flash` / `v4-pro` | `gpt-6.1-sol` |
+| **API 端点** | `http://localhost:8787/v1`（Anthropic Messages，POST /v1/messages） | `http://127.0.0.1:8787/v1`（Responses） | `https://api.deepseek.com/v1` | 本地 CLI / `stdio://` |
+| **认证方式** | `x-api-key` 头 + `anthropic-version: 2023-06-01` | `Authorization: Bearer <KEY>` | HTTP Header `Authorization: Bearer <KEY>` | OAuth Bearer / API Key |
+| **凭据环境变量** | `GEMINI_API_KEY`（本机代理令牌，已持久化） | `MUSE_API_KEY` | `DEEPSEEK_API_KEY` | `~/.codex/auth.json` |
+| **核心必要能力** | 结构化输出（提示词 Schema + 本地 Draft-07 权威校验）、工具调用（未启用） | 严格结构化输出 (`ReviewResult`)、Diff 审查 | 结构化输出 (JSON Mode)、代码理解 | 代码编辑沙箱、执行环境反射 |
+| **本地环境现状** | **已接通**（2026-10-11，真实闭环取证见 `reports/phase3-verification.json`） | **已配置；最小真实审核与闭环取证通过** | **已具备有效 API 凭据并连通验证** | **已安装 CLI 0.160.1 并实测连通** |
 
 ---
 

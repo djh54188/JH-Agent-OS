@@ -9,20 +9,21 @@
   "adapters": {
     "gemini_worker": {
       "role": "worker",
-      "provider": "google",
-      "model_id": "gemini-3.8-flash",
-      "endpoint_url": "https://generativelanguage.googleapis.com/v1beta",
+      "provider": "google_via_local_proxy",
+      "api_protocol": "anthropic_messages",
+      "model_id": "gemini-3.8-flash-high",
+      "endpoint_url": "http://localhost:8787/v1",
       "api_key_env": "GEMINI_API_KEY",
+      "context_window_tokens": 1000000,
+      "max_output_tokens": 64000,
       "temperature": 0.2,
-      "max_tokens": 8192,
-      "timeout_seconds": 60,
+      "timeout_seconds": 300,
+      "capacity_source": "user_provided_not_load_tested",
       "capabilities": {
-        "structured_outputs": true,
-        "function_calling": true,
-        "vision": true
-      },
-      "model_id_verified_at": "2026-10-11",
-      "model_id_source": "https://ai.google.dev/gemini-api/docs/models (stable Flash tier; gemini-1.5-pro retired)"
+        "structured_outputs": "prompt_json_local_validation",
+        "function_calling": false,
+        "vision": false
+      }
     },
     "muse_reviewer": {
       "role": "reviewer",

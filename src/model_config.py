@@ -11,6 +11,7 @@ from src.adapters import (
     ModelAdapter,
     OpenAICompatibleAdapter,
 )
+from src.anthropic_adapter import AnthropicMessagesAdapter
 from src.responses_adapter import OpenAIResponsesAdapter
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -72,6 +73,8 @@ def build_adapter_from_config(config: Dict[str, Any]) -> ModelAdapter:
     protocol = config.get("api_protocol", "chat_completions")
     if protocol == "responses":
         return OpenAIResponsesAdapter(config)
+    if protocol == "anthropic_messages":
+        return AnthropicMessagesAdapter(config)
     if protocol != "chat_completions":
         raise AdapterError("Unsupported model API protocol")
     if config["provider"] == "google":

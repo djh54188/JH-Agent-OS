@@ -19,6 +19,7 @@ from functools import partial
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 import uuid
 
 from src.adapters import SchemaValidationError
@@ -194,10 +195,14 @@ class TestPhase2ControlLayer(unittest.TestCase):
             self.assertNotEqual(res4["status"], "succeeded")
 
     def test_04_missing_credentials_and_mock_worker_fallback(self):
-        """Scenario 4: Missing GEMINI_API_KEY routes to Mock Worker; explicit CredentialMissingError fails closed."""
-        old_gemini = os.environ.pop("GEMINI_API_KEY", None)
-        old_google = os.environ.pop("GOOGLE_API_KEY", None)
-        try:
+        """Scenario 4: Missing GEMINI_API_KEY routes to Mock Worker; explicit CredentialMissingError fails closed.
+
+        Test isolation (host-state independent): the credential check now reads
+        both the process environment AND the Windows User registry, so absence is
+        simulated by patching the router's credential probe, not by manipulating
+        os.environ. Offline tests must never reach a live provider even on a host
+        where the key is configured."""
+        with patch("src.orchestrator.has_credential", lambda name: False):
             reviewer = ScriptedReviewerAdapter(mode="pass")
             orch = Orchestrator(reviewer_adapter=reviewer)
             orch.submit_task(make_task_payload("task_mock_fallback"))
@@ -212,11 +217,6 @@ class TestPhase2ControlLayer(unittest.TestCase):
             res2 = orch2.run_task("task_cred_error01")
             self.assertEqual(res2["status"], "failed")
             self.assertIn("GEMINI_API_KEY", res2["error_info"])
-        finally:
-            if old_gemini:
-                os.environ["GEMINI_API_KEY"] = old_gemini
-            if old_google:
-                os.environ["GOOGLE_API_KEY"] = old_google
 
     def test_05_illegal_state_transitions_and_invalid_messages(self):
         """Scenario 5: Illegal transitions (e.g., executing->succeeded directly) and invalid schemas are rejected."""
