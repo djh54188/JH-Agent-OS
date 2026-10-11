@@ -4,7 +4,7 @@
   "python_version": "3.14.7",
   "source_sha256": {
     "scripts/verify_phase2_hardening.py": "ba1e3a705770bfc91c683db112df418d17d2405bb408024c5ca2ab2ee7cd1b0e",
-    "src/acceptance.py": "4b6086ae22dd7843ce6f16d81da1178508651ed56b8455d65da4a7aa989ee1af",
+    "src/acceptance.py": "fd680042b6c0790122ccab33a68824595e6a9060da985edc9c679054baa3f668",
     "src/adapters.py": "b2b8539dda836c4c6818f94250dc3ef4b2e6d8cf19a5cd4b85fc7502a4bd1bed",
     "src/artifacts.py": "cc569f7634f4e4c88b6fccb73a6afd23fd967b665fa6aaf11cdcb54daeaa09a1",
     "src/cli.py": "faabb5bdf74fffec023a9be2980a71dcfc7591bf14fc11d0e31fcfa3c001439d",
@@ -22,7 +22,7 @@
     "tests/test_codex_managed.py": "ba1eebde812ee26aa943d7a20c47497c2490310483e0c1be0e56e5ecfb5d1fdc",
     "tests/test_phase2_control_layer.py": "90fabb84e4171eff6e5269b0dcd5b7c1fd1b31122e50c183bacd68f074ac9a4a",
     "tests/test_phase2_hardening.py": "2fcb1bed5a24a4640b31f30e6c5da8441b8cc0a071db6f6db3ec78e80cf217c1",
-    "tests/test_phase3_loop.py": "28e4cdfd1380706911c46465c98ac15a46f1d14e912c2c94695aab381c1a3d74",
+    "tests/test_phase3_loop.py": "9c732942bd0b0f09e113dfa1dc970fad49f4def2bebe455e8e8377a7a1ee90b0",
     "tests/test_responses_adapter.py": "ec8d8acf83d3356a61ac102557b17c216be658ec572bdd1266978f980d4aafd1",
     "tests/test_schemas.py": "e62020a75d6bcd543cab9fa45fe32bd52b197b1b9a4842169d43581aa3c511eb"
   },
@@ -214,7 +214,7 @@
     "not_applicable_phase2": 1
   },
   "unit_tests": {
-    "run": 90,
+    "run": 91,
     "failures": 0,
     "errors": 0,
     "skipped": 1
