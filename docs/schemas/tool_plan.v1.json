@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://jh-agent-os.local/schemas/tool_plan.v1.json",
+  "title": "ToolPlanSchemaV1",
+  "description": "Phase 4 batch 1: structured tool-request plan produced by a real Worker. The control layer validates task correlation and each request, then executes through the controlled tool executor. Compatibility: additive protocol (v1.0.0); existing Plan/Artifact/Review schemas are unchanged. A worker returns either a ToolPlan (file-tools tasks) or an Artifact (generation tasks) depending on the task's declared execution mode.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "plan_id",
+    "task_id",
+    "tool_requests"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": ["1.0.0"]
+    },
+    "plan_id": {
+      "type": "string",
+      "pattern": "^tplan_[a-zA-Z0-9_-]{8,64}$"
+    },
+    "task_id": {
+      "type": "string",
+      "pattern": "^task_[a-zA-Z0-9_-]{8,64}$"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "tool_requests": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "required": [
+          "schema_version",
+          "request_id",
+          "task_id",
+          "step_id",
+          "caller_role",
+          "tool_name",
+          "parameters",
+          "timeout_ms",
+          "risk_level",
+          "requires_human_approval",
+          "created_at"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "schema_version": { "type": "string", "enum": ["1.0.0"] },
+          "request_id": { "type": "string", "pattern": "^treq_[a-zA-Z0-9_-]{8,64}$" },
+          "task_id": { "type": "string", "pattern": "^task_[a-zA-Z0-9_-]{8,64}$" },
+          "step_id": { "type": "string", "pattern": "^step_[a-zA-Z0-9_-]{2,32}$" },
+          "caller_role": { "type": "string", "enum": ["worker", "reviewer", "meta_planner", "orchestrator"] },
+          "tool_name": { "type": "string", "pattern": "^[a-zA-Z0-9_.-]{2,64}$" },
+          "parameters": { "type": "object" },
+          "timeout_ms": { "type": "integer", "minimum": 100, "maximum": 600000 },
+          "risk_level": {
+            "type": "string",
+            "enum": ["read_only", "workspace_write", "system_sensitive", "danger_external"]
+          },
+          "requires_human_approval": { "type": "boolean" },
+          "created_at": { "type": "string", "format": "date-time" }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -20,6 +20,7 @@ from src.adapters import (
 )
 from src.artifacts import ArtifactStore, is_mem_artifact_path, mem_artifact_path
 from src.codex_managed import ManagedCodexAdapter, ManagedCodexConfig
+from src.file_tools import FileToolExecutor, PathBoundaryError
 from src.memory import record_task_outcome_memory
 from src.mock_components import (
     MockToolExecutor,
@@ -56,6 +57,10 @@ def _utc_now_iso() -> str:
 def _load_schema(name: str) -> Dict[str, Any]:
     with (SCHEMAS_DIR / name).open("r", encoding="utf-8") as f:
         return json.load(f)
+
+
+class ApplyBlockedError(Exception):
+    """A post-review staged-write apply was refused or left uncertain."""
 
 
 class Orchestrator:
@@ -110,6 +115,7 @@ class Orchestrator:
         self._tool_res_schema = _load_schema("tool_result.v1.json")
         self._review_schema = _load_schema("review_result.v1.json")
         self._artifact_schema = _load_schema("artifact.v1.json")
+        self._tool_plan_schema = _load_schema("tool_plan.v1.json")
         self.artifact_store = artifact_store or ArtifactStore(self.storage)
 
     # ------------------------------------------------------------------
@@ -339,6 +345,36 @@ class Orchestrator:
             {"role": "user", "content": json.dumps(self._worker_task_context(task), ensure_ascii=False)},
         ]
 
+    def _build_tool_plan_messages(self, task: Dict[str, Any], repair_count: int) -> List[Dict[str, str]]:
+        """Phase 4 batch 1: structured tool-request proposal for file-tools tasks.
+
+        The Worker receives the trusted task context (task_id, goal, acceptance
+        criteria, constraints, authorized target files) and returns a ToolPlan
+        whose tool_requests the control layer validates and executes. The Worker
+        never touches the filesystem itself. Repair turns receive the reviewer
+        issues and the current staged content, mirroring the artifact contract.
+        """
+        context = self._worker_task_context(task)
+        context["attempt_kind"] = "initial" if repair_count == 0 else "repair"
+        context["available_tools"] = ["read_file", "stage_write"]
+        if repair_count > 0:
+            issues = []
+            for binding in self.storage.list_review_bindings(task_id=task["task_id"]):
+                issues.extend(binding["review"].get("issues") or [])
+            context["reviewer_issues"] = issues
+            context["note"] = ("Previous staged write was rejected in review; "
+                               "re-propose the corrected stage_write request.")
+        return [
+            {"role": "system", "content": (
+                "Propose the controlled file tool requests for the trusted task context. "
+                "Return only the raw ToolPlan JSON object matching ToolPlanSchemaV1 without "
+                "markdown fences. Use tool_name 'stage_write' with parameters "
+                "{'path': <authorized relative target>, 'content': <full file content>}. "
+                "The control layer executes tools; you must never claim file access."
+            )},
+            {"role": "user", "content": json.dumps(context, ensure_ascii=False)},
+        ]
+
     def _build_generation_messages(self, task: Dict[str, Any], repair_count: int) -> List[Dict[str, str]]:
         context = self._worker_task_context(task)
         if repair_count > 0:
@@ -380,6 +416,143 @@ class Orchestrator:
         if refs and all(is_mem_artifact_path(ref) for ref in refs):
             return artifact_snapshot(self.artifact_store, refs)
         return artifact_snapshot(self.tool_executor, refs)
+
+    def _apply_staged_writes(self, task_id: str, task: Dict[str, Any],
+                             review_json: Dict[str, Any]) -> Optional[List[str]]:
+        """Phase 4 batch 1: post-review apply of staged writes (controlled action).
+
+        Re-confirms for each staged write: applied content == reviewed content,
+        target version == pre-review state, path ownership and authorization
+        still valid. Refusals and uncertain outcomes raise ApplyBlockedError ->
+        needs_attention (target never overwritten on refusal). Returns the
+        apply evidence refs appended to tool_execution_evidence, or None when
+        there is nothing to apply.
+        """
+        executor = self.tool_executor
+        if not isinstance(executor, FileToolExecutor):
+            return None
+        stage_execs = [t for t in self.storage.list_tool_executions(task_id)
+                       if t["tool_name"] == "stage_write" and t["status"] == "success"]
+        if not stage_execs:
+            return None
+        # Only applies that were part of the REVIEWED state are eligible.
+        reviewed_refs = set(task.get("artifact_refs") or [])
+        authorized_files = None
+        if self.enforce_target_files_scope:
+            authorized_files = set((task.get("context") or {}).get("target_files") or [])
+
+        evidence: List[str] = []
+        for t in stage_execs:
+            sd = t["result"]["structured_data"] or {}
+            if sd.get("staged_path") not in reviewed_refs:
+                raise ApplyBlockedError(
+                    f"staged write '{t['request_id']}' is not part of the reviewed artifact set")
+            apply_req = {
+                "schema_version": "1.0.0",
+                "request_id": f"treq_{uuid.uuid4().hex[:12]}",
+                "task_id": task_id,
+                "step_id": "step_apply",
+                "caller_role": "orchestrator",
+                "tool_name": "apply_staged_write",
+                "parameters": {
+                    "target_path": sd["target_path"], "staged_path": sd["staged_path"],
+                    "content_sha256": sd["content_sha256"],
+                    "target_pre_sha256": sd.get("target_pre_sha256"),
+                },
+                "timeout_ms": 30000,
+                "risk_level": "workspace_write",
+                "requires_human_approval": False,
+                "created_at": _utc_now_iso(),
+            }
+            # Per-call policy re-check on the actual apply parameters.
+            decision = self.policy_engine.evaluate_tool_request(
+                apply_req, approved_fingerprints=json.loads(self.storage.get_control(task_id)["approvals_json"]),
+                authorized_files=authorized_files)
+            if decision.action != "allow":
+                raise ApplyBlockedError(
+                    f"apply refused by policy ({decision.violated_rule_id}): {decision.reason}")
+
+            try:
+                started = self.storage.record_tool_start(apply_req, has_side_effect=True,
+                                                         allowed_states=("executing", "reviewing"))
+            except ValueError as exc:
+                raise ApplyBlockedError(f"apply record conflict: {exc}")
+            if not started:
+                raise ApplyBlockedError("apply request is stale (task left executing/reviewing)")
+            try:
+                outcome = executor.apply_staged(
+                    task_id,
+                    target_path=sd["target_path"], staged_path=sd["staged_path"],
+                    content_sha256=sd["content_sha256"],
+                    target_pre_sha256=sd.get("target_pre_sha256"),
+                    authorized_files=authorized_files)
+            except SimulatedInterruptionError:
+                # Interruption drill / real crash: classify without blind replay.
+                recovery = executor.recover_apply(
+                    task_id,
+                    target_path=sd["target_path"], staged_path=sd["staged_path"],
+                    content_sha256=sd["content_sha256"],
+                    target_pre_sha256=sd.get("target_pre_sha256"))
+                if recovery["state"] == "not_applied":
+                    outcome = executor.apply_staged(
+                        task_id,
+                        target_path=sd["target_path"], staged_path=sd["staged_path"],
+                        content_sha256=sd["content_sha256"],
+                        target_pre_sha256=sd.get("target_pre_sha256"),
+                        authorized_files=authorized_files)
+                    self.storage.record_event(
+                        task_id=task_id, event_type="apply_recovered_not_applied",
+                        from_state="reviewing", to_state="reviewing", actor_role="orchestrator",
+                        details={"target_path": sd["target_path"], "recovered_state": "not_applied"})
+                elif recovery["state"] == "applied":
+                    self.storage.record_tool_completion({
+                        "schema_version": "1.0.0",
+                        "result_id": f"tres_{uuid.uuid4().hex[:12]}",
+                        "request_id": apply_req["request_id"], "task_id": task_id,
+                        "tool_name": "apply_staged_write", "status": "success",
+                        "stdout": None, "stderr": None,
+                        "structured_data": {"recovered_state": "applied",
+                                            "applied_sha256": recovery["target_sha256"]},
+                        "execution_time_ms": 0, "error_message": None,
+                        "created_at": _utc_now_iso(),
+                    }, confirmed_clean=True)
+                    evidence.append(f"{apply_req['request_id']}:apply_staged_write:applied_confirmed")
+                    continue
+                else:
+                    raise ApplyBlockedError(
+                        f"apply outcome uncertain (target sha {recovery['target_sha256']}); "
+                        "needs_attention, no blind replay")
+            except (PathBoundaryError, FileNotFoundError, OSError) as exc:
+                self.storage.record_tool_completion(
+                    self._apply_refused_result(apply_req, str(exc)), confirmed_clean=False)
+                raise ApplyBlockedError(f"apply refused: {exc}")
+
+            apply_res = {
+                "schema_version": "1.0.0",
+                "result_id": f"tres_{uuid.uuid4().hex[:12]}",
+                "request_id": apply_req["request_id"], "task_id": task_id,
+                "tool_name": "apply_staged_write", "status": "success",
+                "stdout": None, "stderr": None,
+                "structured_data": {"target_path": sd["target_path"],
+                                    "applied_sha256": outcome["applied_sha256"],
+                                    "replaced_existing": outcome["replaced_existing"]},
+                "execution_time_ms": 0, "error_message": None,
+                "created_at": _utc_now_iso(),
+            }
+            self.storage.record_tool_completion(apply_res, confirmed_clean=True)
+            evidence.append(f"{apply_req['request_id']}:apply_staged_write:applied")
+        return evidence
+
+    def _apply_refused_result(self, apply_req: Dict[str, Any], error_text: str) -> Dict[str, Any]:
+        return {
+            "schema_version": "1.0.0",
+            "result_id": f"tres_{uuid.uuid4().hex[:12]}",
+            "request_id": apply_req["request_id"], "task_id": apply_req["task_id"],
+            "tool_name": "apply_staged_write", "status": "denied_by_policy",
+            "stdout": None, "stderr": error_text, "structured_data": None,
+            "execution_time_ms": 0, "error_message": error_text,
+            "created_at": _utc_now_iso(),
+        }
 
     def _generate_artifact(self, task_id: str, worker: ModelAdapter, task: Dict[str, Any], repair_count: int) -> Dict[str, Any]:
         """Run one structured generation (or repair) turn and persist the control-hashed artifact."""
@@ -545,7 +718,33 @@ class Orchestrator:
                 return budget_failed
 
             repair_idx = task["_runtime"]["repair_count"]
-            if hasattr(worker, "propose_tool_requests"):
+            execution_mode = (task.get("metadata") or {}).get("execution_mode", "generate")
+            if execution_mode == "file_tools":
+                # Phase 4 batch 1: the real Worker proposes a structured tool plan
+                # (Worker proposes -> control layer validates -> tool executes ->
+                # result returns). Same unified attempt/budget/usage chain.
+                try:
+                    plan_resp, _ = self._invoke_model(
+                        task_id, "worker", worker, self._build_tool_plan_messages(task, repair_idx),
+                        self._tool_plan_schema)
+                    tool_plan = plan_resp.parsed_json
+                    Draft7Validator(self._tool_plan_schema, format_checker=FormatChecker()).validate(tool_plan)
+                    if tool_plan["task_id"] != task_id:
+                        raise SchemaValidationError("ToolPlan task_id correlation mismatch")
+                    proposed_requests = tool_plan["tool_requests"]
+                except CredentialMissingError as exc:
+                    return self.storage.transition_task_state(
+                        task_id, "failed", actor_role="worker",
+                        reason="worker_credential_missing", error_info=str(exc))
+                except (AdapterError, SchemaValidationError, ValidationError) as exc:
+                    err_str = str(exc)
+                    lowered = err_str.lower()
+                    reason_code = ("worker_timeout" if "timed out" in lowered
+                                   else "worker_tool_plan_failed")
+                    return self.storage.transition_task_state(
+                        task_id, "failed", actor_role="worker",
+                        reason=reason_code, error_info=err_str)
+            elif hasattr(worker, "propose_tool_requests"):
                 proposed_requests = worker.propose_tool_requests(task, turn_index=repair_idx)
             else:
                 proposed_requests = []
@@ -680,16 +879,25 @@ class Orchestrator:
                     )
 
                 path_param = (tool_req.get("parameters") or {}).get("path")
+                staged_rel = (tool_res.get("structured_data") or {}).get("staged_path")
                 if isinstance(path_param, str) and path_param:
-                    produced_artifacts.append(path_param)
+                    # Phase 4 file tools: the reviewed artifact is the STAGED file
+                    # (never the final target, which is only written at apply).
+                    produced_artifacts.append(staged_rel or path_param)
                 execution_evidence.append(f"{tool_req['request_id']}:{tool_req['tool_name']}:success")
+                if tool_req["tool_name"] == "stage_write" and isinstance(path_param, str) and path_param:
+                    # The resolved target path is a recorded fact the acceptance
+                    # evaluator cites as evidence for the authorization criterion.
+                    execution_evidence.append(f"target_path:{path_param}")
 
             if self.storage.get_task(task_id)["status"] != "executing":
                 return self.storage.get_task(task_id)
 
             # Phase 3: no-tool generation tasks produce the artifact through the
             # structured Worker contract (memory/SQLite stored, never a file write).
-            if not proposed_requests:
+            # Phase 4 file_tools mode never enters the generation path: its
+            # artifacts are the real staged files produced by the tool executor.
+            if not proposed_requests and execution_mode != "file_tools":
                 task = self._generate_artifact(task_id, worker, task, repair_idx)
                 if task["status"] != "executing":
                     return task
@@ -780,6 +988,23 @@ class Orchestrator:
                     validate_acceptance(task, acceptance, task["tool_execution_evidence"])
                     validate_review(review_json, review_metadata, snapshots,
                                     self._snapshot_artifacts(task.get("artifact_refs", [])))
+                    # Phase 4 batch 1: post-review apply of staged writes (controlled
+                    # action, ONLY after a pass verdict). Re-confirms content hash ==
+                    # reviewed hash, target version == pre-review state, path
+                    # ownership and authorization; any mismatch refuses WITHOUT
+                    # touching the target. revise/reject/needs_human never apply.
+                    try:
+                        apply_evidence = self._apply_staged_writes(task_id, task, review_json)
+                    except ApplyBlockedError as exc:
+                        return self.storage.transition_task_state(
+                            task_id, "needs_attention", actor_role="orchestrator",
+                            reason="staged_write_apply_refused",
+                            error_info=f"Staged write apply blocked: {exc}")
+                    if apply_evidence:
+                        execution_evidence = list(task.get("tool_execution_evidence") or []) + apply_evidence
+                        task = self.storage.attach_evidence(task_id, execution_evidence)
+                else:
+                    acceptance = []
                 self.storage.bind_review(review_json, review_attempt, snapshots, acceptance)
             except (CredentialMissingError, AdapterError, SchemaValidationError, ValidationError) as exc:
                 # Iron Rule: Reviewer unavailability, timeout, or invalid JSON MUST NEVER auto-pass!

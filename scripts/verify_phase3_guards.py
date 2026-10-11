@@ -39,8 +39,16 @@ MUTATIONS = [
     {
         "name": "repair_context_downgraded_to_initial",
         "module": "src/orchestrator.py",
-        "original": '        if repair_count > 0:',
-        "replacement": '        if False:',
+        "original": ('        if repair_count > 0:\n'
+                     '            issues = []\n'
+                     '            for binding in self.storage.list_review_bindings(task_id=task["task_id"]):\n'
+                     '                issues.extend(binding["review"].get("issues") or [])\n'
+                     '            acceptance_failures = ['),
+        "replacement": ('        if False:\n'
+                        '            issues = []\n'
+                        '            for binding in self.storage.list_review_bindings(task_id=task["task_id"]):\n'
+                        '                issues.extend(binding["review"].get("issues") or [])\n'
+                        '            acceptance_failures = ['),
         "test": "test_b_injected_error_repaired_and_re_reviewed",
     },
     {

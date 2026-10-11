@@ -42,7 +42,7 @@ MUTATIONS = [
      'if False:', "test_opt_25_duplicate_completion_not_charged"),
     ("single_owner", "storage", 'AND owner_id IS NULL',
      '', "test_opt_26_duplicate_claims"),
-    ("terminal_tool_rejection", "storage", 'if task["status"] != "executing":',
+    ("terminal_tool_rejection", "storage", 'if task["status"] not in allowed_states:',
      'if False:', "test_opt_16_terminal_tool_request"),
     ("interrupted_attempt_replay", "orchestrator", 'if self.storage.has_uncertain_attempt(task_id):',
      'if False:', "test_crash_cannot_be_retried_without_reconciliation"),

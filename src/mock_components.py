@@ -112,6 +112,41 @@ class ScriptedWorkerAdapter(ModelAdapter):
             self.call_count += 1
             raise SchemaValidationError("Worker output is not valid JSON or failed schema validation")
 
+        # Phase 4 batch 1: tool-plan proposal detected by schema title. The plan
+        # requests are configured per turn; the control layer validates them.
+        if schema.get("title") == "ToolPlanSchemaV1":
+            self.calls.append(dict(kwargs))
+            user_payload = None
+            for message in messages:
+                if message.get("role") == "user":
+                    try:
+                        user_payload = json.loads(message["content"])
+                    except ValueError:
+                        user_payload = None
+            self.generation_contexts.append(user_payload)
+            if self.mode == "missing_credential":
+                raise CredentialMissingError("Missing environment variable 'GEMINI_API_KEY'")
+            if self.mode == "timeout":
+                raise AdapterError("Worker model invocation timed out")
+            self.call_count += 1
+            gen_index = self._generation_calls
+            self._generation_calls += 1
+            task_id = kwargs.get("task_id", "task_default12345")
+            requests = (self.tool_requests_by_turn[gen_index]
+                        if gen_index < len(self.tool_requests_by_turn)
+                        else (self.tool_requests_by_turn[-1] if self.tool_requests_by_turn else []))
+            plan_payload = {
+                "schema_version": "1.0.0",
+                "plan_id": "tplan_" + uuid.uuid4().hex[:12],
+                "task_id": task_id,
+                "summary": "Mock tool plan revision " + str(gen_index + 1),
+                "tool_requests": requests,
+            }
+            Draft7Validator(schema, format_checker=FormatChecker()).validate(plan_payload)
+            resp = self.invoke(messages, _canned_payload=plan_payload, **kwargs)
+            resp.parsed_json = plan_payload
+            return resp
+
         # Phase 3 Worker contract: artifact generation is detected by schema title.
         if schema.get("title") == "ArtifactSchemaV1":
             self.calls.append(dict(kwargs))

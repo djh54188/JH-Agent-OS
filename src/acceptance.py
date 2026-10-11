@@ -1,10 +1,12 @@
 """
-JH-Agent OS Control-Owned Acceptance Verifiers v1.0.0 (Phase 3)
+JH-Agent OS Control-Owned Acceptance Verifiers v1.1.0 (Phase 3 + Phase 4 batch 1)
 Acceptance is judged by the control layer against the ACTUAL artifact content,
 never by Worker self-scores. Verifiers are deterministic and task-type specific.
 """
 
+import hashlib
 import json
+import os
 from typing import Any, Callable, Dict, List, Optional
 
 
@@ -71,5 +73,58 @@ def transform_acceptance_evaluator(expected_output: Any, *, input_label: str = "
         for criterion in task["acceptance_criteria"][2:]:
             results.append({"criterion": criterion, "passed": False, "evidence": []})
         return results
+
+    return evaluate
+
+
+def file_write_acceptance_evaluator(expected_content: str, expected_target: str) -> Callable:
+    """Control-owned acceptance evaluator for Phase 4 file-write tasks.
+
+    Unlike the Phase 3 data-transform evaluator, this judges the real staged
+    write chain through the control-owned tool execution records. Declared
+    canonical criteria (a task using this evaluator must declare exactly these
+    three, in order):
+      1. A successful stage_write for the expected target exists (evidence ref
+         cites the recorded tool execution in tool_execution_evidence).
+      2. The executor-recorded staged content SHA-256 equals the SHA-256 the
+         control layer computes independently from its own expected content.
+         (The review binding additionally snapshots the same staged file, and
+         validate_review proves the content unchanged through review.)
+      3. The target path is relative (inside the workspace by contract) and
+         equals an authorized target_files entry.
+    Any other criterion count/order fail-closes.
+    """
+
+    def evaluate(task: Dict[str, Any], tool_executions: List[Dict[str, Any]], artifact_store=None) -> List[Dict[str, Any]]:
+        criteria = task["acceptance_criteria"]
+        if len(criteria) != 3:
+            return [{"criterion": c, "passed": False, "evidence": []} for c in criteria]
+
+        expected_sha = hashlib.sha256(expected_content.encode("utf-8")).hexdigest()
+        stage_results = [t for t in tool_executions
+                         if t["tool_name"] == "stage_write" and t["status"] == "success"]
+        target_norm = os.path.normcase(expected_target).replace("\\", "/")
+        matching = [t for t in stage_results
+                    if os.path.normcase((t["result"]["structured_data"] or {}).get("target_path", ""))
+                    .replace("\\", "/").endswith(target_norm)]
+        stage_evidence = [f"{t['request_id']}:{t['tool_name']}:success" for t in matching]
+
+        content_ok = bool(matching) and \
+            matching[0]["result"]["structured_data"].get("content_sha256") == expected_sha
+
+        target_files = (task.get("context") or {}).get("target_files") or []
+        authorized = any(
+            os.path.normcase(expected_target).replace("\\", "/") == os.path.normcase(a).replace("\\", "/")
+            for a in target_files)
+        within_scope = not os.path.isabs(expected_target)
+
+        return [
+            {"criterion": criteria[0], "passed": bool(stage_evidence), "evidence": stage_evidence},
+            {"criterion": criteria[1], "passed": content_ok,
+             "evidence": stage_evidence if content_ok else [],
+             "note": f"expected_sha256={expected_sha}"},
+            {"criterion": criteria[2], "passed": authorized and within_scope,
+             "evidence": [f"target_path:{expected_target}"] if (authorized and within_scope) else []},
+        ]
 
     return evaluate

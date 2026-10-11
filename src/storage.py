@@ -440,12 +440,17 @@ class TaskStorage:
         tool_request: Dict[str, Any],
         *,
         has_side_effect: bool,
+        allowed_states: tuple = ("executing",),
     ) -> bool:
-        """Mark a tool execution as in_flight BEFORE executing it, enabling crash/restart detection."""
+        """Mark a tool execution as in_flight BEFORE executing it, enabling crash/restart detection.
+
+        allowed_states: worker-proposed tools default to the executing phase only;
+        the control-layer post-review apply runs in the reviewing phase and passes
+        that state explicitly. Late worker tool requests stay rejected."""
         now = _utc_now_iso()
         task_id = tool_request["task_id"]
         task = self.get_task(task_id)
-        if task["status"] != "executing":
+        if task["status"] not in allowed_states:
             self.record_event(task_id=task_id, event_type="late_tool_request_rejected",
                               from_state=task["status"], to_state=task["status"],
                               actor_role="orchestrator", details={"request_id": tool_request["request_id"]})
@@ -876,6 +881,20 @@ class TaskStorage:
         if evidence_ref not in evidence:
             evidence.append(evidence_ref)
         task_dict["tool_execution_evidence"] = evidence
+        task_dict["updated_at"] = _utc_now_iso()
+        self.validate_task_dict(task_dict)
+        self._conn.execute(
+            "UPDATE tasks SET task_json = ?, updated_at = ? WHERE task_id = ?",
+            (json.dumps(task_dict, ensure_ascii=False), task_dict["updated_at"], task_id),
+        )
+        return self.get_task(task_id)
+
+    @atomic
+    def attach_evidence(self, task_id: str, evidence_refs: List[str]) -> Dict[str, Any]:
+        """Replace the task's tool_execution_evidence with the given ordered list."""
+        task = self.get_task(task_id)
+        task_dict = {k: v for k, v in task.items() if k != "_runtime"}
+        task_dict["tool_execution_evidence"] = list(evidence_refs)
         task_dict["updated_at"] = _utc_now_iso()
         self.validate_task_dict(task_dict)
         self._conn.execute(

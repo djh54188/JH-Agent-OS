@@ -42,7 +42,10 @@ READ_ONLY_TOOLS: FrozenSet[str] = frozenset({
 })
 
 WRITE_TOOLS: FrozenSet[str] = frozenset({
-    "write_file", "edit_file", "create_file", "apply_patch"
+    "write_file", "edit_file", "create_file", "apply_patch", "stage_write",
+    # Control-layer driven apply of a reviewed staged write (Phase 4 batch 1);
+    # still a workspace write, still per-call policy checked.
+    "apply_staged_write",
 })
 
 LEVEL3_COMMAND_PATTERNS = [
