@@ -1,0 +1,300 @@
+{
+  "schema_version": "1.0.0",
+  "kind": "acceptance_specification",
+  "baseline_commit": "08aae16",
+  "created_date": "2026-10-10",
+  "timezone": "Asia/Shanghai",
+  "is_test_execution": false,
+  "scope": "Phase 2 control layer; Phase 4 real junction handling",
+  "baseline_probes": [
+    {
+      "probe": "different_task_still_schema_valid",
+      "schema_accepts": true
+    },
+    {
+      "probe": "pass_with_critical_issue_still_schema_valid",
+      "schema_accepts": true
+    },
+    {
+      "probe": "reversed_line_range_still_schema_valid",
+      "schema_accepts": true
+    },
+    {
+      "probe": "sibling_path_passes_lexical_prefix",
+      "prefix_accepts": true,
+      "same_commonpath": false
+    }
+  ],
+  "cases": [
+    {
+      "id": "OPT-01",
+      "category": "success",
+      "title": "完整成功条件",
+      "setup": "有效当前审核为 pass，所有验收条件通过且无未处理阻断项",
+      "expected_observation": "任务允许转为 succeeded",
+      "target_phase": "phase2",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "OPT-02",
+      "category": "success",
+      "title": "审核通过但验收失败",
+      "setup": "ReviewResult=pass，但一个必需验收条件失败",
+      "expected_observation": "不得 succeeded；记录失败条件",
+      "target_phase": "phase2",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "OPT-03",
+      "category": "success",
+      "title": "验收通过但审核要求修复",
+      "setup": "验收条件通过，ReviewResult=revise",
+      "expected_observation": "进入 repairing，受修复轮数限制",
+      "target_phase": "phase2",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "OPT-04",
+      "category": "success",
+      "title": "审核属于其他任务",
+      "setup": "符合 Schema 的审核 task_id 与当前任务不一致",
+      "expected_observation": "拒绝用于成功裁决；记录关联错误",
+      "target_phase": "phase2",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "OPT-05",
+      "category": "success",
+      "title": "审核针对旧产物",
+      "setup": "同一路径内容已经变化，审核绑定旧 SHA-256",
+      "expected_observation": "拒绝旧审核；要求审核当前产物",
+      "target_phase": "phase2",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "OPT-06",
+      "category": "success",
+      "title": "迟到的旧尝试结果",
+      "setup": "同任务旧 attempt_id 的模型响应晚于新尝试到达",
+      "expected_observation": "旧响应不得覆盖新尝试结果或状态",
+      "target_phase": "phase2",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "OPT-07",
+      "category": "success",
+      "title": "审核结论自相矛盾",
+      "setup": "verdict=pass，同时包含未解决的 p1_critical 问题",
+      "expected_observation": "不得成功；记录审核矛盾并受控处理",
+      "target_phase": "phase2",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "OPT-08",
+      "category": "success",
+      "title": "审核证据无效",
+      "setup": "line_start=20、line_end=10，或引用不存在的产物",
+      "expected_observation": "不采纳为有效审核证据；明确原因",
+      "target_phase": "phase2",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "OPT-09",
+      "category": "policy",
+      "title": "战略规划与动作权限独立",
+      "setup": "需要架构规划的任务仅请求读取当前工作区文件",
+      "expected_observation": "规划深度与动作权限分别判断，不因规划层级自动授予权限",
+      "target_phase": "phase2",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "OPT-10",
+      "category": "policy",
+      "title": "模型风险提示与参数冲突",
+      "setup": "声明 read_only，但实际请求删除关键目录",
+      "expected_observation": "以实际参数判断；阻断危险动作",
+      "target_phase": "phase2",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "OPT-11",
+      "category": "policy",
+      "title": "审批标志与动作冲突",
+      "setup": "requires_human_approval=false，但实际写入未授权项目",
+      "expected_observation": "不得依赖模型标志直接执行；按现有策略阻断或等待授权",
+      "target_phase": "phase2",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "OPT-12",
+      "category": "policy",
+      "title": "名称前缀相同的兄弟目录",
+      "setup": "workspace=D:\\JH-Agent OS，target=D:\\JH-Agent OS-archive\\notes.md",
+      "expected_observation": "不得作为工作区内自动放行动作",
+      "target_phase": "phase2",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "OPT-13",
+      "category": "policy",
+      "title": "规范化后越界",
+      "setup": "target=D:\\JH-Agent OS\\..\\other-project\\notes.md",
+      "expected_observation": "解析后按工作区外处理，未授权时工具调用次数为零",
+      "target_phase": "phase2",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "OPT-14",
+      "category": "policy",
+      "title": "链接解析后越界",
+      "setup": "模拟工作区内 junction 指向其他项目，最终目标在工作区外",
+      "expected_observation": "按最终目标校验权限，未授权时禁止执行",
+      "target_phase": "phase4",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "OPT-15",
+      "category": "policy",
+      "title": "授权后参数改变",
+      "setup": "已授权写 A，实际调用改为写 B 或更大删除范围",
+      "expected_observation": "旧授权不能覆盖新动作；按现有授权规则处理",
+      "target_phase": "phase2",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "OPT-16",
+      "category": "policy",
+      "title": "终态收到工具请求",
+      "setup": "任务已 cancelled/succeeded/failed，收到迟到 ToolRequest",
+      "expected_observation": "工具执行次数为零，终态不变，记录拒绝",
+      "target_phase": "phase2",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "OPT-17",
+      "category": "budget",
+      "title": "调用时限受剩余时间限制",
+      "setup": "任务剩余 10 秒，模型默认调用超时 300 秒",
+      "expected_observation": "有效调用截止时间不得晚于任务截止时间",
+      "target_phase": "phase2",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "OPT-18",
+      "category": "budget",
+      "title": "时间预算已耗尽",
+      "setup": "任务剩余时间为零",
+      "expected_observation": "禁止启动新调用，进入明确结束或处理状态",
+      "target_phase": "phase2",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "OPT-19",
+      "category": "budget",
+      "title": "输入已占满剩余 token 预算",
+      "setup": "剩余 token 预算不足以容纳输入预留与输出",
+      "expected_observation": "禁止以模型默认上限提交请求；记录预算不足",
+      "target_phase": "phase2",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "OPT-20",
+      "category": "budget",
+      "title": "模型上限大于任务额度",
+      "setup": "模型输出上限 131072，任务剩余 20000，输入预留 644",
+      "expected_observation": "请求输出上限最多 19356；推理 token 纳入供应商输出口径",
+      "target_phase": "phase2",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "OPT-21",
+      "category": "budget",
+      "title": "供应商未返回用量",
+      "setup": "响应 usage 缺失",
+      "expected_observation": "用量记录 unknown/null；不能计为免费或零消耗",
+      "target_phase": "phase2",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "OPT-22",
+      "category": "budget",
+      "title": "重试沿用原任务截止时间",
+      "setup": "第一次调用已消耗大部分时间，再次尝试",
+      "expected_observation": "不得重新获得完整任务预算；累计记录尝试",
+      "target_phase": "phase2",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "OPT-23",
+      "category": "durability",
+      "title": "响应收到但未持久化时崩溃",
+      "setup": "供应商响应收到后、结果事务提交前终止控制进程",
+      "expected_observation": "恢复时明确识别不确定尝试，不盲目重复可能有副作用的动作",
+      "target_phase": "phase2",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "OPT-24",
+      "category": "durability",
+      "title": "任务和事件写入中断",
+      "setup": "同一次状态变化中，事件写入成功而任务更新失败",
+      "expected_observation": "事务整体回滚；不存在事件与任务状态分裂",
+      "target_phase": "phase2",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "OPT-25",
+      "category": "durability",
+      "title": "重复事件投递",
+      "setup": "相同 event_id/attempt_id 的完成事件收到两次",
+      "expected_observation": "只应用一次，不重复计费、不重复改变状态",
+      "target_phase": "phase2",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "OPT-26",
+      "category": "durability",
+      "title": "重复领取同一任务",
+      "setup": "两个调度入口同时尝试领取同一 task_id",
+      "expected_observation": "最多一个有效执行所有者；另一个不得重复执行",
+      "target_phase": "phase2",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "OPT-27",
+      "category": "durability",
+      "title": "记录中的 PID 已被复用",
+      "setup": "原任务进程消失，同一 PID 对应其他新进程",
+      "expected_observation": "不得仅凭 PID 接管或终止进程",
+      "target_phase": "phase2",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "OPT-28",
+      "category": "durability",
+      "title": "终态任务重启恢复",
+      "setup": "数据库中任务已 succeeded/failed/cancelled，重启控制层",
+      "expected_observation": "状态不倒退；不重新执行已结束任务",
+      "target_phase": "phase2",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "OPT-29",
+      "category": "provider",
+      "title": "审核服务超时",
+      "setup": "Reviewer 请求超时或连接断开",
+      "expected_observation": "不得自动 pass；保留故障与有限处理路径",
+      "target_phase": "phase2",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "OPT-30",
+      "category": "provider",
+      "title": "审核格式无效",
+      "setup": "Reviewer 返回非法 JSON 或不符合 ReviewResult 的数据",
+      "expected_observation": "拒绝该审核；不得转为 succeeded",
+      "target_phase": "phase2",
+      "execution_status": "not_run"
+    }
+  ]
+}

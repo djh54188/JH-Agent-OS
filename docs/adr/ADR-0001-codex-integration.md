@@ -88,7 +88,18 @@ JH-Agent OS 在阶段 1 至阶段 3（MVP 阶段）选定 **方案 A（`codex ex
 
 ---
 
-## 5. 局限性与风险控制
+## 5. 局限性、风险控制与阶段 2 批准运行参数
 
-- **局限 1：进程启动开销与网络降级**：本地网络下 Codex 连接 responses WebSocket 会发生超时重连并降级为 HTTPS 传输，单次冷启动+执行耗时约 120 秒。控制层需设置 180~300 秒超时容忍度，并在后台异步执行。
+- **局限 1：进程启动开销与网络降级**：本地网络下 Codex 连接 responses WebSocket 会发生超时重连并降级为 HTTPS 传输，单次冷启动+执行耗时约 120 秒。
 - **局限 2：实验特性隔离**：当前放弃接入 `app-server` 避免了协议频繁变动导致的开发阻塞。
+
+### 5.1 架构师批准的受管理 Codex 异步参数（`src/codex_managed.py`）
+1. **单次 Codex 调用超时**：`300` 秒（`call_timeout_seconds = 300`）。
+2. **任务总截止时间**：`600` 秒（`task_deadline_seconds = 600`）。
+3. **状态轮询间隔**：`2` 秒（`poll_interval_seconds = 2.0`）。
+4. **无事件提示阈值**：`180` 秒（`no_event_warning_seconds = 180.0`，超过阈值无新 JSONL 事件时触发 `no_event_warning` 事件，但不自动重启进程）。
+5. **Codex 并发上限**：`1`（`max_concurrency = 1`，互斥排队等待同样受剩余预算约束）。
+6. **控制层自动重启调用次数**：`0`（`auto_restart_retries = 0`，禁止失败或超时后自动重启重试）。
+7. **剩余任务预算强约束**：任何单次等待的实际超时 `effective_timeout = min(call_timeout_seconds, task_deadline_seconds, remaining_budget_seconds)`；剩余预算 `<= 0` 时直接拒绝启动。
+8. **缺失 Token 记为未知**：若事件流缺失 `usage` 数据，`tokens_prompt` / `tokens_completion` / `total_tokens` 必须记录为 `None`（SQLite `NULL`），严禁默认记为 `0`。
+9. **写模式中断禁盲目重放**：在 `workspace-write` 模式下若调用因超时/崩溃/取消中断，标记 `side_effect_unconfirmed = True`，由控制层转入 `needs_attention`，禁止自动重放。

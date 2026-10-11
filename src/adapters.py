@@ -134,15 +134,15 @@ class OpenAICompatibleAdapter(ModelAdapter):
 
         choice = raw.get("choices", [{}])[0]
         content = choice.get("message", {}).get("content", "")
-        usage = raw.get("usage", {})
+        usage = raw.get("usage") or {}
 
         return AdapterResponse(
             content=content,
             parsed_json=None,
             model_id=self.model_id,
-            tokens_prompt=usage.get("prompt_tokens", 0),
-            tokens_completion=usage.get("completion_tokens", 0),
-            total_tokens=usage.get("total_tokens", 0),
+            tokens_prompt=usage.get("prompt_tokens"),
+            tokens_completion=usage.get("completion_tokens"),
+            total_tokens=usage.get("total_tokens"),
             latency_ms=duration_ms,
             is_mock=False,
             raw_response=raw
@@ -257,9 +257,9 @@ class CodexCliAdapter(ModelAdapter):
 
         # Parse JSONL events
         collected_texts = []
-        tokens_prompt = 0
-        tokens_completion = 0
-        total_tokens = 0
+        tokens_prompt = None
+        tokens_completion = None
+        total_tokens = None
         last_agent_text = ""
 
         for line in stdout.splitlines():
@@ -270,10 +270,13 @@ class CodexCliAdapter(ModelAdapter):
                 ev = json.loads(line)
                 ev_type = ev.get("type")
                 if ev_type == "turn.completed":
-                    usage = ev.get("usage", {})
-                    tokens_prompt = usage.get("input_tokens", 0)
-                    tokens_completion = usage.get("output_tokens", 0)
-                    total_tokens = tokens_prompt + tokens_completion
+                    usage = ev.get("usage") or {}
+                    tokens_prompt = usage.get("input_tokens")
+                    tokens_completion = usage.get("output_tokens")
+                    if tokens_prompt is not None and tokens_completion is not None:
+                        total_tokens = tokens_prompt + tokens_completion
+                    else:
+                        total_tokens = usage.get("total_tokens")
                 elif ev_type == "item.completed":
                     item = ev.get("item", {})
                     if item.get("type") == "agent_message":
@@ -417,13 +420,14 @@ class GeminiAdapter(ModelAdapter):
             if parts:
                 text = parts[0].get("text", "")
 
+        usage_meta = raw.get("usageMetadata") or {}
         return AdapterResponse(
             content=text,
             parsed_json=None,
             model_id=self.model_id,
-            tokens_prompt=0,
-            tokens_completion=0,
-            total_tokens=0,
+            tokens_prompt=usage_meta.get("promptTokenCount"),
+            tokens_completion=usage_meta.get("candidatesTokenCount"),
+            total_tokens=usage_meta.get("totalTokenCount"),
             latency_ms=duration_ms,
             is_mock=False,
             raw_response=raw
