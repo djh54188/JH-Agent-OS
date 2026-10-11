@@ -97,3 +97,41 @@
   - 变异守卫：`python scripts/verify_phase3_guards.py`（及三个既有守卫脚本）
   - 真实调用与阻塞登记：`python scripts/verify_phase3.py` → `reports/phase3-verification.json`
   - 产物/证据查询：`python -m src.cli --db <db> artifact <task_id>`
+
+---
+
+## 7. 补遗（2026-10-11 晚）：Gemini 通道接通与真实闭环取证
+
+### 7.1 通道变更（用户裁决，ADR-0002）
+用户直接下达 Gemini Worker 本地代理接入参数：`http://localhost:8787/v1`、
+Anthropic Messages 协议（POST /v1/messages）、模型 `gemini-3.8-flash-high`、
+上下文 1,000,000 / 最大输出 64,000（用户提供，未压测）、认证 `x-api-key` 读
+`GEMINI_API_KEY`（本机代理令牌，已持久化到用户环境变量）。
+官方 Google generateContent 端点配置退役（`GeminiAdapter` 实现保留未被引用）。
+
+### 7.2 新增实现
+| 文件 | 内容 |
+| :--- | :--- |
+| `src/anthropic_adapter.py` | `AnthropicMessagesAdapter`：system→顶层字段映射、max_tokens 必填映射控制层预算、stop_reason 截断/拒绝映射、usage 缺失记 None、HTTP 错误脱敏、回环绕过代理、无自动重试 |
+| `src/model_config.py` | 新增 `anthropic_messages` 协议分支 |
+| `configs/adapters.local.json` + `example` | `gemini_worker` 换用新协议与模型（同步更新） |
+| `tests/test_anthropic_adapter.py` | 10 项离线测试（请求形状、头与版本、system 映射、截断/拒绝/空输出/非法 JSON fail-closed、未知用量 None、预算上限、错误脱敏、profile 接线） |
+| `scripts/verify_anthropic_guards.py` | 9 项变异守卫全部检出 |
+| `tests/test_phase2_control_layer.py::test_04` | 改为 patch 凭据探测实现宿主状态无关隔离（防止注册表凭据穿透离线路由到真实网络） |
+| `scripts/verify_phase3.py` | 新增第 3 节：真实 Gemini+Muse 主闭环（`counts_as_acceptance_evidence: true`） |
+
+### 7.3 真实闭环证据（`reports/phase3-verification.json` 第 3 节，验收证据）
+- **主闭环**：真实 Gemini worker（`gemini-3.8-flash-high`，Anthropic Messages）
+  + 真实 Muse reviewer（`muse-spark-1.3-contributor-free`，Responses），
+  固定输入排序任务 → 规划/生成/审核各 1 次真实调用，共 3 turns、5768 tokens（已知），
+  产物 v1 SHA-256 `96441364e9d6db604166fb9506e085aebd4fc5d5832736b5c277c7b0d0feb8b0`，
+  控制层验收通过（产物内容与独立计算的期望输出一致），Muse 审核 `rev_acfdfa7e66b1` pass，
+  任务终态 **succeeded**，零修复。
+- **Muse 复认**（同轮）：正确产物 pass、注入缺陷 revise 且证据引用缺陷表达式（同前轮口径）。
+- **DeepSeek+Muse 补充联调**：再次 succeeded（非验收证据）。
+- 审查 minor 三项修复（`080a865`）与本轮接入变更（`8aa1024`）之后，
+  全仓 **101 项测试**与 5 个守卫脚本（9/4/14/5/8 项变异）复跑全绿。
+
+### 7.4 结论更新
+阶段 3 的判定性证据（真实 Gemini 产物 + 真实 Muse 审核 + 控制层验收 + 持久化）
+已取得。**验收结论不自我宣称**：提交独立审查，由架构师作出阶段结项裁决。
