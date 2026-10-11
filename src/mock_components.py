@@ -29,7 +29,7 @@ class SimulatedInterruptionError(Exception):
     pass
 
 
-def mock_acceptance(task, executions):
+def mock_acceptance(task, executions, artifact_store=None):
     """Explicit test fixture; never a production validator for arbitrary user criteria."""
     evidence = [f"{item['request_id']}:{item['tool_name']}:success" for item in executions if item["status"] == "success"]
     return [{"criterion": criterion, "passed": bool(evidence), "evidence": evidence, "is_mock": True}
@@ -45,16 +45,22 @@ class ScriptedWorkerAdapter(ModelAdapter):
         *,
         mode: str = "normal",
         tool_requests_by_turn: Optional[List[List[Dict[str, Any]]]] = None,
+        artifact_content_by_turn: Optional[List[str]] = None,
+        artifact_type: str = "text_transformation",
         tokens_per_call: Optional[int] = 120,
         simulated_latency_ms: int = 10,
     ):
         super().__init__(config or {"role": "worker", "model_id": "mock-gemini-worker"})
         self.mode = mode
         self.tool_requests_by_turn = tool_requests_by_turn or []
+        self.artifact_content_by_turn = artifact_content_by_turn
+        self.artifact_type = artifact_type
         self.tokens_per_call = tokens_per_call  # Can be None to test unknown token handling
         self.simulated_latency_ms = simulated_latency_ms
         self.call_count = 0
         self.calls = []
+        self.generation_contexts = []
+        self._generation_calls = 0
 
     def get_role(self) -> str:
         return "worker"
@@ -70,6 +76,10 @@ class ScriptedWorkerAdapter(ModelAdapter):
             raise CredentialMissingError("Missing environment variable 'GEMINI_API_KEY'")
         if self.mode == "timeout":
             raise AdapterError("Worker model invocation timed out")
+        if self.mode == "truncated":
+            raise AdapterError("Provider truncated the output (finishReason=MAX_TOKENS); result is incomplete")
+        if self.mode == "refused":
+            raise AdapterError("Provider refused the request (finishReason=SAFETY)")
         if self.mode == "provider_error":
             raise AdapterError("Worker provider HTTP 503 Service Unavailable")
 
@@ -101,6 +111,49 @@ class ScriptedWorkerAdapter(ModelAdapter):
         if self.mode == "invalid_json":
             self.call_count += 1
             raise SchemaValidationError("Worker output is not valid JSON or failed schema validation")
+
+        # Phase 3 Worker contract: artifact generation is detected by schema title.
+        if schema.get("title") == "ArtifactSchemaV1":
+            self.calls.append(dict(kwargs))
+            user_payload = None
+            for message in messages:
+                if message.get("role") == "user":
+                    try:
+                        user_payload = json.loads(message["content"])
+                    except ValueError:
+                        user_payload = None
+            self.generation_contexts.append(user_payload)
+            if self.mode == "missing_credential":
+                raise CredentialMissingError("Missing environment variable 'GEMINI_API_KEY'")
+            if self.mode == "timeout":
+                raise AdapterError("Worker model invocation timed out")
+            if self.mode == "truncated":
+                raise AdapterError("Provider truncated the output (finishReason=MAX_TOKENS); result is incomplete")
+            if self.mode == "refused":
+                raise AdapterError("Provider refused the request (finishReason=SAFETY)")
+            self.call_count += 1
+            gen_index = self._generation_calls
+            self._generation_calls += 1
+            task_id = kwargs.get("task_id", "task_default12345")
+            if self.artifact_content_by_turn is not None:
+                if gen_index >= len(self.artifact_content_by_turn):
+                    content = self.artifact_content_by_turn[-1]
+                else:
+                    content = self.artifact_content_by_turn[gen_index]
+            else:
+                content = f"mock artifact for {task_id}\n"
+            artifact_payload = {
+                "schema_version": "1.0.0",
+                "artifact_id": "art_" + uuid.uuid4().hex[:12],
+                "task_id": task_id,
+                "artifact_type": self.artifact_type,
+                "content": content,
+                "summary": "Generated artifact revision " + str(gen_index + 1) + " for " + task_id,
+            }
+            Draft7Validator(schema, format_checker=FormatChecker()).validate(artifact_payload)
+            resp = self.invoke(messages, _canned_payload=artifact_payload, **kwargs)
+            resp.parsed_json = artifact_payload
+            return resp
 
         task_id = kwargs.get("task_id", "task_default12345")
         self.calls.append(dict(kwargs))

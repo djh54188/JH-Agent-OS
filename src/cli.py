@@ -39,6 +39,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     sub_events = subparsers.add_parser("events", help="List audit events for a task_id")
     sub_events.add_argument("task_id", help="Task ID")
 
+    sub_artifact = subparsers.add_parser("artifact", help="Show final artifact, version lineage, review bindings, acceptance and memory evidence (read-only)")
+    sub_artifact.add_argument("task_id", help="Task ID")
+
     sub_approve = subparsers.add_parser("approve", help="Approve a held Level 2 request_id and resume")
     sub_approve.add_argument("task_id", help="Task ID")
     sub_approve.add_argument("request_id", help="ToolRequest ID to approve")
@@ -62,6 +65,16 @@ def main(argv: Optional[List[str]] = None) -> int:
             print(json.dumps(orch.get_task_status(args.task_id), ensure_ascii=False, indent=2))
         elif args.command == "events":
             print(json.dumps(orch.list_task_events(args.task_id), ensure_ascii=False, indent=2))
+        elif args.command == "artifact":
+            storage = orch.storage
+            latest = storage.get_latest_artifact(args.task_id)
+            print(json.dumps({
+                "task_status": orch.get_task_status(args.task_id),
+                "latest_artifact": latest,
+                "artifact_versions": storage.list_artifact_versions(args.task_id),
+                "review_bindings": storage.list_review_bindings(args.task_id),
+                "memory_records": storage.list_memory_records(args.task_id),
+            }, ensure_ascii=False, indent=2))
         elif args.command == "approve":
             orch.approve_task_request(args.task_id, args.request_id)
             print(json.dumps(orch.get_task_status(args.task_id), ensure_ascii=False, indent=2))

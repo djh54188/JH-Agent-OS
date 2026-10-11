@@ -153,6 +153,26 @@ class TaskStorage:
                     task_id TEXT NOT NULL, attempt_id TEXT NOT NULL,
                     artifacts_json TEXT NOT NULL, acceptance_json TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS artifact_versions (
+                    task_id TEXT NOT NULL REFERENCES tasks(task_id),
+                    version INTEGER NOT NULL,
+                    artifact_id TEXT NOT NULL,
+                    artifact_type TEXT NOT NULL,
+                    content TEXT NOT NULL,
+                    sha256 TEXT NOT NULL,
+                    envelope_json TEXT NOT NULL,
+                    generation_attempt_id TEXT,
+                    created_at TEXT NOT NULL,
+                    PRIMARY KEY (task_id, version)
+                );
+                CREATE TABLE IF NOT EXISTS memory_records (
+                    memory_id TEXT PRIMARY KEY,
+                    task_id TEXT NOT NULL REFERENCES tasks(task_id),
+                    category TEXT NOT NULL,
+                    verification_status TEXT NOT NULL,
+                    record_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL
+                );
                 INSERT OR IGNORE INTO task_control(task_id) SELECT task_id FROM tasks;
                 """
             )
@@ -679,6 +699,25 @@ class TaskStorage:
         self._conn.execute("INSERT INTO review_bindings VALUES (?, ?, ?, ?, ?)",
                            (review["review_id"], task_id, attempt_id, json.dumps(artifacts), json.dumps(acceptance)))
 
+    def list_review_bindings(self, task_id: str) -> List[Dict[str, Any]]:
+        """Ordered review bindings with their review payload and acceptance results (read-only)."""
+        cur = self._conn.execute(
+            "SELECT b.review_id, b.attempt_id, b.artifacts_json, b.acceptance_json, r.review_json "
+            "FROM review_bindings b JOIN reviews r USING(review_id) "
+            "WHERE b.task_id = ? ORDER BY r.rowid ASC",
+            (task_id,),
+        )
+        return [
+            {
+                "review_id": r["review_id"],
+                "attempt_id": r["attempt_id"],
+                "review": json.loads(r["review_json"]),
+                "acceptance": json.loads(r["acceptance_json"]),
+                "artifacts": json.loads(r["artifacts_json"]),
+            }
+            for r in cur.fetchall()
+        ]
+
     def _validate_success(self, task_id):
         task = self.get_task(task_id)
         control = self.get_control(task_id)
@@ -703,6 +742,186 @@ class TaskStorage:
             reason = "Unresolved approval, side effect, or unknown model usage"
         if reason:
             raise InvalidStateTransitionError(task["status"], "succeeded", reason)
+
+    # ------------------------------------------------------------------
+    # Artifact versions (Phase 3): control-owned version + SHA-256 lineage
+    # ------------------------------------------------------------------
+
+    @atomic
+    def save_artifact_version(
+        self,
+        task_id: str,
+        *,
+        version: int,
+        envelope: Dict[str, Any],
+        sha256: str,
+        generation_attempt_id: Optional[str],
+    ) -> Dict[str, Any]:
+        """Persist one artifact version. The caller (control layer) computes version and sha256; model values are not trusted."""
+        if not self._conn.execute("SELECT 1 FROM tasks WHERE task_id = ?", (task_id,)).fetchone():
+            raise KeyError(f"Task '{task_id}' not found")
+        if isinstance(version, bool) or not isinstance(version, int) or version < 1:
+            raise ValueError("Artifact version must be a positive integer")
+        if not isinstance(envelope.get("content"), str) or not envelope["content"]:
+            raise ValueError("Artifact content must be a non-empty string")
+        if not isinstance(sha256, str) or len(sha256) != 64:
+            raise ValueError("Artifact sha256 must be a 64-char hex digest")
+        prior = self._conn.execute(
+            "SELECT 1 FROM artifact_versions WHERE task_id = ? AND version = ?", (task_id, version)
+        ).fetchone()
+        if prior:
+            raise ValueError(f"Artifact version {version} already saved for task '{task_id}'")
+        now = _utc_now_iso()
+        self._conn.execute(
+            """
+            INSERT INTO artifact_versions (
+                task_id, version, artifact_id, artifact_type, content,
+                sha256, envelope_json, generation_attempt_id, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                task_id,
+                version,
+                envelope["artifact_id"],
+                envelope["artifact_type"],
+                envelope["content"],
+                sha256,
+                json.dumps(envelope, ensure_ascii=False),
+                generation_attempt_id,
+                now,
+            ),
+        )
+        self.record_event(
+            task_id=task_id,
+            event_type="artifact_version_saved",
+            from_state=None,
+            to_state=None,
+            actor_role="orchestrator",
+            tokens_used=None,
+            details={"version": version, "artifact_id": envelope["artifact_id"], "sha256": sha256},
+        )
+        return {
+            "task_id": task_id,
+            "version": version,
+            "artifact_id": envelope["artifact_id"],
+            "artifact_type": envelope["artifact_type"],
+            "content": envelope["content"],
+            "sha256": sha256,
+            "generation_attempt_id": generation_attempt_id,
+            "created_at": now,
+        }
+
+    def get_latest_artifact(self, task_id: str) -> Optional[Dict[str, Any]]:
+        row = self._conn.execute(
+            "SELECT * FROM artifact_versions WHERE task_id = ? ORDER BY version DESC LIMIT 1", (task_id,)
+        ).fetchone()
+        if not row:
+            return None
+        return {
+            "task_id": row["task_id"],
+            "version": row["version"],
+            "artifact_id": row["artifact_id"],
+            "artifact_type": row["artifact_type"],
+            "content": row["content"],
+            "sha256": row["sha256"],
+            "generation_attempt_id": row["generation_attempt_id"],
+            "created_at": row["created_at"],
+        }
+
+    def list_artifact_versions(self, task_id: str) -> List[Dict[str, Any]]:
+        rows = self._conn.execute(
+            "SELECT * FROM artifact_versions WHERE task_id = ? ORDER BY version ASC", (task_id,)
+        ).fetchall()
+        return [
+            {
+                "task_id": r["task_id"],
+                "version": r["version"],
+                "artifact_id": r["artifact_id"],
+                "artifact_type": r["artifact_type"],
+                "content": r["content"],
+                "sha256": r["sha256"],
+                "generation_attempt_id": r["generation_attempt_id"],
+                "created_at": r["created_at"],
+            }
+            for r in rows
+        ]
+
+    @atomic
+    def attach_artifact(self, task_id: str, mem_path: str, evidence_ref: str) -> Dict[str, Any]:
+        """Register an in-memory artifact as the current task artifact without a state transition."""
+        task = self.get_task(task_id)
+        task_dict = {k: v for k, v in task.items() if k != "_runtime"}
+        refs = list(task_dict.get("artifact_refs") or [])
+        if mem_path not in refs:
+            refs.append(mem_path)
+        task_dict["artifact_refs"] = refs
+        evidence = list(task_dict.get("tool_execution_evidence") or [])
+        if evidence_ref not in evidence:
+            evidence.append(evidence_ref)
+        task_dict["tool_execution_evidence"] = evidence
+        task_dict["updated_at"] = _utc_now_iso()
+        self.validate_task_dict(task_dict)
+        self._conn.execute(
+            "UPDATE tasks SET task_json = ?, updated_at = ? WHERE task_id = ?",
+            (json.dumps(task_dict, ensure_ascii=False), task_dict["updated_at"], task_id),
+        )
+        return self.get_task(task_id)
+
+    # ------------------------------------------------------------------
+    # Memory records (Phase 3 minimal logging per memory_record.v1.json)
+    # ------------------------------------------------------------------
+
+    @atomic
+    def record_memory(self, record: Dict[str, Any]) -> str:
+        from jsonschema import ValidationError
+        _memory_schema = _load_json_schema("memory_record.v1.json")
+        now = record.get("created_at") or _utc_now_iso()
+        record = dict(record)
+        record.setdefault("created_at", now)
+        record.setdefault("updated_at", record["created_at"])
+        Draft7Validator(_memory_schema, format_checker=FormatChecker()).validate(record)
+        self._conn.execute(
+            """
+            INSERT INTO memory_records (
+                memory_id, task_id, category, verification_status, record_json, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                record["memory_id"],
+                record["task_id"],
+                record["category"],
+                record["verification_status"],
+                json.dumps(record, ensure_ascii=False),
+                now,
+            ),
+        )
+        self.record_event(
+            task_id=record["task_id"],
+            event_type="memory_record_saved",
+            from_state=None,
+            to_state=None,
+            actor_role="orchestrator",
+            tokens_used=None,
+            details={"memory_id": record["memory_id"], "category": record["category"],
+                     "verification_status": record["verification_status"]},
+        )
+        return record["memory_id"]
+
+    def list_memory_records(self, task_id: str) -> List[Dict[str, Any]]:
+        rows = self._conn.execute(
+            "SELECT * FROM memory_records WHERE task_id = ? ORDER BY rowid ASC", (task_id,)
+        ).fetchall()
+        return [
+            {
+                "memory_id": r["memory_id"],
+                "task_id": r["task_id"],
+                "category": r["category"],
+                "verification_status": r["verification_status"],
+                "record": json.loads(r["record_json"]),
+                "created_at": r["created_at"],
+            }
+            for r in rows
+        ]
 
     @atomic
     def recover_interrupted_tasks(self) -> List[Dict[str, Any]]:

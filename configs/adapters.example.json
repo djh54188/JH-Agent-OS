@@ -10,7 +10,7 @@
     "gemini_worker": {
       "role": "worker",
       "provider": "google",
-      "model_id": "gemini-1.5-pro",
+      "model_id": "gemini-3.8-flash",
       "endpoint_url": "https://generativelanguage.googleapis.com/v1beta",
       "api_key_env": "GEMINI_API_KEY",
       "temperature": 0.2,
@@ -20,7 +20,9 @@
         "structured_outputs": true,
         "function_calling": true,
         "vision": true
-      }
+      },
+      "model_id_verified_at": "2026-10-11",
+      "model_id_source": "https://ai.google.dev/gemini-api/docs/models (stable Flash tier; gemini-1.5-pro retired)"
     },
     "muse_reviewer": {
       "role": "reviewer",

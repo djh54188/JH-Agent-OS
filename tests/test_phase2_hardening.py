@@ -57,7 +57,7 @@ class TestPhase2Hardening(unittest.TestCase):
         self.assertEqual(orch.storage._conn.execute("SELECT COUNT(*) FROM review_bindings").fetchone()[0], 1)
 
     def test_opt_02_failed_acceptance(self):
-        def failed(task, tools):
+        def failed(task, tools, artifact_store=None):
             result = mock_acceptance(task, tools)
             result[0]["passed"] = False
             return result

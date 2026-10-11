@@ -141,6 +141,11 @@ class OpenAICompatibleAdapter(ModelAdapter):
             raise AdapterError(f"Request failed: {str(e)}")
 
         choice = raw.get("choices", [{}])[0]
+        finish_reason = choice.get("finish_reason")
+        if finish_reason == "length":
+            raise AdapterError("Provider truncated the output (finish_reason=length); result is incomplete")
+        if finish_reason == "content_filter":
+            raise AdapterError("Provider refused the request (finish_reason=content_filter)")
         content = choice.get("message", {}).get("content", "")
         usage = raw.get("usage") or {}
 
@@ -374,7 +379,7 @@ class GeminiAdapter(ModelAdapter):
             "https://generativelanguage.googleapis.com/v1beta"
         ).rstrip("/")
         self.api_key_env = config.get("api_key_env", "GEMINI_API_KEY")
-        self.model_id = config.get("model_id", "gemini-1.5-pro")
+        self.model_id = config.get("model_id", "gemini-3.8-flash")
 
     def _get_api_key(self) -> str:
         key = os.environ.get(self.api_key_env, "").strip()
@@ -407,8 +412,11 @@ class GeminiAdapter(ModelAdapter):
             role = "user" if m["role"] in ["user", "system"] else "model"
             contents.append({"role": role, "parts": [{"text": m["content"]}]})
 
-        payload = {"contents": contents, "generationConfig": {
-            "maxOutputTokens": min(self.config.get("max_output_tokens", 8192), kwargs.get("max_output_tokens", 8192))}}
+        generation_config = {
+            "maxOutputTokens": min(self.config.get("max_output_tokens", 8192), kwargs.pop("max_output_tokens", 8192))}
+        if kwargs.pop("_force_json_mime", False):
+            generation_config["responseMimeType"] = "application/json"
+        payload = {"contents": contents, "generationConfig": generation_config}
         data = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"})
 
@@ -426,6 +434,11 @@ class GeminiAdapter(ModelAdapter):
         text = ""
         candidates = raw.get("candidates", [])
         if candidates:
+            finish_reason = candidates[0].get("finishReason")
+            if finish_reason == "MAX_TOKENS":
+                raise AdapterError("Provider truncated the output (finishReason=MAX_TOKENS); result is incomplete")
+            if finish_reason in {"SAFETY", "RECITATION", "PROHIBITED_CONTENT"}:
+                raise AdapterError(f"Provider refused the request (finishReason={finish_reason})")
             parts = candidates[0].get("content", {}).get("parts", [])
             if parts:
                 text = parts[0].get("text", "")
@@ -451,7 +464,7 @@ class GeminiAdapter(ModelAdapter):
     ) -> AdapterResponse:
         schema_prompt = f"Respond in valid JSON adhering to:\n{json.dumps(schema)}"
         augmented = list(messages) + [{"role": "user", "content": schema_prompt}]
-        resp = self.invoke(augmented, **kwargs)
+        resp = self.invoke(augmented, _force_json_mime=True, **kwargs)
         parsed = json.loads(resp.content.strip())
         validate(instance=parsed, schema=schema)
         resp.parsed_json = parsed

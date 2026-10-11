@@ -18,7 +18,9 @@ from src.adapters import (
     ModelAdapter,
     SchemaValidationError,
 )
+from src.artifacts import ArtifactStore, is_mem_artifact_path, mem_artifact_path
 from src.codex_managed import ManagedCodexAdapter, ManagedCodexConfig
+from src.memory import record_task_outcome_memory
 from src.mock_components import (
     MockToolExecutor,
     ScriptedReviewerAdapter,
@@ -75,6 +77,7 @@ class Orchestrator:
         enforce_target_files_scope: bool = False,
         task_deadline_seconds: float = DEFAULT_TASK_DEADLINE_SECONDS,
         acceptance_evaluator: Optional[Callable] = None,
+        artifact_store: Optional[ArtifactStore] = None,
     ):
         self.workspace_root = str(Path(workspace_root).resolve())
         self.storage = storage or TaskStorage(":memory:")
@@ -106,6 +109,8 @@ class Orchestrator:
         self._tool_req_schema = _load_schema("tool_request.v1.json")
         self._tool_res_schema = _load_schema("tool_result.v1.json")
         self._review_schema = _load_schema("review_result.v1.json")
+        self._artifact_schema = _load_schema("artifact.v1.json")
+        self.artifact_store = artifact_store or ArtifactStore(self.storage)
 
     # ------------------------------------------------------------------
     # Entrypoints: Submit, Status Query, Cancel, Approve, Recover
@@ -195,13 +200,15 @@ class Orchestrator:
                 "failed",
                 "Task is not currently in 'awaiting_approval' state",
             )
-        return self.storage.transition_task_state(
+        task = self.storage.transition_task_state(
             task_id,
             "failed",
             actor_role="meta_planner",
             reason=f"Approval rejected for {request_id}: {reason}",
             error_info=f"Human rejected approval for {request_id}: {reason}",
         )
+        record_task_outcome_memory(self.storage, task)
+        return task
 
     def recover_interrupted_tasks(self) -> List[Dict[str, Any]]:
         """Recover tasks from SQLite after restart without blindly replaying unconfirmed side effects."""
@@ -282,7 +289,13 @@ class Orchestrator:
         if not self.storage.claim_task(task_id, owner_id):
             return self.storage.get_task(task_id)
         try:
-            return self._run_task(task_id)
+            pre_status = self.storage.get_task(task_id)["status"]
+            result = self._run_task(task_id)
+            # Minimal Phase 3 memory logging: only when THIS run drove the task
+            # into a terminal succeeded/failed state (never on repeat queries).
+            if result["status"] in {"succeeded", "failed"} and pre_status not in {"succeeded", "failed"}:
+                record_task_outcome_memory(self.storage, result)
+            return result
         except StaleAttemptError as exc:
             task = self.storage.get_task(task_id)
             self.storage.record_event(task_id=task_id, event_type="stale_attempt_rejected",
@@ -291,6 +304,119 @@ class Orchestrator:
             return task
         finally:
             self.storage.release_task(task_id, owner_id)
+
+    # ------------------------------------------------------------------
+    # Phase 3 Worker contract: trusted planning / generation / repair context
+    # ------------------------------------------------------------------
+
+    def _worker_task_context(self, task: Dict[str, Any]) -> Dict[str, Any]:
+        budget = task.get("budget") or {}
+        context = task.get("context") or {}
+        return {
+            "task_id": task["task_id"],
+            "title": task["title"],
+            "description": task["description"],
+            "acceptance_criteria": task["acceptance_criteria"],
+            "constraints": {
+                "max_turns": budget.get("max_turns"),
+                "max_tokens": budget.get("max_tokens"),
+                "max_execution_time_seconds": budget.get("max_execution_time_seconds"),
+                "workspace_root": context.get("workspace_root"),
+                "target_files": context.get("target_files") or [],
+                "risk_level": (task.get("risk_assessment") or {}).get("risk_level"),
+            },
+            "input_data": (task.get("metadata") or {}).get("input_data"),
+        }
+
+    def _build_planning_messages(self, task: Dict[str, Any]) -> List[Dict[str, str]]:
+        # Phase 3 gap fix: planning receives the trusted task identity, goals,
+        # acceptance criteria and constraints (previously only title+description).
+        return [
+            {"role": "system", "content": (
+                "Generate a valid execution Plan JSON for the trusted task context provided. "
+                "Return only the raw Plan JSON object without markdown fences."
+            )},
+            {"role": "user", "content": json.dumps(self._worker_task_context(task), ensure_ascii=False)},
+        ]
+
+    def _build_generation_messages(self, task: Dict[str, Any], repair_count: int) -> List[Dict[str, str]]:
+        context = self._worker_task_context(task)
+        if repair_count > 0:
+            issues = []
+            for binding in self.storage.list_review_bindings(task_id=task["task_id"]):
+                issues.extend(binding["review"].get("issues") or [])
+            acceptance_failures = [
+                item for item in (self._last_acceptance_results(task["task_id"]) or [])
+                if item.get("passed") is not True
+            ]
+            latest = self.artifact_store.get_latest(task["task_id"])
+            context.update({
+                "attempt_kind": "repair",
+                "repair_round": repair_count,
+                "reviewer_issues": issues,
+                "acceptance_failures": acceptance_failures,
+                "current_artifact": (
+                    {"version": latest["version"], "sha256": latest["sha256"], "content": latest["content"]}
+                    if latest else None
+                ),
+            })
+        else:
+            context["attempt_kind"] = "initial"
+        return [
+            {"role": "system", "content": (
+                "Produce the actual work artifact for the trusted task context. "
+                "Return only the raw Artifact JSON object matching ArtifactSchemaV1; "
+                "the content field must contain the complete artifact, not a plan or a completion summary. "
+                "The control layer computes the authoritative version and SHA-256; do not include hash fields."
+            )},
+            {"role": "user", "content": json.dumps(context, ensure_ascii=False)},
+        ]
+
+    def _last_acceptance_results(self, task_id: str) -> Optional[List[Dict[str, Any]]]:
+        bindings = self.storage.list_review_bindings(task_id=task_id)
+        return bindings[-1]["acceptance"] if bindings else None
+
+    def _snapshot_artifacts(self, refs: List[str]) -> Dict[str, Any]:
+        if refs and all(is_mem_artifact_path(ref) for ref in refs):
+            return artifact_snapshot(self.artifact_store, refs)
+        return artifact_snapshot(self.tool_executor, refs)
+
+    def _generate_artifact(self, task_id: str, worker: ModelAdapter, task: Dict[str, Any], repair_count: int) -> Dict[str, Any]:
+        """Run one structured generation (or repair) turn and persist the control-hashed artifact."""
+        try:
+            gen_messages = self._build_generation_messages(task, repair_count)
+            resp, attempt_id = self._invoke_model(task_id, "worker", worker, gen_messages, self._artifact_schema)
+            envelope = resp.parsed_json
+            Draft7Validator(self._artifact_schema, format_checker=FormatChecker()).validate(envelope)
+            if envelope["task_id"] != task_id:
+                raise SchemaValidationError("Artifact task_id correlation mismatch")
+            version = repair_count + 1
+            record = self.artifact_store.save_version(
+                task_id, envelope=envelope, version=version, generation_attempt_id=attempt_id)
+            mem_path = mem_artifact_path(task_id, envelope["artifact_id"])
+            evidence_ref = f"artifact:{envelope['artifact_id']}@v{version}:sha256={record['sha256']}"
+            task = self.storage.attach_artifact(task_id, mem_path, evidence_ref)
+            if (task.get("metadata") or {}).get("input_data") is not None:
+                task = self.storage.attach_artifact(task_id, mem_path, "task_metadata:input_data")
+            return task
+        except CredentialMissingError as exc:
+            return self.storage.transition_task_state(
+                task_id, "failed", actor_role="worker",
+                reason="worker_credential_missing", error_info=str(exc))
+        except (AdapterError, SchemaValidationError, ValidationError) as exc:
+            err_str = str(exc)
+            lowered = err_str.lower()
+            if "timed out" in lowered:
+                reason_code = "worker_timeout"
+            elif "truncated" in lowered:
+                reason_code = "worker_truncated"
+            elif "refused" in lowered:
+                reason_code = "worker_refused"
+            else:
+                reason_code = "worker_generation_failed"
+            return self.storage.transition_task_state(
+                task_id, "failed", actor_role="worker",
+                reason=reason_code, error_info=err_str)
 
     def _invoke_model(self, task_id, role, adapter, messages, schema, **kwargs):
         task = self.storage.get_task(task_id)
@@ -372,11 +498,7 @@ class Orchestrator:
 
             try:
                 remaining_sec = self.get_remaining_budget_seconds(task_id, task)
-                plan_messages = [
-                    {"role": "system", "content": "Generate a valid execution Plan for the task."},
-                    {"role": "user", "content": json.dumps({"title": task["title"], "description": task["description"]})},
-                ]
-                plan_resp, _ = self._invoke_model(task_id, "worker", worker, plan_messages, self._plan_schema)
+                plan_resp, _ = self._invoke_model(task_id, "worker", worker, self._build_planning_messages(task), self._plan_schema)
                 Draft7Validator(self._plan_schema, format_checker=FormatChecker()).validate(plan_resp.parsed_json)
                 if plan_resp.parsed_json["task_id"] != task_id:
                     raise SchemaValidationError("Plan task_id correlation mismatch")
@@ -565,6 +687,13 @@ class Orchestrator:
             if self.storage.get_task(task_id)["status"] != "executing":
                 return self.storage.get_task(task_id)
 
+            # Phase 3: no-tool generation tasks produce the artifact through the
+            # structured Worker contract (memory/SQLite stored, never a file write).
+            if not proposed_requests:
+                task = self._generate_artifact(task_id, worker, task, repair_idx)
+                if task["status"] != "executing":
+                    return task
+
             # 4. Transition to Independent Review (Worker completion != Task success)
             task = self.storage.transition_task_state(
                 task_id,
@@ -594,7 +723,7 @@ class Orchestrator:
                     )
 
                 target_artifact = (task.get("artifact_refs") or ["workspace"])[0]
-                snapshots = artifact_snapshot(self.tool_executor, task.get("artifact_refs", []))
+                snapshots = self._snapshot_artifacts(task.get("artifact_refs", []))
                 review_metadata = {
                     "schema_version": "1.0.0",
                     "review_id": f"rev_{uuid.uuid4().hex[:12]}",
@@ -639,17 +768,18 @@ class Orchestrator:
                 review_json = review_resp.parsed_json
                 Draft7Validator(self._review_schema, format_checker=FormatChecker()).validate(review_json)
                 validate_review(review_json, review_metadata, snapshots,
-                                artifact_snapshot(self.tool_executor, task.get("artifact_refs", [])))
+                                self._snapshot_artifacts(task.get("artifact_refs", [])))
                 budget_failed = self._check_budget_or_fail(task_id, before_call=False)
                 if budget_failed is not None:
                     return budget_failed
                 acceptance = []
                 if review_json["verdict"] == "pass":
                     if self.acceptance_evaluator is not None:
-                        acceptance = self.acceptance_evaluator(task, self.storage.list_tool_executions(task_id))
+                        acceptance = self.acceptance_evaluator(
+                            task, self.storage.list_tool_executions(task_id), self.artifact_store)
                     validate_acceptance(task, acceptance, task["tool_execution_evidence"])
                     validate_review(review_json, review_metadata, snapshots,
-                                    artifact_snapshot(self.tool_executor, task.get("artifact_refs", [])))
+                                    self._snapshot_artifacts(task.get("artifact_refs", [])))
                 self.storage.bind_review(review_json, review_attempt, snapshots, acceptance)
             except (CredentialMissingError, AdapterError, SchemaValidationError, ValidationError) as exc:
                 # Iron Rule: Reviewer unavailability, timeout, or invalid JSON MUST NEVER auto-pass!

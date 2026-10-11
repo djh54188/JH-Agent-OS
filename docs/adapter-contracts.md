@@ -67,7 +67,7 @@ class ModelAdapter(ABC):
 | 维度 | Gemini (首选 Worker) | Muse (首选 Reviewer) | 备选/本地可用项 (DeepSeek) | 内核引擎 (OpenAI Codex) |
 | :--- | :--- | :--- | :--- | :--- |
 | **供应商** | Google (Google AI / Vertex AI) | 用户提供的本地 Muse 代理（上游供应商未核实） | 深度求索 (DeepSeek) | OpenAI |
-| **基准模型 ID** | `gemini-1.5-pro`（可选 `2.0-flash`） | `muse-spark-1.3-contributor-free` | `deepseek-flash` / `v4-pro` | `gpt-6.1-sol` |
+| **基准模型 ID** | `gemini-3.8-flash`（2026-10-11 经官方文档核实，替代已退役的 `gemini-1.5-pro`） | `muse-spark-1.3-contributor-free` | `deepseek-flash` / `v4-pro` | `gpt-6.1-sol` |
 | **API 端点** | `https://generativelanguage.googleapis.com/v1beta` | `http://127.0.0.1:8787/v1`（Responses） | `https://api.deepseek.com/v1` | 本地 CLI / `stdio://` |
 | **认证方式** | HTTP Header `x-goog-api-key` 或 Bearer Token | `Authorization: Bearer <KEY>` | HTTP Header `Authorization: Bearer <KEY>` | OAuth Bearer / API Key |
 | **凭据环境变量** | `GEMINI_API_KEY` 或 `GOOGLE_API_KEY` | `MUSE_API_KEY` | `DEEPSEEK_API_KEY` | `~/.codex/auth.json` |
