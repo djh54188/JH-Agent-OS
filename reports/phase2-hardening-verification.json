@@ -4,18 +4,18 @@
   "python_version": "3.14.7",
   "source_sha256": {
     "scripts/verify_phase2_hardening.py": "779177c4f31ffa5192725eb86300f073f7c30abf4b4edc8cfc22636aa88666b7",
-    "src/acceptance.py": "ec5d31339c7f0351474e886daee7ae82f9696cce931bb38f6d8bddcfb9063a26",
+    "src/acceptance.py": "df8e8beaef3af31e4339d503dd4f1ebb05fc5c6377f9570c80768333c12a56f8",
     "src/adapters.py": "b2b8539dda836c4c6818f94250dc3ef4b2e6d8cf19a5cd4b85fc7502a4bd1bed",
     "src/anthropic_adapter.py": "48a683c4c1b7dcc7f152b23dca5172314ad18b83152a427b732f9068d408a363",
     "src/artifacts.py": "cc569f7634f4e4c88b6fccb73a6afd23fd967b665fa6aaf11cdcb54daeaa09a1",
     "src/cli.py": "faabb5bdf74fffec023a9be2980a71dcfc7591bf14fc11d0e31fcfa3c001439d",
     "src/codex_managed.py": "f5f068678cbb21b87d91c4850dff92a74ee9abde1e1096aed20ef5b4a4d96976",
     "src/control_guards.py": "61c1a0bb3a2af263f2163420f864edd9a1c492897c0c858bb58eacdcb99ae1f9",
-    "src/file_tools.py": "c1970a7001fe62c5ae5b397e2447c8fa61eea12316f810d9d2359bc719c68ffe",
+    "src/file_tools.py": "88590a320f2bf682f067f9a3ea2942df48ccbcb7daa1733fd8221e6b7459d400",
     "src/memory.py": "4be3042c39ca90ef8ca54f7e3e270c1156ca76ab106bb97a65a88701ccb767a6",
     "src/mock_components.py": "94633a2d4a5c6540494d84648e25a68a7a0a75f63053c5782624571fc3e4abfc",
     "src/model_config.py": "5b10f126b25fb811496d303fdc0c9a4669da41543bdf5c1e5af5a818523284e0",
-    "src/orchestrator.py": "dab17c8e71af57893c56f211277b43f70c77027a1727a17b7518e2cae5761c2b",
+    "src/orchestrator.py": "f58f254bd4e22190ed1db99ac3e6282b7f52cbcb323983a7c05948795b164b64",
     "src/responses_adapter.py": "f785ce45d91deaa473bddb4921efc5512c680ca7a8a842b2b55dddc4650f3f05",
     "src/router_policy.py": "343bac66ec457f0ddd13fc61ac987ada9bc3e78c962a2f38ea553d32ea0a5840",
     "src/state_machine.py": "afe829049cff7cc32bb170ff41ce20debcaa80f8c0bc60a596c6b56b1162da6b",
@@ -26,7 +26,7 @@
     "tests/test_phase2_control_layer.py": "a48838b9f88ee6cd8911ba77f0256e75a2b3d1c50a61e67e319c36b4077f3719",
     "tests/test_phase2_hardening.py": "2fcb1bed5a24a4640b31f30e6c5da8441b8cc0a071db6f6db3ec78e80cf217c1",
     "tests/test_phase3_loop.py": "ffe41bed0842abf600c7f2c8186671163e001f2da4b3e44931ed3e002447d45e",
-    "tests/test_phase4_file_tools.py": "c3418b257019a55b1a99f134987c8f144237266402868df38aac533d5a40780b",
+    "tests/test_phase4_file_tools.py": "87f80837d7fa5b74c7b11fb4db2927f6dbe92809caa85b5eab151817d9bfa4d3",
     "tests/test_responses_adapter.py": "ec8d8acf83d3356a61ac102557b17c216be658ec572bdd1266978f980d4aafd1",
     "tests/test_schemas.py": "e62020a75d6bcd543cab9fa45fe32bd52b197b1b9a4842169d43581aa3c511eb"
   },
@@ -218,7 +218,7 @@
     "not_applicable_phase2": 1
   },
   "unit_tests": {
-    "run": 125,
+    "run": 127,
     "failures": 0,
     "errors": 0,
     "skipped": 1
