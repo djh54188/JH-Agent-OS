@@ -48,7 +48,7 @@
 ## 2. 验证证据（离线 / 真实 / 故障注入分别标注）
 
 ### 2.1 离线验证（is_mock=true）——全部通过
-- **单元测试**：`python -m unittest discover tests` → **90 项全部通过**（1 项跳过为阶段 4 junction 预留）。其中新增 `tests/test_phase3_loop.py` 12 项：
+- **单元测试**：`python -m unittest discover tests` → **运行 91 项全部通过**（90 通过 + 1 项跳过为阶段 4 junction 预留；90 系审查 minor 修复前基线，本轮新增 1 项锁定测试后为 91）。其中新增 `tests/test_phase3_loop.py` 12 项：
   - **A 正常流程**（4 项）：生成→可信验收→独立审核→succeeded；产物 v1 + 控制层 SHA-256 + 审核绑定关联；控制验收不采信 Worker/Reviewer 意见（产物错误时即使 review pass 也 needs_attention）。
   - **B 错误发现与修复**（2 项）：夹具注入错误产物（注入内容与前后哈希在测试与断言中显式记录，绝不归属为模型自然生成）→ Muse-mock 出 revise 带证据 → 修复上下文含 Reviewer 问题+当前产物哈希 → v2 重新验收+重新审核（新旧 review_id/attempt_id 不同）→ succeeded；修复上限 2 轮耗尽→failed，负结果记忆保留证据。
   - **C 失败路径**（4 项）：生成阶段 timeout/invalid_json/truncated/refused 全部 fail-closed 且无产物落库；产物 task_id 关联不符被拒；产物 Schema 不符被拒；未知用量 fail-closed 到 needs_attention（生命周期类失败路径复用阶段 2 OPT 套件，未重复实现）。
