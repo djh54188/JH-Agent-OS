@@ -3,11 +3,11 @@
 - **日期**：2026-10-11（Asia/Shanghai）
 - **开发基线**：`28b1f4611a2c4f1eda57e92cf87a95ca626dcba2`（阶段 2 收口提交）
 - **工作分支**：`phase3-real-dual-model-loop`
-- **结论（负面优先）**：**阶段 3 实现已交付；真实双模型闭环验收未完成，不宣称通过。**
-  两个真实通道在验证时刻均被环境阻塞：Gemini 缺 `GEMINI_API_KEY`（blocked），
-  Muse 本地代理 `127.0.0.1:8787` 上游返回 HTTP 502（blocked，2026-10-10 曾验证健康，
-  属环境波动，未改动任何协议/模型/审核通道配置）。依据任务书第八节，
-  本报告只交付实现与阻塞清单。
+- **结论（负面优先）**：**阶段 3 实现已交付；真实 Muse 审核证据与 DeepSeek+Muse 补充闭环证据已取得；真实 Gemini+Muse 闭环验收仍未完成，不宣称通过。**
+  Gemini 缺 `GEMINI_API_KEY`（blocked，未发起任何调用）。Muse 本地代理首轮验证时返回 HTTP 502
+  （上游瞬时波动），复认时已恢复（HTTP 200），随后完成两项真实审核与一次真实补充闭环；
+  协议/模型/审核通道全程未改动。依据任务书第八节，阶段 3 验收以 Gemini 通道恢复为前提，
+  当前只交付实现、真实 Muse 证据与阻塞清单。
 
 ---
 
@@ -56,7 +56,10 @@
 - **变异守卫**：`python scripts/verify_phase3_guards.py` → **4/4 全部检出**（产物关联校验跳过、验收证据引用篡改、修复上下文降级、泛化经验误标 verified）。
 - **既有守卫复用**：`verify_phase2_hardening.py`（14 变异检出）、`verify_phase2_guards.py`（5/5）、`verify_responses_guards.py`（8/8）在本分支复跑全部通过。
 
-### 2.2 真实调用（is_mock=false）——全部被环境阻塞（详见 §3）
+### 2.2 真实调用（is_mock=false）——Muse 与补充闭环已取证，Gemini 仍阻塞（详见 §3）
+- Muse 复认两项真实审核通过（正确产物 pass；注入缺陷被 revise 且证据引用缺陷表达式）；
+  DeepSeek（worker）+ Muse（reviewer）补充闭环真实跑通至 succeeded。
+- 真实 Gemini+Muse 闭环（场景 A/B 的验收路径）因缺少凭据未执行。
 ### 2.3 故障注入（is_mock=false 的故障模式，不破坏宿主网络）
 - 截断/拒绝/超时/非法 JSON 均通过适配器故障模式与进程内变异注入，未对宿主网络或供应商制造故障。
 
@@ -67,18 +70,17 @@
 | 通道 | 供应商/模型 | 端点/协议 | 调用次数 | 结果 |
 | :--- | :--- | :--- | :--- | :--- |
 | Gemini Worker | Google / `gemini-3.8-flash`（型号经官方文档核实修正） | `generativelanguage.googleapis.com/v1beta` | **0**（未发起） | **BLOCKED_MISSING_CREDENTIAL**：`GEMINI_API_KEY`/`GOOGLE_API_KEY` 不存在。执行 AI 自身会话模型接入与 JH Runtime 的 API 接入相互独立，不得以会话凭据替代 |
-| Muse Reviewer | 用户本地 Muse 代理 / `muse-spark-1.3-contributor-free` | `http://127.0.0.1:8787/v1`（Responses 协议，沿用已批准配置，未切换协议/模型/通道） | **0**（健康检查即失败） | **BLOCKED_ENDPOINT_UNAVAILABLE**：验证时刻 `GET /models` 返回 **HTTP 502**（两次探测间隔 20 秒均 502）。2026-10-10 同配置曾通过最小真实验证（`reports/muse-verification.json`），属上游环境波动 |
-| DeepSeek+Muse 补充联调 | DeepSeek `deepseek-flash`（worker）+ Muse（reviewer） | — | **0** | **BLOCKED_ENDPOINT_UNAVAILABLE**：DeepSeek worker 健康但 Muse 不可用；按裁决不擅自切换审核通道，该联调明确标注**不作为阶段 3 验收证据** |
+| Muse Reviewer | 用户本地 Muse 代理 / `muse-spark-1.3-contributor-free` | `http://127.0.0.1:8787/v1`（Responses 协议，沿用已批准配置，未切换协议/模型/通道） | **2** 次真实审核 | **已取证**：正确产物 `pass`（`rev_p3_muse_ok01`，2663 tokens，4.9s）；注入缺陷被 `revise` 且证据引用缺陷表达式（`rev_p3_muse_bad02`，3070 tokens，9.4s）。注入元数据（第 4 行 `a / b`→`a * b`、前后 SHA-256、非模型生成声明）见验证 JSON。首轮探测曾遇 HTTP 502，复认时恢复 200，属上游瞬时波动 |
+| DeepSeek+Muse 补充联调 | DeepSeek `deepseek-flash`（worker）+ Muse（reviewer） | DeepSeek Chat Completions + Muse Responses | **完整闭环 1 次**（规划+生成+审核各 1，共 3 turns，6513 tokens） | **真实跑通至 succeeded**：产物 v1 `dbc8bf65…` 经控制层验收与 Muse `pass`（`rev_a9ce485b25fb`）。按裁决明确标注**不作为阶段 3 验收证据**，仅证明新调用链在真实模型上端到端可用 |
 
-**用量与耗时说明**：本报告不含任何真实模型调用记录；所有 `tokens_used` 保持 NULL（未知），不默认记零。
+**用量与耗时说明**：以上均为真实供应商返回的用量（Muse 2663/3070 tokens；补充闭环 6513 tokens，其中含 DeepSeek 与 Muse 两侧）；无未知用量条目；耗时与哈希逐条记录在 `reports/phase3-verification.json`。
 
 ---
 
 ## 4. 阻塞项与架构师所需输入
 
-1. **GEMINI_API_KEY 缺失**（阻塞 Gemini 真实 Worker 通道）：请在运行进程的用户环境变量配置密钥后，重跑 `python scripts/verify_phase3.py` 即可自动补测场景 A/B 的真实闭环。
-2. **Muse 本地代理上游 502**（阻塞 Muse 真实审核与 DeepSeek 补充联调）：需要用户侧恢复 `127.0.0.1:8787` 代理的上游可用性。未对代理/协议/模型做任何改动。
-3. 两项恢复后：重跑验证脚本产出真实调用报告，方可申请阶段 3 验收裁决。
+1. **GEMINI_API_KEY 缺失**（阻塞 Gemini 真实 Worker 通道，唯一剩余阻塞项）：请在运行进程的用户环境变量配置密钥后，重跑 `python scripts/verify_phase3.py` 即可自动补测场景 A/B 的真实闭环，随后方可申请阶段 3 验收裁决。
+2. ~~Muse 本地代理上游 502~~ **已解除**：复认时代理恢复（HTTP 200），真实审核与补充闭环证据已取得；期间未对代理/协议/模型做任何改动。
 
 ## 5. 新发现的架构问题（登记，不擅自扩大范围）
 

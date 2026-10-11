@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-11T04:37:23Z",
+  "timestamp": "2026-10-11T11:17:36Z",
   "phase": 3,
   "baseline_commit": "28b1f4611a2c4f1eda57e92cf87a95ca626dcba2",
   "offline_unit_tests": {
@@ -13,8 +13,38 @@
   "live_muse_reviewer": {
     "is_mock": false,
     "protocol": "responses",
-    "cases": [],
-    "status": "BLOCKED_ENDPOINT_UNAVAILABLE",
+    "cases": [
+      {
+        "case": "correct_artifact_pass",
+        "artifact_sha256": "ba1a531f581d2e6094e978ed6f7aca7a8d92eeb62c6e7ad73ee692f7f18bc772",
+        "verdict": "pass",
+        "issues": 0,
+        "schema_valid": true,
+        "latency_ms": 4879,
+        "tokens_used": 2663,
+        "review_id": "rev_p3_muse_ok01",
+        "passed": true
+      },
+      {
+        "case": "injected_defect_caught_with_evidence",
+        "fixture_injection": {
+          "injected_by": "test_fixture (scripts/verify_phase3.py), NOT model-generated",
+          "injected_line": 4,
+          "injected_change": "'return a / b' -> 'return a * b'",
+          "sha256_before": "90508498cad0a2fa310e6313bdc928882d2f2a6f3d5b23eb14668da075988ef7",
+          "sha256_after": "87b2ef2a0733c196c8f079e389ac15236de88cff675546ea1fb577cb0e8e45d3"
+        },
+        "verdict": "revise",
+        "issues": 1,
+        "evidence_cites_defect": true,
+        "schema_valid": true,
+        "latency_ms": 9435,
+        "tokens_used": 3070,
+        "review_id": "rev_p3_muse_bad02",
+        "passed": true
+      }
+    ],
+    "status": "attempted",
     "provider": "custom_muse",
     "model_id": "muse-spark-1.3-contributor-free",
     "endpoint_url": "http://127.0.0.1:8787/v1",
@@ -22,11 +52,11 @@
     "api_key_env": "MUSE_API_KEY",
     "reasoning_effort": "max",
     "health": {
-      "healthy": false,
-      "model_available": false,
-      "error": "Responses request failed or returned invalid JSON"
+      "healthy": true,
+      "model_available": true,
+      "error": null
     },
-    "note": "Local Muse proxy is unreachable or its upstream returned an error (observed HTTP 502 from 127.0.0.1:8787 at verification time). This is an environment blocker, not a code or configuration change; the Responses protocol and model ID are unchanged from the approved setup."
+    "passed": true
   },
   "gemini_worker_access": {
     "is_mock": false,
@@ -43,7 +73,31 @@
   "deepseek_supplementary_loop": {
     "is_mock": false,
     "counts_as_acceptance_evidence": false,
-    "cases": [],
+    "cases": [
+      {
+        "case": "full_loop_deepseek_worker_muse_reviewer",
+        "final_status": "succeeded",
+        "review_verdict": "pass",
+        "repair_count": 0,
+        "turns_used": 3,
+        "tokens_used": 6513,
+        "tokens_unknown_count": 0,
+        "artifact_versions": [
+          {
+            "version": 1,
+            "sha256": "dbc8bf6551205869aacd0b8fb8c044f9b223bdc094690f32772d133096f7be57",
+            "artifact_type": "data_conversion"
+          }
+        ],
+        "review_ids": [
+          "rev_a9ce485b25fb"
+        ],
+        "review_verdicts": [
+          "pass"
+        ],
+        "passed": true
+      }
+    ],
     "worker": {
       "provider": "openai_compatible",
       "model_id": "deepseek-flash",
@@ -52,10 +106,11 @@
     "reviewer": {
       "provider": "custom_muse",
       "model_id": "muse-spark-1.3-contributor-free",
-      "healthy": false,
+      "healthy": true,
       "api_protocol": "responses"
     },
-    "status": "BLOCKED_ENDPOINT_UNAVAILABLE"
+    "passed": true,
+    "status": "completed"
   },
-  "phase3_acceptance_verdict": "IMPLEMENTATION_DELIVERED_BOTH_LIVE_CHANNELS_BLOCKED: offline suite and mutation guards are green, but no real-model evidence could be produced at verification time - Gemini lacks GEMINI_API_KEY and the local Muse proxy returned HTTP 502 (upstream unavailable). Per the Phase 3 brief, Phase 3 acceptance is NOT claimed; only the implementation and this blocker list are delivered."
+  "phase3_acceptance_verdict": "IMPLEMENTATION_DELIVERED_GEMINI_BLOCKED: offline suite green, real Muse review evidence recorded (correct pass + injected defect caught with evidence), but the real Gemini+Muse closed loop could not run because GEMINI_API_KEY is absent. Phase 3 acceptance is NOT claimed; the blocked item is registered for the architect."
 }
