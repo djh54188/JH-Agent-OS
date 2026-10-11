@@ -142,6 +142,20 @@ class TestPhase3Loop(unittest.TestCase):
         result = orch.run_task(tid)
         self.assertEqual(result["status"], "succeeded")
 
+    def test_a_evaluator_declared_two_condition_limit(self):
+        """Review finding fix: criteria beyond the second are fail-closed BY DESIGN.
+
+        Locks the declared capability limit of transform_acceptance_evaluator so a
+        future third condition can never silently pass; tasks needing three or
+        more verifiable conditions must supply a different control-owned evaluator.
+        """
+        evaluator = transform_acceptance_evaluator([{"a": 1}])
+        task = make_generation_task("task_p3_eval3c01")
+        task["acceptance_criteria"] = ["input provided", "output matches", "extra condition"]
+        results = evaluator(task, [], artifact_store=None)
+        self.assertEqual(len(results), 3)
+        self.assertEqual(results[2], {"criterion": "extra condition", "passed": False, "evidence": []})
+
     def test_a_acceptance_rejects_wrong_output_even_if_review_passes(self):
         # Control acceptance does NOT trust worker or reviewer opinion.
         tid = "task_p3_acc_bad03"

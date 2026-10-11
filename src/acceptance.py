@@ -20,6 +20,14 @@ def transform_acceptance_evaluator(expected_output: Any, *, input_label: str = "
     declared input; the Worker's summary is never consulted. Each returned item
     cites the artifact evidence reference recorded by the orchestrator, so the
     evidence is traceable through task.tool_execution_evidence.
+
+    Capability limit (declared per Phase 3 review finding): this evaluator judges
+    exactly TWO criteria — acceptance_criteria[0] is "trusted input_data was
+    provided" and acceptance_criteria[1] is "artifact content equals the expected
+    output". Any criteria beyond the second are returned fail-closed
+    (passed=False, evidence=[]) BY DESIGN; tasks that need three or more
+    verifiable conditions must supply a different control-owned evaluator rather
+    than reuse this one.
     """
     expected_text = expected_output if isinstance(expected_output, str) else json.dumps(expected_output, ensure_ascii=False, sort_keys=True)
 
@@ -58,7 +66,8 @@ def transform_acceptance_evaluator(expected_output: Any, *, input_label: str = "
                     "evidence": [artifact_ref] if (matches and artifact_ref) else [],
                     "note": normalized[:256] if normalized is not None else f"unparseable:{content[:128]}",
                 })
-        # Any remaining criteria: fail-closed unless the task declared no more.
+        # Any remaining criteria: fail-closed by declared capability limit (see
+        # docstring) — a third+ condition is never silently judged "passed".
         for criterion in task["acceptance_criteria"][2:]:
             results.append({"criterion": criterion, "passed": False, "evidence": []})
         return results

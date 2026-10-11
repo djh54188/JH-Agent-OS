@@ -48,10 +48,11 @@
 ## 2. 验证证据（离线 / 真实 / 故障注入分别标注）
 
 ### 2.1 离线验证（is_mock=true）——全部通过
-- **单元测试**：`python -m unittest discover tests` → **90 项全部通过**（1 项跳过为阶段 4 junction 预留）。其中新增 `tests/test_phase3_loop.py` 11 项：
-  - **A 正常流程**（3 项）：生成→可信验收→独立审核→succeeded；产物 v1 + 控制层 SHA-256 + 审核绑定关联；控制验收不采信 Worker/Reviewer 意见（产物错误时即使 review pass 也 needs_attention）。
+- **单元测试**：`python -m unittest discover tests` → **90 项全部通过**（1 项跳过为阶段 4 junction 预留）。其中新增 `tests/test_phase3_loop.py` 12 项：
+  - **A 正常流程**（4 项）：生成→可信验收→独立审核→succeeded；产物 v1 + 控制层 SHA-256 + 审核绑定关联；控制验收不采信 Worker/Reviewer 意见（产物错误时即使 review pass 也 needs_attention）。
   - **B 错误发现与修复**（2 项）：夹具注入错误产物（注入内容与前后哈希在测试与断言中显式记录，绝不归属为模型自然生成）→ Muse-mock 出 revise 带证据 → 修复上下文含 Reviewer 问题+当前产物哈希 → v2 重新验收+重新审核（新旧 review_id/attempt_id 不同）→ succeeded；修复上限 2 轮耗尽→failed，负结果记忆保留证据。
   - **C 失败路径**（4 项）：生成阶段 timeout/invalid_json/truncated/refused 全部 fail-closed 且无产物落库；产物 task_id 关联不符被拒；产物 Schema 不符被拒；未知用量 fail-closed 到 needs_attention（生命周期类失败路径复用阶段 2 OPT 套件，未重复实现）。
+    **失败语义分野（审查 minor #2 补释）**：生成调用链失败（超时/截断/拒绝/非法 JSON/产物关联或 Schema 不符）进 `failed` 终态；预算、时限与用量不确定性（无法安全继续或重放）进 `needs_attention`——与阶段 2 OPT 套件的生命周期分工一致，`tests/test_phase3_loop.py` 断言与之一致。
   - **D 持久化**（2 项）：文件库重启后查询终态/产物/审核绑定/记忆记录，模型调用次数为零；产物仅存 `mem://` 路径与 SQLite，绝无真实文件写入。
 - **变异守卫**：`python scripts/verify_phase3_guards.py` → **4/4 全部检出**（产物关联校验跳过、验收证据引用篡改、修复上下文降级、泛化经验误标 verified）。
 - **既有守卫复用**：`verify_phase2_hardening.py`（14 变异检出）、`verify_phase2_guards.py`（5/5）、`verify_responses_guards.py`（8/8）在本分支复跑全部通过。

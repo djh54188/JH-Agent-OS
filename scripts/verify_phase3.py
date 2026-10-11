@@ -17,6 +17,7 @@ import hashlib
 import io
 import json
 from pathlib import Path
+import re
 import sys
 import unittest
 
@@ -91,15 +92,24 @@ def verify_live_muse():
         "reasoning_effort": muse_cfg.get("reasoning_effort"),
     })
     health = adapter.check_health()
+    # Structured probe evidence (review finding #3): the HTTP status and probe
+    # timestamp are machine-readable, so a future blocker needs no prose parsing.
+    # check_health raises HTTPError for non-2xx; "HTTP <code>" is parsed from its
+    # sanitized message. A healthy probe implies 2xx (urllib only returns on 2xx),
+    # recorded as 200 for the /models GET.
+    error_text = health.get("error")
+    status_match = re.search(r"HTTP (\d+)", error_text or "")
+    http_status = int(status_match.group(1)) if status_match else (200 if health.get("healthy") else None)
     record["health"] = {
         "healthy": health.get("healthy"),
         "model_available": health.get("model_available"),
-        "error": health.get("error"),
+        "error": error_text,
+        "probes": [{"probed_at": utc_now(), "http_status": http_status}],
     }
     if not health.get("healthy"):
         record["status"] = "BLOCKED_ENDPOINT_UNAVAILABLE"
         record["note"] = ("Local Muse proxy is unreachable or its upstream returned an error "
-                          "(observed HTTP 502 from 127.0.0.1:8787 at verification time). This is "
+                          "(see health.probes for the machine-readable status code). This is "
                           "an environment blocker, not a code or configuration change; the "
                           "Responses protocol and model ID are unchanged from the approved setup.")
         return record
