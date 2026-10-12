@@ -1,0 +1,50 @@
+{
+  "repo": "D:\\JH-Agent OS",
+  "shared_source_modified": false,
+  "api_calls": 0,
+  "temp_root_cleaned": true,
+  "results": [
+    {
+      "probe": "staging_junction",
+      "result": "PathBoundaryError",
+      "outside_before": "KEEP_OUTSIDE",
+      "outside_after": "",
+      "outside_bytes_after": 0,
+      "defect_reproduced": true
+    },
+    {
+      "probe": "fixed_temp_collision",
+      "neighbor_before": "UNAUTHORIZED_NEIGHBOR",
+      "neighbor_exists_after": false,
+      "target_after": "CANDIDATE",
+      "applied": true,
+      "defect_reproduced": true
+    },
+    {
+      "probe": "target_changed_after_check",
+      "concurrent_content": "CONCURRENT_UPDATE",
+      "target_after": "CANDIDATE_2",
+      "applied": true,
+      "defect_reproduced": true
+    },
+    {
+      "probe": "junction_after_temp_before_replace",
+      "outside_before": "OUTSIDE_ORIGINAL",
+      "outside_after": "CANDIDATE_REPLACE",
+      "inside_original_after": "INSIDE_ORIGINAL",
+      "applied": true,
+      "defect_reproduced": true
+    },
+    {
+      "probe": "reviewed_B_applied_A",
+      "status": "succeeded",
+      "error": null,
+      "target_content": "[{\"region\":\"a\",\"sales\":666}]",
+      "reviewed_content": "[{\"region\":\"a\",\"sales\":1}]",
+      "review_sha": "3ae40f8dfb3b2e45c4d9cff402fdfb668d285388ab19e83ed2d76818407df397",
+      "target_sha": "df31229a3c1662deb68f861d57ef4e7c5bb849e550cef680a033dd02a23a8edb",
+      "policy_modified": false,
+      "defect_reproduced": true
+    }
+  ]
+}

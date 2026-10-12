@@ -1,9 +1,11 @@
 # JH-Agent OS 文件工具契约与权限边界（阶段 4 首批）
 
+> **2026-10-12 独立复核状态**：本契约的安全不变量继续有效，但当前实现 ec11584 尚未满足其中五项，见[复核报告](../reports/n1-architecture-review-20261012.md)与[探针结果](../reports/n1-architecture-probes-20261012.json)。包括事后拒绝已产生截断、邻居临时名覆盖、并发更新被覆盖、父目录替换越界、审核与落盘内容不一致。JH-015 整改独立通过前，不用于真实工作文件；正文“已覆盖”只指原交付测试范围，不构成完整保证。不得通过降低契约来关闭问题。
+
 - **版本**：v1.0.0（2026-10-11）
 - **适用组件**：`src/file_tools.py::FileToolExecutor`、Orchestrator file_tools 模式
 - **范围声明**：本批仅开放工作区受限的 `read_file` 与 `stage_write`（暂存写入）及
-  审核后受控 `apply`。任意 Shell、系统权限操作、外部发布不在本批（阶段 4 后续批次）。
+  审核后受控 `apply`。任意 Shell、系统权限操作、外部发布不在本批；旧 E4 自研通用 Shell/Git 平台计划已取消，见 [ADR-0003](adr/ADR-0003-codex-hosted-entry.md)。
 
 ---
 

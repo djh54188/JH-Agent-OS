@@ -15,10 +15,13 @@
 
 | 文档 / 目录 | 用途与适用限制 |
 |---|---|
-| [ADR-0001](adr/ADR-0001-codex-integration.md) | 原 Codex 接入设计；与新主要入口的职责关系已在 N1 能力归属分析中复核，待 JH-004 更新 ADR |
+| [ADR-0001](adr/ADR-0001-codex-integration.md) | 原接入设计保留为历史；主要入口方向由 ADR-0003 替代 |
 | [ADR-0002](adr/ADR-0002-gemini-local-proxy.md) | 用户已裁决的 Gemini 本地代理接入 |
-| [N1 能力归属与旧成果处置](n1-capability-ownership.md) | JH-003 交付：宿主原生 / JH 新增 / 最小封装 / 暂缓四分法及旧 E1—E4 处置方案 |
-| [文件工具契约与权限边界](file-tools-contract.md) | JH-002（原旧 E4 首批）交付：`read_file` / `stage_write` / 审核后受控 `apply` 与路径/junction 边界 |
+| [ADR-0003](adr/ADR-0003-codex-hosted-entry.md) | Codex 主控 → 项目 Skill + CLI → JH，架构方案批准，宿主验收待完成 |
+| [N1 能力归属与旧成果处置](n1-capability-ownership.md) | JH-003 方向已批准；当前实现安全限制以独立复核为准 |
+| [文件工具契约与权限边界](file-tools-contract.md) | 目标契约保留；JH-002 五项不变量未满足，JH-015 整改中 |
+| [N1 架构独立复核](../reports/n1-architecture-review-20261012.md) | 五项已复现缺陷、范围裁决与 JH-004 准入 |
+| [执行交接](handoffs/n1-20261012-execution.md) / [审查交接](handoffs/n1-20261012-review.md) | 双方对齐同一裁决与证据边界 |
 | [Gemini 接入说明](gemini-setup.md) | 当前 Gemini 配置与验证方式 |
 | [Muse 接入说明](muse-setup.md) | Muse 配置与验证方式 |
 | [适配器契约](adapter-contracts.md) | Provider 请求、响应与失败约定 |
