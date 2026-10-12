@@ -1,32 +1,23 @@
-"""JH-Agent OS Phase 4 batch 1: real workspace-limited file tools.
+"""JH-Agent OS Phase 4 batch 1 (JH-015 hardened): real workspace-limited file tools.
 
 Implements the controlled file tool executor contract:
 - read_file / stage_write executed ONLY inside a declared workspace root;
 - staged writes never touch the final target until a post-review APPLY that
   re-confirms content hash, target version, path ownership and authorization;
-- atomic apply: backup -> temp write in target dir -> os.replace -> read-back
-  confirmation, with recovery states (not_applied / applied / uncertain);
-- path boundary checks per call: path components, Windows case-insensitivity,
-  drive letters, '..' segments, same-name prefix directories (ws vs ws-evil),
-  and reparse points (symlinks/junctions) on ANY ancestor component;
-- TOCTOU defence: the boundary is re-verified AFTER opening, by comparing
-  os.path.realpath against the validated expectation; a path that changed
-  between check and open is refused (fail-closed).
-
-Security invariants (see docs/file-tools-contract.md):
-1. Nothing outside workspace_root is ever created or modified - proven by
-   realpath containment after open, not by string prefix checks alone.
-2. A refused or interrupted apply leaves the original target byte-identical.
-3. Every phase (staged / backed_up / replaced / confirmed) is recorded so a
-   restart can distinguish applied from not-applied without guessing.
+- handle-pinned atomic apply: every ancestor and staging directory is verified
+  against reparse points before creation/open; opens never pass O_TRUNC before
+  containment and identity are proven; temporary/backup files use unique names
+  with O_CREAT|O_EXCL; final commit locks the target descriptor, re-verifies
+  realpath containment and pre-review content hash on the open handle, and only
+  then writes/truncates.
 """
 
+from datetime import datetime, timezone
 import hashlib
 import json
 import os
 from pathlib import Path
 import shutil
-from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional
 import uuid
 
@@ -58,20 +49,32 @@ def _is_reparse_point(path: Path) -> bool:
     return bool(getattr(st, "st_file_attributes", 0) & 0x400) or os.path.islink(path)
 
 
+def _lock_fd(fd: int) -> None:
+    if os.name == "nt":
+        import msvcrt
+        os.lseek(fd, 0, os.SEEK_SET)
+        try:
+            msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
+        except OSError as exc:
+            raise PathBoundaryError(f"cannot acquire exclusive lock on target handle: {exc}") from None
+
+
+def _unlock_fd(fd: int) -> None:
+    if os.name == "nt":
+        import msvcrt
+        try:
+            os.lseek(fd, 0, os.SEEK_SET)
+            msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
+        except OSError:
+            pass
+
+
 class PathBoundaryError(Exception):
     """Raised when a path cannot be PROVEN to stay inside the workspace."""
 
 
 class FileToolExecutor:
-    """Real file tools bounded to one workspace root.
-
-    Compatible with the Phase 2 orchestrator tool loop (execute(tool_request) ->
-    ToolResult dict) and with review snapshots (snapshot_artifacts(paths)).
-    A fault_injector seam (callable receiving a phase name) enables deterministic
-    interruption drills; a race_hook seam (called after boundary validation,
-    before open) enables deterministic check-then-change race tests. Production
-    never sets either.
-    """
+    """Real file tools bounded to one workspace root."""
 
     STAGING_DIR = "_staging"
     TOOL_NAMES = ("read_file", "stage_write")
@@ -79,38 +82,61 @@ class FileToolExecutor:
     def __init__(self, workspace_root: str | Path, *,
                  fault_injector: Optional[Callable[[str], None]] = None,
                  race_hook: Optional[Callable[[Path], None]] = None):
-        self.workspace_root = Path(workspace_root).resolve()
+        raw_ws = Path(workspace_root)
+        # R1: reject a junction/symlink workspace BEFORE resolve() can silently
+        # dereference it into a different real directory.
+        if _is_reparse_point(raw_ws):
+            raise PathBoundaryError(f"workspace root is a link/junction: '{raw_ws}'")
+        self.workspace_root = raw_ws.resolve()
+        if _is_reparse_point(self.workspace_root):
+            raise PathBoundaryError(f"workspace root resolves to a link/junction: '{self.workspace_root}'")
         self.fault_injector = fault_injector
         self.race_hook = race_hook
         self.executed_requests: List[Dict[str, Any]] = []
-        self.events: List[Dict[str, Any]] = []  # in-executor audit trail for evidence reports
-
-    # ------------------------------------------------------------------
-    # Event helper
-    # ------------------------------------------------------------------
+        self.events: List[Dict[str, Any]] = []
 
     def _record(self, **details) -> Dict[str, Any]:
         event = {"created_at": _utc_now_iso(), **details}
         self.events.append(event)
         return event
 
+    def _assert_realpath_inside_workspace(self, candidate: Path, label: str) -> None:
+        ws_real = os.path.normcase(os.path.realpath(str(self.workspace_root)))
+        cand_real = os.path.normcase(os.path.realpath(str(candidate)))
+        if not cand_real.startswith(ws_real) or cand_real[len(ws_real):][:1] not in ("", "\\", "/"):
+            raise PathBoundaryError(
+                f"post-open containment check failed ({label} escapes workspace): '{candidate}'")
+
+    def _ensure_safe_dir(self, rel_parts: List[str]) -> Path:
+        """Walk and create internal directories component-by-component, refusing any junction/symlink."""
+        ws = Path(self.workspace_root)
+        if not ws.exists() or _is_reparse_point(ws) or not ws.is_dir():
+            raise PathBoundaryError(f"workspace root is invalid or a link/junction: '{ws}'")
+        self._assert_realpath_inside_workspace(ws, "workspace_root")
+        current = ws
+        for part in rel_parts:
+            if not part or part in (".", "..") or "/" in part or "\\" in part:
+                raise PathBoundaryError(f"invalid internal directory component: '{part}'")
+            step = current / part
+            if os.path.lexists(str(step)):
+                if _is_reparse_point(step):
+                    raise PathBoundaryError(f"ancestor component is a link/junction: '{step}'")
+                if not step.is_dir():
+                    raise PathBoundaryError(f"ancestor component is not a directory: '{step}'")
+            else:
+                os.mkdir(str(step))
+                if _is_reparse_point(step) or not step.is_dir():
+                    raise PathBoundaryError(f"created directory became a link/junction: '{step}'")
+            self._assert_realpath_inside_workspace(step, "internal_dir")
+            current = step
+        return current
+
     # ------------------------------------------------------------------
     # Path boundary (per-call, on actual parameters)
     # ------------------------------------------------------------------
 
     def resolve_workspace_path(self, raw_path: str) -> Path:
-        """Resolve raw_path against the workspace and PROVE containment.
-
-        Component-wise walk (never blind lexical normalization): each raw
-        component is resolved against the CURRENT real directory, checked for
-        existence and reparse points BEFORE it is entered, and only then may
-        '..' pop back — so a junction like 'out/sub/../x.txt' is judged by the
-        real 'sub' (refused: missing or reparse), never by a collapsed prefix.
-        Also enforces: drive + directory containment, same-name prefix
-        directories (ws vs ws-evil), Windows case folding, existing parents,
-        and a non-directory final component. Raises PathBoundaryError on any
-        doubt. New files require an existing parent directory, per contract.
-        """
+        """Resolve raw_path against the workspace and PROVE containment."""
         if not isinstance(raw_path, str) or not raw_path.strip():
             raise PathBoundaryError("path parameter is empty")
         raw = raw_path.strip()
@@ -120,11 +146,11 @@ class FileToolExecutor:
             raise PathBoundaryError("path denotes a directory (trailing separator): '" + raw + "'")
 
         ws = Path(self.workspace_root)
+        if _is_reparse_point(ws):
+            raise PathBoundaryError(f"workspace root is a link/junction: '{ws}'")
         ws_norm = os.path.normcase(str(ws))
         raw_path_obj = Path(raw)
 
-        # Absolute paths must land on the workspace drive/directory first
-        # (string-level check; component walk re-proves it against the real FS).
         if raw_path_obj.is_absolute():
             abs_norm = os.path.normcase(os.path.abspath(raw))
             if not abs_norm.startswith(ws_norm):
@@ -133,7 +159,6 @@ class FileToolExecutor:
             if tail and tail[0] not in ("\\", "/"):
                 raise PathBoundaryError(f"path prefix collision with workspace: '{raw}'")
             components = list(Path(abs_norm).parts[len(Path(Path(abs_norm).anchor).parts):])
-            # Walk starts at the drive anchor, then re-proves every component.
             current = Path(Path(abs_norm).anchor)
         else:
             components = []
@@ -141,7 +166,6 @@ class FileToolExecutor:
                 components.extend(segment.split("\\") if segment == "\\" else [segment])
             current = ws
 
-        # Component-wise walk over the REAL filesystem.
         for index, part in enumerate(components):
             if part in (".", ""):
                 continue
@@ -157,13 +181,13 @@ class FileToolExecutor:
                 current = parent
                 continue
             if is_last:
-                # Final component: parent (== current) already verified below on
-                # entry; the name must not be an existing directory.
+                if os.path.lexists(str(step)) and _is_reparse_point(step):
+                    raise PathBoundaryError(f"final component is a link/junction: '{step}' (raw: '{raw}')")
                 if step.exists() and step.is_dir():
                     raise PathBoundaryError(f"target is an existing directory: '{step}'")
                 current = step
                 break
-            if not step.exists():
+            if not os.path.lexists(str(step)):
                 raise PathBoundaryError(f"parent component does not exist: '{step}' (raw: '{raw}')")
             if _is_reparse_point(step):
                 raise PathBoundaryError(f"ancestor component is a link/junction: '{step}' (raw: '{raw}')")
@@ -173,53 +197,74 @@ class FileToolExecutor:
 
         resolved_path = current
         resolved_str = str(resolved_path)
-        # Final containment proof on the walked path (drive + prefix + separator).
         resolved_norm = os.path.normcase(resolved_str)
         if not resolved_norm.startswith(ws_norm):
             raise PathBoundaryError(f"path escapes workspace: '{raw}' resolves to '{resolved_str}'")
         tail = resolved_norm[len(ws_norm):]
         if tail and tail[0] not in ("\\", "/"):
             raise PathBoundaryError(f"path prefix collision with workspace: '{raw}'")
+        self._assert_realpath_inside_workspace(resolved_path.parent, "resolved_parent")
         return resolved_path
 
     def _open_verified(self, path: Path, *, mode: str) -> int:
-        """Open with a post-open containment re-check (TOCTOU defence).
+        """Open without pre-verification truncation (ARCH-01 & TOCTOU defence).
 
-        mode: 'read' opens an existing file; 'write' opens with O_TRUNC. The
-        boundary was validated before this call; a competing change (e.g. a
-        junction planted between check and open) is caught here because the
-        realpath of the opened path must still resolve inside the workspace.
-        Cannot prove safety -> refuse.
+        mode:
+          - 'read': open existing file O_RDONLY
+          - 'write': open O_RDWR|O_CREAT (NO O_TRUNC before verification; truncates
+            via os.ftruncate ONLY after post-open containment and reparse checks pass)
+          - 'create_exclusive': open O_RDWR|O_CREAT|O_EXCL (never overwrites existing)
+          - 'read_write_existing': open existing file O_RDWR without O_CREAT or O_TRUNC
         """
-        flags = os.O_RDWR | getattr(os, "O_BINARY", 0)
-        if mode == "write":
-            flags |= os.O_CREAT | os.O_TRUNC
+        resolved = self.resolve_workspace_path(str(path))
         if self.race_hook:
-            self.race_hook(path)
-        # Pre-open reparse check on the FINAL component: a junction planted in
-        # the race window is refused BEFORE the open can follow it outside.
-        if _is_reparse_point(path):
-            raise PathBoundaryError(f"final component is a link/junction at open time: '{path}'")
+            self.race_hook(resolved)
+        # Re-check all ancestors and final component AFTER any race window, BEFORE os.open!
+        if _is_reparse_point(resolved) or _is_reparse_point(resolved.parent):
+            raise PathBoundaryError(f"final or parent component is a link/junction at open time: '{resolved}'")
+        self.resolve_workspace_path(str(resolved))
+
+        binary_flag = getattr(os, "O_BINARY", 0)
+        if mode == "read":
+            flags = os.O_RDONLY | binary_flag
+        elif mode == "create_exclusive":
+            flags = os.O_RDWR | os.O_CREAT | os.O_EXCL | binary_flag
+        elif mode == "read_write_existing":
+            flags = os.O_RDWR | binary_flag
+        elif mode == "write":
+            flags = os.O_RDWR | os.O_CREAT | binary_flag
+        else:
+            raise ValueError(f"unknown open mode: {mode}")
+
+        existed_before = os.path.lexists(str(resolved))
         try:
-            fd = os.open(str(path), flags)
+            fd = os.open(str(resolved), flags)
+        except FileExistsError:
+            raise PathBoundaryError(f"exclusive create refused (file already exists): '{resolved}'") from None
         except FileNotFoundError:
-            raise PathBoundaryError(f"target parent missing at open time: '{path}'")
+            raise PathBoundaryError(f"target parent missing at open time: '{resolved}'") from None
         except OSError as exc:
-            raise PathBoundaryError(f"open refused: '{path}': {exc}")
+            raise PathBoundaryError(f"open refused: '{resolved}': {exc}") from None
+
         try:
-            real = os.path.normcase(os.path.realpath(str(path)))
-            ws_norm = os.path.normcase(str(self.workspace_root))
+            real = os.path.normcase(os.path.realpath(str(resolved)))
+            ws_norm = os.path.normcase(os.path.realpath(str(self.workspace_root)))
             if not real.startswith(ws_norm) or real[len(ws_norm):][:1] not in ("", "\\", "/"):
                 raise PathBoundaryError(
-                    f"post-open containment check failed (path changed between check and open): '{path}'")
-            if mode == "read" and _is_reparse_point(path):
-                raise PathBoundaryError(f"final component is a link/junction at open time: '{path}'")
+                    f"post-open containment check failed (path changed between check and open): '{resolved}'")
+            if _is_reparse_point(resolved) or _is_reparse_point(resolved.parent):
+                raise PathBoundaryError(f"final component is a link/junction at open time: '{resolved}'")
+            if mode == "write":
+                os.ftruncate(fd, 0)
             return fd
-        except PathBoundaryError:
-            os.close(fd)
-            raise
         except Exception:
             os.close(fd)
+            if not existed_before:
+                try:
+                    if os.path.lexists(str(resolved)) and not _is_reparse_point(resolved):
+                        os.unlink(str(resolved))
+                except OSError:
+                    pass
             raise
 
     # ------------------------------------------------------------------
@@ -251,7 +296,6 @@ class FileToolExecutor:
         except FileNotFoundError as exc:
             return self._result(tool_request, "failed", error_message=f"FileNotFoundError: {exc}")
         except OSError as exc:
-            # Cannot prove what happened on the filesystem -> uncertain, no blind replay.
             return self._result(tool_request, "failed", error_message=f"OSError: {exc}")
 
     def _result(self, tool_request: Dict[str, Any], status: str, *,
@@ -286,15 +330,19 @@ class FileToolExecutor:
             return handle.read()
 
     def stage_write(self, task_id: str, *, target_path: str, content: str) -> Dict[str, Any]:
-        """Write candidate content to the staging area (never to the target)."""
+        """Write candidate content to the verified staging area (never to the target)."""
         target = self.resolve_workspace_path(target_path)
         pre_sha = _sha256_file(target) if target.is_file() else None
-        staging_root = self.workspace_root / self.STAGING_DIR / task_id
-        staging_root.mkdir(parents=True, exist_ok=True)
-        staged_path = staging_root / Path(target_path).name
-        fd = self._open_verified(staged_path, mode="write")
+        staging_root = self._ensure_safe_dir([self.STAGING_DIR, task_id])
+        # Unique staged name per call: two targets sharing a basename (or two
+        # stage_write calls for one target) must never silently overwrite each
+        # other's staged bytes. The recorded staged_path is authoritative.
+        staged_path = staging_root / f"{uuid.uuid4().hex}_{Path(target_path).name}"
+        fd = self._open_verified(staged_path, mode="create_exclusive")
         with os.fdopen(fd, "w", encoding="utf-8", newline="") as handle:
             handle.write(content)
+            handle.flush()
+            os.fsync(handle.fileno())
         staged_sha = _sha256_file(staged_path)
         if staged_sha != _sha256_text(content):
             raise OSError("staged content hash mismatch after write")
@@ -318,22 +366,14 @@ class FileToolExecutor:
         return contents
 
     # ------------------------------------------------------------------
-    # Post-review apply (controlled action with re-confirmation + recovery)
+    # Post-review apply (handle-pinned, version-reconfirmed, collision-free)
     # ------------------------------------------------------------------
 
     def apply_staged(self, task_id: str, *, target_path: str, staged_path: str,
                      content_sha256: str, target_pre_sha256: Optional[str],
                      authorized_files: Optional[set] = None) -> Dict[str, Any]:
-        """Apply a reviewed staged write to the final target.
-
-        Re-confirms, in order: staged content hash equals the reviewed hash, the
-        current target hash equals the pre-review state (target unchanged), the
-        path still passes every boundary check, and the target is authorized.
-        Any mismatch refuses the apply WITHOUT touching the target. Interrupted
-        applies recover into not_applied / applied / uncertain states with
-        evidence, never blind replay.
-        """
-        # 1. Re-validate the FINAL target path (per-call, actual parameters).
+        """Apply a reviewed staged write to the final target."""
+        # 1. Re-validate FINAL target path and staged path.
         target = self.resolve_workspace_path(target_path)
         if authorized_files is not None and len(authorized_files) > 0:
             norm = os.path.normcase(str(target)).replace("\\", "/")
@@ -343,7 +383,7 @@ class FileToolExecutor:
             if rel not in authorized_norm:
                 raise PathBoundaryError(
                     f"apply refused: target '{target_path}' is outside the authorized file scope")
-        staged = Path(staged_path)
+        staged = self.resolve_workspace_path(staged_path)
         if not staged.is_file():
             raise FileNotFoundError(f"staged file missing at apply time: '{staged_path}'")
         staged_sha = _sha256_file(staged)
@@ -351,28 +391,41 @@ class FileToolExecutor:
             raise PathBoundaryError(
                 f"apply refused: staged content sha {staged_sha[:12]}... != reviewed {content_sha256[:12]}...")
 
-        # 2. Target version re-confirmation (must match the pre-review state).
+        # 2. Initial target version re-confirmation (must match the pre-review state).
         target_exists = target.is_file()
         current_sha = _sha256_file(target) if target_exists else None
         if current_sha != target_pre_sha256:
             raise PathBoundaryError(
                 f"apply refused: target changed since review (current={current_sha}, expected={target_pre_sha256})")
 
-        with open(staged, "r", encoding="utf-8") as handle:
-            candidate = handle.read()
+        candidate = self.read_file(str(staged))
         if _sha256_text(candidate) != content_sha256:
             raise PathBoundaryError("apply refused: staged content does not match reviewed hash")
+        candidate_bytes = candidate.encode("utf-8")
 
         self._record(kind="apply_start", task_id=task_id, target_path=str(target),
                      content_sha256=content_sha256, target_pre_sha256=target_pre_sha256)
         if self.fault_injector:
             self.fault_injector("apply_start")
 
-        # 3. Backup the original (if any) inside staging for recovery.
+        staging_dir = self._ensure_safe_dir([self.STAGING_DIR, task_id])
+
+        # 3. Backup the original (if any) inside verified staging with an exclusive name.
         backup_path = None
         if target_exists:
-            backup_path = Path(staged_path).with_name("backup_" + Path(target_path).name)
-            shutil.copy2(target, backup_path)
+            backup_path = staging_dir / f"backup_{uuid.uuid4().hex[:12]}_{Path(target_path).name}"
+            # Verified read: refuse (before any backup/commit write) if the
+            # target path no longer resolves inside the workspace.
+            bsrc = self._open_verified(target, mode="read")
+            with os.fdopen(bsrc, "rb") as bhandle:
+                orig_bytes = bhandle.read()
+            if hashlib.sha256(orig_bytes).hexdigest() != current_sha:
+                raise PathBoundaryError("apply refused: target changed while creating backup")
+            bfd = self._open_verified(backup_path, mode="create_exclusive")
+            with os.fdopen(bfd, "wb") as bhandle:
+                bhandle.write(orig_bytes)
+                bhandle.flush()
+                os.fsync(bhandle.fileno())
             if _sha256_file(backup_path) != current_sha:
                 raise OSError("backup verification failed; apply aborted before any target modification")
         self._record(kind="backup_created", backup_path=str(backup_path) if backup_path else None,
@@ -380,43 +433,101 @@ class FileToolExecutor:
         if self.fault_injector:
             self.fault_injector("backed_up")
 
-        # 4. Atomic replace: temp file in the target directory, then os.replace.
-        temp_path = target.with_name(target.name + ".jh_tmp")
-        fd = self._open_verified(temp_path, mode="write")
-        with os.fdopen(fd, "w", encoding="utf-8", newline="") as handle:
-            handle.write(candidate)
-            handle.flush()
-            os.fsync(handle.fileno())
-        self._record(kind="temp_written", temp_path=str(temp_path))
-        if self.fault_injector:
-            self.fault_injector("temp_written")
+        # 4. Isolated, uniquely named exclusive temp file inside staging (ARCH-02: never touches neighbor files).
+        temp_path = staging_dir / f".tmp_{uuid.uuid4().hex}_{target.name}"
+        tfd = self._open_verified(temp_path, mode="create_exclusive")
+        try:
+            with os.fdopen(tfd, "wb") as thandle:
+                thandle.write(candidate_bytes)
+                thandle.flush()
+                os.fsync(thandle.fileno())
+            self._record(kind="temp_written", temp_path=str(temp_path))
+            if self.fault_injector:
+                self.fault_injector("temp_written")
 
-        os.replace(temp_path, target)
+            # 5. Handle-pinned, version-reconfirmed commit (ARCH-03 & ARCH-04).
+            # Re-resolve target path immediately before opening handle to catch any parent junction swap.
+            target_now = self.resolve_workspace_path(target_path)
+            if _sha256_file(temp_path) != content_sha256:
+                raise PathBoundaryError("apply refused: temp file hash mismatch before commit")
+
+            if target_pre_sha256 is None:
+                # Target must not exist prior to commit: open with O_CREAT|O_EXCL.
+                if os.path.lexists(str(target_now)):
+                    raise PathBoundaryError(
+                        f"apply refused: target changed since review (file appeared concurrently: '{target_now}')")
+                cfd = self._open_verified(target_now, mode="create_exclusive")
+                try:
+                    _lock_fd(cfd)
+                    try:
+                        self._assert_realpath_inside_workspace(target_now, "commit_new_target")
+                        os.lseek(cfd, 0, os.SEEK_SET)
+                        os.write(cfd, candidate_bytes)
+                        os.ftruncate(cfd, len(candidate_bytes))
+                        os.fsync(cfd)
+                    finally:
+                        _unlock_fd(cfd)
+                finally:
+                    os.close(cfd)
+            else:
+                # Target must exist and still match target_pre_sha256 on the locked handle.
+                if not target_now.is_file():
+                    raise PathBoundaryError(
+                        f"apply refused: target changed since review (target removed concurrently: '{target_now}')")
+                cfd = self._open_verified(target_now, mode="read_write_existing")
+                try:
+                    _lock_fd(cfd)
+                    try:
+                        self._assert_realpath_inside_workspace(target_now, "commit_existing_target")
+                        os.lseek(cfd, 0, os.SEEK_SET)
+                        live_chunks = []
+                        while True:
+                            chunk = os.read(cfd, 65536)
+                            if not chunk:
+                                break
+                            live_chunks.append(chunk)
+                        live_sha = hashlib.sha256(b"".join(live_chunks)).hexdigest()
+                        if live_sha != target_pre_sha256:
+                            raise PathBoundaryError(
+                                f"apply refused: target changed since review "
+                                f"(current={live_sha}, expected={target_pre_sha256})")
+                        os.lseek(cfd, 0, os.SEEK_SET)
+                        os.write(cfd, candidate_bytes)
+                        os.ftruncate(cfd, len(candidate_bytes))
+                        os.fsync(cfd)
+                    finally:
+                        _unlock_fd(cfd)
+                finally:
+                    os.close(cfd)
+        finally:
+            try:
+                if os.path.lexists(str(temp_path)) and not _is_reparse_point(temp_path):
+                    os.unlink(str(temp_path))
+            except OSError:
+                pass
+
         self._record(kind="replaced", target_path=str(target))
         if self.fault_injector:
             self.fault_injector("replaced")
 
-        # 5. Read-back confirmation; cannot prove the outcome -> uncertain.
-        applied_sha = _sha256_file(target)
+        # 6. Read-back confirmation; cannot prove the outcome -> uncertain.
+        verified_target = self.resolve_workspace_path(target_path)
+        applied_sha = _sha256_file(verified_target)
         if applied_sha != content_sha256:
-            self._record(kind="apply_uncertain", target_path=str(target),
+            self._record(kind="apply_uncertain", target_path=str(verified_target),
                          observed_sha=applied_sha, expected_sha=content_sha256)
             raise SimulatedInterruptionError(
                 "apply outcome cannot be confirmed (target hash mismatch after replace)")
-        self._record(kind="apply_confirmed", target_path=str(target), applied_sha=applied_sha)
+        self._record(kind="apply_confirmed", target_path=str(verified_target), applied_sha=applied_sha)
         if self.fault_injector:
             self.fault_injector("confirmed")
-        return {"applied": True, "target_path": str(target), "applied_sha256": applied_sha,
+        return {"applied": True, "target_path": str(verified_target), "applied_sha256": applied_sha,
                 "backup_path": str(backup_path) if backup_path else None,
                 "replaced_existing": target_exists}
 
     def recover_apply(self, task_id: str, *, target_path: str, staged_path: str,
                       content_sha256: str, target_pre_sha256: Optional[str]) -> Dict[str, Any]:
-        """Classify an interrupted apply without blind replay.
-
-        Returns applied / not_applied / uncertain. Only 'not_applied' may be
-        re-applied by a subsequent, fully re-confirmed apply_staged call.
-        """
+        """Classify an interrupted apply without blind replay."""
         target = self.resolve_workspace_path(target_path)
         target_exists = target.is_file()
         current_sha = _sha256_file(target) if target_exists else None

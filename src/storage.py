@@ -48,17 +48,31 @@ def atomic(method):
 class TaskStorage:
     """SQLite-backed store for tasks, task_events, tool_executions, and reviews."""
 
-    def __init__(self, db_path: str | Path = ":memory:"):
+    def __init__(self, db_path: str | Path = ":memory:", *, read_only: bool = False):
         self.db_path = str(db_path)
+        self.read_only = bool(read_only)
         self._lock = threading.RLock()
-        self._conn = sqlite3.connect(self.db_path, check_same_thread=False)
-        self._conn.row_factory = sqlite3.Row
-        self._conn.execute("PRAGMA foreign_keys = ON")
         self._task_schema = _load_json_schema("task.v1.json")
-        self._init_db()
+        if self.read_only:
+            if self.db_path == ":memory:":
+                raise FileNotFoundError("Cannot open :memory: database in read-only mode")
+            db_file = Path(self.db_path).resolve()
+            if not db_file.is_file():
+                raise FileNotFoundError(f"Database file does not exist: '{db_file}'")
+            uri = f"file:{db_file.as_posix()}?mode=ro"
+            self._conn = sqlite3.connect(uri, uri=True, check_same_thread=False)
+            self._conn.row_factory = sqlite3.Row
+            self._conn.execute("PRAGMA query_only = ON")
+        else:
+            self._conn = sqlite3.connect(self.db_path, check_same_thread=False)
+            self._conn.row_factory = sqlite3.Row
+            self._conn.execute("PRAGMA foreign_keys = ON")
+            self._init_db()
 
     @contextmanager
     def transaction(self):
+        if self.read_only:
+            raise PermissionError("TaskStorage is opened in read-only mode; writes and migrations are forbidden")
         # Nested storage operations share the outer transaction, including audit events.
         with self._lock:
             outer = not self._conn.in_transaction
@@ -744,7 +758,7 @@ class TaskStorage:
         task = self.get_task(task_id)
         control = self.get_control(task_id)
         proof = self._conn.execute(
-            "SELECT r.review_json, b.acceptance_json FROM review_bindings b JOIN reviews r USING(review_id) "
+            "SELECT r.review_json, b.acceptance_json, b.artifacts_json FROM review_bindings b JOIN reviews r USING(review_id) "
             "WHERE b.task_id = ? AND b.attempt_id = ?", (task_id, control["active_attempt_id"]),
         ).fetchone()
         reason = None
@@ -753,6 +767,7 @@ class TaskStorage:
         else:
             review = json.loads(proof["review_json"])
             acceptance = json.loads(proof["acceptance_json"])
+            artifacts = json.loads(proof["artifacts_json"])
             if review["verdict"] != "pass" or any(i["severity"] in {"p0_blocker", "p1_critical", "p2_major"} for i in review["issues"]):
                 reason = "Current review does not provide an unblocked pass"
             elif len(acceptance) != len(task["acceptance_criteria"]) or any(
@@ -760,6 +775,22 @@ class TaskStorage:
                 for criterion, item in zip(task["acceptance_criteria"], acceptance)
             ):
                 reason = "Required acceptance evidence is missing or failed"
+            else:
+                # ARCH-05: if stage_write was used, the latest apply_staged_write
+                # must have succeeded and applied the exact reviewed artifact sha256.
+                execs = self.list_tool_executions(task_id)
+                stages = [t for t in execs if t["tool_name"] == "stage_write" and t["status"] == "success"]
+                if stages:
+                    applies = [t for t in execs if t["tool_name"] == "apply_staged_write" and t["status"] == "success"]
+                    reviewed_shas = {
+                        v.get("sha256") for v in artifacts.values() if isinstance(v, dict) and v.get("sha256")
+                    }
+                    if not applies:
+                        reason = "Staged write has no confirmed post-review apply record"
+                    else:
+                        latest_apply_sd = (applies[-1].get("result") or {}).get("structured_data") or {}
+                        if latest_apply_sd.get("applied_sha256") not in reviewed_shas:
+                            reason = "Applied target hash does not match the current reviewed artifact hash"
         if control["pending_json"] or task["_runtime"]["has_unconfirmed_side_effect"] or task["_runtime"]["tokens_unknown_count"]:
             reason = "Unresolved approval, side effect, or unknown model usage"
         if reason:

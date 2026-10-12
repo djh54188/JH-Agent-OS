@@ -110,11 +110,22 @@ def file_write_acceptance_evaluator(expected_content: str, expected_target: str)
                     .replace("\\", "/").endswith(target_norm)]
         stage_evidence = [f"{t['request_id']}:{t['tool_name']}:success" for t in matching]
 
-        # Semantic equality: the staged content must decode to exactly the
-        # expected JSON structure (byte formatting may vary between models).
+        # Semantic equality: the CURRENT reviewed staged content must decode to
+        # exactly the expected JSON structure. The reviewed set for this turn
+        # (task artifact_refs) selects which stage record is judged; history
+        # from earlier repair turns must not shadow it.
         content_ok = False
-        if matching:
-            staged_path_rel = matching[0]["result"]["structured_data"].get("staged_path")
+        judged = None
+        reviewed_refs = set(task.get("artifact_refs") or [])
+        for t in reversed(matching):
+            staged_path_rel = (t["result"]["structured_data"] or {}).get("staged_path")
+            if staged_path_rel in reviewed_refs:
+                judged = t
+                break
+        if judged is None and matching and not reviewed_refs:
+            judged = matching[-1]
+        if judged is not None:
+            staged_path_rel = judged["result"]["structured_data"].get("staged_path")
             if artifact_store is not None and staged_path_rel:
                 try:
                     snap_value = artifact_store.snapshot_artifacts([staged_path_rel]).get(staged_path_rel)

@@ -183,10 +183,10 @@ class TestFileToolExecutor(unittest.TestCase):
     def test_drive_and_case_and_prefix(self):
         (self.ws / "out").mkdir(exist_ok=True)
         # Case-insensitive: upper-case variant of an in-workspace path is the SAME file.
-        self.executor.execute(stage_request("task_case0000001", "out/CaseFile.txt", "x"))
+        res = self.executor.execute(stage_request("task_case0000001", "out/CaseFile.txt", "x"))
         outcome = self.executor.apply_staged(
             "task_case0000001", target_path="out/CaseFile.txt",
-            staged_path=str(self.ws / "_staging" / "task_case0000001" / "CaseFile.txt"),
+            staged_path=res["structured_data"]["staged_path"],
             content_sha256=self.executor.events[-1]["content_sha256"], target_pre_sha256=None)
         self.assertTrue((self.ws / "out" / "casefile.txt").exists())  # same file, folded
         # Same-name prefix: 'ws' must not authorize 'ws-evil'
@@ -234,7 +234,7 @@ class TestFileToolExecutor(unittest.TestCase):
         executor = FileToolExecutor(self.ws)
         armed = {"on": False}
         def plant_junction(path):
-            if armed["on"] and path.name == "race.txt" and not path.exists():
+            if armed["on"] and path.name.endswith("race.txt") and not path.exists():
                 import _winapi
                 _winapi.CreateJunction(str(outside), str(path))
         executor.race_hook = plant_junction
@@ -246,9 +246,11 @@ class TestFileToolExecutor(unittest.TestCase):
             "link/junction" in (result["stderr"] or "") or "containment" in (result["stderr"] or ""),
             result["stderr"])
         # Cleanup the planted junction (refused before open, but the link exists).
-        planted = self.ws / "_staging" / "task_race00000001" / "race.txt"
-        if planted.exists() and os.path.islink(planted):
-            os.rmdir(planted)
+        planted_dir = self.ws / "_staging" / "task_race00000001"
+        leftovers = list(planted_dir.iterdir()) if planted_dir.is_dir() else []
+        for planted in leftovers:
+            if planted.exists() and os.path.islink(planted):
+                os.rmdir(planted)
         # The junction is cleaned up and the outside directory stays empty of our file.
         junction = self.ws / "out" / "race.txt"
         if junction.exists() and os.path.islink(junction):
@@ -473,6 +475,241 @@ class TestPhase4FileLoop(unittest.TestCase):
         # And the tool plan call is registered as a model attempt with usage
         attempts = orch.storage.list_model_attempts("task_p4plan000001")
         self.assertEqual([a["actor_role"] for a in attempts], ["worker", "worker", "reviewer"])
+
+    def test_arch01_staging_junction_does_not_truncate_outside_file(self):
+        """ARCH-01: if _staging is a junction to outside, stage_write refuses BEFORE truncating victim."""
+        outside = self.ws.parent / ("arch01-outside-" + self.ws.name[-6:])
+        outside.mkdir(exist_ok=True)
+        self.addCleanup(shutil.rmtree, outside, ignore_errors=True)
+        victim = outside / "report.json"
+        victim.write_text("KEEP_OUTSIDE", encoding="utf-8")
+        link = self.ws / "_staging"
+        import _winapi
+        _winapi.CreateJunction(str(outside), str(link))
+        self.addCleanup(lambda: os.path.lexists(str(link)) and os.rmdir(link))
+        executor = FileToolExecutor(self.ws)
+        with self.assertRaises(PathBoundaryError):
+            executor.stage_write("task_arch01", target_path="out/report.json", content="OVERWRITTEN")
+        self.assertEqual(victim.read_text(encoding="utf-8"), "KEEP_OUTSIDE")
+
+    def test_arch02_neighbor_temp_file_preserved(self):
+        """ARCH-02: neighbor file main.txt.jh_tmp must not be overwritten or deleted by apply_staged."""
+        target = self.ws / "out" / "main.txt"
+        target.write_text("ORIGINAL", encoding="utf-8")
+        neighbor = self.ws / "out" / "main.txt.jh_tmp"
+        neighbor.write_text("UNAUTHORIZED_NEIGHBOR", encoding="utf-8")
+        executor = FileToolExecutor(self.ws)
+        st = executor.stage_write("task_arch02", target_path="out/main.txt", content="CANDIDATE")
+        ap = executor.apply_staged(
+            "task_arch02", target_path="out/main.txt", staged_path=st["staged_path"],
+            content_sha256=st["content_sha256"], target_pre_sha256=st["target_pre_sha256"],
+            authorized_files={"out/main.txt"},
+        )
+        self.assertTrue(ap["applied"])
+        self.assertTrue(neighbor.exists())
+        self.assertEqual(neighbor.read_text(encoding="utf-8"), "UNAUTHORIZED_NEIGHBOR")
+        self.assertEqual(target.read_text(encoding="utf-8"), "CANDIDATE")
+
+    def test_arch03_concurrent_target_edit_during_backed_up_preserved(self):
+        """ARCH-03: concurrent edit after initial check (during backed_up) must not be overwritten."""
+        target = self.ws / "out" / "main.txt"
+        target.write_text("ORIGINAL", encoding="utf-8")
+        executor = FileToolExecutor(self.ws)
+        st = executor.stage_write("task_arch03", target_path="out/main.txt", content="CANDIDATE_2")
+        executor.fault_injector = lambda phase: (
+            target.write_text("CONCURRENT_UPDATE", encoding="utf-8") if phase == "backed_up" else None
+        )
+        with self.assertRaises(PathBoundaryError):
+            executor.apply_staged(
+                "task_arch03", target_path="out/main.txt", staged_path=st["staged_path"],
+                content_sha256=st["content_sha256"], target_pre_sha256=st["target_pre_sha256"],
+                authorized_files={"out/main.txt"},
+            )
+        self.assertEqual(target.read_text(encoding="utf-8"), "CONCURRENT_UPDATE")
+
+    def test_arch04_parent_swapped_to_junction_before_commit_refused(self):
+        """ARCH-04: if target parent is swapped to a junction at temp_written, commit refuses without touching outside."""
+        outside = self.ws.parent / ("arch04-outside-" + self.ws.name[-6:])
+        outside.mkdir(exist_ok=True)
+        self.addCleanup(shutil.rmtree, outside, ignore_errors=True)
+        inside_target = self.ws / "out" / "main.txt"
+        inside_target.write_text("INSIDE_ORIGINAL", encoding="utf-8")
+        outside_target = outside / "main.txt"
+        outside_target.write_text("OUTSIDE_ORIGINAL", encoding="utf-8")
+        executor = FileToolExecutor(self.ws)
+        st = executor.stage_write("task_arch04", target_path="out/main.txt", content="CANDIDATE_REPLACE")
+
+        def swap_parent(phase):
+            if phase == "temp_written":
+                os.rename(self.ws / "out", self.ws / "out_original")
+                import _winapi
+                _winapi.CreateJunction(str(outside), str(self.ws / "out"))
+
+        executor.fault_injector = swap_parent
+        self.addCleanup(lambda: os.path.lexists(str(self.ws / "out")) and _is_reparse(self.ws / "out") and os.rmdir(self.ws / "out"))
+        with self.assertRaises(PathBoundaryError):
+            executor.apply_staged(
+                "task_arch04", target_path="out/main.txt", staged_path=st["staged_path"],
+                content_sha256=st["content_sha256"], target_pre_sha256=st["target_pre_sha256"],
+                authorized_files={"out/main.txt"},
+            )
+        self.assertEqual(outside_target.read_text(encoding="utf-8"), "OUTSIDE_ORIGINAL")
+        self.assertEqual((self.ws / "out_original" / "main.txt").read_text(encoding="utf-8"), "INSIDE_ORIGINAL")
+
+    def test_arch05_reviewed_content_mismatch_blocked_at_snapshot_and_apply(self):
+        """ARCH-05: staged content swapped before review (and restored before apply) must fail closed."""
+        unreviewed = '[{"region":"a","sales":666}]'
+        reviewed = '[{"region":"a","sales":1}]'
+        executor = FileToolExecutor(self.ws)
+        orig_stage = executor.stage_write
+
+        def swap_before_review(*a, **kw):
+            r = orig_stage(*a, **kw)
+            Path(r["staged_path"]).write_text(reviewed, encoding="utf-8")
+            return r
+
+        executor.stage_write = swap_before_review
+        worker = self._worker([unreviewed], "task_arch05000001")
+        reviewer = ScriptedReviewerAdapter(mode="pass")
+        orch = make_orch(self, ws=self.ws, worker=worker, reviewer=reviewer,
+                         tool_executor=executor,
+                         evaluator=file_write_acceptance_evaluator(reviewed, "out/report.json"))
+        orch.submit_task(make_file_task("task_arch05000001", self.ws))
+        result = orch.run_task("task_arch05000001")
+        self.assertEqual(result["status"], "needs_attention")
+        self.assertEqual(reviewer.call_count, 0)
+        self.assertFalse((self.ws / "out" / "report.json").exists())
+
+    def test_junction_workspace_root_rejected(self):
+        """R1: a junction passed as workspace_root is rejected before resolve()."""
+        real = self.ws.parent / ("r1-real-" + self.ws.name[-6:])
+        real.mkdir(exist_ok=True)
+        self.addCleanup(shutil.rmtree, real, ignore_errors=True)
+        link = self.ws.parent / ("r1-link-" + self.ws.name[-6:])
+        import _winapi
+        _winapi.CreateJunction(str(real), str(link))
+        self.addCleanup(lambda: os.path.lexists(str(link)) and os.rmdir(link))
+        with self.assertRaises(PathBoundaryError):
+            FileToolExecutor(link)
+
+    def test_same_basename_targets_get_distinct_staged_files(self):
+        """H1: two targets sharing a basename must not overwrite each other's staged bytes."""
+        (self.ws / "out" / "sub").mkdir(parents=True, exist_ok=True)
+        executor = FileToolExecutor(self.ws)
+        first = executor.stage_write("task_h1dup0001", target_path="out/dup.txt", content="FIRST")
+        second = executor.stage_write("task_h1dup0001", target_path="out/sub/dup.txt", content="SECOND")
+        self.assertNotEqual(first["staged_path"], second["staged_path"])
+        self.assertEqual(Path(first["staged_path"]).read_text(encoding="utf-8"), "FIRST")
+        self.assertEqual(Path(second["staged_path"]).read_text(encoding="utf-8"), "SECOND")
+
+    def test_stale_turn_staged_write_does_not_block_current_apply(self):
+        """G2-high: a historical stage_write dropped from the current reviewed set is ignored, not fatal."""
+        expected = self._expected()
+        executor = FileToolExecutor(self.ws)
+        # Turn 1 stages content the reviewer rejects; turn 2 (repair) stages the
+        # good content. The turn-1 record stays in history but is not reviewed.
+        stale = '{"stale":true}'
+        worker = ScriptedWorkerAdapter(tool_requests_by_turn=[
+            [stage_request("task_g2hist0001", "out/report.json", stale)],
+            [stage_request("task_g2hist0001", "out/report.json", expected)],
+        ])
+        reviewer = ScriptedReviewerAdapter(mode="revise_then_pass")
+        orch = make_orch(self, ws=self.ws, worker=worker, reviewer=reviewer,
+                         tool_executor=executor,
+                         evaluator=file_write_acceptance_evaluator(expected, "out/report.json"))
+        orch.submit_task(make_file_task("task_g2hist0001", self.ws))
+        result = orch.run_task("task_g2hist0001")
+        self.assertEqual(result["status"], "succeeded")
+        self.assertEqual((self.ws / "out" / "report.json").read_text(encoding="utf-8"), expected)
+        stages = [t for t in orch.storage.list_tool_executions("task_g2hist0001")
+                  if t["tool_name"] == "stage_write" and t["status"] == "success"]
+        self.assertEqual(len(stages), 2)  # history kept, current turn applied
+
+    def test_read_file_does_not_pollute_reviewed_artifact_set(self):
+        """G2-F2: with FileToolExecutor, read_file results must not enter artifact_refs."""
+        (self.ws / "out" / "existing.txt").write_text("hello", encoding="utf-8")
+        expected = self._expected()
+        worker = ScriptedWorkerAdapter(tool_requests_by_turn=[[
+            make_tool_request("task_g2f20001", tool_name="read_file",
+                              parameters={"path": "out/existing.txt"}),
+            stage_request("task_g2f20001", "out/report.json", expected),
+        ]])
+        orch = make_orch(self, ws=self.ws, worker=worker,
+                         reviewer=ScriptedReviewerAdapter(mode="pass"),
+                         evaluator=file_write_acceptance_evaluator(expected, "out/report.json"))
+        orch.submit_task(make_file_task("task_g2f20001", self.ws))
+        result = orch.run_task("task_g2f20001")
+        self.assertEqual(result["status"], "succeeded")
+        for ref in result["artifact_refs"]:
+            self.assertIn("_staging", ref)
+
+    def test_recovered_applied_hash_must_match_reviewed_snapshot(self):
+        """G2-F2b: recovered 'applied' bytes differing from the reviewed sha fail closed."""
+        expected = self._expected()
+        executor = FileToolExecutor(self.ws)
+        orig_recover = executor.recover_apply
+
+        def lying_recover(*a, **kw):
+            verdict = orig_recover(*a, **kw)
+            if verdict["state"] == "not_applied":
+                # Simulate a crash window where an outsider wrote unexpected bytes.
+                (self.ws / "out" / "report.json").write_text("OUTSIDER_BYTES", encoding="utf-8")
+                return {"state": "applied",
+                        "target_sha256": _sha256_of("OUTSIDER_BYTES")}
+            return verdict
+
+        def interrupt_once(phase):
+            if phase == "temp_written" and not interrupt_once.fired:
+                interrupt_once.fired = True
+                raise SimulatedInterruptionError("drill: crash at temp_written")
+        interrupt_once.fired = False
+        executor.fault_injector = interrupt_once
+        executor.recover_apply = lying_recover
+        worker = self._worker([expected], "task_g2rec00001")
+        orch = make_orch(self, ws=self.ws, worker=worker,
+                         reviewer=ScriptedReviewerAdapter(mode="pass"),
+                         tool_executor=executor,
+                         evaluator=file_write_acceptance_evaluator(expected, "out/report.json"))
+        orch.submit_task(make_file_task("task_g2rec00001", self.ws))
+        result = orch.run_task("task_g2rec00001")
+        self.assertEqual(result["status"], "needs_attention")
+        self.assertIn("hash mismatch", (result["error_info"] or "").lower())
+
+    def test_backup_uses_verified_read_before_any_target_write(self):
+        """F1: backup creation refuses via verified open when the target escapes mid-apply."""
+        (self.ws / "out" / "victim.txt").write_text("V1", encoding="utf-8")
+        outside = self.ws.parent / ("f1-outside-" + self.ws.name[-6:])
+        outside.mkdir(exist_ok=True)
+        self.addCleanup(shutil.rmtree, outside, ignore_errors=True)
+        (outside / "victim.txt").write_text("OUTSIDE", encoding="utf-8")
+        executor = FileToolExecutor(self.ws)
+        st = executor.stage_write("task_f1000001", target_path="out/victim.txt", content="V2")
+
+        def swap_before_backup(phase):
+            if phase == "apply_start":
+                os.rename(self.ws / "out", self.ws / "out_moved")
+                import _winapi
+                _winapi.CreateJunction(str(outside), str(self.ws / "out"))
+        executor.fault_injector = swap_before_backup
+        self.addCleanup(lambda: os.path.lexists(str(self.ws / "out")) and _is_reparse(self.ws / "out") and os.rmdir(self.ws / "out"))
+        with self.assertRaises(PathBoundaryError):
+            executor.apply_staged(
+                "task_f1000001", target_path="out/victim.txt", staged_path=st["staged_path"],
+                content_sha256=st["content_sha256"], target_pre_sha256=st["target_pre_sha256"])
+        self.assertEqual((outside / "victim.txt").read_text(encoding="utf-8"), "OUTSIDE")
+        self.assertEqual((self.ws / "out_moved" / "victim.txt").read_text(encoding="utf-8"), "V1")
+
+
+def _is_reparse(p: Path) -> bool:
+    try:
+        return bool(getattr(os.lstat(p), "st_file_attributes", 0) & 0x400) or os.path.islink(p)
+    except OSError:
+        return False
+
+
+def _sha256_of(text: str) -> str:
+    import hashlib
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
 if __name__ == "__main__":

@@ -431,8 +431,33 @@ class Orchestrator:
             return artifact_snapshot(self.artifact_store, refs)
         return artifact_snapshot(self.tool_executor, refs)
 
+    def _verify_staged_snapshots_match_tool_records(
+        self, task_id: str, snapshots: Dict[str, Any]
+    ) -> None:
+        """ARCH-05 defence: every staged file entering review must still match
+        the exact content_sha256 recorded by the latest stage_write tool execution."""
+        if not isinstance(self.tool_executor, FileToolExecutor):
+            return
+        stage_execs = [t for t in self.storage.list_tool_executions(task_id)
+                       if t["tool_name"] == "stage_write" and t["status"] == "success"]
+        if not stage_execs:
+            return
+        latest_by_staged: Dict[str, Dict[str, Any]] = {}
+        for t in stage_execs:
+            sd = (t.get("result") or {}).get("structured_data") or {}
+            sp = sd.get("staged_path")
+            if sp:
+                latest_by_staged[sp] = sd
+        for ref, snap in snapshots.items():
+            sd = latest_by_staged.get(ref)
+            if sd is not None and snap.get("sha256") != sd.get("content_sha256"):
+                raise SchemaValidationError(
+                    f"Staged artifact '{ref}' changed between stage_write and review snapshot "
+                    f"(snapshot={snap.get('sha256')}, recorded={sd.get('content_sha256')})")
+
     def _apply_staged_writes(self, task_id: str, task: Dict[str, Any],
-                             review_json: Dict[str, Any]) -> Optional[List[str]]:
+                             review_json: Dict[str, Any],
+                             snapshots: Optional[Dict[str, Any]] = None) -> Optional[List[str]]:
         """Phase 4 batch 1: post-review apply of staged writes (controlled action).
 
         Re-confirms for each staged write: applied content == reviewed content,
@@ -449,18 +474,42 @@ class Orchestrator:
                        if t["tool_name"] == "stage_write" and t["status"] == "success"]
         if not stage_execs:
             return None
-        # Only applies that were part of the REVIEWED state are eligible.
+        # Only the latest stage_write per target_path from the CURRENT reviewed
+        # set is eligible. Historical stage_write records from earlier repair
+        # turns are ignored (not applied, not blocking): the Reviewed set for
+        # THIS turn is authoritative.
+        if snapshots is None:
+            raise ApplyBlockedError("apply refused: reviewed snapshots are missing")
         reviewed_refs = set(task.get("artifact_refs") or [])
+        latest_by_target: Dict[str, Dict[str, Any]] = {}
+        for t in stage_execs:
+            sd = (t.get("result") or {}).get("structured_data") or {}
+            if sd.get("staged_path") not in reviewed_refs:
+                continue
+            latest_by_target[sd["target_path"]] = t
+        if not latest_by_target:
+            raise ApplyBlockedError(
+                "apply refused: no reviewed staged write is eligible for apply")
+
         authorized_files = None
         if self.enforce_target_files_scope:
             authorized_files = set((task.get("context") or {}).get("target_files") or [])
 
         evidence: List[str] = []
-        for t in stage_execs:
+        for t in latest_by_target.values():
             sd = t["result"]["structured_data"] or {}
-            if sd.get("staged_path") not in reviewed_refs:
+            staged_path = sd["staged_path"]
+            # No fallback: a missing snapshot entry fails closed instead of
+            # comparing the tool record against itself.
+            reviewed_entry = snapshots.get(staged_path)
+            if not isinstance(reviewed_entry, dict) or not reviewed_entry.get("sha256"):
                 raise ApplyBlockedError(
-                    f"staged write '{t['request_id']}' is not part of the reviewed artifact set")
+                    f"apply refused: staged write '{staged_path}' has no reviewed snapshot entry")
+            reviewed_sha = reviewed_entry["sha256"]
+            if reviewed_sha != sd.get("content_sha256"):
+                raise ApplyBlockedError(
+                    f"apply refused: stage_write content_sha256 ({sd.get('content_sha256')}) "
+                    f"does not match reviewed snapshot sha256 ({reviewed_sha})")
             apply_req = {
                 "schema_version": "1.0.0",
                 "request_id": f"treq_{uuid.uuid4().hex[:12]}",
@@ -469,8 +518,8 @@ class Orchestrator:
                 "caller_role": "orchestrator",
                 "tool_name": "apply_staged_write",
                 "parameters": {
-                    "target_path": sd["target_path"], "staged_path": sd["staged_path"],
-                    "content_sha256": sd["content_sha256"],
+                    "target_path": sd["target_path"], "staged_path": staged_path,
+                    "content_sha256": reviewed_sha,
                     "target_pre_sha256": sd.get("target_pre_sha256"),
                 },
                 "timeout_ms": 30000,
@@ -496,22 +545,22 @@ class Orchestrator:
             try:
                 outcome = executor.apply_staged(
                     task_id,
-                    target_path=sd["target_path"], staged_path=sd["staged_path"],
-                    content_sha256=sd["content_sha256"],
+                    target_path=sd["target_path"], staged_path=staged_path,
+                    content_sha256=reviewed_sha,
                     target_pre_sha256=sd.get("target_pre_sha256"),
                     authorized_files=authorized_files)
             except SimulatedInterruptionError:
                 # Interruption drill / real crash: classify without blind replay.
                 recovery = executor.recover_apply(
                     task_id,
-                    target_path=sd["target_path"], staged_path=sd["staged_path"],
-                    content_sha256=sd["content_sha256"],
+                    target_path=sd["target_path"], staged_path=staged_path,
+                    content_sha256=reviewed_sha,
                     target_pre_sha256=sd.get("target_pre_sha256"))
                 if recovery["state"] == "not_applied":
                     outcome = executor.apply_staged(
                         task_id,
-                        target_path=sd["target_path"], staged_path=sd["staged_path"],
-                        content_sha256=sd["content_sha256"],
+                        target_path=sd["target_path"], staged_path=staged_path,
+                        content_sha256=reviewed_sha,
                         target_pre_sha256=sd.get("target_pre_sha256"),
                         authorized_files=authorized_files)
                     self.storage.record_event(
@@ -519,13 +568,21 @@ class Orchestrator:
                         from_state="reviewing", to_state="reviewing", actor_role="orchestrator",
                         details={"target_path": sd["target_path"], "recovered_state": "not_applied"})
                 elif recovery["state"] == "applied":
+                    # The recovered 'applied' bytes must still equal the CURRENT
+                    # reviewed snapshot; a concurrent rewrite after the crash
+                    # must not be recorded as a reviewed apply.
+                    if recovery["target_sha256"] != reviewed_sha:
+                        raise ApplyBlockedError(
+                            f"recovered target hash mismatch (disk={recovery['target_sha256']}, "
+                            f"reviewed={reviewed_sha})")
                     self.storage.record_tool_completion({
                         "schema_version": "1.0.0",
                         "result_id": f"tres_{uuid.uuid4().hex[:12]}",
                         "request_id": apply_req["request_id"], "task_id": task_id,
                         "tool_name": "apply_staged_write", "status": "success",
                         "stdout": None, "stderr": None,
-                        "structured_data": {"recovered_state": "applied",
+                        "structured_data": {"target_path": sd["target_path"],
+                                            "recovered_state": "applied",
                                             "applied_sha256": recovery["target_sha256"]},
                         "execution_time_ms": 0, "error_message": None,
                         "created_at": _utc_now_iso(),
@@ -541,6 +598,14 @@ class Orchestrator:
                     self._apply_refused_result(apply_req, str(exc)), confirmed_clean=False)
                 raise ApplyBlockedError(f"apply refused: {exc}")
 
+            # Verify on disk that the applied target bytes equal the reviewed snapshot hash.
+            verified_target = executor.resolve_workspace_path(sd["target_path"])
+            import hashlib as _hl
+            disk_sha = _hl.sha256(verified_target.read_bytes()).hexdigest()
+            if disk_sha != reviewed_sha or outcome.get("applied_sha256") != reviewed_sha:
+                raise ApplyBlockedError(
+                    f"post-apply target hash mismatch (disk={disk_sha}, reviewed={reviewed_sha})")
+
             apply_res = {
                 "schema_version": "1.0.0",
                 "result_id": f"tres_{uuid.uuid4().hex[:12]}",
@@ -548,6 +613,7 @@ class Orchestrator:
                 "tool_name": "apply_staged_write", "status": "success",
                 "stdout": None, "stderr": None,
                 "structured_data": {"target_path": sd["target_path"],
+                                    "staged_path": staged_path,
                                     "applied_sha256": outcome["applied_sha256"],
                                     "replaced_existing": outcome["replaced_existing"]},
                 "execution_time_ms": 0, "error_message": None,
@@ -897,7 +963,17 @@ class Orchestrator:
                 if isinstance(path_param, str) and path_param:
                     # Phase 4 file tools: the reviewed artifact is the STAGED file
                     # (never the final target, which is only written at apply).
-                    produced_artifacts.append(staged_rel or path_param)
+                    # With a real FileToolExecutor, read_file results have no
+                    # staged_path and must not enter the reviewed artifact set.
+                    # Other executors (Mock/Phase 2-3 flows) keep legacy behavior.
+                    if isinstance(self.tool_executor, FileToolExecutor):
+                        if tool_req["tool_name"] == "stage_write":
+                            produced_artifacts.append(staged_rel or path_param)
+                        elif staged_rel:
+                            produced_artifacts.append(staged_rel)
+                        # else: read_file or other non-staging tool -> not an artifact.
+                    else:
+                        produced_artifacts.append(staged_rel or path_param)
                 execution_evidence.append(f"{tool_req['request_id']}:{tool_req['tool_name']}:success")
                 if tool_req["tool_name"] == "stage_write" and isinstance(path_param, str) and path_param:
                     # The resolved target path is a recorded fact the acceptance
@@ -946,6 +1022,7 @@ class Orchestrator:
 
                 target_artifact = (task.get("artifact_refs") or ["workspace"])[0]
                 snapshots = self._snapshot_artifacts(task.get("artifact_refs", []))
+                self._verify_staged_snapshots_match_tool_records(task_id, snapshots)
                 review_metadata = {
                     "schema_version": "1.0.0",
                     "review_id": f"rev_{uuid.uuid4().hex[:12]}",
@@ -1012,7 +1089,8 @@ class Orchestrator:
                     # ownership and authorization; any mismatch refuses WITHOUT
                     # touching the target. revise/reject/needs_human never apply.
                     try:
-                        apply_evidence = self._apply_staged_writes(task_id, task, review_json)
+                        apply_evidence = self._apply_staged_writes(
+                            task_id, task, review_json, snapshots=snapshots)
                     except ApplyBlockedError as exc:
                         return self.storage.transition_task_state(
                             task_id, "needs_attention", actor_role="orchestrator",
