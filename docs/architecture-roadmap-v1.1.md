@@ -1,3 +1,5 @@
+> 历史规划说明（2026-10-11）：后续产品范围与路线已迁至 [产品需求 v1.0](product-requirements-v1.0.md) 和 [根 ROADMAP.md](../ROADMAP.md)，实时状态见 [STATUS.md](../STATUS.md)。本文保留旧工程 E1—E8 的原始背景；不再据此自动扩展后续排期。已有验收与安全约束继续有效，不能因重规划自动放宽。
+
 # JH-Agent OS：架构审查与八阶段路线图 v1.1
 
 日期：2026-10-09（Asia/Shanghai）  
