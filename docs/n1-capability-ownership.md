@@ -1,6 +1,8 @@
 # N1 能力归属分析与旧成果处置方案（JH-003）
 
-> **2026-10-12 架构师裁决补充**：下文保留为执行方的能力归属分析。四分法、取消通用 Shell/Git 平台、最小暂存应用职责及 Skill + CLI 方向已批准，见 [ADR-0003](adr/ADR-0003-codex-hosted-entry.md)。但“已有模块”不等于安全保证已成立：独立复核在 ec11584 复现五项阻塞缺陷，JH-002 需 JH-015 整改，详见[复核报告](../reports/n1-architecture-review-20261012.md)。正文有关路径、并发、审核绑定的保证是目标，不是当前通过结论。JH-004 可做 ADR/只读准备，真实文件写入接入待修复独立通过；N1 未结项。MCP 可用 stdio，不必常驻 daemon；保留此组件也不是因为只能在它与人工复制之间二选一。下文“待裁决”条目已由本补充与 ADR-0003 作答，不重复申请。
+> **2026-10-13 当前处置**：父目录发布 v2 矩阵 STOP，见[最新复核](../reports/jh016-parent-publish-review-20261013.md)。按 [ADR-0004](adr/ADR-0004-n1-artifact-first.md)，FileToolExecutor 的候选最小职责保留，当前自动应用未通过、暂缓准入且不在 N1 默认生产路径；JH-004 改为真实生成产物、查询与接续。下文 ec11584 能力矩阵是方向分析和目标能力，不是本批已支持保证。
+
+> **历史裁决补充（2026-10-12，当前排期以 ADR-0004 为准）**：下文保留为执行方的能力归属分析。四分法、取消通用 Shell/Git 平台、最小暂存应用职责及 Skill + CLI 方向已批准，见 [ADR-0003](adr/ADR-0003-codex-hosted-entry.md)。但“已有模块”不等于安全保证已成立：独立复核在 ec11584 复现五项阻塞缺陷，JH-002 需 JH-015 整改，详见[复核报告](../reports/n1-architecture-review-20261012.md)。正文有关路径、并发、审核绑定的保证是目标，不是当前通过结论。JH-004 可做 ADR/只读准备，真实文件写入接入待修复独立通过；N1 未结项。MCP 可用 stdio，不必常驻 daemon；保留此组件也不是因为只能在它与人工复制之间二选一。下文“待裁决”条目已由本补充与 ADR-0003 作答，不重复申请。
 
 - **日期**：2026-10-12（Asia/Shanghai）
 - **关联任务**：JH-002（旧 E4 文件工具批次审查交接）、JH-003（N1 能力归属与旧成果处置）
@@ -26,7 +28,7 @@
 |---|---|---|---|
 | **1. 宿主原生承担**<br>（Codex Native，JH 不重复建设） | 交互式终端 UI、会话历史与上下文收集、日常单模型代码编辑、常规 Shell / 测试命令执行、常规 Git 操作（status / diff / branch / commit）、宿主级沙箱与基础权限提示 | Codex 宿主环境 | **场景 1（软件开发）**：用户在 Codex 对话中直接探索代码库、运行本地单测、查看 git diff；宿主已原生具备成熟工具链，JH 重建独立 Shell/Git 执行器会产生双套权限与维护冗余。 |
 | **2. JH 必须新增**<br>（JH Must Add，核心差异化价值） | ① 跨模型协议适配（Gemini Worker `AnthropicMessagesAdapter` + Muse Reviewer `OpenAIResponsesAdapter`）<br>② 独立审核绑定与防篡改校验（`validate_review`：task_id / attempt_id / 产物 SHA-256 强绑定，产物变则旧审失效）<br>③ 控制层可信验收器（`acceptance.py`：不采信模型自评分，按确定性规则校验）<br>④ 逐调用预算/用量门禁（`input_reserve` / `call_limits` / 非法或未知用量受控停止）<br>⑤ 任务状态机、SQLite 持久化与跨会话状态续接（`tasks` / `model_attempts` / `review_bindings`） | JH-Agent OS 核心层 | **场景 1 & 2（多模型协作与复杂决策）**：Codex 原生不具备自动将产物交由异构模型（Gemini 生成 + Muse 独立严审）并强制要求“审核覆盖当前产物 SHA-256 + 客观验收通过才准许落盘/结项”的闭环能力。 |
-| **3. 需要最小封装**<br>（Minimal Wrapper，连接宿主与 JH） | ① **Codex 内调用入口（Skill + `python -m src.cli`）**：供 Codex 主控发起 JH 协作任务、查询状态、读取产物与审核证据<br>② **暂存与受控应用守卫（`FileToolExecutor` 核心子集）**：当外部模型（Gemini）生成针对工作区文件的修改时，先写入 `_staging/<task_id>/`，经 Muse 审核 pass 且校验目标前置版本未变（`target_pre_sha256`）及路径边界（含 junction / `..` / 同名前缀防逃逸）后，再原子替换到目标文件 | JH CLI / 轻量守卫层（由 Codex 主控触发） | **场景 1（跨模型代码修改落地）**：Gemini Worker 作为远端/代理 API 模型无法直接安全写本地磁盘；若让其直接覆盖工作区文件会绕过 Muse 审核并破坏用户正在编辑的文件。保留 `stage_write` + 审核后 `apply_staged` 恰好充当“外部模型产物进入宿主工作区的安全隔离舱”。 |
+| **3. 需要最小封装**<br>（Minimal Wrapper，连接宿主与 JH） | ① **Codex 内调用入口（Skill + `python -m src.cli`）**：供 Codex 主控发起 JH 协作任务、查询状态、读取产物与审核证据<br>② **待准入的暂存与受控应用守卫（`FileToolExecutor` 候选子集，本批不装配）**：当外部模型（Gemini）生成针对工作区文件的修改时，先写入 `_staging/<task_id>/`，经 Muse 审核 pass 且校验目标前置版本未变（`target_pre_sha256`）及路径边界（含 junction / `..` / 同名前缀防逃逸）后，再原子替换到目标文件 | JH CLI / 轻量守卫层（由 Codex 主控触发） | **场景 1（跨模型代码修改落地）**：Gemini Worker 作为远端/代理 API 模型无法直接安全写本地磁盘；若让其直接覆盖工作区文件会绕过 Muse 审核并破坏用户正在编辑的文件。保留 `stage_write` + 审核后 `apply_staged` 恰好充当“外部模型产物进入宿主工作区的安全隔离舱”。 |
 | **4. 明确暂缓**<br>（Deferred，不进入 P1 / N1—N2） | ① 独立自研通用 Shell 工具执行器与 Git 工具平台（原旧 E4 后半批计划）<br>② 独立 Web / 桌面 UI 与常驻后台守护进程<br>③ 自动经验学习闭环、自学习路由与系统级自我修改（归 N6 / N8）<br>④ 无界多 Agent 并发调度平台（未验证单任务收益前不建） | 暂缓（后续按 N5—N8 评测驱动） | **全场景约束**：产品需求第 3 节与第 9 节明确规定不建设独立 AI 平台、不重复造 Shell/Git 轮子；优先跑通“用户在 Codex 提目标 → Gemini 执行 → Muse 审核 → Codex 修正/应用 → 交付”的 P1 最小闭环。 |
 
 ---

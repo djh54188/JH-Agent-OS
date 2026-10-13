@@ -1,0 +1,16 @@
+{
+  "updated": [
+    "STATUS.md",
+    "TODO.md",
+    "CHANGELOG.md",
+    "README.md",
+    "docs/README.md",
+    "docs/handoffs/jh015-agent-resume-20261013.md",
+    "docs/handoffs/jh015-after-jh016-20261012.md",
+    "docs/handoffs/n1-20261012-execution.md",
+    "docs/handoffs/n1-20261012-review.md",
+    "docs/handoffs/muse-lead-gemini-workers.md"
+  ],
+  "shared_source_modified": false,
+  "index_or_commits_modified": false
+}

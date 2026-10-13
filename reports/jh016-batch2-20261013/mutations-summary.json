@@ -1,0 +1,31 @@
+{
+  "mutations": 13,
+  "passed": false,
+  "detected": 5,
+  "wording_only_redundant": 3,
+  "survived_redundant": 4,
+  "survived_test_gap": 0,
+  "harness_errors": 1,
+  "details": [
+    {
+      "guard": "temp_precommit_hash_check_removed",
+      "verdict": "harness_error",
+      "oracle_detail": "applied=False target=b'ORIGINAL'",
+      "errors": [
+        {
+          "test": "test_temp_tamper_before_commit_refused (phase4_tests.TestJH016Integrity.test_temp_tamper_before_commit_refused)",
+          "last_lines": [
+            "        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+            "  File \"D:\\JH-Agent OS\\src\\file_tools.py\", line 758, in apply_staged",
+            "    os.replace(str(temp_path), str(fresh_target))",
+            "    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+            "PermissionError: [WinError 5] 拒绝访问。: 'D:\\\\JH-Agent OS\\\\data\\\\test-workspaces\\\\jh016-633ab3ff\\\\_staging\\\\task_jh016tt01\\\\.tmp_e4804ba823e5441cb663ef27f2ee5f1b_main.txt' -> 'D:\\\\JH-Agent OS\\\\data\\\\test-workspaces\\\\jh016-633ab3ff\\\\out\\\\main.txt'"
+          ]
+        }
+      ],
+      "oracle_error": ""
+    }
+  ],
+  "exit_code": 1,
+  "source_hashes_unchanged": true
+}

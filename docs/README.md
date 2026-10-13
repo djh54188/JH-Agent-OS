@@ -18,10 +18,19 @@
 | [ADR-0001](adr/ADR-0001-codex-integration.md) | 原接入设计保留为历史；主要入口方向由 ADR-0003 替代 |
 | [ADR-0002](adr/ADR-0002-gemini-local-proxy.md) | 用户已裁决的 Gemini 本地代理接入 |
 | [ADR-0003](adr/ADR-0003-codex-hosted-entry.md) | Codex 主控 → 项目 Skill + CLI → JH，架构方案批准，宿主验收待完成 |
+| [ADR-0004](adr/ADR-0004-n1-artifact-first.md) | 当前范围：N1 先验证生成产物接入，自动文件应用暂缓准入，N2 完整验收保留 |
+| [JH-004 当前执行交接](handoffs/jh004-artifact-entry-20261013.md) | 真实 Skill/CLI、无工具生产装配、固定模板、查询与跨进程接续；需实际实施验证 |
+| [JH-004 当前启动卡](handoffs/jh004-start-here-20261013.md) / [原就绪记录](handoffs/jh004-ready-20261013.md) | 隔离工作树已建立；从已准备文档检查点开始 A–E 实施，原 Shell 故障属于历史会话报告 |
+| [父目录发布最新复核](../reports/jh016-parent-publish-review-20261013.md) / [矩阵回执](../reports/jh016-parent-publish-20261013/gate-verification.json) | P-A/P-B false，STOP；没有运行 v2 后续 156 单测/15 变异 |
 | [N1 能力归属与旧成果处置](n1-capability-ownership.md) | JH-003 方向已批准；当前实现安全限制以独立复核为准 |
-| [文件工具契约与权限边界](file-tools-contract.md) | 目标契约保留；JH-002 五项不变量未满足，JH-015 整改中 |
-| [N1 架构独立复核](../reports/n1-architecture-review-20261012.md) | 五项已复现缺陷、范围裁决与 JH-004 准入 |
+| [文件工具契约与权限边界](file-tools-contract.md) | 原契约保留；组件未通过、自动应用暂缓，真实写入门禁关闭 |
+| [文件应用机制说明 v2（未通过设计）](file-tools-apply-mechanism.md) | 父目录发布方案先行矩阵 STOP；保留失败设计，不作为当前实施指令 |
+| [N1 架构初次复核](../reports/n1-architecture-review-20261012.md) | ec11584 的五项历史反例、范围裁决与 JH-004 准入 |
+| [JH-016 第二批前版复核](../reports/jh016-batch2-review-20261013.md) / [历史整改指令](handoffs/jh015-batch2-followup-20261013.md) | 历史未提交实现 150 单测 3 错误；后续 v2 矩阵 STOP，当前整改排期已暂停 |
+| [JH-016 2026-10-12 独立复核](../reports/jh016-review-20261012.md) / [历史整改指令（已暂停）](handoffs/jh015-after-jh016-20261012.md) | 80979f3 历史结论 revise；当前范围以 ADR-0004/JH-004 为准，旧完整性问题未被豁免 |
 | [执行交接](handoffs/n1-20261012-execution.md) / [审查交接](handoffs/n1-20261012-review.md) | 双方对齐同一裁决与证据边界 |
+| [历史执行 Agent 续接交接](handoffs/jh015-agent-resume-20261013.md) | 早间源码保护记录，已暂停；不据此恢复旧半成品或继续整改 |
+| [Muse 主执行与 Gemini 子智能体](handoffs/muse-lead-gemini-workers.md) | Muse 主执行、Gemini 执行子任务；当前架构师会话独立审查 JH-004；JH-016 历史复核为 STOP，产品运行时配置沿用现有 ADR |
 | [Gemini 接入说明](gemini-setup.md) | 当前 Gemini 配置与验证方式 |
 | [Muse 接入说明](muse-setup.md) | Muse 配置与验证方式 |
 | [适配器契约](adapter-contracts.md) | Provider 请求、响应与失败约定 |

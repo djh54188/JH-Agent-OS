@@ -1,0 +1,253 @@
+{
+  "timestamp": "2026-10-12T14:19:39.658821+00:00",
+  "script_exit_code": 0,
+  "script_report": {
+    "mutations": 12,
+    "passed": true,
+    "results": [
+      {
+        "guard": "workspace_containment_removed",
+        "module": "src/file_tools.py",
+        "detected": true
+      },
+      {
+        "guard": "junction_ancestor_check_removed",
+        "module": "src/file_tools.py",
+        "detected": true
+      },
+      {
+        "guard": "apply_target_version_check_removed",
+        "module": "src/file_tools.py",
+        "detected": true
+      },
+      {
+        "guard": "apply_staged_hash_check_removed",
+        "module": "src/file_tools.py",
+        "detected": true
+      },
+      {
+        "guard": "apply_without_pass_verdict",
+        "module": "src/orchestrator.py",
+        "detected": true
+      },
+      {
+        "guard": "arch01_staging_dir_reparse_removed",
+        "module": "src/file_tools.py",
+        "detected": true
+      },
+      {
+        "guard": "arch03_locked_handle_version_check_removed",
+        "module": "src/file_tools.py",
+        "detected": true
+      },
+      {
+        "guard": "arch05_staged_snapshot_binding_removed",
+        "module": "src/orchestrator.py",
+        "detected": true
+      },
+      {
+        "guard": "workspace_ctor_reparse_removed",
+        "module": "src/file_tools.py",
+        "detected": true
+      },
+      {
+        "guard": "staged_unique_name_removed",
+        "module": "src/file_tools.py",
+        "detected": true
+      },
+      {
+        "guard": "recovered_applied_hash_check_removed",
+        "module": "src/orchestrator.py",
+        "detected": true
+      },
+      {
+        "guard": "acceptance_current_turn_judgment_removed",
+        "module": "src/acceptance.py",
+        "detected": true
+      }
+    ]
+  },
+  "independent_failure_details": [
+    {
+      "tests_run": 1,
+      "failures": [],
+      "errors": [
+        {
+          "test": "test_out_of_bounds_paths_refused (phase4_tests.TestFileToolExecutor.test_out_of_bounds_paths_refused)",
+          "last_lines": [
+            "  File \"D:\\JH-Agent OS\\src\\file_tools.py\", line 177, in resolve_workspace_path",
+            "    raise PathBoundaryError(f\"'..' escapes the workspace root: '{raw}'\")",
+            "src.file_tools.PathBoundaryError: '..' escapes the workspace root: '../evil.txt'"
+          ]
+        }
+      ],
+      "skipped": []
+    },
+    {
+      "tests_run": 1,
+      "failures": [
+        {
+          "test": "test_real_junction_escape_refused (phase4_tests.TestFileToolExecutor.test_real_junction_escape_refused)",
+          "last_lines": [
+            "    self.assertIn(\"link/junction\", result[\"stderr\"])",
+            "    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+            "AssertionError: 'link/junction' not found in \"PathBoundaryError: post-open containment check failed (resolved_parent escapes workspace): 'D:\\\\JH-Agent OS\\\\data\\\\test-workspaces\\\\executor-eda18fd4\\\\link'\""
+          ]
+        }
+      ],
+      "errors": [],
+      "skipped": []
+    },
+    {
+      "tests_run": 1,
+      "failures": [
+        {
+          "test": "test_target_changed_between_review_and_apply (phase4_tests.TestPhase4FileLoop.test_target_changed_between_review_and_apply)",
+          "last_lines": [
+            "    self.assertIn(\"target changed since review\", result[\"error_info\"])",
+            "    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+            "AssertionError: 'target changed since review' not found in 'Success gate blocked: Staged write has no confirmed post-review apply record'"
+          ]
+        }
+      ],
+      "errors": [],
+      "skipped": []
+    },
+    {
+      "tests_run": 1,
+      "failures": [
+        {
+          "test": "test_apply_refuses_tampered_staged_content (phase4_tests.TestPhase4FileLoop.test_apply_refuses_tampered_staged_content)",
+          "last_lines": [
+            "    self.assertIn(\"staged content sha\", result[\"error_info\"])",
+            "    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+            "AssertionError: 'staged content sha' not found in 'Success gate blocked: Staged write has no confirmed post-review apply record'"
+          ]
+        }
+      ],
+      "errors": [],
+      "skipped": []
+    },
+    {
+      "tests_run": 1,
+      "failures": [
+        {
+          "test": "test_review_rejection_blocks_apply (phase4_tests.TestPhase4FileLoop.test_review_rejection_blocks_apply)",
+          "last_lines": [
+            "AssertionError: 'needs_attention' != 'succeeded'",
+            "- needs_attention",
+            "+ succeeded"
+          ]
+        }
+      ],
+      "errors": [],
+      "skipped": []
+    },
+    {
+      "tests_run": 1,
+      "failures": [],
+      "errors": [
+        {
+          "test": "test_arch01_staging_junction_does_not_truncate_outside_file (phase4_tests.TestPhase4FileLoop.test_arch01_staging_junction_does_not_truncate_outside_file)",
+          "last_lines": [
+            "    raise PathBoundaryError(",
+            "        f\"post-open containment check failed ({label} escapes workspace): '{candidate}'\")",
+            "src.file_tools.PathBoundaryError: post-open containment check failed (internal_dir escapes workspace): 'D:\\JH-Agent OS\\data\\test-workspaces\\loop-cb61a964\\_staging'"
+          ]
+        }
+      ],
+      "skipped": []
+    },
+    {
+      "tests_run": 1,
+      "failures": [
+        {
+          "test": "test_arch03_concurrent_target_edit_during_backed_up_preserved (phase4_tests.TestPhase4FileLoop.test_arch03_concurrent_target_edit_during_backed_up_preserved)",
+          "last_lines": [
+            "    with self.assertRaises(PathBoundaryError):",
+            "         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^",
+            "AssertionError: PathBoundaryError not raised"
+          ]
+        }
+      ],
+      "errors": [],
+      "skipped": []
+    },
+    {
+      "tests_run": 1,
+      "failures": [
+        {
+          "test": "test_arch05_reviewed_content_mismatch_blocked_at_snapshot_and_apply (phase4_tests.TestPhase4FileLoop.test_arch05_reviewed_content_mismatch_blocked_at_snapshot_and_apply)",
+          "last_lines": [
+            "    self.assertEqual(reviewer.call_count, 0)",
+            "    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^",
+            "AssertionError: 1 != 0"
+          ]
+        }
+      ],
+      "errors": [],
+      "skipped": []
+    },
+    {
+      "tests_run": 1,
+      "failures": [
+        {
+          "test": "test_junction_workspace_root_rejected (phase4_tests.TestPhase4FileLoop.test_junction_workspace_root_rejected)",
+          "last_lines": [
+            "    with self.assertRaises(PathBoundaryError):",
+            "         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^",
+            "AssertionError: PathBoundaryError not raised"
+          ]
+        }
+      ],
+      "errors": [],
+      "skipped": []
+    },
+    {
+      "tests_run": 1,
+      "failures": [
+        {
+          "test": "test_same_basename_targets_get_distinct_staged_files (phase4_tests.TestPhase4FileLoop.test_same_basename_targets_get_distinct_staged_files)",
+          "last_lines": [
+            "    self.assertNotEqual(first[\"staged_path\"], second[\"staged_path\"])",
+            "    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+            "AssertionError: 'D:\\\\JH-Agent OS\\\\data\\\\test-workspaces\\\\loop-fb713b42\\\\_staging\\\\task_h1dup0001\\\\dup.txt' == 'D:\\\\JH-Agent OS\\\\data\\\\test-workspaces\\\\loop-fb713b42\\\\_staging\\\\task_h1dup0001\\\\dup.txt'"
+          ]
+        }
+      ],
+      "errors": [],
+      "skipped": []
+    },
+    {
+      "tests_run": 1,
+      "failures": [
+        {
+          "test": "test_recovered_applied_hash_must_match_reviewed_snapshot (phase4_tests.TestPhase4FileLoop.test_recovered_applied_hash_must_match_reviewed_snapshot)",
+          "last_lines": [
+            "    self.assertIn(\"hash mismatch\", (result[\"error_info\"] or \"\").lower())",
+            "    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+            "AssertionError: 'hash mismatch' not found in 'success gate blocked: applied target hash does not match the current reviewed artifact hash'"
+          ]
+        }
+      ],
+      "errors": [],
+      "skipped": []
+    },
+    {
+      "tests_run": 1,
+      "failures": [
+        {
+          "test": "test_stale_turn_staged_write_does_not_block_current_apply (phase4_tests.TestPhase4FileLoop.test_stale_turn_staged_write_does_not_block_current_apply)",
+          "last_lines": [
+            "AssertionError: 'needs_attention' != 'succeeded'",
+            "- needs_attention",
+            "+ succeeded"
+          ]
+        }
+      ],
+      "errors": [],
+      "skipped": []
+    }
+  ],
+  "all_detected_by_assertion": false
+}

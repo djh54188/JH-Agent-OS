@@ -1,0 +1,17 @@
+{
+  "updated": [
+    "STATUS.md",
+    "TODO.md",
+    "CHANGELOG.md",
+    "README.md",
+    "docs/handoffs/n1-20261012-execution.md",
+    "docs/handoffs/n1-20261012-review.md",
+    "docs/handoffs/muse-lead-gemini-workers.md",
+    "docs/README.md",
+    "docs/file-tools-contract.md",
+    "docs/n1-capability-ownership.md"
+  ],
+  "shared_implementation_modified": false,
+  "historical_evidence_overwritten": false,
+  "git_index_or_commits_modified": false
+}
