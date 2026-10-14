@@ -1,0 +1,22 @@
+{
+  "run_at": "2026-10-13T14:45:48.630971+00:00",
+  "exit_code": 0,
+  "total": 165,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 1,
+  "duration_seconds": 5.028,
+  "command": [
+    "python",
+    "-X",
+    "utf8",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests"
+  ],
+  "scope": "current uncommitted JH-004 implementation, not v2 file publishing",
+  "source_unchanged": true
+}

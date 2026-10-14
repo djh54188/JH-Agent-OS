@@ -1,0 +1,290 @@
+{
+  "client_date": "2026-10-14",
+  "api_calls": 0,
+  "scope": "offline independent fault injection; source_false_control simulates source flag false and is not real model evidence",
+  "rows": [
+    {
+      "case": "wrong_999",
+      "exit_code": 1,
+      "body": {
+        "command_ok": false,
+        "error": "Template records_transform_v1 requires exactly the two standard criteria in order; non-template, misordered, or extra conditions refused"
+      },
+      "db_not_created": true,
+      "model_assembly_reached": false
+    },
+    {
+      "case": "wrong_order",
+      "exit_code": 1,
+      "body": {
+        "command_ok": false,
+        "error": "Template records_transform_v1 requires exactly the two standard criteria in order; non-template, misordered, or extra conditions refused"
+      },
+      "db_not_created": true,
+      "model_assembly_reached": false
+    },
+    {
+      "case": "extra_condition",
+      "exit_code": 1,
+      "body": {
+        "command_ok": false,
+        "error": "Template records_transform_v1 requires exactly the two standard criteria in order; non-template, misordered, or extra conditions refused"
+      },
+      "db_not_created": true,
+      "model_assembly_reached": false
+    },
+    {
+      "case": "known_mock_assembly",
+      "exit_code": 1,
+      "body": {
+        "command_ok": false,
+        "error": "Production assembly refused known mock worker adapter 'ScriptedWorkerAdapter' (model_id 'mock-gemini-worker')"
+      },
+      "tasks": 0,
+      "attempts": 0
+    },
+    {
+      "case": "source_false_control",
+      "exit_code": 0,
+      "status": "succeeded",
+      "review_bindings": 1,
+      "source_records": [
+        {
+          "attempt_id": "attempt_376d8e11eafd4076927de74bf37c3699",
+          "role": "worker",
+          "adapter_class": "OfflineTransport",
+          "model_id": "offline-source-gate-worker",
+          "is_mock": false
+        },
+        {
+          "attempt_id": "attempt_409f6c350f034365a9fc7a464a1d8fba",
+          "role": "worker",
+          "adapter_class": "OfflineTransport",
+          "model_id": "offline-source-gate-worker",
+          "is_mock": false
+        },
+        {
+          "attempt_id": "attempt_4eff871aa1e043229ba372471ce3914b",
+          "role": "reviewer",
+          "adapter_class": "OfflineTransport",
+          "model_id": "offline-source-gate-reviewer",
+          "is_mock": false
+        }
+      ],
+      "responses": [
+        {
+          "phase": "planning",
+          "declared_is_mock": false
+        },
+        {
+          "phase": "generation",
+          "declared_is_mock": false
+        },
+        {
+          "phase": "review",
+          "declared_is_mock": false
+        }
+      ]
+    },
+    {
+      "case": "mock_planning",
+      "exit_code": 1,
+      "status": "failed",
+      "review_bindings": 0,
+      "source_records": [
+        {
+          "attempt_id": "attempt_037296d70b6146d099bb0d52c7936a79",
+          "role": "worker",
+          "adapter_class": "OfflineTransport",
+          "model_id": "offline-source-gate-worker",
+          "is_mock": true
+        }
+      ],
+      "responses": [
+        {
+          "phase": "planning",
+          "declared_is_mock": true
+        }
+      ]
+    },
+    {
+      "case": "mock_generation",
+      "exit_code": 1,
+      "status": "failed",
+      "review_bindings": 0,
+      "source_records": [
+        {
+          "attempt_id": "attempt_d4ddadc350f9480fbc06dcf1c3e8accd",
+          "role": "worker",
+          "adapter_class": "OfflineTransport",
+          "model_id": "offline-source-gate-worker",
+          "is_mock": false
+        },
+        {
+          "attempt_id": "attempt_befb26c7cdb544a7ad7a8e047a483870",
+          "role": "worker",
+          "adapter_class": "OfflineTransport",
+          "model_id": "offline-source-gate-worker",
+          "is_mock": true
+        }
+      ],
+      "responses": [
+        {
+          "phase": "planning",
+          "declared_is_mock": false
+        },
+        {
+          "phase": "generation",
+          "declared_is_mock": true
+        }
+      ]
+    },
+    {
+      "case": "mock_review",
+      "exit_code": 1,
+      "status": "needs_attention",
+      "review_bindings": 0,
+      "source_records": [
+        {
+          "attempt_id": "attempt_41e5bb56a98a4146adf9f63282d304f7",
+          "role": "worker",
+          "adapter_class": "OfflineTransport",
+          "model_id": "offline-source-gate-worker",
+          "is_mock": false
+        },
+        {
+          "attempt_id": "attempt_7b4b11d4d4b44be5bdcfb4be5ad63dfd",
+          "role": "worker",
+          "adapter_class": "OfflineTransport",
+          "model_id": "offline-source-gate-worker",
+          "is_mock": false
+        },
+        {
+          "attempt_id": "attempt_8468317929ad4a8591460b4608075844",
+          "role": "reviewer",
+          "adapter_class": "OfflineTransport",
+          "model_id": "offline-source-gate-reviewer",
+          "is_mock": true
+        }
+      ],
+      "responses": [
+        {
+          "phase": "planning",
+          "declared_is_mock": false
+        },
+        {
+          "phase": "generation",
+          "declared_is_mock": false
+        },
+        {
+          "phase": "review",
+          "declared_is_mock": true
+        }
+      ]
+    },
+    {
+      "case": "missing_generation_source",
+      "exit_code": 1,
+      "status": "failed",
+      "review_bindings": 0,
+      "source_records": [
+        {
+          "attempt_id": "attempt_407eed4808c24471b34bfee6751d89cb",
+          "role": "worker",
+          "adapter_class": "OfflineTransport",
+          "model_id": "offline-source-gate-worker",
+          "is_mock": false
+        },
+        {
+          "attempt_id": "attempt_b58a30fc70fb45f99f94269ab8937e20",
+          "role": "worker",
+          "adapter_class": "OfflineTransport",
+          "model_id": "offline-source-gate-worker",
+          "is_mock": null
+        }
+      ],
+      "responses": [
+        {
+          "phase": "planning",
+          "declared_is_mock": false
+        },
+        {
+          "phase": "generation",
+          "declared_is_mock": null
+        }
+      ]
+    },
+    {
+      "case": "historical_missing_source",
+      "blocker_before": null,
+      "exit_code": 0,
+      "status": "succeeded",
+      "legacy_completed_attempt": "attempt_06e9c436af264d9fa2e0ff88a84b737c",
+      "attempts": 4,
+      "source_records": 3,
+      "uncovered_completed_attempts": [
+        "attempt_06e9c436af264d9fa2e0ff88a84b737c"
+      ],
+      "summary_source": {
+        "source": "production",
+        "template_id": "records_transform_v1",
+        "execution_mode": "generate"
+      },
+      "responses": [
+        {
+          "phase": "planning",
+          "declared_is_mock": false
+        },
+        {
+          "phase": "generation",
+          "declared_is_mock": false
+        },
+        {
+          "phase": "review",
+          "declared_is_mock": false
+        }
+      ],
+      "model_adapter_load_was_allowed": true
+    },
+    {
+      "case": "missing_task_queries",
+      "results": [
+        {
+          "command": "status",
+          "exit_code": 1,
+          "error": "\"Task 'task_missing_rereview' not found\""
+        },
+        {
+          "command": "summary",
+          "exit_code": 1,
+          "error": "\"Task 'task_missing_rereview' not found\""
+        },
+        {
+          "command": "events",
+          "exit_code": 1,
+          "error": "\"Task 'task_missing_rereview' not found\""
+        },
+        {
+          "command": "artifact",
+          "exit_code": 1,
+          "error": "\"Task 'task_missing_rereview' not found\""
+        }
+      ],
+      "db_unchanged": true
+    },
+    {
+      "case": "skill_worktree_module",
+      "skill_derived_root": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry",
+      "git_root": "D:/JH-Agent OS/data/worktrees/n1-artifact-entry",
+      "module": [
+        "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\src\\cli.py",
+        "True"
+      ],
+      "exit_code": 0,
+      "hardcoded_original_root_absent": true,
+      "host_skill_discovery_verified": false
+    }
+  ],
+  "fixtures_cleaned": true,
+  "old_evidence_modified": false
+}

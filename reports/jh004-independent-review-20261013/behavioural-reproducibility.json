@@ -1,0 +1,169 @@
+{
+  "runs": 2,
+  "semantic_outcomes_identical": true,
+  "api_calls": 0,
+  "fixtures_cleaned": true,
+  "excluded_from_equality": [
+    "random task/artifact identifiers embedded in artifacts and evidence refs"
+  ],
+  "stable_outcomes": [
+    {
+      "case": "canonical_criteria_positive",
+      "cli_exit_code": 0,
+      "state": "succeeded",
+      "summary_source": {
+        "source": "fixture",
+        "template_id": "records_transform_v1",
+        "execution_mode": "generate"
+      },
+      "worker_calls": 3,
+      "reviewer_calls": 1,
+      "mock_adapter_classes": [
+        "ScriptedWorkerAdapter",
+        "ScriptedReviewerAdapter"
+      ],
+      "fixture_mode": true,
+      "acceptance_outcomes": [
+        {
+          "criterion": "Trusted input records were provided",
+          "passed": true
+        },
+        {
+          "criterion": "Artifact content equals the expected sorted records",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "case": "non_template_criteria",
+      "cli_exit_code": 0,
+      "state": "succeeded",
+      "summary_source": {
+        "source": "fixture",
+        "template_id": "records_transform_v1",
+        "execution_mode": "generate"
+      },
+      "worker_calls": 3,
+      "reviewer_calls": 1,
+      "mock_adapter_classes": [
+        "ScriptedWorkerAdapter",
+        "ScriptedReviewerAdapter"
+      ],
+      "fixture_mode": true,
+      "input_row_count": 2,
+      "actual_output_row_count": 2,
+      "false_acceptance_reproduced": true,
+      "acceptance_outcomes": [
+        {
+          "criterion": "Input records contain exactly 999 rows",
+          "passed": true
+        },
+        {
+          "criterion": "Output JSON must contain exactly 999 rows",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "case": "mock_responses_in_production_assembly",
+      "cli_exit_code": 0,
+      "state": "succeeded",
+      "summary_source": {
+        "source": "production",
+        "template_id": "records_transform_v1",
+        "execution_mode": "generate"
+      },
+      "worker_calls": 3,
+      "reviewer_calls": 1,
+      "mock_adapter_classes": [
+        "ScriptedWorkerAdapter",
+        "ScriptedReviewerAdapter"
+      ],
+      "fixture_mode": false,
+      "worker_is_mock": true,
+      "mock_marked_as_production_success": true,
+      "acceptance_outcomes": [
+        {
+          "criterion": "Trusted input records were provided",
+          "passed": true
+        },
+        {
+          "criterion": "Artifact content equals the expected sorted records",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "case": "missing_task_status",
+      "command": "status",
+      "cli_exit_code": 1,
+      "body": {
+        "command_ok": false,
+        "read_only": true,
+        "error": "\"Task 'task_missing_probe' not found\""
+      }
+    },
+    {
+      "case": "missing_task_summary",
+      "command": "summary",
+      "cli_exit_code": 1,
+      "body": {
+        "command_ok": false,
+        "read_only": true,
+        "error": "\"Task 'task_missing_probe' not found\""
+      }
+    },
+    {
+      "case": "missing_task_events",
+      "command": "events",
+      "cli_exit_code": 0,
+      "body": []
+    },
+    {
+      "case": "missing_task_artifact",
+      "command": "artifact",
+      "cli_exit_code": 1,
+      "body": {
+        "command_ok": false,
+        "read_only": true,
+        "error": "\"Task 'task_missing_probe' not found\""
+      }
+    },
+    {
+      "case": "read_only_db_hash",
+      "unchanged": true
+    },
+    {
+      "case": "extra_record_field",
+      "accepted": true
+    },
+    {
+      "case": "nonfinite_sales",
+      "accepted": true
+    },
+    {
+      "case": "skill_hardcoded_workdir_module_origins",
+      "origins": [
+        {
+          "cwd": "D:\\JH-Agent OS",
+          "exit_code": 0,
+          "stdout": [
+            "D:\\JH-Agent OS\\src\\cli.py",
+            "False"
+          ],
+          "stderr": ""
+        },
+        {
+          "cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry",
+          "exit_code": 0,
+          "stdout": [
+            "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\src\\cli.py",
+            "True"
+          ],
+          "stderr": ""
+        }
+      ],
+      "skill_instructs_original_root": true
+    }
+  ]
+}

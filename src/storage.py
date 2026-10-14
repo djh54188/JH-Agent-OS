@@ -1006,6 +1006,19 @@ class TaskStorage:
         for row in rows:
             task_id = row["task_id"]
             status = row["status"]
+            held = self._conn.execute("SELECT owner_id FROM task_control WHERE task_id = ?", (task_id,)).fetchone()
+            if held and held["owner_id"]:
+                # An owner-held task may be live in another process. Recover must
+                # not preempt it: leave owner and state untouched for explicit
+                # operator resolution (stale-owner reclamation is N7 scope).
+                recovery_summary.append({
+                    "task_id": task_id,
+                    "previous_state": status,
+                    "recovered_state": status,
+                    "auto_replay_allowed": False,
+                    "reason": "skipped_owner_held",
+                })
+                continue
             has_unconfirmed = bool(row["has_unconfirmed_side_effect"])
 
             # Check in-flight tool executions

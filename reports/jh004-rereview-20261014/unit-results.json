@@ -1,0 +1,23 @@
+{
+  "client_date": "2026-10-14",
+  "run_at_utc": "2026-10-14T12:39:24.512586+00:00",
+  "exit_code": 1,
+  "total": 180,
+  "failures": 1,
+  "errors": 0,
+  "skipped": 1,
+  "duration_seconds": 7.649,
+  "command": [
+    "python",
+    "-X",
+    "utf8",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests"
+  ],
+  "model_calls": 0,
+  "source_unchanged": true
+}

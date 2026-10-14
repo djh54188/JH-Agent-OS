@@ -1,0 +1,29 @@
+{
+  "checkpoint_type": "WIP snapshot; NOT accepted; not phase completion",
+  "branch": "n1-artifact-entry",
+  "parent_commit": "9a7c5dd6e1f244db076003c17da62966b05d7ef3",
+  "commit_subject": "wip(jh004): checkpoint R01-R04 fixes with known validation gaps",
+  "commit_lookup": "git log -1 --format=%H --grep=checkpoint R01-R04 fixes",
+  "known_unit_result": {
+    "total": 180,
+    "passed": 178,
+    "failed": 1,
+    "skipped": 1
+  },
+  "known_remaining": {
+    "P1": "historical completed attempts missing response-source records are allowed",
+    "P2": "containing/contains wording test mismatch"
+  },
+  "source_sha256": {
+    "src/cli.py": "07902f43ad03b8d7fd771354c94990a61e04872fc2f89daaad8d16543f641b57",
+    "src/orchestrator.py": "c0767067a5f9a4ca1b22ebb0db744133c468b6f6a9fd90318178c21b9ab8210b",
+    "src/storage.py": "44e571b0ff52a282a34aeb33a7f576c542b7e01b7cc0dcc76f56565dabc1dfb4",
+    "src/production_executor.py": "713003e4774cf0f7ec9e2916c37fe57e208f96ac5551da9a69668033771c4d7e",
+    "tests/test_jh004_artifact_entry.py": "af23d206cbf94fda3a3625f683acca49ac56052c425424b3f5507b7256f7c06d",
+    ".agents/skills/jh-task/SKILL.md": "c85d5053317e51aea305a6bf0f8db51dedcb6d37367f3886c52df55b25a9ed6f",
+    "reports/jh004-r01-r04-fixes-20261013.md": "b53ee8466782b5788893c32ef131bdd587d782f26b7cfa32a272d17508717268"
+  },
+  "reviewer_product_changes": false,
+  "file_apply_gate": "closed",
+  "post_commit_verification": "D:/JH-Agent OS/reports/jh004-postcheckpoint-20261014/verification.json"
+}

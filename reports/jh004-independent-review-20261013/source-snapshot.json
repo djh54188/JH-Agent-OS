@@ -1,0 +1,12 @@
+{
+  "head": "9a7c5dd6e1f244db076003c17da62966b05d7ef3",
+  "branch": "n1-artifact-entry",
+  "source_sha256": {
+    "src/cli.py": "b780c1f630195623935c020263b07ffe54a3f7ceef75d135cd9418d3cea0cef4",
+    "src/storage.py": "44e571b0ff52a282a34aeb33a7f576c542b7e01b7cc0dcc76f56565dabc1dfb4",
+    "src/production_executor.py": "713003e4774cf0f7ec9e2916c37fe57e208f96ac5551da9a69668033771c4d7e",
+    "tests/test_jh004_artifact_entry.py": "55ece5268388942ce63914a062c794b7f3adff4d177a308682ba7b2ed31c4d70",
+    ".agents/skills/jh-task/SKILL.md": "750c0f69d7693d47850820be74bf32d325ba82362e040f2fa8bc84ef7feafd49",
+    "reports/jh004-implementation-20261013.md": "f66b63439ec9f4a7c2f1ace66e2b2973ec8ed2fdbdf793ea0dd1f3ddbf4c5430"
+  }
+}

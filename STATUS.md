@@ -1,10 +1,32 @@
 # STATUS · JH-Agent OS · 会话续接卡
 
-更新：2026-10-13。本文记录当前项目快照；恢复工作时同时核对 Git 工作树与最新交付。
+更新：2026-10-14。本文记录当前项目快照；恢复工作时同时核对 Git 工作树与最新交付。
 
 方向见 [产品需求](docs/product-requirements-v1.0.md)，阶段与验收见 [ROADMAP.md](ROADMAP.md)，任务看板见 [TODO.md](TODO.md)，历史见 [CHANGELOG.md](CHANGELOG.md)。
 
-## 2026-10-13 · JH-004 隔离已准备，待代码实施
+## 2026-10-14 · JH-004 整改复核：仍 revise，仅余两项
+
+实际全量 180 项：**178 通过、1 失败、0 错误、1 跳过**。R01、R04 原反例关闭；R03 工作树模块指向正确但宿主发现/调用未验证；R02 当前调用 Mock/缺失标记拒绝生效，但历史 completed attempt 缺来源事件仍可 production succeeded（独立两轮复现：4 attempt / 3 source）。
+
+剩余 **1 P1 历史来源覆盖、1 P2 containing/contains 文本测试不一致**，见[最新复核](reports/jh004-rereview-20261014.md)及[两项继续整改](docs/handoffs/jh004-r02-followup-20261014.md)。按用户要求保存明确未验收的 WIP 检查点，具体提交查隔离分支日志；不是阶段准入。产品实现未由审查会话改写，真实调用 0，门禁关闭，N1 未结项。
+
+执行只处理两项，不重做完整 A–E 或四项。文件编辑可用即可继续修复；Shell 验证由当前架构师会话承接。旧证据与原工作树失败 WIP 保留。
+
+## 历史快照（2026-10-13，已由上文更新）· JH-004 R01—R04 已整改，未运行
+
+R01—R04 源码与 15 项新增测试已在隔离工作树完成，见[整改记录](reports/jh004-r01-r04-fixes-20261013.md)。本会话 Shell 不可用：未运行测试、未建立检查点、未提交；改动文件为 src/cli.py、src/orchestrator.py、tests/test_jh004_artifact_entry.py、.agents/skills/jh-task/SKILL.md 及状态文档。交架构师会话补跑验证与检查点。门禁保持关闭。
+
+## 历史快照（2026-10-13，已由上文更新）· JH-004 独立复核：revise，转四项整改
+
+当前会话已实际运行全量 165 项：164 通过、0 失败、0 错误、1 跳过；独立行为探针仍确认 **3 项 P1、1 项 P2**：任意两条件误通过、明确 Mock 响应得到 production 成功、Skill 指向原树旧 CLI，以及 events 缺失任务成功空列表。见[最新审查](reports/jh004-review-20261013.md)。
+
+当前不是只等待 Shell。按[四项整改交接](docs/handoffs/jh004-after-review-20261013.md)修复，离线缺陷关闭前不消耗真实模型取证资源；尚未验证实际 Codex Skill 发现/调用，真实文件应用门禁关闭，N1 未结项。受审代码未被本会话改写或提交，HEAD 仍 9a7c5dd（隔离分支）。有文件编辑能力的执行会话可继续修复，Shell 检查由本架构师会话承接，不重复生成就绪包。
+
+## 历史快照（2026-10-13，当前状态见上）· JH-004 A–E 已实现，未验证
+
+A–E 代码与 20 项新回归测试已在隔离工作树完成，见[实施记录](reports/jh004-implementation-20261013.md)。本会话无 Shell，未运行、未提交；待有 Shell 会话按序验证（全量回归→真实取证→Skill 宿主）后按明确范围提交并送审。门禁保持关闭。
+
+## 历史快照（2026-10-13，当前状态见上）· JH-004 隔离已准备，待代码实施
 
 原执行会话报告 Shell 不可用，交付仅为就绪包。当前架构师会话已实际运行 Shell，从 80979f3 创建分支 n1-artifact-entry 与隔离工作树 D:/JH-Agent OS/data/worktrees/n1-artifact-entry。原工作树及失败源码保留；文档基线单独归档，A–E 代码/测试/真实接入均尚未完成。执行按[启动卡](docs/handoffs/jh004-start-here-20261013.md)进入已建工作树，不重复创建。真实写入门禁关闭，N1 未结项。
 

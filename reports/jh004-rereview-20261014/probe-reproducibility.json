@@ -1,0 +1,206 @@
+{
+  "runs": 2,
+  "stable_outcomes_identical": true,
+  "fixtures_cleaned": true,
+  "excluded": [
+    "random task/attempt identifiers in audit records"
+  ],
+  "stable_outcomes": [
+    {
+      "case": "wrong_999",
+      "exit_code": 1,
+      "body": {
+        "command_ok": false,
+        "error": "Template records_transform_v1 requires exactly the two standard criteria in order; non-template, misordered, or extra conditions refused"
+      },
+      "db_not_created": true,
+      "model_assembly_reached": false
+    },
+    {
+      "case": "wrong_order",
+      "exit_code": 1,
+      "body": {
+        "command_ok": false,
+        "error": "Template records_transform_v1 requires exactly the two standard criteria in order; non-template, misordered, or extra conditions refused"
+      },
+      "db_not_created": true,
+      "model_assembly_reached": false
+    },
+    {
+      "case": "extra_condition",
+      "exit_code": 1,
+      "body": {
+        "command_ok": false,
+        "error": "Template records_transform_v1 requires exactly the two standard criteria in order; non-template, misordered, or extra conditions refused"
+      },
+      "db_not_created": true,
+      "model_assembly_reached": false
+    },
+    {
+      "case": "known_mock_assembly",
+      "exit_code": 1,
+      "body": {
+        "command_ok": false,
+        "error": "Production assembly refused known mock worker adapter 'ScriptedWorkerAdapter' (model_id 'mock-gemini-worker')"
+      },
+      "tasks": 0,
+      "attempts": 0
+    },
+    {
+      "case": "source_false_control",
+      "exit_code": 0,
+      "status": "succeeded",
+      "review_bindings": 1,
+      "responses": [
+        {
+          "phase": "planning",
+          "declared_is_mock": false
+        },
+        {
+          "phase": "generation",
+          "declared_is_mock": false
+        },
+        {
+          "phase": "review",
+          "declared_is_mock": false
+        }
+      ],
+      "source_records_count": 3
+    },
+    {
+      "case": "mock_planning",
+      "exit_code": 1,
+      "status": "failed",
+      "review_bindings": 0,
+      "responses": [
+        {
+          "phase": "planning",
+          "declared_is_mock": true
+        }
+      ],
+      "source_records_count": 1
+    },
+    {
+      "case": "mock_generation",
+      "exit_code": 1,
+      "status": "failed",
+      "review_bindings": 0,
+      "responses": [
+        {
+          "phase": "planning",
+          "declared_is_mock": false
+        },
+        {
+          "phase": "generation",
+          "declared_is_mock": true
+        }
+      ],
+      "source_records_count": 2
+    },
+    {
+      "case": "mock_review",
+      "exit_code": 1,
+      "status": "needs_attention",
+      "review_bindings": 0,
+      "responses": [
+        {
+          "phase": "planning",
+          "declared_is_mock": false
+        },
+        {
+          "phase": "generation",
+          "declared_is_mock": false
+        },
+        {
+          "phase": "review",
+          "declared_is_mock": true
+        }
+      ],
+      "source_records_count": 3
+    },
+    {
+      "case": "missing_generation_source",
+      "exit_code": 1,
+      "status": "failed",
+      "review_bindings": 0,
+      "responses": [
+        {
+          "phase": "planning",
+          "declared_is_mock": false
+        },
+        {
+          "phase": "generation",
+          "declared_is_mock": null
+        }
+      ],
+      "source_records_count": 2
+    },
+    {
+      "case": "historical_missing_source",
+      "blocker_before": null,
+      "exit_code": 0,
+      "status": "succeeded",
+      "attempts": 4,
+      "summary_source": {
+        "source": "production",
+        "template_id": "records_transform_v1",
+        "execution_mode": "generate"
+      },
+      "responses": [
+        {
+          "phase": "planning",
+          "declared_is_mock": false
+        },
+        {
+          "phase": "generation",
+          "declared_is_mock": false
+        },
+        {
+          "phase": "review",
+          "declared_is_mock": false
+        }
+      ],
+      "model_adapter_load_was_allowed": true,
+      "source_records_count": 3,
+      "uncovered_count": 1
+    },
+    {
+      "case": "missing_task_queries",
+      "results": [
+        {
+          "command": "status",
+          "exit_code": 1,
+          "error": "\"Task 'task_missing_rereview' not found\""
+        },
+        {
+          "command": "summary",
+          "exit_code": 1,
+          "error": "\"Task 'task_missing_rereview' not found\""
+        },
+        {
+          "command": "events",
+          "exit_code": 1,
+          "error": "\"Task 'task_missing_rereview' not found\""
+        },
+        {
+          "command": "artifact",
+          "exit_code": 1,
+          "error": "\"Task 'task_missing_rereview' not found\""
+        }
+      ],
+      "db_unchanged": true
+    },
+    {
+      "case": "skill_worktree_module",
+      "skill_derived_root": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry",
+      "git_root": "D:/JH-Agent OS/data/worktrees/n1-artifact-entry",
+      "module": [
+        "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\src\\cli.py",
+        "True"
+      ],
+      "exit_code": 0,
+      "hardcoded_original_root_absent": true,
+      "host_skill_discovery_verified": false
+    }
+  ]
+}

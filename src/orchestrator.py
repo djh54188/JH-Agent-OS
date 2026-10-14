@@ -97,6 +97,7 @@ class Orchestrator:
         task_deadline_seconds: float = DEFAULT_TASK_DEADLINE_SECONDS,
         acceptance_evaluator: Optional[Callable] = None,
         artifact_store: Optional[ArtifactStore] = None,
+        require_real_responses: bool = False,
     ):
         self.workspace_root = str(Path(workspace_root).resolve())
         self.storage = storage or TaskStorage(":memory:")
@@ -123,6 +124,7 @@ class Orchestrator:
         self.acceptance_evaluator = acceptance_evaluator
         self.enforce_target_files_scope = enforce_target_files_scope
         self.task_deadline_seconds = task_deadline_seconds
+        self._require_real_responses = require_real_responses
 
         self._plan_schema = _load_schema("plan.v1.json")
         self._tool_req_schema = _load_schema("tool_request.v1.json")
@@ -671,6 +673,20 @@ class Orchestrator:
                 task_id, "failed", actor_role="worker",
                 reason=reason_code, error_info=err_str)
 
+    def _record_response_source(self, task_id, role, adapter, attempt_id, response) -> None:
+        """Persist the actually-used call source for production audit and resume checks."""
+        status = self.storage.get_task(task_id)["status"]
+        self.storage.record_event(
+            task_id=task_id, event_type="model_response_source",
+            from_state=status, to_state=status, actor_role="orchestrator",
+            details={
+                "attempt_id": attempt_id, "role": role,
+                "adapter_class": type(adapter).__name__,
+                "model_id": getattr(adapter, "model_id", None),
+                "is_mock": getattr(response, "is_mock", None),
+            },
+        )
+
     def _invoke_model(self, task_id, role, adapter, messages, schema, **kwargs):
         task = self.storage.get_task(task_id)
         reserved = input_reserve(messages, schema)
@@ -681,6 +697,16 @@ class Orchestrator:
             "deadline": self.storage.get_control(task_id)["deadline"], **limits, **kwargs})
         try:
             response = adapter.invoke_structured(messages, schema, task_id=task_id, **limits, **kwargs)
+            if self._require_real_responses:
+                self._record_response_source(task_id, role, adapter, attempt_id, response)
+                source_flag = getattr(response, "is_mock", None)
+                if source_flag is not False:
+                    reason = "mock_response_rejected" if source_flag is True else "unconfirmed_response_source"
+                    self.storage.complete_attempt(task_id, attempt_id, {"error": reason}, None)
+                    raise AdapterError(
+                        f"Production refused {role} response with mock/unconfirmed model source "
+                        f"(is_mock={source_flag!r}, adapter={type(adapter).__name__})"
+                    )
         except AdapterError:
             self.storage.complete_attempt(task_id, attempt_id, {"error": "adapter_failed"}, None)
             raise

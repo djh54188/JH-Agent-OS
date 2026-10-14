@@ -1,0 +1,103 @@
+{
+  "updates": [
+    {
+      "tree": "isolated-worktree",
+      "file": "STATUS.md"
+    },
+    {
+      "tree": "isolated-worktree",
+      "file": "TODO.md"
+    },
+    {
+      "tree": "isolated-worktree",
+      "file": "CHANGELOG.md"
+    },
+    {
+      "tree": "isolated-worktree",
+      "file": "docs/README.md"
+    },
+    {
+      "tree": "isolated-worktree",
+      "file": "docs/handoffs/jh004-start-here-20261013.md"
+    },
+    {
+      "tree": "isolated-worktree",
+      "file": "docs/handoffs/jh004-artifact-entry-20261013.md"
+    },
+    {
+      "tree": "isolated-worktree",
+      "file": "docs/handoffs/n1-20261012-execution.md"
+    },
+    {
+      "tree": "isolated-worktree",
+      "file": "docs/handoffs/n1-20261012-review.md"
+    },
+    {
+      "tree": "isolated-worktree",
+      "file": "docs/handoffs/muse-lead-gemini-workers.md"
+    },
+    {
+      "tree": "original-root",
+      "file": "STATUS.md"
+    },
+    {
+      "tree": "original-root",
+      "file": "TODO.md"
+    },
+    {
+      "tree": "original-root",
+      "file": "CHANGELOG.md"
+    },
+    {
+      "tree": "original-root",
+      "file": "docs/README.md"
+    },
+    {
+      "tree": "original-root",
+      "file": "docs/handoffs/jh004-start-here-20261013.md"
+    },
+    {
+      "tree": "original-root",
+      "file": "docs/handoffs/jh004-artifact-entry-20261013.md"
+    },
+    {
+      "tree": "original-root",
+      "file": "docs/handoffs/n1-20261012-execution.md"
+    },
+    {
+      "tree": "original-root",
+      "file": "docs/handoffs/n1-20261012-review.md"
+    },
+    {
+      "tree": "original-root",
+      "file": "docs/handoffs/muse-lead-gemini-workers.md"
+    },
+    {
+      "tree": "isolated-worktree",
+      "file": "docs/handoffs/jh004-after-review-20261013.md"
+    }
+  ],
+  "before_sha256": {
+    "isolated-worktree/STATUS.md": "3168792ee898a4c05aa537660094b6b5a92cffe862e4c9dfdb7d1f2210a25252",
+    "isolated-worktree/TODO.md": "329a95d3d5f39cbf95cf5ee1001355a8b7c03f9acd52cd9bb89d2cd436f78187",
+    "isolated-worktree/CHANGELOG.md": "c488026c6cf1da44f9e84e29710d39fb6563f18c853137bf8584621cf7c5dfc7",
+    "isolated-worktree/docs/README.md": "65341385215413d011b7aef4128b6a31ffc7a7d9f1038b6d0bbe63d454d51d59",
+    "isolated-worktree/docs/handoffs/jh004-start-here-20261013.md": "2d06e3e41f47e0c0b331549665501567d05c6ee18f8d406baf21994324e466ad",
+    "isolated-worktree/docs/handoffs/jh004-artifact-entry-20261013.md": "82e56dac55416326e879ec0f49a9f97efc618068cd73b9e89bca0dd783c1c879",
+    "isolated-worktree/docs/handoffs/n1-20261012-execution.md": "21c046343e5c2fe8286766e66b54dae29811d7c87c6425696058e5f91676ecc8",
+    "isolated-worktree/docs/handoffs/n1-20261012-review.md": "b9d346a5a61cd572adcaf02842801a2d4556f3f3df55cf8a8ffd140a3a84cdda",
+    "isolated-worktree/docs/handoffs/muse-lead-gemini-workers.md": "3c0c249cfebdffb64800975d6b60994329e8d7926963b02932aa15c475b8ba09",
+    "original-root/STATUS.md": "c35d6c14207ae795e4d70cf4d846c0d3be63e55229f517810fec02aad89303e4",
+    "original-root/TODO.md": "75e0cc9c12d995900e43d577a2b15077d8cf536e70b84ca7f63d5e16a4757700",
+    "original-root/CHANGELOG.md": "5a6905f14f737bd0e9b0d058bf105872eefbe3af23443c090e4c21c4651015c9",
+    "original-root/docs/README.md": "729e8dc18f94b05ec8877bd7c9878606bcd744296dd3e8d7f4777e02bbc83659",
+    "original-root/docs/handoffs/jh004-start-here-20261013.md": "09bec128f41215a94bdb77fc903c81e50786aa3f3b9cdb2f161e0fea203d4fe1",
+    "original-root/docs/handoffs/jh004-artifact-entry-20261013.md": "9457d9f12b9beba34ed5a364bf4d0eac4f197030312657c9d50f7a29e3391f3b",
+    "original-root/docs/handoffs/n1-20261012-execution.md": "a5bf56dca0d36c31d0a66550ca6979a311a67cacbd06583ea02bb27d4c57b665",
+    "original-root/docs/handoffs/n1-20261012-review.md": "70c502f55f634dae052eb0200935ba3871d48971519e643d438f650e8ee712fa",
+    "original-root/docs/handoffs/muse-lead-gemini-workers.md": "77760b8bb44d2b77294b7e7e310fe53748cc42ca9a8b65519ea9b3b809c9c90b",
+    "isolated-worktree/docs/handoffs/jh004-after-review-20261013.md": "83cb33903dde66611aa5e175ed74642e8c7b94c0c647c50b856b9a31a0f9f41c"
+  },
+  "source_unchanged": true,
+  "current_execution": "fix historical source coverage and one wording test only"
+}

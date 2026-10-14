@@ -1,0 +1,7 @@
+{
+  "change": "Record is_mock flags from actual worker/reviewer responses used in each probe; no new product scenario or source change",
+  "original_runs_preserved": [
+    "behavioural-probes-first.json",
+    "behavioural-reproducibility.json"
+  ]
+}

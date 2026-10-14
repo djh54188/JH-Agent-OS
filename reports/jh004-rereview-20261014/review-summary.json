@@ -1,0 +1,44 @@
+{
+  "client_date": "2026-10-14",
+  "verdict": "revise",
+  "source_head": "9a7c5dd6e1f244db076003c17da62966b05d7ef3",
+  "unit_tests": {
+    "total": 180,
+    "passed": 178,
+    "failed": 1,
+    "errors": 0,
+    "skipped": 1
+  },
+  "original_findings": {
+    "R01": "closed",
+    "R02": "current-call guards fixed; historical missing-source coverage still P1",
+    "R03": "worktree binding fixed; actual host discovery/invocation unverified",
+    "R04": "closed"
+  },
+  "remaining": [
+    {
+      "id": "R02-HISTORY",
+      "priority": "P1",
+      "location": "src/cli.py::_production_taint_blocker",
+      "evidence": "4 completed attempts, 3 source records, production succeeded"
+    },
+    {
+      "id": "SKILL-TEXT-TEST",
+      "priority": "P2",
+      "location": "tests/test_jh004_artifact_entry.py::test_skill_binds_to_own_worktree",
+      "evidence": "containing versus contains literal marker mismatch"
+    }
+  ],
+  "targeted_mutations": {
+    "total": 7,
+    "detected_by_assertion": 7,
+    "errors": 0,
+    "excluded_known_failing_test": true,
+    "full_suite_passed": false
+  },
+  "actual_model_calls": 0,
+  "host_skill_verified": false,
+  "checkpoint_type": "WIP snapshot, not accepted",
+  "product_implementation_edited_by_reviewer": false,
+  "real_file_apply_gate": "closed"
+}

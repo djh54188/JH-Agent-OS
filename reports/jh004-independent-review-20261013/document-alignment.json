@@ -1,0 +1,99 @@
+{
+  "updated": [
+    {
+      "tree": "isolated-worktree",
+      "file": "STATUS.md"
+    },
+    {
+      "tree": "isolated-worktree",
+      "file": "TODO.md"
+    },
+    {
+      "tree": "isolated-worktree",
+      "file": "CHANGELOG.md"
+    },
+    {
+      "tree": "isolated-worktree",
+      "file": "docs/README.md"
+    },
+    {
+      "tree": "isolated-worktree",
+      "file": "docs/handoffs/jh004-start-here-20261013.md"
+    },
+    {
+      "tree": "isolated-worktree",
+      "file": "docs/handoffs/jh004-artifact-entry-20261013.md"
+    },
+    {
+      "tree": "isolated-worktree",
+      "file": "docs/handoffs/n1-20261012-execution.md"
+    },
+    {
+      "tree": "isolated-worktree",
+      "file": "docs/handoffs/n1-20261012-review.md"
+    },
+    {
+      "tree": "isolated-worktree",
+      "file": "docs/handoffs/muse-lead-gemini-workers.md"
+    },
+    {
+      "tree": "original-root",
+      "file": "STATUS.md"
+    },
+    {
+      "tree": "original-root",
+      "file": "TODO.md"
+    },
+    {
+      "tree": "original-root",
+      "file": "CHANGELOG.md"
+    },
+    {
+      "tree": "original-root",
+      "file": "docs/README.md"
+    },
+    {
+      "tree": "original-root",
+      "file": "docs/handoffs/jh004-start-here-20261013.md"
+    },
+    {
+      "tree": "original-root",
+      "file": "docs/handoffs/jh004-artifact-entry-20261013.md"
+    },
+    {
+      "tree": "original-root",
+      "file": "docs/handoffs/n1-20261012-execution.md"
+    },
+    {
+      "tree": "original-root",
+      "file": "docs/handoffs/n1-20261012-review.md"
+    },
+    {
+      "tree": "original-root",
+      "file": "docs/handoffs/muse-lead-gemini-workers.md"
+    }
+  ],
+  "before_sha256": {
+    "isolated-worktree/STATUS.md": "2ec5abff6d2e6159d0daeb20e6339ce99b8644f548a9d501df2917301e071442",
+    "isolated-worktree/TODO.md": "57b7b0022071d8100eda6b9f880459657e7bb2a7ccbbc19c414f6d43f1ad4571",
+    "isolated-worktree/CHANGELOG.md": "8f290e1474720aa42afcecb11baef2bffa9cfaf0ae76df7d1c6c17e292395bd4",
+    "isolated-worktree/docs/README.md": "cc23bccd692845fbfb1f7eaba39858d46dc9f44e2e9629f9af771c077d65e6e3",
+    "isolated-worktree/docs/handoffs/jh004-start-here-20261013.md": "b08cb437d2cf3bae1b45201747a343e2dc99c40cd7ca40ec9a62aa2d95973344",
+    "isolated-worktree/docs/handoffs/jh004-artifact-entry-20261013.md": "2fa13657d268a17ec3492a75d540072dd69488ada2b535aae1a5d1f3b8fd6939",
+    "isolated-worktree/docs/handoffs/n1-20261012-execution.md": "384e620ecbe58305f07aa78208b10ac24c62c425d318500bd3852d3d3e93eacd",
+    "isolated-worktree/docs/handoffs/n1-20261012-review.md": "326a31eeb4f66fa045f7c3176ce43fdd3542a751f39f6fcec5e4c1b4b2d67c17",
+    "isolated-worktree/docs/handoffs/muse-lead-gemini-workers.md": "a25b996b1944d867d003464609dc34c2125222a9ddf9be40ff55fed68f1284ff",
+    "original-root/STATUS.md": "4fa22e004e9f3e2c02cd5343bde58c3c0ac7061bd9674a5e4fb7c68be0aaa79f",
+    "original-root/TODO.md": "84386d6727ca54a74994f16a5206676de49f2f085e8d5545c928e8c82d9c71f1",
+    "original-root/CHANGELOG.md": "b121f8536a8203cf4a2b4d568391e50836407acc90eb129cbf6e20d56810bdfd",
+    "original-root/docs/README.md": "cc23bccd692845fbfb1f7eaba39858d46dc9f44e2e9629f9af771c077d65e6e3",
+    "original-root/docs/handoffs/jh004-start-here-20261013.md": "b08cb437d2cf3bae1b45201747a343e2dc99c40cd7ca40ec9a62aa2d95973344",
+    "original-root/docs/handoffs/jh004-artifact-entry-20261013.md": "2fa13657d268a17ec3492a75d540072dd69488ada2b535aae1a5d1f3b8fd6939",
+    "original-root/docs/handoffs/n1-20261012-execution.md": "384e620ecbe58305f07aa78208b10ac24c62c425d318500bd3852d3d3e93eacd",
+    "original-root/docs/handoffs/n1-20261012-review.md": "326a31eeb4f66fa045f7c3176ce43fdd3542a751f39f6fcec5e4c1b4b2d67c17",
+    "original-root/docs/handoffs/muse-lead-gemini-workers.md": "a25b996b1944d867d003464609dc34c2125222a9ddf9be40ff55fed68f1284ff"
+  },
+  "implementation_unchanged": true,
+  "current_execution": "JH-004 four fixes before real evidence",
+  "git_commits": 0
+}

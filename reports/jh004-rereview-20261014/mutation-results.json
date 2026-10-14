@@ -1,0 +1,88 @@
+{
+  "client_date": "2026-10-14",
+  "scope": "submitted JH-004 tests with only known wording failure excluded; full 180-test result remains failed",
+  "exclusions": [
+    {
+      "test": "test_skill_binds_to_own_worktree",
+      "reason": "unmodified full suite independently failed on containing/contains wording mismatch"
+    }
+  ],
+  "api_calls": 0,
+  "rows": [
+    {
+      "case": "unmodified_control_without_known_wording_failure",
+      "ran": 34,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "output": "----------------------------------------------------------------------\nRan 34 tests in 2.561s\n\nOK\n"
+    },
+    {
+      "case": "M01_only_criteria_count",
+      "verdict": "detected_by_assertion",
+      "ran": 34,
+      "failures": 2,
+      "errors": 0,
+      "skipped": 0,
+      "output": "======================================================================\nFAIL: test_misordered_and_extra_criteria_refused (test_jh004_artifact_entry.TestTemplateCriteriaLocked.test_misordered_and_extra_criteria_refused)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\tests\\test_jh004_artifact_entry.py\", line 597, in test_misordered_and_extra_criteria_refused\n    with self.assertRaises(TrustedAssemblyError):\n         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: TrustedAssemblyError not raised\n\n======================================================================\nFAIL: test_non_template_criteria_refused_before_model_call (test_jh004_artifact_entry.TestTemplateCriteriaLocked.test_non_template_criteria_refused_before_model_call)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\tests\\test_jh004_artifact_entry.py\", line 584, in test_non_template_criteria_refused_before_model_call\n    self.assertIn(\"standard\", out)\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^\nAssertionError: 'standard' not found in '{\\n  \"command_ok\": true,\\n  \"read_only\": false,\\n  \"task_result\": {\\n    \"task_id\": \"task_r01000001\",\\n    \"title\": \"records transform probe\",\\n    \"status\": \"needs_attention\",\\n    \"is_terminal\": false,\\n    \"review_verdict\": null,\\n    \"error_info\": \"Reviewer check failed (fail-closed, never auto-pass): Required acceptance condition failed or lacks evidence: Output JSON must contain exactly 999 rows\",\\n    \"assigned_worker\": \"gemini_worker\",\\n    \"assigned_reviewer\": \"muse_reviewer\",\\n    \"budget\": {\\n      \"max_turns\": 4,\\n      \"max_tokens\": 6000,\\n      \"max_execution_time_seconds\": 120\\n    },\\n    \"runtime_usage\": {\\n      \"turns_used\": 3,\\n      \"tokens_used\": 340,\\n      \"tokens_unknown_count\": 0,\\n      \"repair_count\": 0,\\n      \"has_unconfirmed_side_effect\": false\\n    },\\n    \"current_artifact\": {\\n      \"task_id\": \"task_r01000001\",\\n      \"version\": 1,\\n      \"artifact_id\": \"art_4d523dbf6c19\",\\n      \"artifact_type\": \"text_transformation\",\\n      \"content\": \"mock artifact for task_r01000001\\\\n\",\\n      \"sha256\": \"377295329c49f75ac0d0e4db3e11339c6033822a89710fee6587cbf700ee1780\",\\n      \"generation_attempt_id\": \"attempt_b426e4273afe4de9a4f1010232e943a1\",\\n      \"created_at\": \"2026-10-14T12:47:06Z\"\\n    },\\n    \"artifact_refs\": [\\n      \"mem://task_r01000001/art_4d523dbf6c19\"\\n    ],\\n    \"latest_review\": null,\\n    \"acceptance_results\": [],\\n    \"source_binding\": {\\n      \"source\": \"fixture\",\\n      \"template_id\": \"records_transform_v1\",\\n      \"execution_mode\": \"generate\"\\n    },\\n    \"delivery_scope\": {\\n      \"generated_artifact\": true,\\n      \"target_applied\": false,\\n      \"note\": \"JH-004 delivers generated artifacts only; no target files are applied\"\\n    },\\n    \"pending_approval\": null,\\n    \"blockers\": [\\n      \"needs_human_attention\",\\n      \"error: Reviewer check failed (fail-closed, never auto-pass): Required acceptance condition failed or lacks evidence: Output JSON must contain exactly 999 rows\"\\n    ],\\n    \"updated_at\": \"2026-10-14T12:47:06Z\"\\n  },\\n  \"test_fixture_mode\": true\\n}\\n'\n\n----------------------------------------------------------------------\nRan 34 tests in 2.589s\n\nFAILED (failures=2)\n"
+    },
+    {
+      "case": "M02_skip_known_mock_assembly_rejection",
+      "verdict": "detected_by_assertion",
+      "ran": 34,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "output": "======================================================================\nFAIL: test_production_assembly_rejects_mock_adapters (test_jh004_artifact_entry.TestNoToolProduction.test_production_assembly_rejects_mock_adapters)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\tests\\test_jh004_artifact_entry.py\", line 131, in test_production_assembly_rejects_mock_adapters\n    with self.assertRaises(TrustedAssemblyError):\n         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: TrustedAssemblyError not raised\n\n----------------------------------------------------------------------\nRan 34 tests in 2.544s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "case": "M03_skip_runtime_source_gate",
+      "verdict": "detected_by_assertion",
+      "ran": 34,
+      "failures": 2,
+      "errors": 0,
+      "skipped": 0,
+      "output": "======================================================================\nFAIL: test_invoke_model_gates_worker_reviewer_and_missing_flags (test_jh004_artifact_entry.TestProductionSourceGate.test_invoke_model_gates_worker_reviewer_and_missing_flags)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\tests\\test_jh004_artifact_entry.py\", line 660, in test_invoke_model_gates_worker_reviewer_and_missing_flags\n    with self.assertRaises(AdapterError):\n         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^\nAssertionError: AdapterError not raised\n\n======================================================================\nFAIL: test_production_run_rejects_mock_worker_response (test_jh004_artifact_entry.TestProductionSourceGate.test_production_run_rejects_mock_worker_response)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\tests\\test_jh004_artifact_entry.py\", line 641, in test_production_run_rejects_mock_worker_response\n    self.assertEqual(result[\"status\"], \"failed\")\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 'needs_attention' != 'failed'\n- needs_attention\n+ failed\n\n\n----------------------------------------------------------------------\nRan 34 tests in 2.538s\n\nFAILED (failures=2)\n"
+    },
+    {
+      "case": "M04_allow_unknown_response_source",
+      "verdict": "detected_by_assertion",
+      "ran": 34,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "output": "======================================================================\nFAIL: test_invoke_model_gates_worker_reviewer_and_missing_flags (test_jh004_artifact_entry.TestProductionSourceGate.test_invoke_model_gates_worker_reviewer_and_missing_flags)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\tests\\test_jh004_artifact_entry.py\", line 664, in test_invoke_model_gates_worker_reviewer_and_missing_flags\n    with self.assertRaises(AdapterError):\n         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^\nAssertionError: AdapterError not raised\n\n----------------------------------------------------------------------\nRan 34 tests in 2.564s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "case": "M05_omit_source_audit_event",
+      "verdict": "detected_by_assertion",
+      "ran": 34,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "output": "======================================================================\nFAIL: test_production_run_rejects_mock_worker_response (test_jh004_artifact_entry.TestProductionSourceGate.test_production_run_rejects_mock_worker_response)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\tests\\test_jh004_artifact_entry.py\", line 646, in test_production_run_rejects_mock_worker_response\n    self.assertEqual(len(sources), 1)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^\nAssertionError: 0 != 1\n\n----------------------------------------------------------------------\nRan 34 tests in 2.551s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "case": "M06_ignore_known_tainted_history",
+      "verdict": "detected_by_assertion",
+      "ran": 34,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "output": "======================================================================\nFAIL: test_production_resume_refuses_tainted_history (test_jh004_artifact_entry.TestProductionSourceGate.test_production_resume_refuses_tainted_history)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\tests\\test_jh004_artifact_entry.py\", line 698, in test_production_resume_refuses_tainted_history\n    self.assertIn(\"tainted_production_history\", out)\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 'tainted_production_history' not found in '{\\n  \"command_ok\": true,\\n  \"read_only\": false,\\n  \"task_result\": {\\n    \"task_id\": \"task_r02000003\",\\n    \"title\": \"records transform probe\",\\n    \"status\": \"failed\",\\n    \"is_terminal\": true,\\n    \"review_verdict\": null,\\n    \"error_info\": \"Production refused worker response with mock/unconfirmed model source (is_mock=True, adapter=OfflineFailureTransport)\",\\n    \"assigned_worker\": \"gemini_worker\",\\n    \"assigned_reviewer\": \"muse_reviewer\",\\n    \"budget\": {\\n      \"max_turns\": 4,\\n      \"max_tokens\": 6000,\\n      \"max_execution_time_seconds\": 120\\n    },\\n    \"runtime_usage\": {\\n      \"turns_used\": 1,\\n      \"tokens_used\": null,\\n      \"tokens_unknown_count\": 1,\\n      \"repair_count\": 0,\\n      \"has_unconfirmed_side_effect\": false\\n    },\\n    \"current_artifact\": null,\\n    \"artifact_refs\": [],\\n    \"latest_review\": null,\\n    \"acceptance_results\": [],\\n    \"source_binding\": {\\n      \"source\": \"production\",\\n      \"template_id\": \"records_transform_v1\",\\n      \"execution_mode\": \"generate\"\\n    },\\n    \"delivery_scope\": {\\n      \"generated_artifact\": false,\\n      \"target_applied\": false,\\n      \"note\": \"JH-004 delivers generated artifacts only; no target files are applied\"\\n    },\\n    \"pending_approval\": null,\\n    \"blockers\": [\\n      \"unknown_token_usage\",\\n      \"error: Production refused worker response with mock/unconfirmed model source (is_mock=True, adapter=OfflineFailureTransport)\"\\n    ],\\n    \"updated_at\": \"2026-10-14T12:47:18Z\"\\n  },\\n  \"test_fixture_mode\": false\\n}\\n'\n\n----------------------------------------------------------------------\nRan 34 tests in 2.645s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "case": "M07_events_accepts_missing_task",
+      "verdict": "detected_by_assertion",
+      "ran": 34,
+      "failures": 2,
+      "errors": 0,
+      "skipped": 0,
+      "output": "======================================================================\nFAIL: test_events_missing_task_fails (test_jh004_artifact_entry.TestEventsMissingTask.test_events_missing_task_fails)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\tests\\test_jh004_artifact_entry.py\", line 742, in test_events_missing_task_fails\n    self.assertEqual(code, 1)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^\nAssertionError: 0 != 1\n\n======================================================================\nFAIL: test_missing_task_error_parity_across_queries (test_jh004_artifact_entry.TestEventsMissingTask.test_missing_task_error_parity_across_queries)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\tests\\test_jh004_artifact_entry.py\", line 770, in test_missing_task_error_parity_across_queries\n    self.assertEqual(code, 1, command)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^\nAssertionError: 0 != 1 : events\n\n----------------------------------------------------------------------\nRan 34 tests in 2.658s\n\nFAILED (failures=2)\n"
+    }
+  ],
+  "limits": [
+    "Does not test rejection of missing historical source records; independent probe shows that gap",
+    "No product files patched; parent network forbidden and child CLI cases explicitly fixture mode"
+  ]
+}

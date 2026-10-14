@@ -1,0 +1,221 @@
+{
+  "source": "independent behavioural probes",
+  "api_calls": 0,
+  "rows": [
+    {
+      "case": "canonical_criteria_positive",
+      "cli_exit_code": 0,
+      "state": "succeeded",
+      "summary_source": {
+        "source": "fixture",
+        "template_id": "records_transform_v1",
+        "execution_mode": "generate"
+      },
+      "acceptance": [
+        {
+          "criterion": "Trusted input records were provided",
+          "passed": true,
+          "evidence": [
+            "task_metadata:input_data"
+          ]
+        },
+        {
+          "criterion": "Artifact content equals the expected sorted records",
+          "passed": true,
+          "evidence": [
+            "artifact:art_e8e826307bd3@v1:sha256=17bc60c18803185a2c3628f6f950d609bdca030e2b1ed6696aae910c2a76d7b2"
+          ],
+          "note": "[{\"region\": \"a\", \"sales\": 1}, {\"region\": \"b\", \"sales\": 2}]"
+        }
+      ],
+      "artifact": {
+        "task_id": "task_2e4ff206d0cb",
+        "version": 1,
+        "artifact_id": "art_e8e826307bd3",
+        "artifact_type": "text_transformation",
+        "content": "[{\"region\": \"a\", \"sales\": 1}, {\"region\": \"b\", \"sales\": 2}]",
+        "sha256": "17bc60c18803185a2c3628f6f950d609bdca030e2b1ed6696aae910c2a76d7b2",
+        "generation_attempt_id": "attempt_028f80f9abc940d3bd95817d0d9ca2c8",
+        "created_at": "2026-10-13T14:50:28Z"
+      },
+      "worker_calls": 3,
+      "reviewer_calls": 1,
+      "mock_adapter_classes": [
+        "ScriptedWorkerAdapter",
+        "ScriptedReviewerAdapter"
+      ],
+      "fixture_mode": true
+    },
+    {
+      "case": "non_template_criteria",
+      "cli_exit_code": 0,
+      "state": "succeeded",
+      "summary_source": {
+        "source": "fixture",
+        "template_id": "records_transform_v1",
+        "execution_mode": "generate"
+      },
+      "acceptance": [
+        {
+          "criterion": "Input records contain exactly 999 rows",
+          "passed": true,
+          "evidence": [
+            "task_metadata:input_data"
+          ]
+        },
+        {
+          "criterion": "Output JSON must contain exactly 999 rows",
+          "passed": true,
+          "evidence": [
+            "artifact:art_f0f37d3d73cb@v1:sha256=17bc60c18803185a2c3628f6f950d609bdca030e2b1ed6696aae910c2a76d7b2"
+          ],
+          "note": "[{\"region\": \"a\", \"sales\": 1}, {\"region\": \"b\", \"sales\": 2}]"
+        }
+      ],
+      "artifact": {
+        "task_id": "task_440da792d1f3",
+        "version": 1,
+        "artifact_id": "art_f0f37d3d73cb",
+        "artifact_type": "text_transformation",
+        "content": "[{\"region\": \"a\", \"sales\": 1}, {\"region\": \"b\", \"sales\": 2}]",
+        "sha256": "17bc60c18803185a2c3628f6f950d609bdca030e2b1ed6696aae910c2a76d7b2",
+        "generation_attempt_id": "attempt_b7b249023d0d46f7aef25fbe673f1193",
+        "created_at": "2026-10-13T14:50:28Z"
+      },
+      "worker_calls": 3,
+      "reviewer_calls": 1,
+      "mock_adapter_classes": [
+        "ScriptedWorkerAdapter",
+        "ScriptedReviewerAdapter"
+      ],
+      "fixture_mode": true,
+      "input_row_count": 2,
+      "actual_output_row_count": 2,
+      "false_acceptance_reproduced": true
+    },
+    {
+      "case": "mock_responses_in_production_assembly",
+      "cli_exit_code": 0,
+      "state": "succeeded",
+      "summary_source": {
+        "source": "production",
+        "template_id": "records_transform_v1",
+        "execution_mode": "generate"
+      },
+      "acceptance": [
+        {
+          "criterion": "Trusted input records were provided",
+          "passed": true,
+          "evidence": [
+            "task_metadata:input_data"
+          ]
+        },
+        {
+          "criterion": "Artifact content equals the expected sorted records",
+          "passed": true,
+          "evidence": [
+            "artifact:art_ae14858db043@v1:sha256=17bc60c18803185a2c3628f6f950d609bdca030e2b1ed6696aae910c2a76d7b2"
+          ],
+          "note": "[{\"region\": \"a\", \"sales\": 1}, {\"region\": \"b\", \"sales\": 2}]"
+        }
+      ],
+      "artifact": {
+        "task_id": "task_a4a846e1dd23",
+        "version": 1,
+        "artifact_id": "art_ae14858db043",
+        "artifact_type": "text_transformation",
+        "content": "[{\"region\": \"a\", \"sales\": 1}, {\"region\": \"b\", \"sales\": 2}]",
+        "sha256": "17bc60c18803185a2c3628f6f950d609bdca030e2b1ed6696aae910c2a76d7b2",
+        "generation_attempt_id": "attempt_b2a2af44393c4443b27dde9d1c6a7244",
+        "created_at": "2026-10-13T14:50:29Z"
+      },
+      "worker_calls": 3,
+      "reviewer_calls": 1,
+      "mock_adapter_classes": [
+        "ScriptedWorkerAdapter",
+        "ScriptedReviewerAdapter"
+      ],
+      "fixture_mode": false,
+      "worker_is_mock": true,
+      "mock_marked_as_production_success": true
+    },
+    {
+      "case": "missing_task_status",
+      "command": "status",
+      "cli_exit_code": 1,
+      "body": {
+        "command_ok": false,
+        "read_only": true,
+        "error": "\"Task 'task_missing_probe' not found\""
+      }
+    },
+    {
+      "case": "missing_task_summary",
+      "command": "summary",
+      "cli_exit_code": 1,
+      "body": {
+        "command_ok": false,
+        "read_only": true,
+        "error": "\"Task 'task_missing_probe' not found\""
+      }
+    },
+    {
+      "case": "missing_task_events",
+      "command": "events",
+      "cli_exit_code": 0,
+      "body": []
+    },
+    {
+      "case": "missing_task_artifact",
+      "command": "artifact",
+      "cli_exit_code": 1,
+      "body": {
+        "command_ok": false,
+        "read_only": true,
+        "error": "\"Task 'task_missing_probe' not found\""
+      }
+    },
+    {
+      "case": "read_only_db_hash",
+      "unchanged": true
+    },
+    {
+      "case": "extra_record_field",
+      "accepted": true
+    },
+    {
+      "case": "nonfinite_sales",
+      "accepted": true
+    },
+    {
+      "case": "skill_hardcoded_workdir_module_origins",
+      "origins": [
+        {
+          "cwd": "D:\\JH-Agent OS",
+          "exit_code": 0,
+          "stdout": [
+            "D:\\JH-Agent OS\\src\\cli.py",
+            "False"
+          ],
+          "stderr": ""
+        },
+        {
+          "cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry",
+          "exit_code": 0,
+          "stdout": [
+            "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\src\\cli.py",
+            "True"
+          ],
+          "stderr": ""
+        }
+      ],
+      "skill_instructs_original_root": true
+    }
+  ],
+  "fixtures_cleaned": true,
+  "limitations": [
+    "Model responses are scripted offline injections, not real model evidence",
+    "Production mock-response case tests whether the declared is_mock flag is gated; it does not demonstrate unprivileged code injection",
+    "This script does not modify shared product source"
+  ]
+}

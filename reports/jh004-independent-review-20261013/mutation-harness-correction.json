@@ -1,0 +1,6 @@
+{
+  "initial_run": "review harness assembly failed before mutations",
+  "error": "IndentationError from compiling class method source without dedent",
+  "counted_as_detection": false,
+  "fix": "dedent inspected method source before compiling; product source untouched"
+}

@@ -1,0 +1,27 @@
+{
+  "scope": "submitted 20-test JH-004 suite, in-memory guard mutations; no files patched",
+  "api_calls": 0,
+  "rows": [
+    {
+      "case": "unmodified_control",
+      "ran": 20,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "output": "----------------------------------------------------------------------\nRan 20 tests in 2.203s\n\nOK\n"
+    },
+    {
+      "case": "M02_accept_untrusted_input_keys",
+      "verdict": "detected_by_assertion",
+      "ran": 20,
+      "failures": 2,
+      "errors": 0,
+      "skipped": 0,
+      "output": "======================================================================\nFAIL: test_template_rejects_untrusted_shapes (test_jh004_artifact_entry.TestFixedTemplate.test_template_rejects_untrusted_shapes) (idx=0)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\tests\\test_jh004_artifact_entry.py\", line 190, in test_template_rejects_untrusted_shapes\n    with self.assertRaises(TrustedAssemblyError):\n         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: TrustedAssemblyError not raised\n\n======================================================================\nFAIL: test_template_rejects_untrusted_shapes (test_jh004_artifact_entry.TestFixedTemplate.test_template_rejects_untrusted_shapes) (idx=2)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\tests\\test_jh004_artifact_entry.py\", line 190, in test_template_rejects_untrusted_shapes\n    with self.assertRaises(TrustedAssemblyError):\n         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: TrustedAssemblyError not raised\n\n----------------------------------------------------------------------\nRan 20 tests in 2.275s\n\nFAILED (failures=2)\n"
+    }
+  ],
+  "notes": [
+    "Network blocked in parent test process; subprocess CLI tests explicitly use --test-fixture-mode",
+    "Detection is counted only for test assertion failures with zero errors; this does not cover the newly discovered defects"
+  ]
+}
