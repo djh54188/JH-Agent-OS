@@ -17,13 +17,14 @@
 |---|---|
 | [ADR-0001](adr/ADR-0001-codex-integration.md) | 原接入设计保留为历史；主要入口方向由 ADR-0003 替代 |
 | [ADR-0002](adr/ADR-0002-gemini-local-proxy.md) | 用户已裁决的 Gemini 本地代理接入 |
-| [ADR-0003](adr/ADR-0003-codex-hosted-entry.md) | Codex 主控 → 项目 Skill + CLI → JH，架构方案批准，宿主验收待完成 |
+| [ADR-0003](adr/ADR-0003-codex-hosted-entry.md) | Codex 主控 → 项目 Skill + CLI → JH，N1 生成入口已验收，文件应用另计 |
 | [ADR-0004](adr/ADR-0004-n1-artifact-first.md) | 当前范围：N1 先验证生成产物接入，自动文件应用暂缓准入，N2 完整验收保留 |
-| [JH-004 当前执行交接](handoffs/jh004-artifact-entry-20261013.md) | 真实 Skill/CLI、无工具生产装配、固定模板、查询与跨进程接续；需实际实施验证 |
-| [JH-004 两项离线关闭](../reports/jh004-offline-closure-20261014.md) / [真实取证说明](handoffs/jh004-real-evidence-20261014.md) | 185 项 184 过/1 跳、8 变异；代码通过，真实宿主与阶段结项另计 |
+| [JH-004 历史实施交接](handoffs/jh004-artifact-entry-20261013.md) | 历史实施范围，已由 N1 裁决关闭，不重做 |
+| [N1 结项裁决](../reports/n1-acceptance-20261014.md) / [JH-005 下一批](handoffs/jh005-n2-acceptance-20261014.md) | 真实 Skill、五进程与双模型通过；N1 结项，N2/P1 未完成 |
+| [JH-004 两项离线关闭](../reports/jh004-offline-closure-20261014.md) / [真实取证说明](handoffs/jh004-real-evidence-20261014.md) | 185 项 184 过/1 跳、8 变异；离线通过，真实宿主/结项见裁决 |
 | [JH-004 2026-10-14 前轮复核](../reports/jh004-rereview-20261014.md) / [两项继续整改](handoffs/jh004-r02-followup-20261014.md) | 180 项 178 过/1 失败/1 跳；历史未通过状态，当前以上一行为准，WIP 检查点不作为准入 |
 | [JH-004 2026-10-13 历史审查](../reports/jh004-review-20261013.md) / [四项整改交接](handoffs/jh004-after-review-20261013.md) | revise：165 单测通过口径与 3 P1 + 1 P2 分开；历史四项要求，当前状态以上一行为准 |
-| [JH-004 当前启动卡](handoffs/jh004-start-here-20261013.md) / [原就绪记录](handoffs/jh004-ready-20261013.md) | 隔离工作树已建立；从已准备文档检查点开始 A–E 实施，原 Shell 故障属于历史会话报告 |
+| [JH-004 历史启动卡](handoffs/jh004-start-here-20261013.md) / [原就绪记录](handoffs/jh004-ready-20261013.md) | 历史准备记录，当前 c7d7421/N1 已验收，不从旧检查点重做 |
 | [父目录发布最新复核](../reports/jh016-parent-publish-review-20261013.md) / [矩阵回执](../reports/jh016-parent-publish-20261013/gate-verification.json) | P-A/P-B false，STOP；没有运行 v2 后续 156 单测/15 变异 |
 | [N1 能力归属与旧成果处置](n1-capability-ownership.md) | JH-003 方向已批准；当前实现安全限制以独立复核为准 |
 | [文件工具契约与权限边界](file-tools-contract.md) | 原契约保留；组件未通过、自动应用暂缓，真实写入门禁关闭 |

@@ -2,6 +2,15 @@
 
 按日期记录已经发生的变更。当前状态见 [STATUS.md](STATUS.md)，路线见 [ROADMAP.md](ROADMAP.md)，待办见 [TODO.md](TODO.md)。
 
+
+## 2026-10-14 · N1 结项与真实宿主证据
+
+- 架构师批准 JH-004/N1 按 ADR-0004 生成入口结项；实现 c7d7421，归档 HEAD 查隔离分支日志，原树 80979f3 WIP 不混用。
+- 全量 185 项 184 过/1 跳，8 变异，提交后一致；实际 Skill/五 CLI 进程及真实 Gemini+Muse succeeded，3 turns/6088 tokens，25 项独立复算通过，主控用量另计。
+- [裁决](reports/n1-acceptance-20261014.md)、SQLite/宿主证据及[JH-005 下一批](docs/handoffs/jh005-n2-acceptance-20261014.md)归档；入口/状态/路线/ADR与交接同步。
+- N2/P1 未完成；文件应用门禁关闭、JH-015/016 STOP 和旧失败证据保留；无产品代码/权限变更。
+
+
 ## 2026-10-14 · JH-004 最后两项整改离线关闭
 
 - 全量实际 185 项：184 通过、0 失败/错误、1 跳过；测试措辞已对齐，未排除用例。

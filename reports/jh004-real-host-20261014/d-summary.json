@@ -1,0 +1,82 @@
+{
+  "command_ok": true,
+  "read_only": true,
+  "task_result": {
+    "task_id": "task_jh004_real_20261014_8b880432",
+    "title": "JH-004 bounded real-host records transform",
+    "status": "succeeded",
+    "is_terminal": true,
+    "review_verdict": "pass",
+    "error_info": null,
+    "assigned_worker": "gemini_worker",
+    "assigned_reviewer": "muse_reviewer",
+    "budget": {
+      "max_turns": 6,
+      "max_tokens": 16000,
+      "max_execution_time_seconds": 600
+    },
+    "runtime_usage": {
+      "turns_used": 3,
+      "tokens_used": 6088,
+      "tokens_unknown_count": 0,
+      "repair_count": 0,
+      "has_unconfirmed_side_effect": false
+    },
+    "current_artifact": {
+      "task_id": "task_jh004_real_20261014_8b880432",
+      "version": 1,
+      "artifact_id": "art_jh004_records_sorted",
+      "artifact_type": "data_conversion",
+      "content": "[{\"region\": \"east\", \"sales\": 10}, {\"region\": \"east\", \"sales\": 20}, {\"region\": \"north\", \"sales\": 40}, {\"region\": \"south\", \"sales\": 30}]",
+      "sha256": "fc1c5e9f464008684d34341c0e9594663293fb16f3d96f13069cda9de093c136",
+      "generation_attempt_id": "attempt_b9330320411c4cafaf5fb7bbb193960c",
+      "created_at": "2026-10-14T13:34:22Z"
+    },
+    "artifact_refs": [
+      "mem://task_jh004_real_20261014_8b880432/art_jh004_records_sorted"
+    ],
+    "latest_review": {
+      "created_at": "2026-10-14T13:34:22Z",
+      "issues": [],
+      "overall_score": 100,
+      "review_id": "rev_4d3ead5b7e38",
+      "reviewer_role": "muse-spark-1.3-contributor-free",
+      "schema_version": "1.0.0",
+      "summary": "Artifact is correctly sorted by region ascending then sales ascending (east 10, east 20, north 40, south 30) and tool evidence confirms trusted input and artifact hash; both acceptance criteria satisfied.",
+      "target_artifact_path": "mem://task_jh004_real_20261014_8b880432/art_jh004_records_sorted",
+      "target_artifact_type": "code",
+      "task_id": "task_jh004_real_20261014_8b880432",
+      "verdict": "pass"
+    },
+    "acceptance_results": [
+      {
+        "criterion": "Trusted input records were provided",
+        "passed": true,
+        "evidence": [
+          "task_metadata:input_data"
+        ]
+      },
+      {
+        "criterion": "Artifact content equals the expected sorted records",
+        "passed": true,
+        "evidence": [
+          "artifact:art_jh004_records_sorted@v1:sha256=fc1c5e9f464008684d34341c0e9594663293fb16f3d96f13069cda9de093c136"
+        ],
+        "note": "[{\"region\": \"east\", \"sales\": 10}, {\"region\": \"east\", \"sales\": 20}, {\"region\": \"north\", \"sales\": 40}, {\"region\": \"south\", \"sales\": 30}]"
+      }
+    ],
+    "source_binding": {
+      "source": "production",
+      "template_id": "records_transform_v1",
+      "execution_mode": "generate"
+    },
+    "delivery_scope": {
+      "generated_artifact": true,
+      "target_applied": false,
+      "note": "JH-004 delivers generated artifacts only; no target files are applied"
+    },
+    "pending_approval": null,
+    "blockers": [],
+    "updated_at": "2026-10-14T13:34:34Z"
+  }
+}

@@ -28,7 +28,7 @@
 - 工具边界按 [ADR-0003](docs/adr/ADR-0003-codex-hosted-entry.md)与 [ADR-0004](docs/adr/ADR-0004-n1-artifact-first.md)执行：取消自研通用 Shell/Git 平台；自动应用组件保留为未通过的暂停工作，真实写入门禁关闭。当前 N1 接入只生成并保存审核产物，不应用到用户目标文件。
 - 当前 MVP 聚焦多模型协作闭环。独立 UI、完整自主 Runtime、全天候云端运行和系统级自我修改暂缓。
 
-项目级 Skill + 结构化 CLI 的最小接入方向已批准，实际 Codex 内接入尚未验收；是否需要 MCP 由后续接入验证决定。文档中的工作流程约定不等于已经实现了工具权限强制执行。
+项目级 Skill + CLI 的 N1 生成入口已验收，见[结项裁决](reports/n1-acceptance-20261014.md)；N2/P1 未完成，旧 C 盘桌面聊天未迁移。文档中的工作流程约定不等于已经实现了工具权限强制执行。
 
 ## 产品运行时角色
 
@@ -43,12 +43,12 @@
 
 ## 开发入口
 
-在项目根目录执行：
+已验收实现位于 D:/JH-Agent OS/data/worktrees/n1-artifact-entry，分支 n1-artifact-entry；原树失败 WIP 保留。请在该实现工作树执行：
 
     python -m src.cli --help
     python -m unittest discover -s tests
 
-第一条查看现有开发 CLI；它的存在不代表 Codex 内产品入口已经验收。第二条是离线测试入口；本轮文档整理未重新运行测试。
+第一条查看结构化 CLI，第二条运行离线测试；实际宿主证据与范围见结项裁决，不以命令存在代替验收。
 
 Gemini 接入见 [gemini-setup.md](docs/gemini-setup.md) 和 [ADR-0002](docs/adr/ADR-0002-gemini-local-proxy.md)。
 Muse 接入见 [muse-setup.md](docs/muse-setup.md)。
@@ -73,7 +73,7 @@ Muse 接入见 [muse-setup.md](docs/muse-setup.md)。
 
 ## 协作交接
 
-研发协作按用户 2026-10-12 最新分工：当前架构师会话兼任最终研发审查，负责规划、架构决策、代码与证据复核及阶段结项；Muse 主执行与整合，Gemini 承担多个范围明确的执行子任务。执行方直接将交付包发回本会话，由本会话完成审查与裁决。当前推进 [JH-004 真实生成产物接入](docs/handoffs/jh004-artifact-entry-20261013.md)；JH-015 发布设计暂停且未通过，JH-016 本轮矩阵复核为 STOP，保留证据和真实写入门禁。执行报告区分已验证事实、推测和未验证事项。
+研发协作按用户 2026-10-12 最新分工：当前架构师会话兼任最终研发审查，负责规划、架构决策、代码与证据复核及阶段结项；Muse 主执行与整合，Gemini 承担多个范围明确的执行子任务。执行方直接将交付包发回本会话，由本会话完成审查与裁决。JH-004/N1 已结项，下一批按[JH-005](docs/handoffs/jh005-n2-acceptance-20261014.md)准备验收规格/夹具；JH-015 发布设计暂停且未通过，JH-016 本轮矩阵复核为 STOP，保留证据和真实写入门禁。执行报告区分已验证事实、推测和未验证事项。
 
 完整主执行提示词见 [Muse 主执行与 Gemini 子智能体交接](docs/handoffs/muse-lead-gemini-workers.md)。该分工适用于项目研发协作，产品运行时 Worker/Reviewer 与接入配置仍按现有 ADR；参与实现者的自检不充当独立审查。
 
