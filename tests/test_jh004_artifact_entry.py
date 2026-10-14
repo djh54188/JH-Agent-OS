@@ -683,10 +683,12 @@ class TestProductionSourceGate(_Case):
         self.assertEqual(code, 0)
         storage = TaskStorage(self.db, read_only=False)
         try:
+            aid = storage.begin_attempt(tid, "worker", {"fixture": "completed call"})
+            storage.complete_attempt(tid, aid, {"fixture": "response"}, 10)
             storage.record_event(
                 task_id=tid, event_type="model_response_source",
                 from_state="created", to_state="created", actor_role="orchestrator",
-                details={"attempt_id": "attempt_tainted1", "role": "worker",
+                details={"attempt_id": aid, "role": "worker",
                          "adapter_class": "ScriptedWorkerAdapter",
                          "model_id": "mock-gemini-worker", "is_mock": True})
         finally:
@@ -719,7 +721,7 @@ class TestSkillWorktreeBinding(_Case):
     def test_skill_binds_to_own_worktree(self):
         text = (ROOT / ".agents" / "skills" / "jh-task" / "SKILL.md").read_text(encoding="utf-8")
         self.assertNotIn("D:/JH-Agent OS", text)
-        for marker in ("containing THIS skill file", "rev-parse --show-toplevel",
+        for marker in ("contains THIS skill file", "rev-parse --show-toplevel",
                        "rev-parse --short HEAD", "src.cli.__file__",
                        "RECORDS_TRANSFORM_TEMPLATE_ID"):
             self.assertIn(marker, text)
@@ -783,6 +785,124 @@ class TestEventsMissingTask(_Case):
             _run_cli(["--db", str(self.db), command, tid])
             _run_cli(["--db", str(self.db), command, "task_nope000005"])
         self.assertEqual(Path(self.db).read_bytes(), before)
+
+
+class TestHistoricalSourceCoverage(_Case):
+    """P1 followup: every completed call needs a matching trusted source record.
+
+    Mirrors the independent historical_missing_source scenario: a legacy
+    completed attempt without provenance must block production resume before
+    assembly, with no new calls, attempts, state, or budget changes.
+    """
+
+    def _submit_production(self, tid):
+        worker = _UncalledStubAdapter("probe-worker-real")
+        reviewer = _UncalledStubAdapter("probe-reviewer-real")
+        with patch.object(cli_mod, "has_credential", return_value=True), \
+             patch.object(cli_mod, "load_model_adapter",
+                          side_effect=lambda role: worker if role == "worker" else reviewer):
+            payload = _payload(tid, self.ws)
+            task_file = _write_task_file(self.case, payload)
+            code, _ = _run_cli(["--db", str(self.db), "--workspace", str(self.ws),
+                                "submit", str(task_file)])
+        self.assertEqual(code, 0)
+
+    def _complete_worker_attempt(self, tid):
+        storage = TaskStorage(self.db, read_only=False)
+        try:
+            aid = storage.begin_attempt(tid, "worker", {"fixture": "completed legacy call"})
+            storage.complete_attempt(tid, aid, {"legacy": "response"}, 10)
+            return aid
+        finally:
+            storage.close()
+
+    def _record_source(self, tid, details):
+        storage = TaskStorage(self.db, read_only=False)
+        try:
+            storage.record_event(
+                task_id=tid, event_type="model_response_source",
+                from_state="created", to_state="created", actor_role="orchestrator",
+                details=details)
+        finally:
+            storage.close()
+
+    def _resume_production_strict(self, tid):
+        load_mock = MagicMock(side_effect=AssertionError("adapter load touched"))
+        with patch.object(cli_mod, "has_credential", return_value=True), \
+             patch.object(cli_mod, "load_model_adapter", load_mock):
+            code, out = _run_cli(["--db", str(self.db), "--workspace", str(self.ws),
+                                  "resume", tid])
+        load_mock.assert_not_called()
+        return code, out
+
+    def _snapshot(self, tid):
+        storage = TaskStorage(self.db, read_only=True)
+        try:
+            task = storage.get_task(tid)
+            return {
+                "status": task["status"],
+                "budget": task["budget"],
+                "attempts": storage.list_model_attempts(tid),
+                "events": storage.list_events(tid),
+            }
+        finally:
+            storage.close()
+
+    def test_missing_source_blocks_resume_without_side_effects(self):
+        tid = "task_hs0000001"
+        self._submit_production(tid)
+        self._complete_worker_attempt(tid)
+        before = self._snapshot(tid)
+        code, out = self._resume_production_strict(tid)
+        self.assertEqual(code, 1)
+        self.assertIn("no trusted source record", out)
+        self.assertEqual(self._snapshot(tid), before)
+
+    def test_wrong_role_source_refused(self):
+        tid = "task_hs0000002"
+        self._submit_production(tid)
+        aid = self._complete_worker_attempt(tid)
+        self._record_source(tid, {"attempt_id": aid, "role": "reviewer",
+                                  "adapter_class": "X", "model_id": "y", "is_mock": False})
+        code, out = self._resume_production_strict(tid)
+        self.assertEqual(code, 1)
+        self.assertIn("no trusted source record", out)
+
+    def test_contradictory_sources_refused(self):
+        tid = "task_hs0000003"
+        self._submit_production(tid)
+        aid = self._complete_worker_attempt(tid)
+        self._record_source(tid, {"attempt_id": aid, "role": "worker",
+                                  "adapter_class": "X", "model_id": "y", "is_mock": False})
+        self._record_source(tid, {"attempt_id": aid, "role": "worker",
+                                  "adapter_class": "X", "model_id": "y", "is_mock": True})
+        code, out = self._resume_production_strict(tid)
+        self.assertEqual(code, 1)
+        self.assertIn("mock/unconfirmed", out)
+
+    def test_missing_flag_source_refused(self):
+        tid = "task_hs0000004"
+        self._submit_production(tid)
+        aid = self._complete_worker_attempt(tid)
+        self._record_source(tid, {"attempt_id": aid, "role": "worker",
+                                  "adapter_class": "X", "model_id": "y"})
+        code, out = self._resume_production_strict(tid)
+        self.assertEqual(code, 1)
+        self.assertIn("mock/unconfirmed", out)
+
+    def test_full_coverage_passes_helper(self):
+        from src.cli import _production_taint_blocker
+        tid = "task_hs0000005"
+        self._submit_production(tid)
+        aid = self._complete_worker_attempt(tid)
+        self._record_source(tid, {"attempt_id": aid, "role": "worker",
+                                  "adapter_class": "GeminiAdapter",
+                                  "model_id": "gemini-3.8-flash", "is_mock": False})
+        storage = TaskStorage(self.db, read_only=True)
+        try:
+            self.assertIsNone(_production_taint_blocker(storage, tid))
+        finally:
+            storage.close()
 
 
 if __name__ == "__main__":

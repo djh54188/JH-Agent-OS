@@ -1,0 +1,21 @@
+{
+  "code_review": "pass",
+  "remaining_code_findings": [],
+  "phase_acceptance": "not yet granted",
+  "unit_tests": {
+    "total": 185,
+    "passed": 184,
+    "failed": 0,
+    "skipped": 1
+  },
+  "targeted_mutations": {
+    "detected": 8,
+    "total": 8,
+    "errors": 0,
+    "excluded_tests": 0
+  },
+  "actual_model_calls_so_far": 0,
+  "real_file_apply_gate": "closed",
+  "next": "bounded real model and actual host skill evidence",
+  "reviewer_product_edits": false
+}

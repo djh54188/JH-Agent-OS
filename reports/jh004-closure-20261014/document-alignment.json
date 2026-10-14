@@ -1,0 +1,103 @@
+{
+  "updates": [
+    {
+      "tree": "isolated-worktree",
+      "file": "STATUS.md"
+    },
+    {
+      "tree": "isolated-worktree",
+      "file": "TODO.md"
+    },
+    {
+      "tree": "isolated-worktree",
+      "file": "CHANGELOG.md"
+    },
+    {
+      "tree": "isolated-worktree",
+      "file": "docs/README.md"
+    },
+    {
+      "tree": "isolated-worktree",
+      "file": "docs/handoffs/jh004-start-here-20261013.md"
+    },
+    {
+      "tree": "isolated-worktree",
+      "file": "docs/handoffs/jh004-artifact-entry-20261013.md"
+    },
+    {
+      "tree": "isolated-worktree",
+      "file": "docs/handoffs/n1-20261012-execution.md"
+    },
+    {
+      "tree": "isolated-worktree",
+      "file": "docs/handoffs/n1-20261012-review.md"
+    },
+    {
+      "tree": "isolated-worktree",
+      "file": "docs/handoffs/muse-lead-gemini-workers.md"
+    },
+    {
+      "tree": "original-root",
+      "file": "STATUS.md"
+    },
+    {
+      "tree": "original-root",
+      "file": "TODO.md"
+    },
+    {
+      "tree": "original-root",
+      "file": "CHANGELOG.md"
+    },
+    {
+      "tree": "original-root",
+      "file": "docs/README.md"
+    },
+    {
+      "tree": "original-root",
+      "file": "docs/handoffs/jh004-start-here-20261013.md"
+    },
+    {
+      "tree": "original-root",
+      "file": "docs/handoffs/jh004-artifact-entry-20261013.md"
+    },
+    {
+      "tree": "original-root",
+      "file": "docs/handoffs/n1-20261012-execution.md"
+    },
+    {
+      "tree": "original-root",
+      "file": "docs/handoffs/n1-20261012-review.md"
+    },
+    {
+      "tree": "original-root",
+      "file": "docs/handoffs/muse-lead-gemini-workers.md"
+    },
+    {
+      "tree": "isolated-worktree",
+      "file": "docs/handoffs/jh004-r02-followup-20261014.md"
+    }
+  ],
+  "before_sha256": {
+    "isolated-worktree/STATUS.md": "cd0cb5de68cbf4c76f5adcb87e0c4329147a5705241619dee46e78ffeab0bd2a",
+    "isolated-worktree/TODO.md": "53a46609afb9e301a95bc6924a7e33222373a90da05d58ee77cccf253ee95847",
+    "isolated-worktree/CHANGELOG.md": "16c570e96d5f6f3a7eb0d15f19a1f42e88ff4afbedc789553c65f0c06cc3d0bf",
+    "isolated-worktree/docs/README.md": "422807eab78168fd5a9d07ea5ef5640f6919452e3525cab4a8eeae475d09e041",
+    "isolated-worktree/docs/handoffs/jh004-start-here-20261013.md": "f7fe3ee2ef2703e6606665cb10b2054a467b97797247dcf0b5d33da07ae2c80a",
+    "isolated-worktree/docs/handoffs/jh004-artifact-entry-20261013.md": "b16889fffc7b272b24b5fa9448c286c274cd34ee482b5ba3b8d2de1c712b9737",
+    "isolated-worktree/docs/handoffs/n1-20261012-execution.md": "fb13fdf771e65e2bcab3843a461d5566e557df38e89ca4986ae4c9d8dd8a8a0a",
+    "isolated-worktree/docs/handoffs/n1-20261012-review.md": "2f75f203f332c77fd6d117dda62e1cf68cece02c8857b114fcdfc81ab79a1c2f",
+    "isolated-worktree/docs/handoffs/muse-lead-gemini-workers.md": "53c8e05cea25391a915bef700c9f22fc14725949fb7fe980f6e85ca208e9666b",
+    "original-root/STATUS.md": "bdf2d41171792a3b77fd07567d83733d68a32baa62f52df95db607695433ce67",
+    "original-root/TODO.md": "e29f9d184d4718a8c4e929812c5b3c77436c66d8499f0aec68752cdc6568141b",
+    "original-root/CHANGELOG.md": "4a42ab312d3014a9cac255771cb52da72690880ed664c400b5eb8c1163ff2348",
+    "original-root/docs/README.md": "c54efbee716be2156f1a3acfa5ca676ac442bf24ac366ac6784d200fa4039bda",
+    "original-root/docs/handoffs/jh004-start-here-20261013.md": "0305269fdc3af28b97fd5bc691bd3a91000d4547e8a92f196c10e67225b4617c",
+    "original-root/docs/handoffs/jh004-artifact-entry-20261013.md": "7486061c874b832dfc58d06071896bb3ec29d2697e305dfe63d8c3c78315ec90",
+    "original-root/docs/handoffs/n1-20261012-execution.md": "453cbde6fd8d3f486e4e5596a2dbf27b32e5d4f73ef4a1d53bab576a31b10a5e",
+    "original-root/docs/handoffs/n1-20261012-review.md": "cc9d909aef99772d5ff56f21ebac62d8e823569ff67cfe6331df8a7fe4c4dbe4",
+    "original-root/docs/handoffs/muse-lead-gemini-workers.md": "0a9afc95904453ef10af4501bc11e39f3793ba4a9119c102f9a8b669c2af5c4e",
+    "isolated-worktree/docs/handoffs/jh004-r02-followup-20261014.md": "1fcfd7ccc0879087320cc9c5806d0af89979bae0b4056894c917793522ad907f"
+  },
+  "code_acceptance": "offline pass",
+  "phase_acceptance": "pending real host evidence"
+}

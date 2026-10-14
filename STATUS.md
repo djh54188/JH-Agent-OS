@@ -4,7 +4,17 @@
 
 方向见 [产品需求](docs/product-requirements-v1.0.md)，阶段与验收见 [ROADMAP.md](ROADMAP.md)，任务看板见 [TODO.md](TODO.md)，历史见 [CHANGELOG.md](CHANGELOG.md)。
 
-## 2026-10-14 · JH-004 整改复核：仍 revise，仅余两项
+## 2026-10-14 · JH-004 两项遗留关闭，进入真实取证
+
+全量实际 **185 项：184 通过、0 失败、0 错误、1 跳过**，没有排除测试。历史来源缺失反例在装配前阻断，没有新调用；8 项定向变异均断言检出、零异常，包含独立错 attempt_id 场景。历史来源 P1 与测试措辞 P2 均关闭，见[离线关闭报告](reports/jh004-offline-closure-20261014.md)。
+
+当前无代码整改项；按[有界取证说明](docs/handoffs/jh004-real-evidence-20261014.md)提交后验证真实模型、CLI 接续与实际 Codex Skill 发现/调用。代码与离线通过不构成 N1 结项，真实文件应用门禁仍关闭。旧失败证据与原树源码保留，不再重做两项或 A–E。
+
+## 历史快照（2026-10-14，已由上文更新）· JH-004 两项遗留已整改，未运行
+
+P1 历史来源覆盖与 P2 措辞对齐已改完，新增 5 项回归，见[整改记录](reports/jh004-r02-followup-fixes-20261014.md)。本会话 Shell 不可用：未运行、未提交；改动文件为 src/cli.py、tests/test_jh004_artifact_entry.py 及状态文档。交架构师补跑验证。门禁保持关闭。
+
+## 历史快照（2026-10-14，已由上文更新）· JH-004 整改复核：仍 revise，仅余两项
 
 实际全量 180 项：**178 通过、1 失败、0 错误、1 跳过**。R01、R04 原反例关闭；R03 工作树模块指向正确但宿主发现/调用未验证；R02 当前调用 Mock/缺失标记拒绝生效，但历史 completed attempt 缺来源事件仍可 production succeeded（独立两轮复现：4 attempt / 3 source）。
 

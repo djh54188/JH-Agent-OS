@@ -255,20 +255,36 @@ def check_source_binding(
 
 
 def _production_taint_blocker(ro_storage: TaskStorage, task_id: str) -> Optional[str]:
-    """Refusal reason when recorded production calls show mock/unconfirmed source.
+    """Refusal reason when completed production calls lack proven sources.
 
-    Reads the persisted per-call source records, never the current CLI switch:
-    a task whose history contains a mock-marked or unconfirmed model response
-    must not resume as production even if the flags look clean today.
+    Baselines on persisted model_attempts, never on the mere absence of bad
+    events: every COMPLETED call needs a source record for this task, this
+    attempt_id, and the matching actor role, with is_mock strictly False.
+    Missing, mis-associated, contradictory, or unconfirmable coverage refuses
+    before assembly or new calls. A task with no completed calls stays resumable;
+    unconfirmable history must be re-submitted or reconciled, never backfilled.
     """
-    for event in ro_storage.list_events(task_id):
-        if event.get("event_type") != "model_response_source":
-            continue
-        details = event.get("details") or {}
-        if details.get("is_mock") is not False:
+    completed = [a for a in ro_storage.list_model_attempts(task_id)
+                 if a.get("status") == "completed"]
+    if not completed:
+        return None
+    sources = [e.get("details") or {}
+               for e in ro_storage.list_events(task_id)
+               if e.get("event_type") == "model_response_source"]
+    for attempt in completed:
+        aid = attempt.get("attempt_id")
+        role = attempt.get("actor_role")
+        matching = [d for d in sources
+                    if d.get("attempt_id") == aid and d.get("role") == role]
+        if not matching:
             return (
-                f"recorded {details.get('role', 'model')} call has mock/unconfirmed "
-                f"source (attempt {details.get('attempt_id')})"
+                f"completed {role} call has no trusted source record "
+                f"(attempt {aid}); re-submit or reconcile manually"
+            )
+        if any(d.get("is_mock") is not False for d in matching):
+            return (
+                f"recorded {role} call has mock/unconfirmed "
+                f"source (attempt {aid})"
             )
     return None
 
