@@ -1,0 +1,73 @@
+{
+  "date": "2026-10-15",
+  "baseline": "61389eb35980d71f39c637074bf8ea073c87461d",
+  "verdict": "revise",
+  "JH005_accepted": false,
+  "N1_previous_acceptance_unchanged": true,
+  "N2_P1_complete": false,
+  "file_application_gate": "closed",
+  "formal_fixture_seals_changed": false,
+  "real_model_calls": 0,
+  "inventory": {
+    "new": 16,
+    "modified": 3,
+    "total": 19
+  },
+  "tests": {
+    "total": 185,
+    "passed": 184,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 1
+  },
+  "inconsistent_checker_variants": {
+    "accepted": 8,
+    "total": 8,
+    "errors": 0,
+    "repeat_identical": true
+  },
+  "findings": [
+    {
+      "id": "JH005-R1",
+      "priority": "P1",
+      "file": "docs/host-delivery-contract.md",
+      "line": 18,
+      "problem": "Host delivery does not require actual post-apply file hashes to equal the result of the current reviewed patch, and has no explicit prepare/complete success handoff.",
+      "evidence": "host-byte-binding-counterexample.json: checks exit 0 after adding an unreviewed assignment; actual hash differs from approved target hash. This is an offline contract counterexample, not a production exploit.",
+      "required": "Bind task/attempt/artifact/review/baseline/application receipt and actual post-apply bytes; specify pending-host then verified-complete lifecycle. No succeeded/target_applied based on reference-only tests or receipt booleans."
+    },
+    {
+      "id": "JH005-R2",
+      "priority": "P2",
+      "file": "scripts/verify_jh005_fixtures.py",
+      "line": 150,
+      "problem": "Task templates are not materialized/validated against the existing protocol and actual fixture inputs. Code task has an illegal top-level acceptance_note; data records is prose, and replacing it with different real records still passes checker.",
+      "evidence": "independent-probes-confirmation.json: code_sortfix_task_schema error; data resolver refuses original; data_input_mismatch exits 0.",
+      "required": "Move explanatory key into metadata; use the actual six-record list or deterministic materialization; validate current Task Schema after filling workspace; compare task input/input.json/expected.json."
+    },
+    {
+      "id": "JH005-R3",
+      "priority": "P2",
+      "file": "scripts/verify_jh005_fixtures.py",
+      "line": 113,
+      "problem": "Seal/authorization/spec guards permit empty or incomplete manifests, truthy string sealed flag, absolute Windows target, empty scenarios/checks, and bool sales.",
+      "evidence": "Eight isolated inconsistent variants exit 0 in both runs; copied fixtures only.",
+      "required": "Strict boolean seal, closed exact manifest inventory and nonempty required case/check sets, unique relative paths and Windows drive rejection, strict input types and existing template semantics; mutation checks must fail by relevant assertions, not harness errors."
+    },
+    {
+      "id": "JH005-R4",
+      "priority": "P2",
+      "file": "tests/fixtures/n2/code_sortfix/checks.json",
+      "line": 8,
+      "problem": "Reference changes docstring bytes despite the single-edit byte contract; current executable commands cover reference/baseline controls, without a separate bound post-apply command.",
+      "evidence": "reference_byte_contract false; fixed reference passes 4/4 while baseline fails first two as expected.",
+      "required": "Reference equals baseline with exactly the one parameter removed; keep control commands separate and add a materialized post-apply command bound to the actual authorized workspace target."
+    }
+  ],
+  "limitations": [
+    "All current N2 delivery/fault cases remain not_run; only fixture controls and offline consistency probes ran.",
+    "Counterexample concerns proposed host contract and new checker, not an observed production permission bypass.",
+    "Original independent-probes.json incorrectly labelled workspace substitution as done; confirmation actually fills it and is the authoritative schema check. Conclusions agree."
+  ],
+  "pending": "Four scoped fixes; no JH-006 or formal seal before independent rereview"
+}

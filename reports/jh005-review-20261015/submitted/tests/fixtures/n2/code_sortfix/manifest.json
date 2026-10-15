@@ -1,0 +1,14 @@
+{
+  "fixture": "n2-code-sortfix/v1",
+  "sealed": false,
+  "seal_note": "sha256 values are filled by the verifying session after reviewing file bytes, then the consistency check is re-run. Until sealed, verify_jh005_fixtures.py reports UNSEALED with computed values and exits nonzero.",
+  "files": [
+    {"path": "task.json", "sha256": null, "purpose": "task definition template"},
+    {"path": "target/widget.py", "sha256": null, "purpose": "baseline target with the single defect"},
+    {"path": "expected/widget.py", "sha256": null, "purpose": "reference fixed state"},
+    {"path": "check_widget.py", "sha256": null, "purpose": "pinned behavior checks"},
+    {"path": "checks.json", "sha256": null, "purpose": "check commands and expectations"},
+    {"path": "scenarios.json", "sha256": null, "purpose": "repair and fault scenarios"},
+    {"path": "manifest.json", "sha256": null, "purpose": "this manifest (self-hash excluded from seal)"}
+  ]
+}

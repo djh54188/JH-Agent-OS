@@ -1,0 +1,36 @@
+{
+  "status": "fail",
+  "failures": [
+    {
+      "fixture": "code_sortfix",
+      "check": "seal",
+      "detail": {
+        "verdict": "UNSEALED",
+        "computed_sha256": {
+          "task.json": "c4bb4572d5ef0b4a1f07b68b267f9fa88b80881796957de086e2ff138a99fc8d",
+          "target/widget.py": "e27d9e7dc341fe5fd2081daaecbebfa2e06f94bde29f121a2a8ecfed98f54e13",
+          "expected/widget.py": "70d710354652343818cd3332f9d67e0de94374cd437176df1fd2e76ba8119477",
+          "check_widget.py": "0eb464de8eee5fb2f8f41cdc2a88353976df9dfaa9f57fe49469935548bb4aa3",
+          "checks.json": "bb28c1d7f76a9c068f0ebd84cb47215b601d2c77976c3e33ff7604d8358bb2d0",
+          "scenarios.json": "f95a6c493b147b7673fff62ab5a1ced3ae4c3d3cf8aa5dd05f0564a4af7502b4"
+        },
+        "note": "review bytes, fill manifest, re-run"
+      }
+    },
+    {
+      "fixture": "data_rollup",
+      "check": "seal",
+      "detail": {
+        "verdict": "UNSEALED",
+        "computed_sha256": {
+          "task.json": "a26698ae89dd2aee99d0f4ad27ea37a096ce6622ebee67a1edcb662adb589283",
+          "input.json": "ddc1886847f866bb76dd6b11fa36488d0393bb86630bf9375f9266aa112cebc3",
+          "expected.json": "6960af9d80dfd3642d06565122fc4dff63d90006970c8203b3b383de3a58e3c2",
+          "checks.json": "b9f0b8993da762d6c5453da886e99985ac66c3f15c0675668a95976eeb2bfe17",
+          "scenarios.json": "6bd5b6ede161877323dc9c0fcac805c38a8d22c449404b87d821ecef26194797"
+        },
+        "note": "review bytes, fill manifest, re-run"
+      }
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "task_n2_code_sortfix01",
+  "title": "Fix top_regions tie ordering in widget.py",
+  "description": "Remove the erroneous reverse=True so top_regions returns top-n regions by sales desc, ties by region asc. Authorized change: tests/fixtures/n2/code_sortfix/target/widget.py only, in an isolated JH-006 workspace copy.",
+  "acceptance_criteria": [
+    "Independent review of the patch passes with no unresolved blocking issues",
+    "Post-apply widget checks pass in the host workspace",
+    "Only authorized files changed and the target baseline matched at apply time"
+  ],
+  "acceptance_note": "N2 target wording (spec-level). No code-task evaluator exists yet; JH-006 implements it. Never judged by records_transform_v1.",
+  "priority": "high",
+  "status": "created",
+  "risk_assessment": {
+    "risk_level": "workspace_write",
+    "complexity": "low",
+    "uncertainty": "low",
+    "risk_basis": "Single-file fixture fix in an isolated workspace copy",
+    "routing_basis": "N2 representative code task"
+  },
+  "budget": {"max_turns": 8, "max_tokens": 60000, "max_execution_time_seconds": 600},
+  "context": {"workspace_root": "FILL_AT_SUBMIT", "target_files": ["target/widget.py"]},
+  "artifact_refs": [],
+  "tool_execution_evidence": [],
+  "review_verdict": null,
+  "error_info": null,
+  "assigned_worker": "gemini_worker",
+  "assigned_reviewer": "muse_reviewer",
+  "metadata": {
+    "fixture_id": "n2-code-sortfix/v1",
+    "review_target_artifact_type": "patch",
+    "baseline": {"vcs": "git-commit-anchored", "note": "Baseline file bytes are the committed fixture files; hashes sealed in manifest.json at verification time"}
+  },
+  "created_at": "2026-10-14T00:00:00Z",
+  "updated_at": "2026-10-14T00:00:00Z"
+}

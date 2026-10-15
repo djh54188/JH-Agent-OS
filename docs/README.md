@@ -15,6 +15,8 @@
 
 | 文档 / 目录 | 用途与适用限制 |
 |---|---|
+| [JH-005 最新复核](../reports/jh005-review-20261015.md) / [四项整改](handoffs/jh005-followup-20261015.md) | revise，1 P1 + 3 P2；185 项保持，正式清单未封存，JH-006 不启动 |
+| [N2 规格草案](n2-acceptance-spec.md) / [宿主契约草案](host-delivery-contract.md) | 未验收交付；原始内容保留，按四项整改收口 |
 | [ADR-0001](adr/ADR-0001-codex-integration.md) | 原接入设计保留为历史；主要入口方向由 ADR-0003 替代 |
 | [ADR-0002](adr/ADR-0002-gemini-local-proxy.md) | 用户已裁决的 Gemini 本地代理接入 |
 | [ADR-0003](adr/ADR-0003-codex-hosted-entry.md) | Codex 主控 → 项目 Skill + CLI → JH，N1 生成入口已验收，文件应用另计 |

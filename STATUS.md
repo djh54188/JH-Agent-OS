@@ -5,6 +5,18 @@
 方向见 [产品需求](docs/product-requirements-v1.0.md)，阶段与验收见 [ROADMAP.md](ROADMAP.md)，任务看板见 [TODO.md](TODO.md)，历史见 [CHANGELOG.md](CHANGELOG.md)。
 
 
+
+## 2026-10-15 · JH-005 独立复核 revise，四项整改
+
+架构师已补跑：185 项 184 通过/1 跳过；基线行为检查按预期失败，参考版通过。新增核对器却误收八个不一致变体，宿主契约缺实际应用字节与审核结果绑定，另有任务/参考字节不一致。见[独立审查](reports/jh005-review-20261015.md)。
+
+当前不是只等待 Shell；按[四项整改](docs/handoffs/jh005-followup-20261015.md)继续本批，不重做 JH-004。正式夹具未封存，检查点只是未验收 WIP（最新提交查隔离分支日志），JH-005 不通过、JH-006 不启动；N1 结项不变，N2/P1 未完成，文件应用关闭。原树失败 WIP 保留，真实调用/用户目标应用均零。
+
+
+## 历史交付快照（2026-10-14）· JH-005 未运行
+
+N2 验收规格、代码/数据双夹具、宿主交付契约及独立核对脚本已写完，见[规格](docs/n2-acceptance-spec.md)与[契约](docs/host-delivery-contract.md)。本会话 Shell 不可用：夹具未运行、哈希未封存、未提交；改动仅限新文档/夹具/脚本与状态文档。交架构师补跑核对、封存、提交与审查。门禁保持关闭。
+
 ## 2026-10-14 · N1 已结项，下一批 JH-005
 
 架构师批准 JH-004/N1 按 ADR-0004 生成入口结项，见[验收裁决](reports/n1-acceptance-20261014.md)。实现 c7d7421，位于 D:/JH-Agent OS/data/worktrees/n1-artifact-entry；结项归档 HEAD 查隔离分支最新日志。原树保留 80979f3 与失败 JH-015 WIP，不作为已验收 CLI。
@@ -96,7 +108,7 @@ N1 已按生成入口范围结项，N2/P1 未完成；下一批 JH-005 规格/�
 
 ## 当前工作与下一步
 
-已验收工作树 D:/JH-Agent OS/data/worktrees/n1-artifact-entry，分支 n1-artifact-entry，代码 c7d7421；归档 HEAD 查最新日志。原树保留 80979f3 失败 WIP。下一批按 JH-005 交接准备规格/夹具，不改生产代码或重复真实取证。
+在 D:/JH-Agent OS/data/worktrees/n1-artifact-entry 接手 JH-005 四项整改，HEAD 查未验收检查点最新日志；基线 61389eb，已验收 N1 代码 c7d7421 不变。Shell 不可用的执行会话仍可编辑本批文件，运行/封存/提交由有通道的架构师会话承接。JH-006 尚不启动，原树不动。
 
 ## 当前缺口
 

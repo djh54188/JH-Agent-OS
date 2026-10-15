@@ -1,0 +1,25 @@
+{
+  "fixture": "n2-code-sortfix/v1",
+  "status": "not_run",
+  "cwd": "repo-root",
+  "checks": [
+    {
+      "name": "fixed-behavior",
+      "command": ["python", "tests/fixtures/n2/code_sortfix/check_widget.py", "--target", "tests/fixtures/n2/code_sortfix/expected/widget.py"],
+      "expect_exit": 0,
+      "expect_stdout_contains": "PASS"
+    },
+    {
+      "name": "baseline-behavior-known-fail",
+      "command": ["python", "tests/fixtures/n2/code_sortfix/check_widget.py", "--target", "tests/fixtures/n2/code_sortfix/target/widget.py"],
+      "expect_exit": 1,
+      "expect_stdout_contains": "FAIL"
+    },
+    {
+      "name": "fixture-consistency",
+      "command": ["python", "scripts/verify_jh005_fixtures.py", "--fixture", "code_sortfix"],
+      "expect_exit": 0,
+      "expect_stdout_contains": "\"status\": \"ok\""
+    }
+  ]
+}
