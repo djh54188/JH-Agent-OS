@@ -1,0 +1,142 @@
+{
+  "scope": "offline mutation checks for the JH-005 fixture verifier",
+  "api_calls": 0,
+  "rows": [
+    {
+      "case": "sealed_control",
+      "exit_code": 0,
+      "verdict": "pass"
+    },
+    {
+      "case": "data_input_mismatch",
+      "exit_code": 1,
+      "expected_check": "task-input-match",
+      "reported_checks": [
+        "task-input-match"
+      ],
+      "verdict": "detected_by_assertion"
+    },
+    {
+      "case": "manifest_empty",
+      "exit_code": 1,
+      "expected_check": "manifest-inventory",
+      "reported_checks": [
+        "manifest-inventory",
+        "seal"
+      ],
+      "verdict": "detected_by_assertion"
+    },
+    {
+      "case": "manifest_omits_expected",
+      "exit_code": 1,
+      "expected_check": "manifest-inventory",
+      "reported_checks": [
+        "manifest-inventory",
+        "seal"
+      ],
+      "verdict": "detected_by_assertion"
+    },
+    {
+      "case": "absolute_target",
+      "exit_code": 1,
+      "expected_check": "target_files",
+      "reported_checks": [
+        "target_files"
+      ],
+      "verdict": "detected_by_assertion"
+    },
+    {
+      "case": "scenarios_empty",
+      "exit_code": 1,
+      "expected_check": "scenarios-complete",
+      "reported_checks": [
+        "scenarios-complete"
+      ],
+      "verdict": "detected_by_assertion"
+    },
+    {
+      "case": "checks_empty",
+      "exit_code": 1,
+      "expected_check": "checks-complete",
+      "reported_checks": [
+        "checks-complete"
+      ],
+      "verdict": "detected_by_assertion"
+    },
+    {
+      "case": "boolean_sales",
+      "exit_code": 1,
+      "expected_check": "input-shape",
+      "reported_checks": [
+        "input-shape",
+        "task-input-match"
+      ],
+      "verdict": "detected_by_assertion"
+    },
+    {
+      "case": "manifest_string_seal",
+      "exit_code": 1,
+      "expected_check": "seal-boolean",
+      "reported_checks": [
+        "seal-boolean"
+      ],
+      "verdict": "detected_by_assertion"
+    },
+    {
+      "case": "post_apply_wrong_target",
+      "exit_code": 1,
+      "expected_check": "post-apply-binding",
+      "reported_checks": [
+        "post-apply-binding"
+      ],
+      "verdict": "detected_by_assertion"
+    },
+    {
+      "case": "post_apply_wrong_parameter",
+      "exit_code": 1,
+      "expected_check": "post-apply-binding",
+      "reported_checks": [
+        "post-apply-binding"
+      ],
+      "verdict": "detected_by_assertion"
+    },
+    {
+      "case": "post_apply_wrong_script",
+      "exit_code": 1,
+      "expected_check": "post-apply-binding",
+      "reported_checks": [
+        "post-apply-binding"
+      ],
+      "verdict": "detected_by_assertion"
+    },
+    {
+      "case": "post_apply_bool_exit",
+      "exit_code": 1,
+      "expected_check": "post-apply-binding",
+      "reported_checks": [
+        "post-apply-binding"
+      ],
+      "verdict": "detected_by_assertion"
+    },
+    {
+      "case": "code_wrong_authorization",
+      "exit_code": 1,
+      "expected_check": "target_files",
+      "reported_checks": [
+        "target_files"
+      ],
+      "verdict": "detected_by_assertion"
+    },
+    {
+      "case": "data_wrong_authorization",
+      "exit_code": 1,
+      "expected_check": "target_files",
+      "reported_checks": [
+        "target_files"
+      ],
+      "verdict": "detected_by_assertion"
+    }
+  ],
+  "fixtures_cleaned": true,
+  "verdict": "pass"
+}

@@ -1,0 +1,33 @@
+{
+  "formal_seals": [
+    {
+      "fixture": "code_sortfix",
+      "manifest_sha256_before": "7924724a6fb2defd5e150ad28c2dea79422e103c48e091eb011becc5b0b670ae",
+      "manifest_sha256_after": "d8093842c635dfeada9c6e2a347106c43c9a5da74997492ea87c7a4847833708",
+      "reviewed_files": {
+        "task.json": "5715482d36cd44996a084082b352519c8f1e5d839fbd1d4e7ea20dd48de9af8d",
+        "target/widget.py": "e27d9e7dc341fe5fd2081daaecbebfa2e06f94bde29f121a2a8ecfed98f54e13",
+        "expected/widget.py": "418c088d5ed48f4d8198e9d3adaa10080350dfb3fe5de8b6dd2c165875859556",
+        "check_widget.py": "0eb464de8eee5fb2f8f41cdc2a88353976df9dfaa9f57fe49469935548bb4aa3",
+        "checks.json": "a5fc91d50f562be48a6463d3e38e375bf93d4b0c69329121246d48aab22d1083",
+        "scenarios.json": "6fb6859bc0f1b56877300002ee09c4f3798af7630158b01f774261e93085a1fb"
+      }
+    },
+    {
+      "fixture": "data_rollup",
+      "manifest_sha256_before": "db895f03c326d7acdd2205a7667d7550a48adf405a4de9adef1d73c86ed0cc95",
+      "manifest_sha256_after": "c38ebe6eca4657213c8824c17891cdd978b7fc814293b69853bcbcd74d5987be",
+      "reviewed_files": {
+        "task.json": "285bf482f8f2ac14a3e12e877f5efea9e95b31c5caae15a11c10657a5ede6d4b",
+        "input.json": "ddc1886847f866bb76dd6b11fa36488d0393bb86630bf9375f9266aa112cebc3",
+        "expected.json": "6960af9d80dfd3642d06565122fc4dff63d90006970c8203b3b383de3a58e3c2",
+        "checks.json": "b9f0b8993da762d6c5453da886e99985ac66c3f15c0675668a95976eeb2bfe17",
+        "scenarios.json": "6bd5b6ede161877323dc9c0fcac805c38a8d22c449404b87d821ecef26194797"
+      }
+    }
+  ],
+  "fixture_nonmanifest_files": 11,
+  "model_calls": 0,
+  "new_eol_policy": "tests/fixtures/n2/** -text",
+  "reason": "core.autocrlf=true previously had no fixture attribute; preserve reviewed bytes on checkout"
+}

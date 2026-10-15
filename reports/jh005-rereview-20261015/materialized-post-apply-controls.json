@@ -1,0 +1,57 @@
+{
+  "scope": "synthetic behavior and byte-equation controls only, not a real N2 delivery",
+  "real_model_calls": 0,
+  "controls": [
+    {
+      "case": "baseline",
+      "argv": [
+        "C:\\Python314\\python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "tests/fixtures/n2/code_sortfix/check_widget.py",
+        "--target",
+        "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\review-fixtures\\jh005-rereview-dba0add8\\actual-post-apply/target/widget.py"
+      ],
+      "exit": 1,
+      "stdout": "case 0: FAIL got=['c', 'b'] expected=['a', 'b']\ncase 1: FAIL got=['c', 'b', 'a'] expected=['a', 'b', 'c']\ncase 2: ok\ncase 3: ok\nFAIL\n",
+      "actual_sha256": "e27d9e7dc341fe5fd2081daaecbebfa2e06f94bde29f121a2a8ecfed98f54e13",
+      "expected_sha256": "418c088d5ed48f4d8198e9d3adaa10080350dfb3fe5de8b6dd2c165875859556",
+      "byte_contract_matches": false
+    },
+    {
+      "case": "reviewed_expected",
+      "argv": [
+        "C:\\Python314\\python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "tests/fixtures/n2/code_sortfix/check_widget.py",
+        "--target",
+        "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\review-fixtures\\jh005-rereview-dba0add8\\actual-post-apply/target/widget.py"
+      ],
+      "exit": 0,
+      "stdout": "case 0: ok\ncase 1: ok\ncase 2: ok\ncase 3: ok\nPASS\n",
+      "actual_sha256": "418c088d5ed48f4d8198e9d3adaa10080350dfb3fe5de8b6dd2c165875859556",
+      "expected_sha256": "418c088d5ed48f4d8198e9d3adaa10080350dfb3fe5de8b6dd2c165875859556",
+      "byte_contract_matches": true
+    },
+    {
+      "case": "unreviewed_extra",
+      "argv": [
+        "C:\\Python314\\python.exe",
+        "-X",
+        "utf8",
+        "-B",
+        "tests/fixtures/n2/code_sortfix/check_widget.py",
+        "--target",
+        "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\review-fixtures\\jh005-rereview-dba0add8\\actual-post-apply/target/widget.py"
+      ],
+      "exit": 0,
+      "stdout": "case 0: ok\ncase 1: ok\ncase 2: ok\ncase 3: ok\nPASS\n",
+      "actual_sha256": "b9e6b8c68927d026dcacdb9b0acda01f8e2012cd21a9356a9f19f39e6d30d312",
+      "expected_sha256": "418c088d5ed48f4d8198e9d3adaa10080350dfb3fe5de8b6dd2c165875859556",
+      "byte_contract_matches": false
+    }
+  ]
+}

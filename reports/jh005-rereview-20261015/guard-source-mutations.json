@@ -1,0 +1,28 @@
+{
+  "scope": "Two source regressions confined to copied offline fixture checker",
+  "real_model_calls": 0,
+  "rows": [
+    {
+      "source_mutant": "disable_post_apply_binding",
+      "mutation_suite_exit": 1,
+      "control_still_passed": true,
+      "failed_guard_cases": [
+        "post_apply_wrong_target",
+        "post_apply_wrong_parameter",
+        "post_apply_wrong_script",
+        "post_apply_bool_exit"
+      ],
+      "harness_errors": 0
+    },
+    {
+      "source_mutant": "disable_fixture_authorization",
+      "mutation_suite_exit": 1,
+      "control_still_passed": true,
+      "failed_guard_cases": [
+        "code_wrong_authorization",
+        "data_wrong_authorization"
+      ],
+      "harness_errors": 0
+    }
+  ]
+}

@@ -1,0 +1,104 @@
+{
+  "scope": "Offline checker probes only; no production/host application",
+  "scratch": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\review-fixtures\\jh005-rereview-dba0add8",
+  "rows": [
+    {
+      "exit_code": 0,
+      "body": {
+        "status": "ok",
+        "fixtures": [
+          "code_sortfix",
+          "data_rollup"
+        ]
+      },
+      "case": "sealed_control"
+    },
+    {
+      "exit_code": 1,
+      "body": {
+        "status": "fail",
+        "failures": [
+          {
+            "fixture": "code_sortfix",
+            "check": "post-apply-binding",
+            "detail": "must run the pinned checker on {HOST_WORKSPACE}/target/widget.py with exactly HOST_WORKSPACE and integer exit 0"
+          }
+        ]
+      },
+      "case": "post_apply_wrong_target"
+    },
+    {
+      "exit_code": 1,
+      "body": {
+        "status": "fail",
+        "failures": [
+          {
+            "fixture": "code_sortfix",
+            "check": "post-apply-binding",
+            "detail": "must run the pinned checker on {HOST_WORKSPACE}/target/widget.py with exactly HOST_WORKSPACE and integer exit 0"
+          }
+        ]
+      },
+      "case": "post_apply_wrong_parameter"
+    },
+    {
+      "exit_code": 1,
+      "body": {
+        "status": "fail",
+        "failures": [
+          {
+            "fixture": "code_sortfix",
+            "check": "post-apply-binding",
+            "detail": "must run the pinned checker on {HOST_WORKSPACE}/target/widget.py with exactly HOST_WORKSPACE and integer exit 0"
+          }
+        ]
+      },
+      "case": "post_apply_wrong_script"
+    },
+    {
+      "exit_code": 1,
+      "body": {
+        "status": "fail",
+        "failures": [
+          {
+            "fixture": "code_sortfix",
+            "check": "post-apply-binding",
+            "detail": "must run the pinned checker on {HOST_WORKSPACE}/target/widget.py with exactly HOST_WORKSPACE and integer exit 0"
+          }
+        ]
+      },
+      "case": "post_apply_bool_exit"
+    },
+    {
+      "exit_code": 1,
+      "body": {
+        "status": "fail",
+        "failures": [
+          {
+            "fixture": "code_sortfix",
+            "check": "target_files",
+            "detail": "must match this fixture's authorized targets: ['target/widget.py']"
+          }
+        ]
+      },
+      "case": "code_wrong_authorization"
+    },
+    {
+      "exit_code": 1,
+      "body": {
+        "status": "fail",
+        "failures": [
+          {
+            "fixture": "data_rollup",
+            "check": "target_files",
+            "detail": "must match this fixture's authorized targets: []"
+          }
+        ]
+      },
+      "case": "data_wrong_authorization"
+    }
+  ],
+  "literal_data_expected_verified": true,
+  "reference_byte_contract_verified": true,
+  "host_contract_design_text_reviewed": true
+}

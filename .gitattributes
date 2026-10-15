@@ -1,0 +1,2 @@
+# Sealed N2 fixtures must retain exact bytes across Git checkouts.
+tests/fixtures/n2/** -text

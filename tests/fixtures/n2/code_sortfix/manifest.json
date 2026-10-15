@@ -1,14 +1,44 @@
 {
   "fixture": "n2-code-sortfix/v1",
-  "sealed": false,
+  "sealed": true,
   "seal_note": "sha256 values are filled by the verifying session after reviewing file bytes, then the consistency check is re-run. Until sealed, verify_jh005_fixtures.py reports UNSEALED with computed values and exits nonzero.",
   "files": [
-    {"path": "task.json", "sha256": null, "purpose": "task definition template"},
-    {"path": "target/widget.py", "sha256": null, "purpose": "baseline target with the single defect"},
-    {"path": "expected/widget.py", "sha256": null, "purpose": "reference fixed state"},
-    {"path": "check_widget.py", "sha256": null, "purpose": "pinned behavior checks"},
-    {"path": "checks.json", "sha256": null, "purpose": "check commands and expectations"},
-    {"path": "scenarios.json", "sha256": null, "purpose": "repair and fault scenarios"},
-    {"path": "manifest.json", "sha256": null, "purpose": "this manifest (self-hash excluded from seal)"}
-  ]
+    {
+      "path": "task.json",
+      "sha256": "5715482d36cd44996a084082b352519c8f1e5d839fbd1d4e7ea20dd48de9af8d",
+      "purpose": "task definition template"
+    },
+    {
+      "path": "target/widget.py",
+      "sha256": "e27d9e7dc341fe5fd2081daaecbebfa2e06f94bde29f121a2a8ecfed98f54e13",
+      "purpose": "baseline target with the single defect"
+    },
+    {
+      "path": "expected/widget.py",
+      "sha256": "418c088d5ed48f4d8198e9d3adaa10080350dfb3fe5de8b6dd2c165875859556",
+      "purpose": "reference fixed state"
+    },
+    {
+      "path": "check_widget.py",
+      "sha256": "0eb464de8eee5fb2f8f41cdc2a88353976df9dfaa9f57fe49469935548bb4aa3",
+      "purpose": "pinned behavior checks"
+    },
+    {
+      "path": "checks.json",
+      "sha256": "a5fc91d50f562be48a6463d3e38e375bf93d4b0c69329121246d48aab22d1083",
+      "purpose": "check commands and expectations"
+    },
+    {
+      "path": "scenarios.json",
+      "sha256": "6fb6859bc0f1b56877300002ee09c4f3798af7630158b01f774261e93085a1fb",
+      "purpose": "repair and fault scenarios"
+    },
+    {
+      "path": "manifest.json",
+      "sha256": null,
+      "purpose": "this manifest (self-hash excluded from seal)"
+    }
+  ],
+  "sealed_at": "2026-10-15",
+  "sealed_by": "architect review session; independent byte/content verification"
 }

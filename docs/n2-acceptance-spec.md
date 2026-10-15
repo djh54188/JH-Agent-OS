@@ -105,7 +105,8 @@ resolve(template_id): 未知 id 在模型调用前拒绝。
 
 ## 验证口径
 
-- 夹具一致性由 `scripts/verify_jh005_fixtures.py` 检查（纯标准库，无模型调用）。
+- 夹具一致性由 `scripts/verify_jh005_fixtures.py` 检查（复用项目已有 jsonschema 与可信 CLI 装配，无新增依赖、无模型调用）。
 - 仓库全量单测必须保持通过，且 `tests/fixtures/` 下不得出现 `test_*.py`
  （防止计入单测总数）；核对脚本强制此项。
+- 封存按原始字节 SHA-256；.gitattributes 对 N2 夹具禁用换行改写，提交后须核对 Git 检出字节与清单一致。
 - 真实取证留待 JH-006，按宿主交付契约逐项留痕；本批不产生真实调用证据。

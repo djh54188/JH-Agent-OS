@@ -44,6 +44,12 @@ REQUIRED_CHECKS = {
     "data_rollup": {"expected-recomputed"},
 }
 
+REQUIRED_TARGETS = {"code_sortfix": ["target/widget.py"], "data_rollup": []}
+POST_APPLY_COMMAND = [
+    "python", "tests/fixtures/n2/code_sortfix/check_widget.py",
+    "--target", "{HOST_WORKSPACE}/target/widget.py",
+]
+
 FAILURES = []
 
 
@@ -129,6 +135,9 @@ def check_common(name, fdir):
         for entry in targets:
             if is_bad_path(entry):
                 fail(name, "target_files", f"must be workspace-relative without drive/.. : {entry!r}")
+    if targets != REQUIRED_TARGETS[name]:
+        fail(name, "target_files",
+             f"must match this fixture's authorized targets: {REQUIRED_TARGETS[name]}")
     scenarios, err = load_json(fdir / "scenarios.json")
     if err:
         fail(name, "scenarios.json parses", err)
@@ -192,6 +201,20 @@ def check_checks(name, checks):
         placeholders = {m.group(1) for token in command if isinstance(token, str)
                         for m in PLACEHOLDER_RE.finditer(token)}
         material = item.get("materialization", {})
+        if item.get("name") == "post-apply-target-check":
+            if (
+                not is_template
+                or command != POST_APPLY_COMMAND
+                or type(item.get("expect_exit")) is not int
+                or item["expect_exit"] != 0
+                or not isinstance(material, dict)
+                or set(material) != {"HOST_WORKSPACE"}
+                or not isinstance(material.get("HOST_WORKSPACE"), str)
+                or not material["HOST_WORKSPACE"].strip()
+            ):
+                fail(name, "post-apply-binding",
+                     "must run the pinned checker on {HOST_WORKSPACE}/target/widget.py "
+                     "with exactly HOST_WORKSPACE and integer exit 0")
         if is_template:
             if not isinstance(material, dict) or not material:
                 fail(name, "checks-template", f"{item.get('name')}: template needs a materialization map")

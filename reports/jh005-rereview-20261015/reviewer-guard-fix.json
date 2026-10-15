@@ -1,0 +1,12 @@
+{
+  "date": "2026-10-15",
+  "reviewer_implementation_edits": [
+    "scripts/verify_jh005_fixtures.py",
+    "scripts/verify_jh005_mutations.py"
+  ],
+  "reviewer_document_correction": "docs/n2-acceptance-spec.md dependency wording",
+  "reason": "Six independently reproduced post-apply/authorization binding gaps",
+  "checkpoint_before_edits": "c4ac80ea055771c313ddddf3ce50dc17f4c4e9e0",
+  "production_code_schema_or_permissions_changed": false,
+  "new_fixture_mutation_count": 14
+}

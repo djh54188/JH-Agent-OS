@@ -4,11 +4,11 @@ Usage (from repo root):
     python scripts/verify_jh005_mutations.py
 
 Copies the checker, fixtures, src/ and the task schema into an isolated
-scratch dir, seals one control copy, then applies eight inconsistency
+scratch dir, seals one control copy, then applies fourteen inconsistency
 mutations (mirroring the independent review probes). Each variant must exit
 nonzero BECAUSE OF its corresponding check; harness crashes never count as
 detection. Prints a JSON report; exit 0 only when the control passes and all
-eight variants are detected by assertion with zero harness errors.
+fourteen variants are detected by assertion with zero harness errors.
 No models, no network. Scratch is cleaned up; originals are never touched.
 """
 import json
@@ -31,6 +31,12 @@ EXPECTED = {
     "checks_empty": "checks-complete",
     "boolean_sales": "input-shape",
     "manifest_string_seal": "seal-boolean",
+    "post_apply_wrong_target": "post-apply-binding",
+    "post_apply_wrong_parameter": "post-apply-binding",
+    "post_apply_wrong_script": "post-apply-binding",
+    "post_apply_bool_exit": "post-apply-binding",
+    "code_wrong_authorization": "target_files",
+    "data_wrong_authorization": "target_files",
 }
 
 
@@ -109,6 +115,26 @@ def mutate(root, kind):
         doc = load(root, path)
         doc["sealed"] = "false"
         put(root, path, doc)
+    elif kind.startswith("post_apply_"):
+        path = "tests/fixtures/n2/code_sortfix/checks.json"
+        doc = load(root, path)
+        item = next(c for c in doc["checks"] if c["name"] == "post-apply-target-check")
+        if kind == "post_apply_wrong_target":
+            item["command"][-1] = "{HOST_WORKSPACE}/other/widget.py"
+        elif kind == "post_apply_wrong_parameter":
+            item["command"][-1] = "{OTHER_WORKSPACE}/target/widget.py"
+            item["materialization"] = {"OTHER_WORKSPACE": "Another workspace"}
+        elif kind == "post_apply_wrong_script":
+            item["command"][1] = "tests/fixtures/n2/code_sortfix/target/widget.py"
+        elif kind == "post_apply_bool_exit":
+            item["expect_exit"] = False
+        put(root, path, doc)
+    elif kind in ("code_wrong_authorization", "data_wrong_authorization"):
+        fixture = "code_sortfix" if kind == "code_wrong_authorization" else "data_rollup"
+        path = f"tests/fixtures/n2/{fixture}/task.json"
+        task = load(root, path)
+        task["context"]["target_files"] = ["other.py"]
+        put(root, path, task)
 
 
 def run_checker(root):
@@ -154,6 +180,9 @@ def main():
             ok = ok and detected
     finally:
         assert CASE.parent == ROOT / ".test-tmp" and CASE.name.startswith("jh005-mutations-")
+        resolved_temp = (ROOT / ".test-tmp").resolve()
+        assert resolved_temp.parent == ROOT.resolve()
+        assert CASE.resolve().parent == resolved_temp
         shutil.rmtree(CASE, ignore_errors=True)
     report = {"scope": "offline mutation checks for the JH-005 fixture verifier",
               "api_calls": 0, "rows": rows,
