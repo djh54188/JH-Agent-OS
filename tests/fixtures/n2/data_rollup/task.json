@@ -29,7 +29,14 @@
     "template_id": "records_transform_v1",
     "review_target_artifact_type": "code",
     "review_type_note": "Compat mapping: data_conversion artifacts are reviewed as code until a schema v1.1 adds data_conversion. See N2 spec.",
-    "input_data": {"records": "see input.json (copied verbatim at submit time)"}
+    "input_data": {"records": [
+      {"region": "west", "sales": 5},
+      {"region": "east", "sales": 12},
+      {"region": "north", "sales": 7},
+      {"region": "south", "sales": 3},
+      {"region": "east", "sales": 4},
+      {"region": "north", "sales": 9}
+    ]}
   },
   "created_at": "2026-10-14T00:00:00Z",
   "updated_at": "2026-10-14T00:00:00Z"

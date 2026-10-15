@@ -8,7 +8,6 @@
     "Post-apply widget checks pass in the host workspace",
     "Only authorized files changed and the target baseline matched at apply time"
   ],
-  "acceptance_note": "N2 target wording (spec-level). No code-task evaluator exists yet; JH-006 implements it. Never judged by records_transform_v1.",
   "priority": "high",
   "status": "created",
   "risk_assessment": {
@@ -27,6 +26,7 @@
   "assigned_worker": "gemini_worker",
   "assigned_reviewer": "muse_reviewer",
   "metadata": {
+    "acceptance_note": "N2 target wording (spec-level). No code-task evaluator exists yet; JH-006 implements it. Never judged by records_transform_v1.",
     "fixture_id": "n2-code-sortfix/v1",
     "review_target_artifact_type": "patch",
     "baseline": {"vcs": "git-commit-anchored", "note": "Baseline file bytes are the committed fixture files; hashes sealed in manifest.json at verification time"}

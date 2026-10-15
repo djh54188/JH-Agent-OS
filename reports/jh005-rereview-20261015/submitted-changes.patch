@@ -1,0 +1,674 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index ff894de..4b8eeb9 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -4,6 +4,13 @@
+ 
+ 
+ 
++## 2026-10-15 · JH-005 四项整改实现（未运行，未提交）
++
++- R1：契约与规格改为两步交付，增加准备/完成接口提案、交付绑定清单与 expected_after 字节规则。
++- R2：代码任务说明键移入 metadata，数据任务填入六条真实记录；核对器加材料化、Schema 校验、模板装配与任务输入一致检查。
++- R3：核对器加严格封存、闭合清单、精确场景/检查集合、驱动器路径拒绝与布尔排除；新增独立变异脚本，八变体逐项断言对应条件。
++- R4：参考文件改为基线逐字节去参；新增 post-apply 检查模板并纳入核对。本会话无 Shell，未运行、未封存、未提交。
++
+ ## 2026-10-15 · JH-005 独立复核 revise
+ 
+ - 实际 185 项 184 通过/1 跳；代码基线对照按预期失败、参考版 4/4，通过不代表新增 N2 工作流验收。
+diff --git a/STATUS.md b/STATUS.md
+index ad71014..6c885c1 100644
+--- a/STATUS.md
++++ b/STATUS.md
+@@ -6,6 +6,10 @@
+ 
+ 
+ 
++## 2026-10-15 · JH-005 四项整改实现，未运行
++
++R1—R4 源码与回归已改完：契约两步交付与字节绑定、任务材料化与装配检查、核对器八变体全拒、参考字节契约、独立变异脚本，见[整改记录](reports/jh005-followup-fixes-20261015.md)。本会话 Shell 不可用：未运行、未封存、未提交；改动仅限本批文档/夹具/脚本与状态文档。交架构师补跑验证、封存与提交。门禁保持关闭。
++
+ ## 2026-10-15 · JH-005 独立复核 revise，四项整改
+ 
+ 架构师已补跑：185 项 184 通过/1 跳过；基线行为检查按预期失败，参考版通过。新增核对器却误收八个不一致变体，宿主契约缺实际应用字节与审核结果绑定，另有任务/参考字节不一致。见[独立审查](reports/jh005-review-20261015.md)。
+diff --git a/TODO.md b/TODO.md
+index ea8aa69..00c0a70 100644
+--- a/TODO.md
++++ b/TODO.md
+@@ -22,7 +22,7 @@ N1 已结项，见[裁决](reports/n1-acceptance-20261014.md)。接手核对隔
+ | 编号 | 事项 | 所属 | 完成条件 |
+ |---|---|---|---|
+ | JH-004 | 最小 Codex 内接入 | N1 | **已通过（2026-10-14）**：185 项 184 过/1 跳，8 变异；真实宿主五进程/双模型及25项独立复算通过，见[裁决](reports/n1-acceptance-20261014.md) |
+-| JH-005 | 产品 P1 规格/夹具（当前整改） | N1 → N2 | **revise（2026-10-15）**：1 P1 + 3 P2，见[审查](reports/jh005-review-20261015.md)与[四项整改](docs/handoffs/jh005-followup-20261015.md)；未正式封存，JH-006 不启动 |
++| JH-005 | 产品 P1 规格/夹具（当前整改） | N1 → N2 | **整改实现未运行**：R1—R4 与变异脚本已改完，见[整改记录](reports/jh005-followup-fixes-20261015.md)；待补跑验证、封存与提交，JH-006 不启动 |
+ | JH-006 | Codex 内真实任务与修复取证 | N2 | 当前产物绑定、验收、独立审核、修复及交付可复查；区分真实、Mock 和注入夹具 |
+ | JH-007 | 既有控制约束的集成回归 | N2 | 新入口不绕过预算、审核、授权或取消；宿主能力与 JH 管理范围分别标明 |
+ | JH-008 | 规则式资源调度的使用验证 | N2 | 路由依据、调用额度与验证深度可解释；不以“已有资源”推断零成本 |
+diff --git a/docs/host-delivery-contract.md b/docs/host-delivery-contract.md
+index 31c2173..5a1940e 100644
+--- a/docs/host-delivery-contract.md
++++ b/docs/host-delivery-contract.md
+@@ -1,8 +1,8 @@
+ # 宿主交付契约（JH-005 草案，未验证）
+ 
+-日期：2026-10-14。适用 N2：JH 生成并审核产物，宿主（Codex 原生文件、
+-测试、Git 能力）执行应用与验证。本文件只定契约，不实现、不取证；
+-FileToolExecutor 不复活，不自研 Shell/Git 平台。
++日期：2026-10-14，2026-10-15 按 R1 修订。适用 N2：JH 生成并审核产物，
++宿主（Codex 原生文件、测试、Git 能力）执行应用与验证。本文件只定契约，
++不实现、不取证；FileToolExecutor 不复活，不自研 Shell/Git 平台。
+ 
+ ## 角色与边界
+ 
+@@ -11,19 +11,56 @@ FileToolExecutor 不复活，不自研 Shell/Git 平台。
+ - 宿主侧：按授权清单改文件、跑测试、查 Git 状态。宿主原生能力只保证
+   “执行了命令”，正确性由本契约的对账记录证明，不由口头确认。
+ - Skill/流程文档是编排说明，不授予权限、不替代对账。
++- 数据任务继续 N1 冻结流程，不加宿主写入条件；以下两步交付仅针对代码任务。
++
++## 代码任务两步交付
++
++`准备当前已审核产物 → 等待宿主 → 宿主应用并检查 → 控制层复核证据 → 最终成功`。
++
++- 准备就绪（产物已审核、基线已记录、宿主尚未应用）绝不是 succeeded；
++  成功只在控制层复核通过后确认。
++- 等待期间任务保持现有 `reviewing` 状态，另设控制层等待标记；
++  不新增任务状态，不借用其他状态含义；等待标记不在模型可填字段中，
++  具体存储为后续实施项。
++- 等待中的普通 resume 不得重放模型调用或宿主应用；接续保留原预算、
++  期限、owner/attempt 与全部绑定。
++
++## 准备/完成接口提案（仅设计，不新增生产命令）
++
++```text
++prepare_code_delivery(task_id, artifact_version) ->
++  ok {delivery_id, baseline{git_commit, files[{path, sha256_before}]},
++      expected_after{files[{path, sha256}]}, authorized_files[]}
++  | blocked {reason: version-changed | scope-invalid | ...}
++
++complete_code_delivery(delivery_id, apply_receipt) ->
++  ok {target_applied: true}
++  | blocked {reason} | uncertain {reason, reconcile: [...]}
++```
++
++- `expected_after` 必须由可信基线及当前已审核补丁确定；本批夹具还须
++  等于封存参考字节。不接受宿主自报布尔、只测参考文件、仅看 diffstat
++  或模型评分作为通过依据。
++- `apply_receipt` 至少包含：调用/应用尝试标识、实际目标字节哈希、
++  实际测试的目标文件与输入内容哈希、命令、退出码、输出摘要。
+ 
+ ## 对账记录（每次应用必填）
+ 
+ ```text
+-delivery_id, task_id, artifact(id/version/SHA-256), review_id, review_verdict,
+-target_baseline {git_commit, files[{path, sha256_before}]},
+-authorized_files[], actual_diffstat, post_apply_checks[{command, exit, digest}],
++delivery_id, task_id, 调用/应用尝试标识,
++artifact(id/version/SHA-256), review_id, review_verdict,
++target_before/expected_after/actual_after 哈希, authorized_files[],
++实际测试{目标文件哈希, 输入内容哈希, 命令, 退出码, 输出摘要},
+ result {applied | blocked | uncertain}, recorded_at, recorder
+ ```
+ 
+-`applied` 仅当全部成立：审核为当前产物版本的 pass、无阻塞问题；
+-基线在应用前重读一致；实际 diff 只触及授权文件；
+-应用后检查命令退出码与预期一致。任一不成立即 `blocked` 或 `uncertain`。
++- `actual_after` 必须是应用后实际目标字节的哈希，且等于 `expected_after`；
++  控制层必须读取/核对实际目标字节，仅凭行为检查通过不能交付。
++- 可信宿主执行记录由宿主产生、随对账提交，控制层负责引用核对：
++  命令与退出码须与记录一致，摘要须可追溯到原始输出；模型文本不是执行证据。
++- `applied` 仅当全部成立：当前独立审核、全部三项代码必需验收、交付绑定
++  完整、无不确定性。应用前发现版本变化即 `blocked`；副作用可能已发生或
++  检查结果未知时 `uncertain`/`needs_attention`，不自动重放。
+ 
+ ## 版本变化处理
+ 
+@@ -42,5 +79,5 @@ result {applied | blocked | uncertain}, recorded_at, recorder
+ - 普通“检查后写入”不声称无竞争窗口保证；窗口风险如实记录，不美化。
+ - 宿主原生能力不推定具备并发保护、审核绑定或权限证明；需要就写进
+   对账记录逐项验证。
+-- 生成文本、审核通过都不等于文件已应用；`target_applied` 只在对账
+-  记录完整后由宿主据实填写。
++- 生成文本、审核通过、准备就绪都不等于文件已应用；`target_applied`
++  只在对账记录完整后由宿主据实填写。
+diff --git a/docs/n2-acceptance-spec.md b/docs/n2-acceptance-spec.md
+index 7a2adcd..9ddbef1 100644
+--- a/docs/n2-acceptance-spec.md
++++ b/docs/n2-acceptance-spec.md
+@@ -27,9 +27,16 @@
+ 2. 宿主应用后 `check_widget.py` 对应用后文件全过。
+ 3. 仅授权文件被改，且应用时目标基线与记录一致。
+ 
+-阶段划分：生成（模型产出补丁文本）→ 独立审核（审补丁与行为表）→
+-宿主应用（Codex 原生改文件）→ 应用后测试（跑检查）→ 交付（对账记录）。
+-生成文本在应用前永远不算“已修改文件”。
++阶段划分（两步交付）：准备当前已审核产物 → 等待宿主 →
++宿主应用并检查 → 控制层复核证据 → 最终成功。准备就绪绝不是 succeeded；
++等待中普通 resume 不重放模型或应用。生成文本在应用前永远不算“已修改文件”。
++
++交付绑定（每次应用必填，见宿主交付契约）：task_id、调用/应用尝试标识、
++当前产物 id/版本/哈希、当前审核 id 与 pass 结论、目标 before/expected_after/
++actual_after 哈希、授权路径、实际测试的目标文件与输入内容哈希及命令/退出码/
++输出摘要。`expected_after` 由可信基线及当前已审核补丁确定，本夹具还须等于
++封存参考字节；控制层读取并核对实际目标字节，仅凭行为检查通过不能交付。
++最终成功要求当前独立审核、三项必需验收、交付绑定完整、无不确定性同时成立。
+ 
+ ## 代表任务二：数据整理（`n2-data-rollup`）
+ 
+@@ -88,6 +95,14 @@ resolve(template_id): 未知 id 在模型调用前拒绝。
+ - 版本建议（仅建议，不在本批实施）：未来 Schema v1.1 可增补
+   `data_conversion` 枚举值；届时 v1 报文仍须被接受，老证据继续有效。
+ 
++## 任务材料化规则
++
++夹具 task.json 是模板，不是可直接提交的载荷。提交或核对前按确定性规则
++材料化：`context.workspace_root` 的 `FILL_AT_SUBMIT` 替换为隔离运行工作区
++的绝对路径（核对脚本使用 `<fixture>/materialized-workspace`，不创建目录）；
++其余字段原样保留。材料化后必须通过现行 Task Schema 校验；数据任务再经
++现有固定模板装配检查并核对任务记录与输入文件一致。
++
+ ## 验证口径
+ 
+ - 夹具一致性由 `scripts/verify_jh005_fixtures.py` 检查（纯标准库，无模型调用）。
+diff --git a/scripts/verify_jh005_fixtures.py b/scripts/verify_jh005_fixtures.py
+index b0b95c4..1897e87 100644
+--- a/scripts/verify_jh005_fixtures.py
++++ b/scripts/verify_jh005_fixtures.py
+@@ -1,23 +1,48 @@
+-"""Verify JH-005 N2 fixtures for structural consistency (offline, stdlib only).
++"""Verify JH-005 N2 fixtures for structural consistency (offline).
+ 
+ Usage (from repo root):
+     python scripts/verify_jh005_fixtures.py [--fixture NAME]
+ 
+-Checks JSON validity, required task keys, budget sanity, authorization scope,
+-data expected-output recomputation, code check-script compilability, manifest
+-seal state, and that no test_*.py files pollute the unit-test discovery count.
+-Prints a JSON report; exit 0 only when every selected fixture is fully green.
+-Unsealed fixtures report UNSEALED with computed hashes for human review and
+-exit nonzero; the verifying session seals them only after reading the bytes.
+-No models, no network, no writes outside stdout.
++Checks task materialization against the frozen Task Schema, the fixed
++records_transform_v1 assembly path, task/input/expected consistency, manifest
++seal state with closed inventory, exact scenario/check sets, the reference
++byte relation, and suite guards. Prints a JSON report; exit 0 only when every
++selected fixture is fully green. Unsealed fixtures report UNSEALED with
++computed values and exit nonzero; the verifying session seals them only after
++reading the bytes. No models, no network, no writes outside stdout.
++
++The template-resolver check imports src.cli from this checkout's root. Running
++from a scratch copy without src/ fails closed with an explicit remedy instead
++of silently skipping.
+ """
+ import argparse
+ import hashlib
+ import json
++import re
++import sys
+ from pathlib import Path
+ 
+ ROOT = Path(__file__).resolve().parents[1]
+ FIXTURES = ROOT / "tests" / "fixtures" / "n2"
++SCHEMA = ROOT / "docs" / "schemas" / "task.v1.json"
++
++WORKSPACE_PLACEHOLDER = "FILL_AT_SUBMIT"
++REFERENCE_FRAGMENT = b", reverse=True"
++
++REQUIRED_MANIFEST_FILES = {
++    "code_sortfix": {"task.json", "target/widget.py", "expected/widget.py",
++                     "check_widget.py", "checks.json", "scenarios.json", "manifest.json"},
++    "data_rollup": {"task.json", "input.json", "expected.json",
++                    "checks.json", "scenarios.json", "manifest.json"},
++}
++REQUIRED_SCENARIOS = {"normal-delivery", "repair-injected-defect", "budget-exhausted",
++                      "provider-unavailable", "illegal-output", "user-cancel",
++                      "uncertain-side-effect"}
++REQUIRED_CHECKS = {
++    "code_sortfix": {"fixed-behavior", "baseline-behavior-known-fail",
++                     "fixture-consistency", "post-apply-target-check"},
++    "data_rollup": {"expected-recomputed"},
++}
+ 
+ FAILURES = []
+ 
+@@ -33,29 +58,77 @@ def load_json(path):
+         return None, f"{path}: {exc}"
+ 
+ 
++def is_bad_path(entry):
++    if not isinstance(entry, str) or not entry:
++        return True
++    if entry.startswith(("/", "\\")):
++        return True
++    if re.match(r"^[A-Za-z]:", entry):
++        return True
++    return ".." in Path(entry).parts
++
++
++def materialize_task(task, fdir):
++    """Deterministic fill rule: FILL_AT_SUBMIT becomes the fixture's
++    materialized-workspace path. No directories are created."""
++    task = json.loads(json.dumps(task))
++    ctx = task.get("context")
++    if isinstance(ctx, dict) and ctx.get("workspace_root") == WORKSPACE_PLACEHOLDER:
++        ctx["workspace_root"] = str(fdir / "materialized-workspace")
++        task["context"] = ctx
++    return task
++
++
++def check_task_schema(name, task):
++    try:
++        from jsonschema import Draft7Validator, FormatChecker
++    except ImportError as exc:
++        fail(name, "task-schema", f"jsonschema unavailable: {exc}")
++        return
++    try:
++        schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
++    except (OSError, ValueError) as exc:
++        fail(name, "task-schema", f"schema unreadable: {exc}")
++        return
++    errors = [{"path": "/".join(map(str, e.absolute_path)), "message": e.message}
++              for e in Draft7Validator(schema, format_checker=FormatChecker()).iter_errors(task)]
++    if errors:
++        fail(name, "task-schema", errors)
++
++
+ def check_common(name, fdir):
+     task, err = load_json(fdir / "task.json")
+     if err:
+         fail(name, "task.json parses", err)
+         return None
++    if not isinstance(task, dict):
++        fail(name, "task.json shape", "top level must be an object")
++        return None
+     for key in ("task_id", "title", "acceptance_criteria", "budget", "context", "metadata"):
+         if key not in task:
+             fail(name, "task.json keys", f"missing key: {key}")
+     criteria = task.get("acceptance_criteria")
+     if not isinstance(criteria, list) or not criteria or not all(isinstance(c, str) and c for c in criteria):
+         fail(name, "criteria", "acceptance_criteria must be a non-empty string list")
+-    budget = task.get("budget") or {}
++    budget = task.get("budget")
++    if not isinstance(budget, dict):
++        fail(name, "budget", "budget must be an object")
++        budget = {}
+     for key in ("max_turns", "max_tokens", "max_execution_time_seconds"):
+         value = budget.get(key)
+         if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
+             fail(name, "budget", f"{key} must be a positive int, got {value!r}")
+-    targets = (task.get("context") or {}).get("target_files")
++    context = task.get("context")
++    if not isinstance(context, dict):
++        fail(name, "context", "context must be an object")
++        context = {}
++    targets = context.get("target_files")
+     if not isinstance(targets, list):
+         fail(name, "target_files", "context.target_files must be a list")
+     else:
+         for entry in targets:
+-            if not isinstance(entry, str) or not entry or entry.startswith(("/", "\\")) or ".." in Path(entry).parts:
+-                fail(name, "target_files", f"must be workspace-relative without .. : {entry!r}")
++            if is_bad_path(entry):
++                fail(name, "target_files", f"must be workspace-relative without drive/.. : {entry!r}")
+     scenarios, err = load_json(fdir / "scenarios.json")
+     if err:
+         fail(name, "scenarios.json parses", err)
+@@ -77,38 +150,77 @@ def check_common(name, fdir):
+             if item.get("id") in seen:
+                 fail(name, "scenarios unique", f"duplicate id: {item.get('id')}")
+             seen.add(item.get("id"))
++        if seen != REQUIRED_SCENARIOS:
++            fail(name, "scenarios-complete",
++                 f"must be exactly {sorted(REQUIRED_SCENARIOS)}, "
++                 f"got {sorted(x for x in seen if isinstance(x, str))}")
+         if scenarios.get("status") != "not_run":
+             fail(name, "scenarios status", "must stay not_run until executed")
+     checks, err = load_json(fdir / "checks.json")
+     if err:
+         fail(name, "checks.json parses", err)
+-    elif not isinstance(checks, dict):
+-        fail(name, "checks shape", "top level must be an object")
+     else:
+-        items = checks.get("checks", [])
+-        if not isinstance(items, list):
+-            fail(name, "checks shape", "checks must be a list")
+-            items = []
+-        for item in items:
+-            if not isinstance(item, dict):
+-                fail(name, "checks shape", f"check entry must be an object: {item!r}")
+-                continue
+-            for key in ("name", "command", "expect_exit"):
+-                if key not in item:
+-                    fail(name, "checks shape", f"check missing {key}: {item.get('name')}")
+-            command = item.get("command", [])
+-            if not isinstance(command, list):
+-                fail(name, "checks shape", f"command must be a list: {item.get('name')}")
+-                continue
+-            for token in command:
+-                if isinstance(token, str) and token.endswith((".py", ".json")) and not token.startswith("-"):
+-                    if not (ROOT / token).exists():
+-                        fail(name, "checks reference", f"missing file: {token}")
+-        if checks.get("status") != "not_run":
+-            fail(name, "checks status", "must stay not_run until executed")
++        check_checks(name, checks)
+     return task
+ 
+ 
++PLACEHOLDER_RE = re.compile(r"\{([A-Za-z_][A-Za-z0-9_]*)\}")
++
++
++def check_checks(name, checks):
++    if not isinstance(checks, dict):
++        fail(name, "checks shape", "top level must be an object")
++        return
++    items = checks.get("checks", [])
++    if not isinstance(items, list):
++        fail(name, "checks shape", "checks must be a list")
++        items = []
++    seen = set()
++    for item in items:
++        if not isinstance(item, dict):
++            fail(name, "checks shape", f"check entry must be an object: {item!r}")
++            continue
++        for key in ("name", "command", "expect_exit"):
++            if key not in item:
++                fail(name, "checks shape", f"check missing {key}: {item.get('name')}")
++        seen.add(item.get("name"))
++        command = item.get("command", [])
++        if not isinstance(command, list):
++            fail(name, "checks shape", f"command must be a list: {item.get('name')}")
++            continue
++        is_template = item.get("template", False) is True
++        placeholders = {m.group(1) for token in command if isinstance(token, str)
++                        for m in PLACEHOLDER_RE.finditer(token)}
++        material = item.get("materialization", {})
++        if is_template:
++            if not isinstance(material, dict) or not material:
++                fail(name, "checks-template", f"{item.get('name')}: template needs a materialization map")
++                material = {}
++            if set(material) != placeholders or not placeholders:
++                fail(name, "checks-template",
++                     f"{item.get('name')}: declared params must equal used placeholders")
++            if item.get("expect_exit") != 0:
++                fail(name, "checks-template", f"{item.get('name')}: template must expect exit 0")
++            if any(isinstance(token, str) and ("expected/" in token or "expected\\" in token)
++                   for token in command):
++                fail(name, "checks-template",
++                     f"{item.get('name')}: post-apply checks must target the applied file, never expected/")
++        elif placeholders:
++            fail(name, "checks-template", f"{item.get('name')}: placeholders require template:true")
++        for token in command:
++            if not isinstance(token, str) or token.startswith("-") or "{" in token:
++                continue
++            if token.endswith((".py", ".json")):
++                if Path(token).is_absolute() or not (ROOT / token).exists():
++                    fail(name, "checks reference", f"missing or non-repo file: {token}")
++    if seen != REQUIRED_CHECKS[name]:
++        fail(name, "checks-complete",
++             f"must be exactly {sorted(REQUIRED_CHECKS[name])}, "
++             f"got {sorted(x for x in seen if isinstance(x, str))}")
++    if checks.get("status") != "not_run":
++        fail(name, "checks status", "must stay not_run until executed")
++
++
+ def check_manifest(name, fdir):
+     manifest, err = load_json(fdir / "manifest.json")
+     if err:
+@@ -117,29 +229,48 @@ def check_manifest(name, fdir):
+     if not isinstance(manifest, dict) or not isinstance(manifest.get("files"), list):
+         fail(name, "manifest shape", "top level must be an object with a files list")
+         return
+-    computed = {}
+-    for entry in manifest.get("files", []):
+-        if not isinstance(entry, dict) or not entry.get("path"):
++    entries = manifest.get("files")
++    listed = set()
++    for entry in entries:
++        if not isinstance(entry, dict) or not isinstance(entry.get("path"), str) or not entry.get("path"):
+             fail(name, "manifest shape", f"bad file entry: {entry!r}")
+             continue
+-        path = fdir / entry["path"]
+-        if entry["path"] == "manifest.json":
++        if entry["path"] in listed:
++            fail(name, "manifest-inventory", f"duplicate path: {entry['path']}")
++        if is_bad_path(entry["path"]):
++            fail(name, "manifest-inventory", f"path must be relative without drive/.. : {entry['path']!r}")
++        listed.add(entry["path"])
++    if listed != REQUIRED_MANIFEST_FILES[name]:
++        fail(name, "manifest-inventory",
++             f"must be exactly {sorted(REQUIRED_MANIFEST_FILES[name])}, got {sorted(listed)}")
++    on_disk = set()
++    for path in fdir.rglob("*"):
++        if path.is_dir() or "__pycache__" in path.parts or path.suffix in (".pyc", ".pyo"):
+             continue
+-        if not path.is_file():
+-            fail(name, "manifest files", f"missing: {entry['path']}")
++        on_disk.add(path.relative_to(fdir).as_posix())
++    if on_disk != REQUIRED_MANIFEST_FILES[name]:
++        fail(name, "manifest-inventory",
++             f"fixture dir must contain exactly {sorted(REQUIRED_MANIFEST_FILES[name])}, "
++             f"got {sorted(on_disk)}")
++    computed = {}
++    for rel in sorted(REQUIRED_MANIFEST_FILES[name]):
++        if rel == "manifest.json":
+             continue
+-        computed[entry["path"]] = hashlib.sha256(path.read_bytes()).hexdigest()
+-    if not manifest.get("sealed", False):
++        target = fdir / rel
++        if target.is_file():
++            computed[rel] = hashlib.sha256(target.read_bytes()).hexdigest()
++    sealed = manifest.get("sealed")
++    if sealed is True:
++        for rel, digest in computed.items():
++            recorded = next((e.get("sha256") for e in entries
++                             if isinstance(e, dict) and e.get("path") == rel), None)
++            if recorded != digest:
++                fail(name, "seal", f"hash mismatch: {rel}")
++    elif sealed is False:
+         fail(name, "seal", {"verdict": "UNSEALED", "computed_sha256": computed,
+                             "note": "review bytes, fill manifest, re-run"})
+-        return
+-    for entry in manifest.get("files", []):
+-        if not isinstance(entry, dict) or not entry.get("path"):
+-            continue  # already reported above
+-        if entry["path"] == "manifest.json":
+-            continue
+-        if entry["path"] in computed and entry.get("sha256") != computed[entry["path"]]:
+-            fail(name, "seal", f"hash mismatch: {entry['path']}")
++    else:
++        fail(name, "seal-boolean", f"sealed must be boolean true/false, got {sealed!r}")
+ 
+ 
+ def check_no_test_files():
+@@ -147,15 +278,30 @@ def check_no_test_files():
+         fail(path.parent.name, "suite-guard", f"must not match test discovery: {path.name}")
+ 
+ 
++def check_template_resolver(name, task):
++    if str(ROOT) not in sys.path:
++        sys.path.insert(0, str(ROOT))
++    try:
++        from src.cli import resolve_trusted_evaluator
++    except Exception as exc:
++        fail(name, "template-resolver",
++             f"src.cli unavailable ({type(exc).__name__}: {exc}); run from the worktree or include src/")
++        return
++    try:
++        resolve_trusted_evaluator(task)
++    except Exception as exc:
++        fail(name, "template-resolver", f"{type(exc).__name__}: {exc}")
++
++
+ def check_data_rollup(fdir):
+     name = "data_rollup"
+     task = check_common(name, fdir)
+-    if task is not None:
+-        criteria = task.get("acceptance_criteria")
+-        if criteria != ["Trusted input records were provided",
+-                        "Artifact content equals the expected sorted records"]:
+-            fail(name, "locked-criteria", "must equal the records_transform_v1 standard strings")
+     check_manifest(name, fdir)
++    if task is None:
++        return
++    materialized = materialize_task(task, fdir)
++    check_task_schema(name, materialized)
++    check_template_resolver(name, materialized)
+     records_in, err = load_json(fdir / "input.json")
+     if err:
+         fail(name, "input.json parses", err)
+@@ -164,10 +310,16 @@ def check_data_rollup(fdir):
+     if err:
+         fail(name, "expected.json parses", err)
+         return
++    meta = materialized.get("metadata")
++    sculpted = meta.get("input_data") if isinstance(meta, dict) else None
++    task_records = sculpted.get("records") if isinstance(sculpted, dict) else None
++    if task_records != records_in:
++        fail(name, "task-input-match", "task records must equal input.json exactly")
+     if (not isinstance(records_in, list) or not records_in or not all(
+             isinstance(r, dict) and isinstance(r.get("region"), str)
+-            and isinstance(r.get("sales"), (int, float)) for r in records_in)):
+-        fail(name, "input shape", "expected non-empty list of {region: str, sales: number}")
++            and isinstance(r.get("sales"), (int, float)) and not isinstance(r.get("sales"), bool)
++            for r in records_in)):
++        fail(name, "input-shape", "expected non-empty list of {region: str, sales: non-bool number}")
+         return
+     recomputed = sorted(records_in, key=lambda r: (r["region"], r["sales"]))
+     if recomputed != expected_file:
+@@ -176,8 +328,10 @@ def check_data_rollup(fdir):
+ 
+ def check_code_sortfix(fdir):
+     name = "code_sortfix"
+-    check_common(name, fdir)
++    task = check_common(name, fdir)
+     check_manifest(name, fdir)
++    if task is not None:
++        check_task_schema(name, materialize_task(task, fdir))
+     for rel in ("check_widget.py", "target/widget.py", "expected/widget.py"):
+         path = fdir / rel
+         if not path.is_file():
+@@ -187,6 +341,15 @@ def check_code_sortfix(fdir):
+             compile(path.read_text(encoding="utf-8"), str(path), "exec")
+         except (OSError, SyntaxError) as exc:
+             fail(name, "code compiles", f"{rel}: {exc}")
++    base_file, ref_file = fdir / "target/widget.py", fdir / "expected/widget.py"
++    if base_file.is_file() and ref_file.is_file():
++        base = base_file.read_bytes()
++        ref = ref_file.read_bytes()
++        if base.count(REFERENCE_FRAGMENT) != 1:
++            fail(name, "reference-byte-contract", "baseline must contain the fragment exactly once")
++        elif base.replace(REFERENCE_FRAGMENT, b"") != ref:
++            fail(name, "reference-byte-contract",
++                 "reference must equal baseline minus the fragment, byte-for-byte")
+ 
+ 
+ def main(argv=None):
+@@ -202,10 +365,13 @@ def main(argv=None):
+         if not fdir.is_dir():
+             fail(name, "fixture dir", "missing")
+             continue
+-        if name == "code_sortfix":
+-            check_code_sortfix(fdir)
+-        else:
+-            check_data_rollup(fdir)
++        try:
++            if name == "code_sortfix":
++                check_code_sortfix(fdir)
++            else:
++                check_data_rollup(fdir)
++        except Exception as exc:
++            fail(name, "harness", f"{type(exc).__name__}: {str(exc)[:300]}")
+     check_no_test_files()
+     if FAILURES:
+         print(json.dumps({"status": "fail", "failures": FAILURES}, ensure_ascii=False, indent=2))
+diff --git a/tests/fixtures/n2/code_sortfix/checks.json b/tests/fixtures/n2/code_sortfix/checks.json
+index 8b1e072..6c48120 100644
+--- a/tests/fixtures/n2/code_sortfix/checks.json
++++ b/tests/fixtures/n2/code_sortfix/checks.json
+@@ -20,6 +20,16 @@
+       "command": ["python", "scripts/verify_jh005_fixtures.py", "--fixture", "code_sortfix"],
+       "expect_exit": 0,
+       "expect_stdout_contains": "\"status\": \"ok\""
++    },
++    {
++      "name": "post-apply-target-check",
++      "template": true,
++      "command": ["python", "tests/fixtures/n2/code_sortfix/check_widget.py", "--target", "{HOST_WORKSPACE}/target/widget.py"],
++      "expect_exit": 0,
++      "expect_stdout_contains": "PASS",
++      "materialization": {
++        "HOST_WORKSPACE": "Absolute path of the isolated host workspace copy holding the applied target/widget.py, substituted at JH-006 run time. The host records sha256 of the exact checked bytes alongside the check log; the control layer compares it against expected_after before any success."
++      }
+     }
+   ]
+ }
+diff --git a/tests/fixtures/n2/code_sortfix/expected/widget.py b/tests/fixtures/n2/code_sortfix/expected/widget.py
+index 53d5109..799841e 100644
+--- a/tests/fixtures/n2/code_sortfix/expected/widget.py
++++ b/tests/fixtures/n2/code_sortfix/expected/widget.py
+@@ -1,8 +1,8 @@
+-"""Fixture target: regional sales ranking widget (N2 code task expected state).
++"""Fixture target: regional sales ranking widget (N2 code task baseline).
+ 
+-Reference fixed version: the `reverse=True` defect is removed, nothing else
+-changes. Used by checks and review; the real fix is produced by the model and
+-applied by the host in JH-006.
++Baseline contains exactly one defect: `reverse=True` inverts the ranking order.
++See task.json for the required behavior table. Synthetic fixture only; never a
++user file.
+ """
+ 
+ 
+diff --git a/tests/fixtures/n2/code_sortfix/scenarios.json b/tests/fixtures/n2/code_sortfix/scenarios.json
+index 0c6905a..6aee9b8 100644
+--- a/tests/fixtures/n2/code_sortfix/scenarios.json
++++ b/tests/fixtures/n2/code_sortfix/scenarios.json
+@@ -6,7 +6,7 @@
+       "id": "normal-delivery",
+       "kind": "success",
+       "setup": "Submit task.json (workspace filled at submit); run generate→review→host-apply→post-apply-checks.",
+-      "expected": "Independent review pass; post-apply check_widget.py exit 0 on the applied file; only target/widget.py differs from baseline; succeeded with full evidence.",
++      "expected": "Independent review pass; post-apply check_widget.py exit 0 on the applied file; only target/widget.py differs from baseline; applied bytes hash equals expected_after from the reviewed patch; succeeded with full evidence.",
+       "evidence": ["review binding (attempt/version/SHA-256)", "host apply record per delivery contract", "post-apply check log"]
+     },
+     {
+diff --git a/tests/fixtures/n2/code_sortfix/task.json b/tests/fixtures/n2/code_sortfix/task.json
+index bd012ca..a1403be 100644
+--- a/tests/fixtures/n2/code_sortfix/task.json
++++ b/tests/fixtures/n2/code_sortfix/task.json
+@@ -8,7 +8,6 @@
+     "Post-apply widget checks pass in the host workspace",
+     "Only authorized files changed and the target baseline matched at apply time"
+   ],
+-  "acceptance_note": "N2 target wording (spec-level). No code-task evaluator exists yet; JH-006 implements it. Never judged by records_transform_v1.",
+   "priority": "high",
+   "status": "created",
+   "risk_assessment": {
+@@ -27,6 +26,7 @@
+   "assigned_worker": "gemini_worker",
+   "assigned_reviewer": "muse_reviewer",
+   "metadata": {
++    "acceptance_note": "N2 target wording (spec-level). No code-task evaluator exists yet; JH-006 implements it. Never judged by records_transform_v1.",
+     "fixture_id": "n2-code-sortfix/v1",
+     "review_target_artifact_type": "patch",
+     "baseline": {"vcs": "git-commit-anchored", "note": "Baseline file bytes are the committed fixture files; hashes sealed in manifest.json at verification time"}
+diff --git a/tests/fixtures/n2/data_rollup/task.json b/tests/fixtures/n2/data_rollup/task.json
+index a85cd13..4ee84ba 100644
+--- a/tests/fixtures/n2/data_rollup/task.json
++++ b/tests/fixtures/n2/data_rollup/task.json
+@@ -29,7 +29,14 @@
+     "template_id": "records_transform_v1",
+     "review_target_artifact_type": "code",
+     "review_type_note": "Compat mapping: data_conversion artifacts are reviewed as code until a schema v1.1 adds data_conversion. See N2 spec.",
+-    "input_data": {"records": "see input.json (copied verbatim at submit time)"}
++    "input_data": {"records": [
++      {"region": "west", "sales": 5},
++      {"region": "east", "sales": 12},
++      {"region": "north", "sales": 7},
++      {"region": "south", "sales": 3},
++      {"region": "east", "sales": 4},
++      {"region": "north", "sales": 9}
++    ]}
+   },
+   "created_at": "2026-10-14T00:00:00Z",
+   "updated_at": "2026-10-14T00:00:00Z"

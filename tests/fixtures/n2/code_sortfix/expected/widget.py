@@ -1,8 +1,8 @@
-"""Fixture target: regional sales ranking widget (N2 code task expected state).
+"""Fixture target: regional sales ranking widget (N2 code task baseline).
 
-Reference fixed version: the `reverse=True` defect is removed, nothing else
-changes. Used by checks and review; the real fix is produced by the model and
-applied by the host in JH-006.
+Baseline contains exactly one defect: `reverse=True` inverts the ranking order.
+See task.json for the required behavior table. Synthetic fixture only; never a
+user file.
 """
 
 

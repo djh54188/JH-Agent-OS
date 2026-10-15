@@ -6,7 +6,7 @@
       "id": "normal-delivery",
       "kind": "success",
       "setup": "Submit task.json (workspace filled at submit); run generate→review→host-apply→post-apply-checks.",
-      "expected": "Independent review pass; post-apply check_widget.py exit 0 on the applied file; only target/widget.py differs from baseline; succeeded with full evidence.",
+      "expected": "Independent review pass; post-apply check_widget.py exit 0 on the applied file; only target/widget.py differs from baseline; applied bytes hash equals expected_after from the reviewed patch; succeeded with full evidence.",
       "evidence": ["review binding (attempt/version/SHA-256)", "host apply record per delivery contract", "post-apply check log"]
     },
     {
