@@ -18,8 +18,9 @@ from pathlib import Path
 import sys
 from typing import Any, Callable, Dict, List, Optional
 
-from src.acceptance import file_write_acceptance_evaluator, transform_acceptance_evaluator
+from src.acceptance import code_deferred_acceptance_evaluator, file_write_acceptance_evaluator, transform_acceptance_evaluator
 from src.adapters import AdapterError, CredentialMissingError, MockModelAdapter, SchemaValidationError
+from src.code_delivery import CODE_FIXTURE_ID, CODE_TEMPLATE_ID, CODE_TEMPLATES, CodeDeliveryRefused
 from src.file_tools import FileToolExecutor
 from src.mock_components import MockToolExecutor, ScriptedReviewerAdapter, ScriptedWorkerAdapter
 from src.model_config import has_credential, load_model_adapter
@@ -66,6 +67,15 @@ def build_task_summary(storage: TaskStorage, task_id: str) -> Dict[str, Any]:
     latest_binding = bindings[-1] if bindings else None
     pending_approval = json.loads(control["pending_json"]) if control.get("pending_json") else None
 
+    delivery = (task.get("metadata") or {}).get("_delivery") or {}
+    delivery_state = delivery.get("state")
+    if delivery_state == "applied":
+        delivery_note = "Code delivery applied and verified by the control layer (JH-006)"
+    elif delivery_state == "waiting_host":
+        delivery_note = "Code delivery prepared; waiting on host apply (not succeeded)"
+    else:
+        delivery_note = "JH-004 delivers generated artifacts only; no target files are applied"
+
     blockers: List[str] = []
     if task["status"] == "awaiting_approval":
         blockers.append("awaiting_human_approval")
@@ -105,8 +115,10 @@ def build_task_summary(storage: TaskStorage, task_id: str) -> Dict[str, Any]:
             "source_binding": (task.get("metadata") or {}).get(TRUSTED_STAMP_KEY),
             "delivery_scope": {
                 "generated_artifact": latest_artifact is not None,
-                "target_applied": False,
-                "note": "JH-004 delivers generated artifacts only; no target files are applied",
+                "delivery_state": delivery_state,
+                "delivery_id": delivery.get("delivery_id"),
+                "target_applied": delivery_state == "applied",
+                "note": delivery_note,
             },
             "pending_approval": pending_approval,
             "blockers": blockers,
@@ -133,6 +145,25 @@ def resolve_trusted_evaluator(
         raise TrustedAssemblyError(
             f"Unknown execution_mode '{exec_mode}'; supported: 'generate' (gated 'file_tools' only)"
         )
+    code_tpl = CODE_TEMPLATES.get(meta.get("fixture_id") or "")
+    if code_tpl is not None:
+        if exec_mode != "generate":
+            raise TrustedAssemblyError(
+                "Template code_sortfix_v1 requires execution_mode 'generate' (no model tools)"
+            )
+        if list(task_payload.get("acceptance_criteria") or []) != list(code_tpl["criteria"]):
+            raise TrustedAssemblyError(
+                "Template code_sortfix_v1 requires exactly the three fixed criteria in order"
+            )
+        if list(((task_payload.get("context") or {}).get("target_files") or [])) != [code_tpl["authorized_target"]]:
+            raise TrustedAssemblyError(
+                "Template code_sortfix_v1 requires exactly the single authorized target_files entry"
+            )
+        if "input_data" in meta:
+            raise TrustedAssemblyError(
+                "Template code_sortfix_v1 takes no input_data; the baseline binds to the sealed fixture"
+            )
+        return code_deferred_acceptance_evaluator()
     if exec_mode == "file_tools":
         if not allow_file_write_gate:
             raise TrustedAssemblyError(
@@ -222,7 +253,12 @@ def stamp_trusted_binding(task_payload: Dict[str, Any], *, test_fixture_mode: bo
     if not isinstance(meta, dict):
         raise TrustedAssemblyError("Task payload metadata must be an object for trusted binding")
     exec_mode = meta.get("execution_mode", "generate")
-    template_id = "file_write_v1" if exec_mode == "file_tools" else RECORDS_TRANSFORM_TEMPLATE_ID
+    if exec_mode == "file_tools":
+        template_id = "file_write_v1"
+    elif meta.get("fixture_id") == CODE_FIXTURE_ID:
+        template_id = CODE_TEMPLATE_ID
+    else:
+        template_id = RECORDS_TRANSFORM_TEMPLATE_ID
     meta[TRUSTED_STAMP_KEY] = {
         "source": "fixture" if test_fixture_mode else "production",
         "template_id": template_id,
@@ -382,8 +418,50 @@ def create_orchestrator(
 
 
 def _expected_template_id(task_payload: Dict[str, Any]) -> str:
-    exec_mode = (task_payload.get("metadata") or {}).get("execution_mode", "generate")
-    return "file_write_v1" if exec_mode == "file_tools" else RECORDS_TRANSFORM_TEMPLATE_ID
+    meta = task_payload.get("metadata") or {}
+    if meta.get("execution_mode", "generate") == "file_tools":
+        return "file_write_v1"
+    if meta.get("fixture_id") == CODE_FIXTURE_ID:
+        return CODE_TEMPLATE_ID
+    return RECORDS_TRANSFORM_TEMPLATE_ID
+
+
+def _delivery_state(task: Dict[str, Any]) -> Optional[str]:
+    delivery = (task.get("metadata") or {}).get("_delivery")
+    return delivery.get("state") if isinstance(delivery, dict) else None
+
+
+def _existing_task_for_control(args, trusted_ws: Path):
+    """Trusted-assembly prelude shared by the code-delivery commands.
+
+    Loads the persisted task, enforces the workspace boundary and the
+    fixture/production source binding, and collects the owner/uncertainty
+    gates. Returns (existing, evaluator, blockers). Existing resume/approve
+    paths keep their own inline prelude untouched.
+    """
+    ro = open_readonly_storage(args.db)
+    try:
+        existing = ro.get_task(args.task_id)
+    finally:
+        ro.close()
+    enforce_trusted_task_payload(
+        existing, trusted_workspace=trusted_ws, test_fixture_mode=args.test_fixture_mode
+    )
+    evaluator = resolve_trusted_evaluator(existing, allow_file_write_gate=False)
+    check_source_binding(
+        existing, test_fixture_mode=args.test_fixture_mode,
+        expected_template_id=_expected_template_id(existing),
+    )
+    ro2 = open_readonly_storage(args.db)
+    try:
+        blockers = resume_blockers(ro2, existing)
+        if not args.test_fixture_mode:
+            taint = _production_taint_blocker(ro2, args.task_id)
+            if taint:
+                blockers.append("tainted_production_history: " + taint)
+    finally:
+        ro2.close()
+    return existing, evaluator, blockers
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -428,6 +506,20 @@ def main(argv: Optional[List[str]] = None) -> int:
     sub_cancel.add_argument("--reason", default="Cancelled via CLI", help="Cancellation reason")
 
     subparsers.add_parser("recover", help="Reconcile interrupted tasks after restart without blind replay")
+
+    sub_prepare = subparsers.add_parser(
+        "prepare-code-delivery",
+        help="Prepare a reviewed code patch for host apply (no models, no file writes)",
+    )
+    sub_prepare.add_argument("task_id", help="Task ID")
+    sub_prepare.add_argument("artifact_version", type=int, help="Current artifact version to prepare")
+
+    sub_complete = subparsers.add_parser(
+        "complete-code-delivery",
+        help="Verify a host apply receipt and finalize the code delivery",
+    )
+    sub_complete.add_argument("task_id", help="Task ID")
+    sub_complete.add_argument("receipt_file", help="Path to apply receipt JSON assembled by the trusted host")
 
     args = parser.parse_args(argv)
     trusted_ws = Path(args.workspace).resolve()
@@ -489,7 +581,8 @@ def main(argv: Optional[List[str]] = None) -> int:
             out["read_only"] = False
             out["test_fixture_mode"] = bool(args.test_fixture_mode)
             print(json.dumps(out, ensure_ascii=False, indent=2))
-            return 0 if task["status"] in {"created", "succeeded", "awaiting_approval"} else 1
+            return 0 if (task["status"] in {"created", "succeeded", "awaiting_approval"}
+                             or _delivery_state(task) == "waiting_host") else 1
 
         if args.command == "resume":
             ro = open_readonly_storage(args.db)
@@ -549,7 +642,8 @@ def main(argv: Optional[List[str]] = None) -> int:
             out["read_only"] = False
             out["test_fixture_mode"] = bool(args.test_fixture_mode)
             print(json.dumps(out, ensure_ascii=False, indent=2))
-            return 0 if task["status"] in {"succeeded", "awaiting_approval"} else 1
+            return 0 if (task["status"] in {"succeeded", "awaiting_approval"}
+                             or _delivery_state(task) == "waiting_host") else 1
 
         if args.command == "approve":
             ro = open_readonly_storage(args.db)
@@ -572,7 +666,60 @@ def main(argv: Optional[List[str]] = None) -> int:
             out = build_task_summary(orch.storage, args.task_id)
             out["read_only"] = False
             print(json.dumps(out, ensure_ascii=False, indent=2))
-            return 0 if task["status"] in {"succeeded", "awaiting_approval"} else 1
+            return 0 if (task["status"] in {"succeeded", "awaiting_approval"}
+                             or _delivery_state(task) == "waiting_host") else 1
+
+        if args.command == "prepare-code-delivery":
+            _, evaluator, blockers = _existing_task_for_control(args, trusted_ws)
+            if blockers:
+                print(json.dumps({
+                    "command_ok": False,
+                    "error": "prepare blocked: " + ", ".join(blockers),
+                    "blockers": blockers,
+                }, ensure_ascii=False, indent=2))
+                return 1
+            orch = create_orchestrator(
+                args.db,
+                workspace_root=trusted_ws,
+                acceptance_evaluator=evaluator,
+                test_fixture_mode=args.test_fixture_mode,
+            )
+            task = orch.prepare_code_delivery(args.task_id, args.artifact_version)
+            out = build_task_summary(orch.storage, args.task_id)
+            out["read_only"] = False
+            out["test_fixture_mode"] = bool(args.test_fixture_mode)
+            print(json.dumps(out, ensure_ascii=False, indent=2))
+            return 0 if _delivery_state(task) == "waiting_host" else 1
+
+        if args.command == "complete-code-delivery":
+            try:
+                receipt = json.loads(Path(args.receipt_file).read_text(encoding="utf-8"))
+            except (OSError, ValueError) as exc:
+                print(json.dumps({
+                    "command_ok": False,
+                    "error": f"Cannot read receipt file: {exc}",
+                }, ensure_ascii=False, indent=2))
+                return 1
+            _, evaluator, blockers = _existing_task_for_control(args, trusted_ws)
+            if blockers:
+                print(json.dumps({
+                    "command_ok": False,
+                    "error": "complete blocked: " + ", ".join(blockers),
+                    "blockers": blockers,
+                }, ensure_ascii=False, indent=2))
+                return 1
+            orch = create_orchestrator(
+                args.db,
+                workspace_root=trusted_ws,
+                acceptance_evaluator=evaluator,
+                test_fixture_mode=args.test_fixture_mode,
+            )
+            task = orch.complete_code_delivery(args.task_id, receipt)
+            out = build_task_summary(orch.storage, args.task_id)
+            out["read_only"] = False
+            out["test_fixture_mode"] = bool(args.test_fixture_mode)
+            print(json.dumps(out, ensure_ascii=False, indent=2))
+            return 0 if task["status"] == "succeeded" else 1
 
         if args.command == "cancel":
             storage = TaskStorage(args.db, read_only=False)
@@ -603,6 +750,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         AdapterError,
         SchemaValidationError,
         InvalidStateTransitionError,
+        CodeDeliveryRefused,
         FileNotFoundError,
         KeyError,
     ) as exc:

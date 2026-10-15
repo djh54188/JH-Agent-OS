@@ -1,6 +1,6 @@
 ---
 name: jh-task
-description: Run a JH-Agent OS records-transform task end to end. Use when the user wants to submit, check, resume, or collect results for a JH task through the project's structured CLI.
+description: Run a JH-Agent OS task end to end. Use when the user wants to submit, check, resume, collect results, or run offline code-delivery prepare/complete for a JH task through the project's structured CLI.
 ---
 
 # JH Task Entry (Codex-hosted)
@@ -40,6 +40,8 @@ All commands print JSON.
   `artifact <task_id>` (never create state, never call models)
 - Continue: `resume <task_id>` (only for non-terminal, unblocked tasks)
 - Stop: `cancel <task_id> --reason <text>`
+- Code delivery (JH-006 offline batch only): `prepare-code-delivery <task_id> <artifact_version>`
+  and `complete-code-delivery <task_id> <receipt.json>` (never call models, never write target files)
 
 ## Output shapes
 
@@ -62,6 +64,22 @@ in this order:
 
 The CLI computes the expected sorted output itself; do not invent
 `expected_output` or `sort_by`. Anything else is refused before models run.
+
+## Code delivery (JH-006 offline batch)
+
+Only the fixed `code_sortfix_v1` template (`metadata.fixture_id`
+`n2-code-sortfix/v1`): exactly the three fixture criteria in order, exactly
+`target_files: ["target/widget.py"]`, no `input_data`, no model tools. The
+baseline binds to the sealed fixture; the model emits only an Artifact v1
+`patch_text` envelope for the single authorized target.
+
+Read `delivery_scope` in `status`/`summary`: `generated_artifact` (patch
+produced), `delivery_state` (`waiting_host` parked in `reviewing`, never
+succeeded — vs `applied` verified), and `target_applied` (true only after a
+verified complete). `resume` on a waiting task returns the parked state and
+must not add model calls. Synthetic applies/receipts must be marked
+`fixture-offline-host/v1` and run in isolated workspaces; production host
+assembly is out of scope until the offline review passes.
 
 ## Rules
 

@@ -935,7 +935,27 @@ class TaskStorage:
         return self.get_task(task_id)
 
     # ------------------------------------------------------------------
-    # Memory records (Phase 3 minimal logging per memory_record.v1.json)
+    @atomic
+    def save_code_delivery(self, task_id: str, delivery: Dict[str, Any]) -> Dict[str, Any]:
+        """Persist the control-owned code delivery record (waiting/applied state).
+
+        Stored under task metadata `_delivery`, written only by the control
+        layer (prepare/complete). Never merged from payloads or model output.
+        """
+        task = self.get_task(task_id)
+        task_dict = {k: v for k, v in task.items() if k != "_runtime"}
+        meta = dict(task_dict.get("metadata") or {})
+        meta["_delivery"] = delivery
+        task_dict["metadata"] = meta
+        task_dict["updated_at"] = _utc_now_iso()
+        self.validate_task_dict(task_dict)
+        self._conn.execute(
+            "UPDATE tasks SET task_json = ?, updated_at = ? WHERE task_id = ?",
+            (json.dumps(task_dict, ensure_ascii=False), task_dict["updated_at"], task_id),
+        )
+        return self.get_task(task_id)
+
+# Memory records (Phase 3 minimal logging per memory_record.v1.json)
     # ------------------------------------------------------------------
 
     @atomic
@@ -1006,6 +1026,22 @@ class TaskStorage:
         for row in rows:
             task_id = row["task_id"]
             status = row["status"]
+            try:
+                waiting = (json.loads(row["task_json"]).get("metadata") or {}).get("_delivery", {})
+                waiting = isinstance(waiting, dict) and waiting.get("state") == "waiting_host"
+            except ValueError:
+                waiting = False
+            if waiting:
+                # A task waiting on host delivery rests here deliberately: leave
+                # owner and state untouched (no preemption, no auto-replay).
+                recovery_summary.append({
+                    "task_id": task_id,
+                    "previous_state": status,
+                    "recovered_state": status,
+                    "auto_replay_allowed": False,
+                    "reason": "skipped_waiting_host",
+                })
+                continue
             held = self._conn.execute("SELECT owner_id FROM task_control WHERE task_id = ?", (task_id,)).fetchone()
             if held and held["owner_id"]:
                 # An owner-held task may be live in another process. Recover must

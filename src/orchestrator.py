@@ -18,7 +18,21 @@ from src.adapters import (
     ModelAdapter,
     SchemaValidationError,
 )
-from src.artifacts import ArtifactStore, is_mem_artifact_path, mem_artifact_path
+from src.artifacts import ArtifactStore, content_sha256, is_mem_artifact_path, mem_artifact_path
+from src.code_delivery import (
+    CodeDeliveryRefused,
+    delivery_state,
+    is_code_delivery_task,
+    materialized_post_apply_command,
+    parse_fixture_patch,
+    resolve_target_path,
+    sealed_fixture_bytes,
+    template_for_task,
+    validate_apply_receipt,
+    verify_production_history_clean,
+    is_clean_pass_review,
+    sha256_hex,
+)
 from src.codex_managed import ManagedCodexAdapter, ManagedCodexConfig
 from src.file_tools import FileToolExecutor, PathBoundaryError
 from src.memory import record_task_outcome_memory
@@ -232,6 +246,272 @@ class Orchestrator:
         record_task_outcome_memory(self.storage, task)
         return task
 
+    # ------------------------------------------------------------------
+    # JH-006 two-step code delivery (fixed fixture template only)
+    # ------------------------------------------------------------------
+
+    def prepare_code_delivery(self, task_id: str, artifact_version: int) -> Dict[str, Any]:
+        """Validate the current reviewed patch and mark the task waiting-host.
+
+        Never transitions to succeeded. Refusals raise CodeDeliveryRefused with
+        no state change. Idempotent for the same artifact version.
+        """
+        task = self.storage.get_task(task_id)
+        if task["status"] != "reviewing":
+            raise CodeDeliveryRefused(f"prepare requires a reviewing task, got '{task['status']}'")
+        tpl = template_for_task(task)
+        stamped = (task.get("metadata") or {}).get("_trusted") or {}
+        if stamped.get("template_id") != tpl["template_id"]:
+            raise CodeDeliveryRefused("task lacks a matching trusted template stamp")
+        if stamped.get("source") == "production":
+            taint = verify_production_history_clean(self.storage, task_id)
+            if taint is not None:
+                raise CodeDeliveryRefused(f"tainted production history: {taint}")
+        elif stamped.get("source") != "fixture":
+            raise CodeDeliveryRefused(f"unknown task source {stamped.get('source')!r}")
+        if list(task.get("acceptance_criteria") or []) != list(tpl["criteria"]):
+            raise CodeDeliveryRefused("task acceptance criteria do not match the fixed code template")
+        if list(((task.get("context") or {}).get("target_files") or [])) != [tpl["authorized_target"]]:
+            raise CodeDeliveryRefused("task target_files do not match the single authorized code target")
+        if isinstance(artifact_version, bool) or not isinstance(artifact_version, int):
+            raise CodeDeliveryRefused(f"artifact version must be an integer, got {artifact_version!r}")
+        existing = (task.get("metadata") or {}).get("_delivery")
+        if isinstance(existing, dict) and existing.get("state") == "waiting_host":
+            if existing.get("artifact_version") == artifact_version:
+                return task
+            raise CodeDeliveryRefused("a delivery is already waiting; complete or cancel it first")
+        latest = self.artifact_store.get_latest(task_id)
+        if latest is None or latest["version"] != artifact_version:
+            raise CodeDeliveryRefused(f"artifact version {artifact_version} is not current")
+        attempts = [a for a in self.storage.list_model_attempts(task_id)
+                    if a.get("actor_role") == "reviewer" and a.get("status") == "completed"]
+        if not attempts:
+            raise CodeDeliveryRefused("no completed review attempt to prepare from")
+        review_attempt = attempts[-1]
+        review = review_attempt.get("response") or {}
+        if not is_clean_pass_review(review):
+            raise CodeDeliveryRefused("no passing review without blocking issues for the current artifact")
+        context = review_attempt.get("context")
+        hashes = context.get("artifact_hashes") if isinstance(context, dict) else None
+        if not isinstance(hashes, dict) or latest["sha256"] not in hashes.values():
+            raise CodeDeliveryRefused("review did not cover the current artifact bytes")
+        if self.storage.get_control(task_id).get("active_attempt_id") != review_attempt["attempt_id"]:
+            raise CodeDeliveryRefused("review attempt is no longer the active attempt")
+        if latest.get("artifact_type") != "patch_text":
+            raise CodeDeliveryRefused(
+                f"artifact type {latest.get('artifact_type')!r} is not patch_text")
+        parsed = parse_fixture_patch(latest["content"], tpl["authorized_target"])
+        ws = (task.get("context") or {}).get("workspace_root") or self.workspace_root
+        target_abs = resolve_target_path(ws, parsed["path"])
+        try:
+            before_bytes = Path(target_abs).read_bytes()
+        except OSError as exc:
+            raise CodeDeliveryRefused(f"cannot read target baseline bytes: {exc}") from None
+        before_sha = sha256_hex(before_bytes)
+        reference_bytes = sealed_fixture_bytes(tpl, "reference_rel")
+        if parsed["content_bytes"] != reference_bytes:
+            raise CodeDeliveryRefused("patch result differs from the sealed reference bytes")
+        sealed_before = sealed_fixture_bytes(tpl, "baseline_rel")
+        if before_bytes != sealed_before:
+            raise CodeDeliveryRefused("workspace target does not match the sealed baseline")
+        expected_after = sha256_hex(parsed["content_bytes"])
+        delivery = {
+            "delivery_id": f"dlv_{task_id}_v{latest['version']}",
+            "state": "waiting_host",
+            "artifact": {"version": latest["version"], "artifact_id": latest["artifact_id"],
+                         "sha256": latest["sha256"]},
+            "generation_attempt_id": latest.get("generation_attempt_id"),
+            "review_attempt_id": review_attempt["attempt_id"],
+            "review_id": review.get("review_id"),
+            "review_sha256": content_sha256(json.dumps(review, sort_keys=True)),
+            "baseline": {"path": parsed["path"], "sha256_before": before_sha},
+            "expected_after": {"path": parsed["path"], "sha256": expected_after},
+            "authorized_files": [tpl["authorized_target"]],
+            "apply_receipt": None,
+            "created_at": _utc_now_iso(),
+            "completed_at": None,
+        }
+        self.storage.save_code_delivery(task_id, delivery)
+        self.storage.record_event(task_id=task_id, event_type="code_delivery_prepared",
+                                  from_state="reviewing", to_state="reviewing",
+                                  actor_role="orchestrator",
+                                  details={"delivery_id": delivery["delivery_id"],
+                                           "artifact_version": latest["version"],
+                                           "expected_after": expected_after})
+        return self.storage.get_task(task_id)
+
+    def _prepare_code_delivery(self, task_id: str) -> Dict[str, Any]:
+        """Auto-prepare the latest reviewed artifact after a pass verdict (code tasks only)."""
+        latest = self.artifact_store.get_latest(task_id)
+        if latest is None:
+            raise CodeDeliveryRefused("no artifact version to prepare")
+        return self.prepare_code_delivery(task_id, latest["version"])
+
+    def complete_code_delivery(self, task_id: str, receipt: Dict[str, Any]) -> Dict[str, Any]:
+        """Verify a host apply receipt and finalize the code delivery.
+
+        Returns the task in all non-crash paths except refusals: succeeded on
+        full verification, failed on exhausted budget, needs_attention when the
+        outcome cannot be established. Raises CodeDeliveryRefused (no state
+        change) on validation failures.
+        """
+        task = self.storage.get_task(task_id)
+        if is_terminal_state(task["status"]):
+            raise CodeDeliveryRefused(f"task is terminal ({task['status']}); nothing to complete")
+        delivery = (task.get("metadata") or {}).get("_delivery")
+        if not isinstance(delivery, dict) or delivery.get("state") != "waiting_host":
+            raise CodeDeliveryRefused("no waiting_host delivery to complete")
+        shape_ok = (
+            isinstance(delivery.get("artifact"), dict)
+            and isinstance(delivery.get("baseline"), dict)
+            and isinstance(delivery.get("expected_after"), dict)
+            and isinstance(delivery.get("review_attempt_id"), str)
+            and isinstance(delivery.get("review_id"), str)
+            and isinstance(delivery.get("review_sha256"), str)
+            and isinstance(delivery.get("delivery_id"), str)
+        )
+        if not shape_ok:
+            raise CodeDeliveryRefused("waiting delivery record is malformed")
+        tpl = template_for_task(task)
+        stamped = (task.get("metadata") or {}).get("_trusted") or {}
+        if stamped.get("template_id") != tpl["template_id"]:
+            raise CodeDeliveryRefused("task lacks a matching trusted template stamp")
+        if stamped.get("source") == "production":
+            raise CodeDeliveryRefused(
+                "production host assembly is out of scope for the JH-006 offline batch; "
+                "only fixture tasks with fixture-assembled receipts can complete")
+        elif stamped.get("source") != "fixture":
+            raise CodeDeliveryRefused(f"unknown task source {stamped.get('source')!r}")
+        owner_id = uuid.uuid4().hex
+        if not self.storage.claim_task(task_id, owner_id):
+            raise CodeDeliveryRefused("task owner is held by another execution")
+        try:
+            return self._complete_code_delivery_locked(task_id, receipt, tpl, delivery)
+        finally:
+            self.storage.release_task(task_id, owner_id)
+
+    def _complete_code_delivery_locked(self, task_id, receipt, tpl, delivery):
+        budget_failed = self._check_budget_or_fail(task_id)
+        if budget_failed is not None:
+            return budget_failed
+        task = self.storage.get_task(task_id)
+        runtime = task.get("_runtime") or {}
+        if (self.storage.get_control(task_id) or {}).get("pending_json"):
+            raise CodeDeliveryRefused("task has a pending approval; resolve it first")
+        if any(a.get("status") == "in_flight" for a in self.storage.list_model_attempts(task_id)):
+            raise CodeDeliveryRefused("unconfirmed model attempts outstanding")
+        if any(t.get("status") == "in_flight" for t in self.storage.list_tool_executions(task_id)):
+            raise CodeDeliveryRefused("unconfirmed tool executions outstanding")
+        if runtime.get("has_unconfirmed_side_effect"):
+            raise CodeDeliveryRefused("unconfirmed side effect outstanding")
+        if runtime.get("tokens_unknown_count", 0) > 0:
+            raise CodeDeliveryRefused("unknown token usage outstanding")
+        ws = (task.get("context") or {}).get("workspace_root") or self.workspace_root
+        expected_command = materialized_post_apply_command(tpl, ws)
+        norm = validate_apply_receipt(
+            receipt, task_id=task_id, delivery_id=delivery["delivery_id"],
+            authorized_target=tpl["authorized_target"], expected_command=expected_command)
+        latest = self.artifact_store.get_latest(task_id)
+        pinned_art = delivery.get("artifact") or {}
+        if (latest is None or latest["version"] != pinned_art.get("version")
+                or latest["artifact_id"] != pinned_art.get("artifact_id")
+                or latest["sha256"] != pinned_art.get("sha256")):
+            raise CodeDeliveryRefused("current artifact differs from the prepared version")
+        attempts = [a for a in self.storage.list_model_attempts(task_id)
+                    if a.get("actor_role") == "reviewer" and a.get("status") == "completed"]
+        if not attempts or attempts[-1]["attempt_id"] != delivery.get("review_attempt_id"):
+            raise CodeDeliveryRefused("pinned review attempt is no longer the latest completed review")
+        review = attempts[-1].get("response") or {}
+        if review.get("review_id") != delivery.get("review_id"):
+            raise CodeDeliveryRefused("review identity drifted since prepare")
+        if not is_clean_pass_review(review):
+            raise CodeDeliveryRefused("pinned review is not a clean pass")
+        if content_sha256(json.dumps(review, sort_keys=True)) != delivery.get("review_sha256"):
+            raise CodeDeliveryRefused("pinned review content changed since prepare")
+        if self.storage.get_control(task_id).get("active_attempt_id") != delivery.get("review_attempt_id"):
+            raise CodeDeliveryRefused("review attempt is no longer active")
+        target_abs = resolve_target_path(ws, tpl["authorized_target"])
+        try:
+            actual_bytes = Path(target_abs).read_bytes()
+        except OSError:
+            return self._complete_uncertain(task_id, delivery, "authorized target unreadable at complete time")
+        actual_sha = sha256_hex(actual_bytes)
+        if norm["baseline_seen"] != delivery["baseline"]["sha256_before"]:
+            if actual_sha == delivery["baseline"]["sha256_before"]:
+                raise CodeDeliveryRefused(
+                    "target version changed before apply; restore the baseline and retry, or cancel and re-submit")
+            return self._complete_uncertain(
+                task_id, delivery, "baseline changed and applied bytes differ from the recorded baseline")
+        if actual_sha != delivery["expected_after"]["sha256"]:
+            raise CodeDeliveryRefused(
+                f"applied bytes {actual_sha[:12]}... do not match expected_after "
+                f"{delivery['expected_after']['sha256'][:12]}...")
+        if norm["target"]["sha256"] != actual_sha:
+            return self._complete_uncertain(
+                task_id, delivery, "receipt target hash differs from freshly read bytes")
+        tests = norm["tests"]
+        if tests["target_sha256"] != actual_sha:
+            return self._complete_uncertain(
+                task_id, delivery, "receipt test target hash differs from freshly read bytes")
+        sealed_check = sealed_fixture_bytes(tpl, "check_rel")
+        if sha256_hex(sealed_check) != tests["check_script_sha256"]:
+            return self._complete_uncertain(
+                task_id, delivery, "receipt check script differs from the sealed check")
+        if tests["exit_code"] != 0:
+            return self._complete_uncertain(
+                task_id, delivery, f"post-apply checks exited {tests['exit_code']}")
+        if norm["uncertain"] is True:
+            return self._complete_uncertain(task_id, delivery, "host receipt declares uncertainty")
+        criteria = task["acceptance_criteria"]
+        acceptance = [
+            {"criterion": criteria[0], "passed": True,
+             "evidence": [f"review:{delivery['review_id']}:pass"]},
+            {"criterion": criteria[1], "passed": True,
+             "evidence": [f"delivery:{delivery['delivery_id']}:post-apply-checks:exit0"]},
+            {"criterion": criteria[2], "passed": True,
+             "evidence": [f"delivery:{delivery['delivery_id']}:scope-ok"]},
+        ]
+        snapshots = self._snapshot_artifacts(task.get("artifact_refs", []))
+        try:
+            with self.storage.transaction():
+                evidence_refs = list(task.get("tool_execution_evidence") or []) + [
+                    f"review:{delivery['review_id']}:pass",
+                    f"delivery:{delivery['delivery_id']}:post-apply-checks:exit0",
+                    f"delivery:{delivery['delivery_id']}:scope-ok",
+                ]
+                task = self.storage.attach_evidence(task_id, evidence_refs)
+                self.storage.bind_review(review, delivery["review_attempt_id"], snapshots, acceptance)
+                validate_acceptance(task, acceptance, task["tool_execution_evidence"])
+                done = dict(delivery)
+                done["state"] = "applied"
+                done["apply_receipt"] = norm
+                done["completed_at"] = _utc_now_iso()
+                self.storage.save_code_delivery(task_id, done)
+                result = self.storage.transition_task_state(
+                    task_id, "succeeded", actor_role="orchestrator",
+                    reason="code_delivery_verified_complete", review_verdict="pass",
+                    details={"delivery_id": delivery["delivery_id"]})
+        except (StaleAttemptError, SchemaValidationError, InvalidStateTransitionError, ValueError) as exc:
+            return self._complete_uncertain(
+                task_id, delivery, f"finalize failed safely: {type(exc).__name__}: {exc}")
+        record_task_outcome_memory(self.storage, result)
+        return result
+
+    def _complete_uncertain(self, task_id, delivery, reason):
+        try:
+            task = self.storage.transition_task_state(
+                task_id, "needs_attention", actor_role="orchestrator",
+                reason="code_delivery_uncertain", error_info=reason,
+                details={"delivery_id": (delivery or {}).get("delivery_id")})
+        except InvalidStateTransitionError:
+            task = self.storage.get_task(task_id)
+        self.storage.record_event(task_id=task_id, event_type="code_delivery_uncertain",
+                                  from_state=task["status"], to_state=task["status"],
+                                  actor_role="orchestrator",
+                                  details={"delivery_id": (delivery or {}).get("delivery_id"),
+                                           "reason": reason})
+        return task
+
     def recover_interrupted_tasks(self) -> List[Dict[str, Any]]:
         """Recover tasks from SQLite after restart without blindly replaying unconfirmed side effects."""
         return self.storage.recover_interrupted_tasks()
@@ -307,6 +587,8 @@ class Orchestrator:
     # ------------------------------------------------------------------
 
     def run_task(self, task_id: str) -> Dict[str, Any]:
+        if delivery_state(self.storage.get_task(task_id)) == "waiting_host":
+            return self.storage.get_task(task_id)
         owner_id = uuid.uuid4().hex
         if not self.storage.claim_task(task_id, owner_id):
             return self.storage.get_task(task_id)
@@ -1053,7 +1335,7 @@ class Orchestrator:
                     "schema_version": "1.0.0",
                     "review_id": f"rev_{uuid.uuid4().hex[:12]}",
                     "task_id": task_id,
-                    "target_artifact_type": "code",
+                    "target_artifact_type": "patch" if is_code_delivery_task(task) else "code",
                     "target_artifact_path": target_artifact,
                     "reviewer_role": getattr(reviewer, "model_id", "reviewer"),
                     "created_at": _utc_now_iso(),
@@ -1098,6 +1380,17 @@ class Orchestrator:
                 if budget_failed is not None:
                     return budget_failed
                 acceptance = []
+                if review_json["verdict"] == "pass" and is_code_delivery_task(task):
+                    # Code tasks never judge post-apply criteria pre-apply: prepare
+                    # the delivery (pin baseline + expected bytes, mark waiting)
+                    # instead of running acceptance/apply/success here.
+                    try:
+                        return self._prepare_code_delivery(task_id)
+                    except CodeDeliveryRefused as exc:
+                        return self.storage.transition_task_state(
+                            task_id, "needs_attention", actor_role="orchestrator",
+                            reason="code_delivery_prepare_refused",
+                            error_info=str(exc))
                 if review_json["verdict"] == "pass":
                     if self.acceptance_evaluator is not None:
                         refs = task.get("artifact_refs", [])
