@@ -33,7 +33,14 @@ from src.code_delivery import (
     is_clean_pass_review,
     sha256_hex,
     fixture_host_evidence_matches,
+
     workspace_hashes,
+)
+from src.host_records import (
+    sealed_check_expectation,
+
+    transcript_command_markers_ok,
+    validate_host_record,
 )
 from src.codex_managed import ManagedCodexAdapter, ManagedCodexConfig
 from src.file_tools import FileToolExecutor, PathBoundaryError
@@ -409,9 +416,199 @@ class Orchestrator:
             raise CodeDeliveryRefused("task owner is held by another execution")
         try:
             with self.storage.transaction():
+                _route_task = self.storage.get_task(task_id)
+                if ((_route_task.get("metadata") or {}).get("_trusted") or {}).get("source") == "production":
+                    return self._complete_production_host_record(task_id, receipt)
                 return self._check_and_complete_code_delivery(task_id, receipt)
         finally:
             self.storage.release_task(task_id, owner_id)
+
+    def _complete_production_host_record(self, task_id: str, receipt: Dict[str, Any]) -> Dict[str, Any]:
+        """Verify a native-host transcript record and finalize the delivery.
+
+        Production counterpart of the fixture path: the host presents the
+        actual transcript item (command line, raw output, exit code, thread
+        and attempt ids) and the control layer re-verifies every mechanical
+        binding. Returns succeeded only on full verification, failed on
+        exhausted budget, needs_attention when the outcome cannot be
+        established. Raises CodeDeliveryRefused (no state change) on
+        malformed or mismatched records.
+        """
+        task = self.storage.get_task(task_id)
+        if task["status"] != "reviewing":
+            raise CodeDeliveryRefused(f"complete requires reviewing, got {task['status']}")
+        delivery = (task.get("metadata") or {}).get("_delivery")
+        if not isinstance(delivery, dict) or delivery.get("state") != "waiting_host":
+            raise CodeDeliveryRefused("no waiting_host delivery to complete")
+        shape_ok = (
+            isinstance(delivery.get("artifact"), dict)
+            and isinstance(delivery.get("baseline"), dict)
+            and isinstance(delivery.get("expected_after"), dict)
+            and isinstance(delivery.get("review_attempt_id"), str)
+            and isinstance(delivery.get("review_id"), str)
+            and isinstance(delivery.get("review_sha256"), str)
+            and isinstance(delivery.get("delivery_id"), str)
+        )
+        if not shape_ok:
+            raise CodeDeliveryRefused("waiting delivery record is malformed")
+        tpl = template_for_task(task)
+        stamped = (task.get("metadata") or {}).get("_trusted") or {}
+        if stamped.get("template_id") != tpl["template_id"]:
+            raise CodeDeliveryRefused("task lacks a matching trusted template stamp")
+        taint = verify_production_history_clean(self.storage, task_id)
+        if taint is not None:
+            raise CodeDeliveryRefused(f"tainted production history: {taint}")
+        budget_failed = self._check_budget_or_fail(task_id, before_call=False)
+        if budget_failed is not None:
+            return budget_failed
+        task = self.storage.get_task(task_id)
+        self._reject_delivery_blockers(task_id)
+        ws = (task.get("context") or {}).get("workspace_root") or self.workspace_root
+        check_script_rel = f"{tpl['fixture_dir']}/{tpl['check_rel']}"
+        norm = validate_host_record(
+            receipt, task_id=task_id, delivery_id=delivery["delivery_id"],
+            authorized_target=tpl["authorized_target"], workdir=ws,
+            pinned_artifact=delivery.get("artifact") or {},
+            pinned_review_id=delivery.get("review_id"),
+            check_script_rel=check_script_rel)
+        latest = self.artifact_store.get_latest(task_id)
+        pinned_art = delivery.get("artifact") or {}
+        if (latest is None or latest["version"] != pinned_art.get("version")
+                or latest["artifact_id"] != pinned_art.get("artifact_id")
+                or latest["sha256"] != pinned_art.get("sha256")
+                or latest.get("generation_attempt_id") != delivery.get("generation_attempt_id")):
+            raise CodeDeliveryRefused("current artifact differs from the prepared version")
+        attempts = [a for a in self.storage.list_model_attempts(task_id)
+                    if a.get("actor_role") == "reviewer" and a.get("status") == "completed"]
+        if not attempts or attempts[-1]["attempt_id"] != delivery.get("review_attempt_id"):
+            raise CodeDeliveryRefused("pinned review attempt is no longer the latest completed review")
+        review = attempts[-1].get("response") or {}
+        if review.get("review_id") != delivery.get("review_id"):
+            raise CodeDeliveryRefused("review identity drifted since prepare")
+        if not is_clean_pass_review(review):
+            raise CodeDeliveryRefused("pinned review is not a clean pass")
+        if content_sha256(json.dumps(review, sort_keys=True)) != delivery.get("review_sha256"):
+            raise CodeDeliveryRefused("pinned review content changed since prepare")
+        if self.storage.get_control(task_id).get("active_attempt_id") != delivery.get("review_attempt_id"):
+            raise CodeDeliveryRefused("review attempt is no longer active")
+        host_ids = (f"thread {norm['thread_id']} call {norm['host_call_id']} "
+                    f"attempt {norm['apply_attempt_id']}")
+        tests = norm["tests"]
+        expectation = sealed_check_expectation(tpl)
+        if tests["exit_code"] != expectation["expect_exit"]:
+            return self._complete_uncertain(
+                task_id, delivery,
+                f"host exit {tests['exit_code']} differs from sealed expectation ({host_ids})")
+        if not transcript_command_markers_ok(
+                tests["command"], check_script_rel=check_script_rel,
+                authorized_target=tpl["authorized_target"]):
+            return self._complete_uncertain(
+                task_id, delivery,
+                f"host command does not embed the fixed check markers ({host_ids})")
+        marker = expectation["expect_stdout_contains"]
+        if marker and marker not in norm["output"]:
+            return self._complete_uncertain(
+                task_id, delivery,
+                f"host output lacks the sealed marker {marker!r} ({host_ids})")
+        target_abs = resolve_target_path(ws, tpl["authorized_target"])
+        try:
+            actual_bytes = Path(target_abs).read_bytes()
+        except OSError:
+            return self._complete_uncertain(
+                task_id, delivery, f"authorized target unreadable at complete time ({host_ids})")
+        actual_sha = sha256_hex(actual_bytes)
+        if norm["baseline_seen"] != delivery["baseline"]["sha256_before"]:
+            if actual_sha == delivery["baseline"]["sha256_before"]:
+                raise CodeDeliveryRefused(
+                    "target version changed before apply; restore the baseline and retry, or cancel and re-submit")
+            return self._complete_uncertain(
+                task_id, delivery,
+                f"baseline changed and applied bytes differ from the recorded baseline ({host_ids})")
+        if actual_sha != delivery["expected_after"]["sha256"]:
+            if actual_sha == delivery["baseline"]["sha256_before"]:
+                raise CodeDeliveryRefused("target is still the baseline; no verified apply")
+            return self._complete_uncertain(
+                task_id, delivery, f"applied bytes differ from the reviewed expected_after ({host_ids})")
+        try:
+            scope_after = workspace_hashes(ws)
+        except CodeDeliveryRefused as exc:
+            return self._complete_uncertain(task_id, delivery, f"{exc} ({host_ids})")
+        scope_before = delivery.get("scope_before")
+        if not isinstance(scope_before, dict):
+            return self._complete_uncertain(task_id, delivery, f"baseline scope evidence missing ({host_ids})")
+        unauthorized = [p for p in set(scope_before) | set(scope_after)
+                        if p != tpl["authorized_target"] and scope_before.get(p) != scope_after.get(p)]
+        if unauthorized or scope_after.get(tpl["authorized_target"]) != actual_sha:
+            return self._complete_uncertain(
+                task_id, delivery,
+                f"unauthorized workspace changes or target drift during verification ({host_ids})")
+        if norm["target"]["sha256"] != actual_sha:
+            return self._complete_uncertain(
+                task_id, delivery,
+                f"host record target hash differs from freshly read bytes ({host_ids})")
+        if tests["target_sha256"] != actual_sha:
+            return self._complete_uncertain(
+                task_id, delivery,
+                f"host record test target hash differs from freshly read bytes ({host_ids})")
+        sealed_check = sealed_fixture_bytes(tpl, "check_rel")
+        if sha256_hex(sealed_check) != tests["check_script_sha256"]:
+            return self._complete_uncertain(
+                task_id, delivery,
+                f"host record check script differs from the sealed check ({host_ids})")
+        if norm["uncertain"] is True:
+            return self._complete_uncertain(
+                task_id, delivery, f"host record declares uncertainty ({host_ids})")
+        stopped = self._check_budget_or_fail(task_id, before_call=False)
+        if stopped is not None:
+            return stopped
+        checks_ref = f"delivery:{delivery['delivery_id']}:host-transcript-checks:exit{tests['exit_code']}"
+        criteria = task["acceptance_criteria"]
+        acceptance = [
+            {"criterion": criteria[0], "passed": True,
+             "evidence": [f"review:{delivery['review_id']}:pass"]},
+            {"criterion": criteria[1], "passed": True, "evidence": [checks_ref]},
+            {"criterion": criteria[2], "passed": True,
+             "evidence": [f"delivery:{delivery['delivery_id']}:scope-ok"]},
+        ]
+        snapshots = self._snapshot_artifacts(task.get("artifact_refs", []))
+        try:
+            with self.storage.transaction():
+                evidence_refs = list(task.get("tool_execution_evidence") or []) + [
+                    f"review:{delivery['review_id']}:pass",
+                    checks_ref,
+                    f"delivery:{delivery['delivery_id']}:scope-ok",
+                ]
+                task = self.storage.attach_evidence(task_id, evidence_refs)
+                self.storage.bind_review(review, delivery["review_attempt_id"], snapshots, acceptance)
+                validate_acceptance(task, acceptance, task["tool_execution_evidence"])
+                done = dict(delivery)
+                done["state"] = "applied"
+                done["apply_receipt"] = norm
+                done["completed_at"] = _utc_now_iso()
+                self.storage.save_code_delivery(task_id, done)
+                self.storage.record_event(
+                    task_id=task_id, event_type="host_record_accepted",
+                    from_state="reviewing", to_state="reviewing",
+                    actor_role="orchestrator",
+                    details={"delivery_id": delivery["delivery_id"],
+                             "thread_id": norm["thread_id"],
+                             "host_call_id": norm["host_call_id"],
+                             "apply_attempt_id": norm["apply_attempt_id"],
+                             "command_sha256": sha256_hex(tests["command"].encode("utf-8")),
+                             "output_digest": tests["output_digest"],
+                             "record": norm})
+                result = self.storage.transition_task_state(
+                    task_id, "succeeded", actor_role="orchestrator",
+                    reason="code_delivery_verified_complete", review_verdict="pass",
+                    details={"delivery_id": delivery["delivery_id"],
+                             "thread_id": norm["thread_id"],
+                             "host_call_id": norm["host_call_id"],
+                             "apply_attempt_id": norm["apply_attempt_id"]})
+        except (StaleAttemptError, SchemaValidationError, InvalidStateTransitionError, ValueError) as exc:
+            return self._complete_uncertain(
+                task_id, delivery, f"finalize failed safely: {type(exc).__name__}: {exc} ({host_ids})")
+        record_task_outcome_memory(self.storage, result)
+        return result
 
     def _check_and_complete_code_delivery(self, task_id: str, receipt: Dict[str, Any]) -> Dict[str, Any]:
         """Verify a host apply receipt and finalize the code delivery.
@@ -445,7 +642,7 @@ class Orchestrator:
         if stamped.get("source") == "production":
             raise CodeDeliveryRefused(
                 "production host assembly is out of scope for the JH-006 offline batch; "
-                "only fixture tasks with fixture-assembled receipts can complete")
+                "only fixture tasks with fixture-assembled receipts can complete")  # unreachable: production routes earlier
         elif stamped.get("source") != "fixture":
             raise CodeDeliveryRefused(f"unknown task source {stamped.get('source')!r}")
         return self._complete_code_delivery_locked(task_id, receipt, tpl, delivery)

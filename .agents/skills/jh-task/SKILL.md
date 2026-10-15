@@ -79,7 +79,7 @@ succeeded — vs `applied` verified), and `target_applied` (true only after a
 verified complete). `resume` on a waiting task returns the parked state and
 must not add model calls. Synthetic applies/receipts must be marked
 `fixture-offline-host/v1` and run in isolated workspaces; production host
-assembly remains unimplemented and production complete still refuses.
+assembly follows the production section below; fixture evidence never validates production.
 A recorder string alone is never proof: offline complete requires an existing
 fixture host record with host_call_id/apply_attempt_id and matching raw-output
 digest. Only the explicit test harness can register synthetic fixture evidence;
@@ -88,15 +88,44 @@ never use that seam for production. `delivery_scope.evidence_kind` identifies
 Scope inventory supports only the small isolated fixture workspace (100 files,
 2 MiB); links or unreadable files refuse, and no race-free snapshot is claimed.
 
+## Production host records (JH-006 batch 2)
+
+For a production code task parked `waiting_host`, the host applies and checks
+with its own native tools, then presents the ACTUAL transcript item. Steps:
+
+1. Query `summary`/`artifact` and record the pinned delivery: delivery_id,
+   artifact version/id/SHA-256, review_id, baseline SHA-256, workspace.
+2. Write exactly the reviewed envelope `content` bytes to the single
+   authorized target inside the isolated task workspace. Touch nothing else.
+3. Run the fixed post-apply check exactly as pinned
+   (`python tests/fixtures/n2/code_sortfix/check_widget.py --target
+   <workspace>/target/widget.py`). Never check the sealed `expected/` tree.
+4. Capture the completed transcript item verbatim: full command line,
+   raw aggregated output, exit code, item id, thread id.
+5. Assemble one record JSON binding task_id, delivery_id, thread_id,
+   host_call_id (transcript item id), apply_attempt_id, workdir, artifact
+   claim, review claim, target/baseline/check hashes, tests block (command,
+   exit_code, status `completed`, output_digest over the raw output),
+   carried `output`, `uncertain`, recorder `codex-transcript/v1`.
+6. Run `complete-code-delivery <task_id> <record.json>` in production mode
+   (no `--test-fixture-mode`).
+
+Never invent, trim, or retype output; never reuse the fixture recorder or
+the test-only registration seam; never present an unfinished item; never
+mix fixture and production runs of one task. The control layer recomputes
+the digest, re-reads bytes and scope, and pins every binding; the archived
+transcript stays available for architect review.
+
 ## Rules
 
 - Never run `approve` on the user's behalf without their explicit instruction
   for that exact request. Never use `recover` as a normal resume or to take
   over a task another process may be running.
 - Never apply results to user target files. JH-004 delivers generated
-  artifacts only (`generated_artifact`). Production `target_applied` stays
-  false; explicit isolated offline fixtures can report verified synthetic
-  application, always labeled `offline_fixture`.
+  artifacts only (`generated_artifact`). Production applies happen only in
+  isolated task workspaces via the host-record bridge after review;
+  explicit isolated offline fixtures report verified synthetic application,
+  always labeled `offline_fixture`.
 - `--test-fixture-mode` marks explicit offline fixtures. Fixture output is
   never real evidence; never mix fixture and production runs of one task.
 - A successful query command does not mean the task succeeded. Report

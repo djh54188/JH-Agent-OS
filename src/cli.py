@@ -119,7 +119,7 @@ def build_task_summary(storage: TaskStorage, task_id: str) -> Dict[str, Any]:
                 "delivery_state": delivery_state,
                 "delivery_id": delivery.get("delivery_id"),
                 "target_applied": delivery_state == "applied" and task["status"] == "succeeded",
-                "evidence_kind": "offline_fixture" if delivery and ((task.get("metadata") or {}).get(TRUSTED_STAMP_KEY) or {}).get("source") == "fixture" else None,
+                "evidence_kind": ("offline_fixture" if ((task.get("metadata") or {}).get(TRUSTED_STAMP_KEY) or {}).get("source") == "fixture" else "host_transcript") if delivery else None,
                 "note": delivery_note,
             },
             "pending_approval": pending_approval,
@@ -528,10 +528,10 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     sub_complete = subparsers.add_parser(
         "complete-code-delivery",
-        help="Verify a host apply receipt and finalize the code delivery",
+        help="Verify a host apply receipt or host transcript record and finalize the code delivery",
     )
     sub_complete.add_argument("task_id", help="Task ID")
-    sub_complete.add_argument("receipt_file", help="Path to apply receipt JSON assembled by the trusted host")
+    sub_complete.add_argument("receipt_file", help="Path to apply receipt JSON (fixture) or host transcript record JSON (production)")
 
     args = parser.parse_args(argv)
     trusted_ws = Path(args.workspace).resolve()
