@@ -1,0 +1,124 @@
+{
+  "scope": "offline_fixture_only",
+  "api_calls": 0,
+  "controls": 19,
+  "mutations": 19,
+  "detected": 19,
+  "rows": [
+    {
+      "case": "payload_delivery_marker",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "cli_delivery_marker",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "unregistered_host_record",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "raw_output_digest",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "strict_uncertainty_bool",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "fixed_check_script",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "sealed_check_command",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "prepare_owner",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "pending_approval",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "interrupted_tool",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "prepare_transaction",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "authorized_workspace_scope",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "no_model_tools",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "generation_baseline_context",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "review_deferred_scope",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "fresh_cancel_state",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "prepared_version_field",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "no_extra_model_turn",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "final_deadline_gate",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    }
+  ],
+  "verdict": "pass"
+}

@@ -35,6 +35,7 @@ from src.code_delivery import (
     resolve_target_path,
     sealed_fixture_bytes,
     validate_apply_receipt,
+    record_fixture_host_evidence,
 )
 from src.mock_components import MockToolExecutor, ScriptedReviewerAdapter, ScriptedWorkerAdapter
 from src.orchestrator import Orchestrator
@@ -83,6 +84,7 @@ class _Case(unittest.TestCase):
         self.addCleanup(shutil.rmtree, self.case, ignore_errors=True)
         self.db = self.case / "jh006.sqlite3"
         self._seq = 0
+        self._receipt_stores = {}
 
     def _task_id(self):
         self._seq += 1
@@ -141,6 +143,7 @@ class _Case(unittest.TestCase):
 
     def _run_to_waiting(self, orch, payload):
         task = orch.submit_task(payload)
+        self._receipt_stores[payload["task_id"]] = orch.storage
         self.assertEqual(task["status"], "created")
         result = orch.run_task(payload["task_id"])
         self.assertEqual(result["status"], "reviewing")
@@ -168,13 +171,25 @@ class _Case(unittest.TestCase):
             "uncertain": False,
             "recorder": OFFLINE_FIXTURE_RECORDER,
             "recorded_at": CREATED_AT,
+            "host_call_id": "unregistered", "apply_attempt_id": "unregistered",
         }
         for key, val in over.items():
             if isinstance(val, dict) and isinstance(receipt.get(key), dict):
                 receipt[key] = {**receipt[key], **val}
             else:
                 receipt[key] = val
-        return receipt
+        store = self._receipt_stores[task_id]
+        opened = store.db_path != ":memory:"
+        if opened:
+            store = TaskStorage(store.db_path)
+        try:
+            if store.get_task(task_id)["metadata"]["_trusted"]["source"] == "fixture":
+                return record_fixture_host_evidence(store, task_id, receipt,
+                    "fixture-offline-host: PASS JH-006")
+            return receipt
+        finally:
+            if opened:
+                store.close()
 
     def _assemble_reviewing(self, orch, payload, *, stamp_source="fixture",
                             artifact_content=None, artifact_type="patch_text",
@@ -184,6 +199,7 @@ class _Case(unittest.TestCase):
                                            "execution_mode": "generate"}
         orch.submit_task(payload)
         tid = payload["task_id"]
+        self._receipt_stores[tid] = orch.storage
         tag = f"{self._seq:04d}{uuid.uuid4().hex[:4]}"
         envelope = {"schema_version": "1.0.0", "artifact_id": f"art_manual{tag}",
                     "task_id": tid, "artifact_type": artifact_type,
@@ -194,14 +210,15 @@ class _Case(unittest.TestCase):
         latest = orch.artifact_store.get_latest(tid)
         for state in ("classified", "planning", "executing", "reviewing"):
             orch.storage.transition_task_state(tid, state, actor_role="orchestrator",
-                                               reason="jh006 manual assembly")
+                                               reason="jh006 manual assembly",
+                                               artifact_refs=[f"mem://{tid}/{envelope['artifact_id']}"] if state == "reviewing" else None)
         review = {"schema_version": "1.0.0", "review_id": f"rev_manual{tag}",
                   "task_id": tid, "target_artifact_type": "patch",
                   "target_artifact_path": f"mem://{tid}/{envelope['artifact_id']}",
                   "verdict": review_verdict, "overall_score": 95.0, "issues": [],
                   "summary": "jh006 manual pass", "reviewer_role": "fixture_reviewer",
                   "created_at": CREATED_AT}
-        aid = orch.storage.begin_attempt(tid, "reviewer", {"artifact_hashes": {"manual": latest["sha256"]}})
+        aid = orch.storage.begin_attempt(tid, "reviewer", {"artifact_hashes": {review["target_artifact_path"]: latest["sha256"]}})
         orch.storage.complete_attempt(tid, aid, review, 100)
         if with_source_event is not None:
             orch.storage.record_event(task_id=tid, event_type="model_response_source",
@@ -466,9 +483,9 @@ class TestCompleteRefusals(_Case):
             cwd=str(ROOT), capture_output=True, text=True, timeout=120)
         self.assertEqual(proc.returncode, 0)
         self.assertIn("PASS", proc.stdout)
-        with self.assertRaises(CodeDeliveryRefused):
-            orch.complete_code_delivery(tid, self._receipt(tid, delivery))
-        self._assert_still_waiting(orch, tid)
+        result = orch.complete_code_delivery(tid, self._receipt(tid, delivery))
+        self.assertEqual(result["status"], "needs_attention")
+        self.assertFalse(build_task_summary(orch.storage, tid)["task_result"]["delivery_scope"]["target_applied"])
 
     def test_unapplied_baseline_refused(self):
         orch, tid, delivery = self._waiting()
@@ -581,19 +598,21 @@ class TestCompleteRefusals(_Case):
     def test_duplicate_complete_refused(self):
         orch, tid, delivery = self._waiting()
         self._fixture_apply()
-        result = orch.complete_code_delivery(tid, self._receipt(tid, delivery))
+        receipt = self._receipt(tid, delivery)
+        result = orch.complete_code_delivery(tid, receipt)
         self.assertEqual(result["status"], "succeeded")
         with self.assertRaises(CodeDeliveryRefused):
-            orch.complete_code_delivery(tid, self._receipt(tid, delivery))
+            orch.complete_code_delivery(tid, receipt)
         self.assertEqual(orch.storage.get_task(tid)["status"], "succeeded")
 
     def test_late_complete_after_cancel_refused(self):
         orch, tid, delivery = self._waiting()
+        self._fixture_apply()
+        receipt = self._receipt(tid, delivery)
         orch.cancel_task(tid, reason="jh006 late-complete probe")
         self.assertEqual(orch.storage.get_task(tid)["status"], "cancelled")
-        self._fixture_apply()
         with self.assertRaises(CodeDeliveryRefused):
-            orch.complete_code_delivery(tid, self._receipt(tid, delivery))
+            orch.complete_code_delivery(tid, receipt)
         self.assertEqual(orch.storage.get_task(tid)["status"], "cancelled")
 
     def test_production_waiting_complete_refused_offline(self):
@@ -866,7 +885,7 @@ class TestCodeDeliveryHelpers(_Case):
                           "check_script": "check", "check_script_sha256": digest,
                           "command": command, "exit_code": 0, "output_digest": digest},
                 "uncertain": False, "recorder": OFFLINE_FIXTURE_RECORDER,
-                "recorded_at": CREATED_AT}
+                "recorded_at": CREATED_AT, "host_call_id": "host_probe", "apply_attempt_id": "apply_probe"}
         validate_apply_receipt(dict(base), task_id=tid, delivery_id=dlv,
                                authorized_target=TARGET, expected_command=command)
         mutations = []

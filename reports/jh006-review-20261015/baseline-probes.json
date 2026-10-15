@@ -1,0 +1,23 @@
+{
+  "checkpoint": "e4f5017",
+  "initial_unit_tests": {
+    "run": 230,
+    "failures": 2,
+    "errors": 2,
+    "skipped": 1
+  },
+  "probes": [
+    {
+      "name": "payload_delivery",
+      "status": "created",
+      "generated_artifact": false,
+      "target_applied": true,
+      "delivery_id": "payload-forged"
+    },
+    {
+      "name": "unregistered_wrong_script_nonbool_receipt",
+      "status": "succeeded"
+    }
+  ],
+  "provenance": "Actual read-only review plus isolated fixture probes captured before architect repairs on 2026-10-15; no production evidence"
+}

@@ -955,7 +955,7 @@ class TaskStorage:
         )
         return self.get_task(task_id)
 
-# Memory records (Phase 3 minimal logging per memory_record.v1.json)
+    # Memory records (Phase 3 minimal logging per memory_record.v1.json)
     # ------------------------------------------------------------------
 
     @atomic

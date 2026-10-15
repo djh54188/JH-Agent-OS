@@ -54,7 +54,7 @@ All commands print JSON.
 - Never assume every command returns `task_result`. A successful query
   command does not mean the task succeeded.
 
-Task JSON must use the fixed `records_transform_v1` template:
+For records tasks, use the fixed `records_transform_v1` template:
 `metadata.input_data` containing only `records` (a non-empty list of
 `{region: str, sales: number}`), and exactly these two acceptance criteria
 in this order:
@@ -79,7 +79,14 @@ succeeded — vs `applied` verified), and `target_applied` (true only after a
 verified complete). `resume` on a waiting task returns the parked state and
 must not add model calls. Synthetic applies/receipts must be marked
 `fixture-offline-host/v1` and run in isolated workspaces; production host
-assembly is out of scope until the offline review passes.
+assembly remains unimplemented and production complete still refuses.
+A recorder string alone is never proof: offline complete requires an existing
+fixture host record with host_call_id/apply_attempt_id and matching raw-output
+digest. Only the explicit test harness can register synthetic fixture evidence;
+never use that seam for production. `delivery_scope.evidence_kind` identifies
+`offline_fixture`; its success does not prove real host execution.
+Scope inventory supports only the small isolated fixture workspace (100 files,
+2 MiB); links or unreadable files refuse, and no race-free snapshot is claimed.
 
 ## Rules
 
@@ -87,7 +94,9 @@ assembly is out of scope until the offline review passes.
   for that exact request. Never use `recover` as a normal resume or to take
   over a task another process may be running.
 - Never apply results to user target files. JH-004 delivers generated
-  artifacts only (`generated_artifact`); `target_applied` is always false.
+  artifacts only (`generated_artifact`). Production `target_applied` stays
+  false; explicit isolated offline fixtures can report verified synthetic
+  application, always labeled `offline_fixture`.
 - `--test-fixture-mode` marks explicit offline fixtures. Fixture output is
   never real evidence; never mix fixture and production runs of one task.
 - A successful query command does not mean the task succeeded. Report

@@ -32,6 +32,8 @@ from src.code_delivery import (
     verify_production_history_clean,
     is_clean_pass_review,
     sha256_hex,
+    fixture_host_evidence_matches,
+    workspace_hashes,
 )
 from src.codex_managed import ManagedCodexAdapter, ManagedCodexConfig
 from src.file_tools import FileToolExecutor, PathBoundaryError
@@ -159,6 +161,8 @@ class Orchestrator:
         except ValidationError as exc:
             raise SchemaValidationError(f"Invalid Task payload rejected: {exc.message}") from None
 
+        if "_delivery" in (task_payload.get("metadata") or {}):
+            raise SchemaValidationError("Task payload cannot supply control-owned _delivery metadata")
         task_id = task_payload["task_id"]
         with self.storage.transaction():
             task = self.storage.create_task(task_payload)
@@ -250,7 +254,29 @@ class Orchestrator:
     # JH-006 two-step code delivery (fixed fixture template only)
     # ------------------------------------------------------------------
 
+    def _reject_delivery_blockers(self, task_id):
+        task = self.storage.get_task(task_id)
+        if self.storage.get_control(task_id).get("pending_json"):
+            raise CodeDeliveryRefused("task has a pending approval; resolve it first")
+        uncertain = {"in_flight", "interrupted_unconfirmed", "uncertain"}
+        if any(a.get("status") in uncertain for a in self.storage.list_model_attempts(task_id)):
+            raise CodeDeliveryRefused("unconfirmed model attempts outstanding")
+        if any(t.get("status") in uncertain for t in self.storage.list_tool_executions(task_id)):
+            raise CodeDeliveryRefused("unconfirmed tool executions outstanding")
+        if task["_runtime"].get("has_unconfirmed_side_effect"):
+            raise CodeDeliveryRefused("unconfirmed side effect outstanding")
+
     def prepare_code_delivery(self, task_id: str, artifact_version: int) -> Dict[str, Any]:
+        owner_id = uuid.uuid4().hex
+        if not self.storage.claim_task(task_id, owner_id):
+            raise CodeDeliveryRefused("task owner is held by another execution")
+        try:
+            with self.storage.transaction():
+                return self._prepare_code_delivery_locked(task_id, artifact_version)
+        finally:
+            self.storage.release_task(task_id, owner_id)
+
+    def _prepare_code_delivery_locked(self, task_id: str, artifact_version: int) -> Dict[str, Any]:
         """Validate the current reviewed patch and mark the task waiting-host.
 
         Never transitions to succeeded. Refusals raise CodeDeliveryRefused with
@@ -259,6 +285,10 @@ class Orchestrator:
         task = self.storage.get_task(task_id)
         if task["status"] != "reviewing":
             raise CodeDeliveryRefused(f"prepare requires a reviewing task, got '{task['status']}'")
+        stopped = self._check_budget_or_fail(task_id, before_call=False)
+        if stopped is not None:
+            return stopped
+        self._reject_delivery_blockers(task_id)
         tpl = template_for_task(task)
         stamped = (task.get("metadata") or {}).get("_trusted") or {}
         if stamped.get("template_id") != tpl["template_id"]:
@@ -276,10 +306,6 @@ class Orchestrator:
         if isinstance(artifact_version, bool) or not isinstance(artifact_version, int):
             raise CodeDeliveryRefused(f"artifact version must be an integer, got {artifact_version!r}")
         existing = (task.get("metadata") or {}).get("_delivery")
-        if isinstance(existing, dict) and existing.get("state") == "waiting_host":
-            if existing.get("artifact_version") == artifact_version:
-                return task
-            raise CodeDeliveryRefused("a delivery is already waiting; complete or cancel it first")
         latest = self.artifact_store.get_latest(task_id)
         if latest is None or latest["version"] != artifact_version:
             raise CodeDeliveryRefused(f"artifact version {artifact_version} is not current")
@@ -300,6 +326,28 @@ class Orchestrator:
         if latest.get("artifact_type") != "patch_text":
             raise CodeDeliveryRefused(
                 f"artifact type {latest.get('artifact_type')!r} is not patch_text")
+        target_ref = mem_artifact_path(task_id, latest["artifact_id"])
+        if task.get("artifact_refs") != [target_ref]:
+            raise CodeDeliveryRefused("task artifact references differ from the current patch")
+        snapshots = self._snapshot_artifacts(task.get("artifact_refs", []))
+        metadata = {"task_id": task_id, "review_id": review.get("review_id"),
+                    "target_artifact_path": target_ref, "reviewer_role": review.get("reviewer_role")}
+        try:
+            validate_review(review, metadata, snapshots, snapshots)
+        except (SchemaValidationError, KeyError, TypeError) as exc:
+            raise CodeDeliveryRefused(f"invalid current review binding: {exc}") from None
+        if hashes != {p: a["sha256"] for p, a in snapshots.items()}:
+            raise CodeDeliveryRefused("review artifact coverage differs from the current snapshot")
+        if isinstance(existing, dict) and existing.get("state") == "waiting_host":
+            pinned = existing.get("artifact") or {}
+            if (pinned.get("version") == artifact_version
+                    and pinned.get("artifact_id") == latest["artifact_id"]
+                    and pinned.get("sha256") == latest["sha256"]
+                    and existing.get("generation_attempt_id") == latest.get("generation_attempt_id")
+                    and existing.get("review_attempt_id") == review_attempt["attempt_id"]
+                    and existing.get("review_sha256") == content_sha256(json.dumps(review, sort_keys=True))):
+                return task
+            raise CodeDeliveryRefused("waiting delivery binding is stale; cancel or reconcile first")
         parsed = parse_fixture_patch(latest["content"], tpl["authorized_target"])
         ws = (task.get("context") or {}).get("workspace_root") or self.workspace_root
         target_abs = resolve_target_path(ws, parsed["path"])
@@ -315,6 +363,9 @@ class Orchestrator:
         if before_bytes != sealed_before:
             raise CodeDeliveryRefused("workspace target does not match the sealed baseline")
         expected_after = sha256_hex(parsed["content_bytes"])
+        scope_before = workspace_hashes(ws)
+        if scope_before.get(parsed["path"]) != before_sha:
+            raise CodeDeliveryRefused("target changed while capturing the baseline scope")
         delivery = {
             "delivery_id": f"dlv_{task_id}_v{latest['version']}",
             "state": "waiting_host",
@@ -327,10 +378,14 @@ class Orchestrator:
             "baseline": {"path": parsed["path"], "sha256_before": before_sha},
             "expected_after": {"path": parsed["path"], "sha256": expected_after},
             "authorized_files": [tpl["authorized_target"]],
+            "scope_before": scope_before,
             "apply_receipt": None,
             "created_at": _utc_now_iso(),
             "completed_at": None,
         }
+        stopped = self._check_budget_or_fail(task_id, before_call=False)
+        if stopped is not None:
+            return stopped
         self.storage.save_code_delivery(task_id, delivery)
         self.storage.record_event(task_id=task_id, event_type="code_delivery_prepared",
                                   from_state="reviewing", to_state="reviewing",
@@ -345,9 +400,20 @@ class Orchestrator:
         latest = self.artifact_store.get_latest(task_id)
         if latest is None:
             raise CodeDeliveryRefused("no artifact version to prepare")
-        return self.prepare_code_delivery(task_id, latest["version"])
+        with self.storage.transaction():
+            return self._prepare_code_delivery_locked(task_id, latest["version"])
 
     def complete_code_delivery(self, task_id: str, receipt: Dict[str, Any]) -> Dict[str, Any]:
+        owner_id = uuid.uuid4().hex
+        if not self.storage.claim_task(task_id, owner_id):
+            raise CodeDeliveryRefused("task owner is held by another execution")
+        try:
+            with self.storage.transaction():
+                return self._check_and_complete_code_delivery(task_id, receipt)
+        finally:
+            self.storage.release_task(task_id, owner_id)
+
+    def _check_and_complete_code_delivery(self, task_id: str, receipt: Dict[str, Any]) -> Dict[str, Any]:
         """Verify a host apply receipt and finalize the code delivery.
 
         Returns the task in all non-crash paths except refusals: succeeded on
@@ -356,8 +422,8 @@ class Orchestrator:
         change) on validation failures.
         """
         task = self.storage.get_task(task_id)
-        if is_terminal_state(task["status"]):
-            raise CodeDeliveryRefused(f"task is terminal ({task['status']}); nothing to complete")
+        if task["status"] != "reviewing":
+            raise CodeDeliveryRefused(f"complete requires reviewing, got {task['status']}")
         delivery = (task.get("metadata") or {}).get("_delivery")
         if not isinstance(delivery, dict) or delivery.get("state") != "waiting_host":
             raise CodeDeliveryRefused("no waiting_host delivery to complete")
@@ -382,30 +448,14 @@ class Orchestrator:
                 "only fixture tasks with fixture-assembled receipts can complete")
         elif stamped.get("source") != "fixture":
             raise CodeDeliveryRefused(f"unknown task source {stamped.get('source')!r}")
-        owner_id = uuid.uuid4().hex
-        if not self.storage.claim_task(task_id, owner_id):
-            raise CodeDeliveryRefused("task owner is held by another execution")
-        try:
-            return self._complete_code_delivery_locked(task_id, receipt, tpl, delivery)
-        finally:
-            self.storage.release_task(task_id, owner_id)
+        return self._complete_code_delivery_locked(task_id, receipt, tpl, delivery)
 
     def _complete_code_delivery_locked(self, task_id, receipt, tpl, delivery):
-        budget_failed = self._check_budget_or_fail(task_id)
+        budget_failed = self._check_budget_or_fail(task_id, before_call=False)
         if budget_failed is not None:
             return budget_failed
         task = self.storage.get_task(task_id)
-        runtime = task.get("_runtime") or {}
-        if (self.storage.get_control(task_id) or {}).get("pending_json"):
-            raise CodeDeliveryRefused("task has a pending approval; resolve it first")
-        if any(a.get("status") == "in_flight" for a in self.storage.list_model_attempts(task_id)):
-            raise CodeDeliveryRefused("unconfirmed model attempts outstanding")
-        if any(t.get("status") == "in_flight" for t in self.storage.list_tool_executions(task_id)):
-            raise CodeDeliveryRefused("unconfirmed tool executions outstanding")
-        if runtime.get("has_unconfirmed_side_effect"):
-            raise CodeDeliveryRefused("unconfirmed side effect outstanding")
-        if runtime.get("tokens_unknown_count", 0) > 0:
-            raise CodeDeliveryRefused("unknown token usage outstanding")
+        self._reject_delivery_blockers(task_id)
         ws = (task.get("context") or {}).get("workspace_root") or self.workspace_root
         expected_command = materialized_post_apply_command(tpl, ws)
         norm = validate_apply_receipt(
@@ -415,7 +465,8 @@ class Orchestrator:
         pinned_art = delivery.get("artifact") or {}
         if (latest is None or latest["version"] != pinned_art.get("version")
                 or latest["artifact_id"] != pinned_art.get("artifact_id")
-                or latest["sha256"] != pinned_art.get("sha256")):
+                or latest["sha256"] != pinned_art.get("sha256")
+                or latest.get("generation_attempt_id") != delivery.get("generation_attempt_id")):
             raise CodeDeliveryRefused("current artifact differs from the prepared version")
         attempts = [a for a in self.storage.list_model_attempts(task_id)
                     if a.get("actor_role") == "reviewer" and a.get("status") == "completed"]
@@ -430,6 +481,11 @@ class Orchestrator:
             raise CodeDeliveryRefused("pinned review content changed since prepare")
         if self.storage.get_control(task_id).get("active_attempt_id") != delivery.get("review_attempt_id"):
             raise CodeDeliveryRefused("review attempt is no longer active")
+        if not fixture_host_evidence_matches(self.storage, task_id, norm):
+            return self._complete_uncertain(task_id, delivery, "host record missing or differs from the receipt/raw output")
+        expected_script = f"{tpl['fixture_dir']}/{tpl['check_rel']}"
+        if norm["tests"]["check_script"] != expected_script:
+            raise CodeDeliveryRefused("receipt check script path differs from the fixed check")
         target_abs = resolve_target_path(ws, tpl["authorized_target"])
         try:
             actual_bytes = Path(target_abs).read_bytes()
@@ -443,9 +499,22 @@ class Orchestrator:
             return self._complete_uncertain(
                 task_id, delivery, "baseline changed and applied bytes differ from the recorded baseline")
         if actual_sha != delivery["expected_after"]["sha256"]:
-            raise CodeDeliveryRefused(
-                f"applied bytes {actual_sha[:12]}... do not match expected_after "
-                f"{delivery['expected_after']['sha256'][:12]}...")
+            if actual_sha == delivery["baseline"]["sha256_before"]:
+                raise CodeDeliveryRefused("target is still the baseline; no verified apply")
+            return self._complete_uncertain(task_id, delivery,
+                "applied bytes differ from the reviewed expected_after")
+        try:
+            scope_after = workspace_hashes(ws)
+        except CodeDeliveryRefused as exc:
+            return self._complete_uncertain(task_id, delivery, str(exc))
+        scope_before = delivery.get("scope_before")
+        if not isinstance(scope_before, dict):
+            return self._complete_uncertain(task_id, delivery, "baseline scope evidence missing")
+        unauthorized = [p for p in set(scope_before) | set(scope_after)
+                        if p != tpl["authorized_target"] and scope_before.get(p) != scope_after.get(p)]
+        if unauthorized or scope_after.get(tpl["authorized_target"]) != actual_sha:
+            return self._complete_uncertain(task_id, delivery,
+                "unauthorized workspace changes or target drift during verification")
         if norm["target"]["sha256"] != actual_sha:
             return self._complete_uncertain(
                 task_id, delivery, "receipt target hash differs from freshly read bytes")
@@ -462,6 +531,9 @@ class Orchestrator:
                 task_id, delivery, f"post-apply checks exited {tests['exit_code']}")
         if norm["uncertain"] is True:
             return self._complete_uncertain(task_id, delivery, "host receipt declares uncertainty")
+        stopped = self._check_budget_or_fail(task_id, before_call=False)
+        if stopped is not None:
+            return stopped
         criteria = task["acceptance_criteria"]
         acceptance = [
             {"criterion": criteria[0], "passed": True,
@@ -675,6 +747,13 @@ class Orchestrator:
 
     def _build_generation_messages(self, task: Dict[str, Any], repair_count: int) -> List[Dict[str, str]]:
         context = self._worker_task_context(task)
+        if is_code_delivery_task(task):
+            tpl = template_for_task(task)
+            context["code_template"] = {
+                "template_id": tpl["template_id"], "authorized_target": tpl["authorized_target"],
+                "baseline": sealed_fixture_bytes(tpl, "baseline_rel").decode("utf-8"),
+                "artifact_type": "patch_text", "patch_format": {"path": tpl["authorized_target"], "content": "complete corrected UTF-8 file"},
+                "note": "Generate a patch only. Host applies and tests after independent patch review."}
         if repair_count > 0:
             issues = []
             for binding in self.storage.list_review_bindings(task_id=task["task_id"]):
@@ -1145,6 +1224,10 @@ class Orchestrator:
             produced_artifacts: List[str] = []
             execution_evidence: List[str] = []
 
+            if proposed_requests and is_code_delivery_task(task):
+                return self.storage.transition_task_state(
+                    task_id, "needs_attention", reason="code_template_tools_refused",
+                    error_info="Fixed code template accepts patch artifacts only, never model tools")
             for tool_req in proposed_requests:
                 current = self.storage.get_task(task_id)
                 if current["status"] != "executing":
@@ -1351,6 +1434,13 @@ class Orchestrator:
                     "tool_execution_evidence": task.get("tool_execution_evidence", []),
                     "note": "Independent review context; worker summary is excluded from primary evidence.",
                 }
+                if is_code_delivery_task(task):
+                    tpl = template_for_task(task)
+                    independent_review_context["code_review_scope"] = {
+                        "template_id": tpl["template_id"],
+                        "baseline": sealed_fixture_bytes(tpl, "baseline_rel").decode("utf-8"),
+                        "pending_host_criteria": tpl["criteria"][1:],
+                        "note": "Assess patch correctness only; host application/tests remain pending and cannot be claimed."}
                 review_messages = [
                     {
                         "role": "system",
@@ -1358,8 +1448,11 @@ class Orchestrator:
                             "You are an independent code reviewer for JH-Agent OS. "
                             "Review only the supplied artifact and tool_execution_evidence against acceptance_criteria. "
                             "Return only the raw ReviewResult JSON object without markdown fences or backticks. "
-                            "Use verdict pass with empty issues if all acceptance_criteria are satisfied; "
-                            "otherwise use revise or reject and cite concrete evidence in issue evidence. "
+                            + ("For code_review_scope, pass means the patch is correct with no blocking issues; "
+                             "post-apply criteria remain pending control verification. "
+                             if is_code_delivery_task(task) else
+                             "Use verdict pass with empty issues if all acceptance_criteria are satisfied; ")
+                            + "Otherwise use revise or reject and cite concrete evidence in issue evidence. "
                             "overall_score is 0-100. Preserve the supplied metadata fields exactly. "
                             "Do not use tools or invent executed test results."
                         ),

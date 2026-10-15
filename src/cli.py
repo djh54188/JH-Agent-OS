@@ -67,7 +67,8 @@ def build_task_summary(storage: TaskStorage, task_id: str) -> Dict[str, Any]:
     latest_binding = bindings[-1] if bindings else None
     pending_approval = json.loads(control["pending_json"]) if control.get("pending_json") else None
 
-    delivery = (task.get("metadata") or {}).get("_delivery") or {}
+    delivery = (task.get("metadata") or {}).get("_delivery")
+    delivery = delivery if isinstance(delivery, dict) else {}
     delivery_state = delivery.get("state")
     if delivery_state == "applied":
         delivery_note = "Code delivery applied and verified by the control layer (JH-006)"
@@ -117,7 +118,8 @@ def build_task_summary(storage: TaskStorage, task_id: str) -> Dict[str, Any]:
                 "generated_artifact": latest_artifact is not None,
                 "delivery_state": delivery_state,
                 "delivery_id": delivery.get("delivery_id"),
-                "target_applied": delivery_state == "applied",
+                "target_applied": delivery_state == "applied" and task["status"] == "succeeded",
+                "evidence_kind": "offline_fixture" if delivery and ((task.get("metadata") or {}).get(TRUSTED_STAMP_KEY) or {}).get("source") == "fixture" else None,
                 "note": delivery_note,
             },
             "pending_approval": pending_approval,
@@ -259,6 +261,8 @@ def stamp_trusted_binding(task_payload: Dict[str, Any], *, test_fixture_mode: bo
         template_id = CODE_TEMPLATE_ID
     else:
         template_id = RECORDS_TRANSFORM_TEMPLATE_ID
+    if "_delivery" in meta:
+        raise TrustedAssemblyError("Task payload cannot supply control-owned _delivery metadata")
     meta[TRUSTED_STAMP_KEY] = {
         "source": "fixture" if test_fixture_mode else "production",
         "template_id": template_id,
@@ -429,6 +433,14 @@ def _expected_template_id(task_payload: Dict[str, Any]) -> str:
 def _delivery_state(task: Dict[str, Any]) -> Optional[str]:
     delivery = (task.get("metadata") or {}).get("_delivery")
     return delivery.get("state") if isinstance(delivery, dict) else None
+
+
+def _create_delivery_controller(args, trusted_ws, evaluator):
+    # No adapter load, credentials, or model invocation for control-only commands.
+    return Orchestrator(
+        storage=TaskStorage(args.db), workspace_root=trusted_ws,
+        tool_executor=NoToolExecutor(), acceptance_evaluator=evaluator,
+        enforce_target_files_scope=True, require_real_responses=not args.test_fixture_mode)
 
 
 def _existing_task_for_control(args, trusted_ws: Path):
@@ -620,6 +632,15 @@ def main(argv: Optional[List[str]] = None) -> int:
                     "blockers": blockers,
                 }, ensure_ascii=False, indent=2))
                 return 1
+            if _delivery_state(existing) == "waiting_host":
+                ro = open_readonly_storage(args.db)
+                try:
+                    out = build_task_summary(ro, args.task_id)
+                finally:
+                    ro.close()
+                out["test_fixture_mode"] = bool(args.test_fixture_mode)
+                print(json.dumps(out, ensure_ascii=False, indent=2))
+                return 0
             orch = create_orchestrator(
                 args.db,
                 workspace_root=trusted_ws,
@@ -678,12 +699,7 @@ def main(argv: Optional[List[str]] = None) -> int:
                     "blockers": blockers,
                 }, ensure_ascii=False, indent=2))
                 return 1
-            orch = create_orchestrator(
-                args.db,
-                workspace_root=trusted_ws,
-                acceptance_evaluator=evaluator,
-                test_fixture_mode=args.test_fixture_mode,
-            )
+            orch = _create_delivery_controller(args, trusted_ws, evaluator)
             task = orch.prepare_code_delivery(args.task_id, args.artifact_version)
             out = build_task_summary(orch.storage, args.task_id)
             out["read_only"] = False
@@ -708,12 +724,7 @@ def main(argv: Optional[List[str]] = None) -> int:
                     "blockers": blockers,
                 }, ensure_ascii=False, indent=2))
                 return 1
-            orch = create_orchestrator(
-                args.db,
-                workspace_root=trusted_ws,
-                acceptance_evaluator=evaluator,
-                test_fixture_mode=args.test_fixture_mode,
-            )
+            orch = _create_delivery_controller(args, trusted_ws, evaluator)
             task = orch.complete_code_delivery(args.task_id, receipt)
             out = build_task_summary(orch.storage, args.task_id)
             out["read_only"] = False

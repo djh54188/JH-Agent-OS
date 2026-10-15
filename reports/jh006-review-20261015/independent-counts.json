@@ -1,0 +1,147 @@
+{
+  "test_methods_by_ast": 251,
+  "jh006_implementation_methods": 45,
+  "jh006_independent_review_methods": 21,
+  "duplicate_methods": [],
+  "sealed_non_manifest_files": 11,
+  "seals": [
+    {
+      "path": "tests/fixtures/n2/code_sortfix/task.json",
+      "matches": true
+    },
+    {
+      "path": "tests/fixtures/n2/code_sortfix/target/widget.py",
+      "matches": true
+    },
+    {
+      "path": "tests/fixtures/n2/code_sortfix/expected/widget.py",
+      "matches": true
+    },
+    {
+      "path": "tests/fixtures/n2/code_sortfix/check_widget.py",
+      "matches": true
+    },
+    {
+      "path": "tests/fixtures/n2/code_sortfix/checks.json",
+      "matches": true
+    },
+    {
+      "path": "tests/fixtures/n2/code_sortfix/scenarios.json",
+      "matches": true
+    },
+    {
+      "path": "tests/fixtures/n2/data_rollup/task.json",
+      "matches": true
+    },
+    {
+      "path": "tests/fixtures/n2/data_rollup/input.json",
+      "matches": true
+    },
+    {
+      "path": "tests/fixtures/n2/data_rollup/expected.json",
+      "matches": true
+    },
+    {
+      "path": "tests/fixtures/n2/data_rollup/checks.json",
+      "matches": true
+    },
+    {
+      "path": "tests/fixtures/n2/data_rollup/scenarios.json",
+      "matches": true
+    }
+  ],
+  "guards": {
+    "jh006-guards": {
+      "keys": [
+        "scope",
+        "api_calls",
+        "controls",
+        "mutations",
+        "detected",
+        "rows",
+        "verdict"
+      ],
+      "summary": {
+        "scope": "offline_fixture_only",
+        "api_calls": 0,
+        "controls": 19,
+        "mutations": 19,
+        "detected": 19,
+        "verdict": "pass"
+      },
+      "arrays": {
+        "rows": 19
+      }
+    },
+    "phase2-guards": {
+      "keys": [
+        "mutations",
+        "passed",
+        "results"
+      ],
+      "summary": {
+        "mutations": 5,
+        "passed": true
+      },
+      "arrays": {
+        "results": 5
+      }
+    },
+    "phase3-guards": {
+      "keys": [
+        "mutations",
+        "passed",
+        "results"
+      ],
+      "summary": {
+        "mutations": 8,
+        "passed": true
+      },
+      "arrays": {
+        "results": 8
+      }
+    },
+    "phase4-guards": {
+      "keys": [
+        "mutations",
+        "passed",
+        "results"
+      ],
+      "summary": {
+        "mutations": 12,
+        "passed": true
+      },
+      "arrays": {
+        "results": 12
+      }
+    },
+    "responses-guards": {
+      "keys": [
+        "mutations",
+        "passed",
+        "results"
+      ],
+      "summary": {
+        "mutations": 8,
+        "passed": true
+      },
+      "arrays": {
+        "results": 8
+      }
+    },
+    "anthropic-guards": {
+      "keys": [
+        "mutations",
+        "passed",
+        "results"
+      ],
+      "summary": {
+        "mutations": 10,
+        "passed": true
+      },
+      "arrays": {
+        "results": 10
+      }
+    }
+  }
+}

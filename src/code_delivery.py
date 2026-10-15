@@ -13,6 +13,7 @@ import hashlib
 import json
 import os
 import re
+import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -43,6 +44,7 @@ CODE_TEMPLATES = {
         "reference_rel": "expected/widget.py",
         "baseline_rel": "target/widget.py",
         "check_rel": "check_widget.py",
+        "checks_rel": "checks.json",
         "check_name": "post-apply-target-check",
     },
 }
@@ -51,7 +53,8 @@ _HEX64 = re.compile(r"^[0-9a-f]{64}$")
 _PLACEHOLDER_RE = re.compile(r"\{([A-Za-z_][A-Za-z0-9_]*)\}")
 
 RECEIPT_REQUIRED_KEYS = {"task_id", "delivery_id", "target", "baseline_seen",
-                         "tests", "uncertain", "recorder", "recorded_at"}
+                         "tests", "uncertain", "recorder", "recorded_at",
+                         "host_call_id", "apply_attempt_id"}
 RECEIPT_TARGET_KEYS = {"path", "sha256"}
 RECEIPT_TESTS_KEYS = {"target_path", "target_sha256", "check_script",
                       "check_script_sha256", "command", "exit_code", "output_digest"}
@@ -193,9 +196,8 @@ def materialized_post_apply_command(template: Dict[str, Any], workspace_root) ->
     substitutes {HOST_WORKSPACE} with the trusted workspace root. The result
     is the ONLY command a valid apply receipt may claim to have run.
     """
-    fixture_dir = _repo_root() / template["fixture_dir"]
     try:
-        checks = json.loads((fixture_dir / "checks.json").read_text(encoding="utf-8"))
+        checks = json.loads(sealed_fixture_bytes(template, "checks_rel"))
     except (OSError, ValueError) as exc:
         raise CodeDeliveryRefused(f"fixture checks unreadable: {exc}") from None
     entries = checks.get("checks", []) if isinstance(checks, dict) else []
@@ -255,7 +257,7 @@ def validate_apply_receipt(receipt: Dict[str, Any], *, task_id: str, delivery_id
         raise CodeDeliveryRefused("apply receipt command differs from the fixed post-apply command")
     if not isinstance(tests["exit_code"], int) or isinstance(tests["exit_code"], bool):
         raise CodeDeliveryRefused("apply receipt exit code malformed")
-    if receipt["uncertain"] not in (True, False):
+    if type(receipt["uncertain"]) is not bool:
         raise CodeDeliveryRefused("apply receipt uncertain flag malformed")
     if receipt["recorder"] != OFFLINE_FIXTURE_RECORDER:
         raise CodeDeliveryRefused(
@@ -263,7 +265,50 @@ def validate_apply_receipt(receipt: Dict[str, Any], *, task_id: str, delivery_id
             f"only {OFFLINE_FIXTURE_RECORDER!r} is recognized in the offline batch")
     if not isinstance(receipt["recorded_at"], str) or not receipt["recorded_at"]:
         raise CodeDeliveryRefused("apply receipt recorded_at malformed")
+    for key in ("host_call_id", "apply_attempt_id"):
+        if not isinstance(receipt[key], str) or not receipt[key]:
+            raise CodeDeliveryRefused(f"apply receipt {key} missing")
     return receipt
+
+
+def record_fixture_host_evidence(storage, task_id, receipt, raw_output):
+    """Trusted test-harness seam, deliberately absent from the production CLI.
+
+    Registers synthetic fixture records only. It runs no check or application;
+    the caller is the explicit offline fixture harness, never model text.
+    The complete CLI can reference an existing record but cannot create one.
+    """
+    with storage.transaction():
+        task = storage.get_task(task_id)
+        stamp = (task.get("metadata") or {}).get("_trusted") or {}
+        if (stamp.get("source") != "fixture" or task["status"] != "reviewing"
+                or delivery_state(task) != WAITING_STATE):
+            raise CodeDeliveryRefused("fixture host records require an already prepared fixture task")
+        if not isinstance(receipt, dict) or not isinstance(raw_output, str):
+            raise CodeDeliveryRefused("fixture host record requires a receipt and raw output")
+        record = json.loads(json.dumps(receipt))
+        record["host_call_id"] = "host_" + uuid.uuid4().hex
+        record["apply_attempt_id"] = "apply_" + uuid.uuid4().hex
+        storage.record_event(
+            task_id=task_id, event_id=record["host_call_id"], event_type="fixture_host_record",
+            from_state=task["status"], to_state=task["status"], actor_role="fixture_host",
+            details={"evidence_kind": "offline_fixture", "receipt": record,
+                     "raw_output": raw_output})
+        return record
+
+
+def fixture_host_evidence_matches(storage, task_id, receipt):
+    records = [e for e in storage.list_events(task_id)
+               if e.get("event_type") == "fixture_host_record"
+               and e.get("event_id") == receipt["host_call_id"]
+               and e.get("actor_role") == "fixture_host"]
+    if len(records) != 1:
+        return False
+    details = records[0].get("details") or {}
+    output = details.get("raw_output")
+    return (details.get("evidence_kind") == "offline_fixture"
+            and details.get("receipt") == receipt and isinstance(output, str)
+            and sha256_hex(output.encode("utf-8")) == receipt["tests"]["output_digest"])
 
 
 def sha256_hex(data: bytes) -> str:
@@ -278,3 +323,35 @@ def is_clean_pass_review(review: Any) -> bool:
     if not isinstance(issues, list) or any(not isinstance(i, dict) for i in issues):
         return False
     return not any(i.get("severity") in {"p0_blocker", "p1_critical", "p2_major"} for i in issues)
+
+
+def workspace_hashes(workspace_root):
+    """Read-only scope inventory for the small isolated fixed-template workspace.
+
+    Does not claim a race-free filesystem snapshot. Links, excessive fixture
+    size, or unreadable entries refuse; never follows them outside the scope.
+    """
+    root = Path(workspace_root).resolve()
+    result = {}
+    total = 0
+    def fail_walk(exc):
+        raise exc
+
+    try:
+        for current, dirs, files in os.walk(root, followlinks=False, onerror=fail_walk):
+            for name in sorted(dirs + files):
+                path = Path(current) / name
+                if path.is_symlink() or (hasattr(path, "is_junction") and path.is_junction()):
+                    raise CodeDeliveryRefused("scope inventory refuses filesystem links")
+                if name in dirs:
+                    continue
+                if len(result) >= 100 or total + path.stat().st_size > 2 * 1024 * 1024:
+                    raise CodeDeliveryRefused("isolated code fixture workspace exceeds scope inventory limits")
+                data = path.read_bytes()
+                total += len(data)
+                if total > 2 * 1024 * 1024:
+                    raise CodeDeliveryRefused("scope inventory changed beyond its byte limit")
+                result[path.relative_to(root).as_posix()] = sha256_hex(data)
+    except OSError as exc:
+        raise CodeDeliveryRefused(f"scope inventory unreadable: {exc}") from None
+    return result
