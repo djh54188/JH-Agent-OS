@@ -30,6 +30,7 @@ closed; these helpers produce capture evidence for architect review only.
 
 import json
 import os
+import ntpath
 import re
 from typing import Any, Dict, List, Optional
 from urllib.parse import unquote, urlparse
@@ -53,6 +54,15 @@ def _is_int(value: Any) -> bool:
     return isinstance(value, int) and not isinstance(value, bool)
 
 
+def _strict_object(pairs):
+    value = {}
+    for key, item in pairs:
+        if key in value:
+            raise ValueError("duplicate JSON key")
+        value[key] = item
+    return value
+
+
 def parse_jsonl(raw: bytes, *, source_label: str) -> List[Dict[str, Any]]:
     """Split raw session bytes into parsed lines, keeping raw bytes per line.
 
@@ -71,12 +81,20 @@ def parse_jsonl(raw: bytes, *, source_label: str) -> List[Dict[str, Any]]:
         if len(line) > MAX_EVENT_BYTES:
             raise CaptureError(f"event-too-large: line {index} exceeds the event bound")
         try:
-            obj = json.loads(line.decode("utf-8"))
+            obj = json.loads(line.decode("utf-8"), object_pairs_hook=_strict_object,
+                             parse_constant=lambda value: (_ for _ in ()).throw(ValueError("nonfinite JSON")))
         except (UnicodeDecodeError, ValueError) as exc:
             raise CaptureError(f"unparsed-line: line {index} in {source_label}: {exc}") from None
         if not isinstance(obj, dict):
             raise CaptureError(f"unparsed-line: line {index} in {source_label} is not an object")
-        records.append({"line_no": index, "raw": line, "obj": obj})
+        if obj.get("type") in ("session_meta", "event_msg", "response_item"):
+            if not isinstance(obj.get("payload"), dict):
+                raise CaptureError(f"record-malformed: payload at line {index} must be an object")
+            if "item" in obj["payload"] and not isinstance(obj["payload"]["item"], dict):
+                raise CaptureError(f"record-malformed: item at line {index} must be an object")
+        if obj.get("type") == "item.completed" and not isinstance(obj.get("item"), dict):
+            raise CaptureError(f"record-malformed: CLI item at line {index} must be an object")
+        records.append({"line_no": index, "raw": line, "obj": obj, "source": source_label})
     if not records:
         raise CaptureError("no-records: session input holds no event lines")
     return records
@@ -84,14 +102,14 @@ def parse_jsonl(raw: bytes, *, source_label: str) -> List[Dict[str, Any]]:
 
 def require_desktop_session_meta(records: List[Dict[str, Any]], thread_id: str) -> Dict[str, Any]:
     """Require a session_meta line attributing the segment to the thread."""
-    for record in records:
-        obj = record["obj"]
-        if obj.get("type") == "session_meta" and (obj.get("payload") or {}).get("id") == thread_id:
-            return {"thread_id": thread_id, "line_no": record["line_no"],
-                    "cwd": (obj.get("payload") or {}).get("cwd"),
-                    "originator": (obj.get("payload") or {}).get("originator"),
-                    "raw": record["raw"]}
-    raise CaptureError(f"meta-mismatch: no session_meta for thread {thread_id!r}")
+    metas = [r for r in records if r["obj"].get("type") == "session_meta"]
+    if len(metas) != 1 or metas[0]["obj"]["payload"].get("id") != thread_id:
+        raise CaptureError("meta-mismatch: require exactly one matching session_meta per segment")
+    record = metas[0]
+    payload = record["obj"]["payload"]
+    return {"thread_id": thread_id, "line_no": record["line_no"],
+            "cwd": payload.get("cwd"), "originator": payload.get("originator"),
+            "raw": record["raw"], "source": record["source"]}
 
 
 def select_desktop_execution(records: List[Dict[str, Any]], *, thread_id: str,
@@ -137,7 +155,7 @@ def select_desktop_execution(records: List[Dict[str, Any]], *, thread_id: str,
             "cwd_uri": item["cwd"], "status": item["status"],
             "exit_code": item["exit_code"], "output": item["aggregated_output"],
             "process_id": item.get("process_id"), "duration": item.get("duration"),
-            "raw": record["raw"]}
+            "raw": record["raw"], "source": record["source"]}
 
 
 def select_desktop_tool_call(records: List[Dict[str, Any]], *, call_id: str,
@@ -180,8 +198,40 @@ def select_desktop_tool_call(records: List[Dict[str, Any]], *, call_id: str,
 
     if _turn_of(call) != turn_id or _turn_of(output) != turn_id:
         raise CaptureError("call-turn-mismatch: call/output turn differs from the execution turn")
+    start, end = calls[0]["obj"].get("ordinal"), outputs[0]["obj"].get("ordinal")
+    if (not _is_int(start) or not _is_int(end) or start >= end
+            or calls[0]["line_no"] >= outputs[0]["line_no"]
+            or calls[0]["source"] != outputs[0]["source"]):
+        raise CaptureError("call-window-invalid: call must precede its output in one segment")
+    source = calls[0]["source"]
+    for r in records:
+        pay = r["obj"].get("payload", {})
+        if (r["obj"].get("type") != "response_item" or pay.get("type") != "custom_tool_call"
+                or pay.get("call_id") == call_id or _turn_of(pay) != turn_id):
+            continue
+        other_start = r["obj"].get("ordinal")
+        other_ends = [x["obj"].get("ordinal") for x in records
+                      if x["obj"].get("type") == "response_item"
+                      and x["obj"]["payload"].get("type") == "custom_tool_call_output"
+                      and x["obj"]["payload"].get("call_id") == pay.get("call_id")]
+        if (not _is_int(other_start) or (other_start < end and
+                (len(other_ends) != 1 or not _is_int(other_ends[0]) or other_ends[0] > start))):
+            raise CaptureError("call-window-ambiguous: overlapping tool calls")
+    executions = []
+    for r in records:
+        pay = r["obj"].get("payload", {})
+        if (r["obj"].get("type") == "event_msg" and pay.get("type") == "item_completed"
+                and pay.get("turn_id") == turn_id
+                and pay.get("item", {}).get("type") == "CommandExecution"):
+            ordinal = r["obj"].get("ordinal")
+            if (r["source"] == source and _is_int(ordinal) and start < ordinal < end
+                    and calls[0]["line_no"] < r["line_no"] < outputs[0]["line_no"]):
+                executions.append((pay.get("thread_id"), pay["item"].get("id")))
+    if len(executions) != 1:
+        raise CaptureError("call-window-ambiguous: require exactly one completed execution")
     return {"call_id": call_id, "turn_id": turn_id, "tool_name": call["name"],
-            "input": call["input"], "output": output["output"],
+            "input": call["input"], "output": output["output"], "source": source,
+            "execution_key": executions[0], "call_ordinal": start, "output_ordinal": end,
             "raw_call": calls[0]["raw"], "raw_output": outputs[0]["raw"]}
 
 
@@ -222,22 +272,25 @@ def select_cli_execution(records: List[Dict[str, Any]], *, thread_id: str,
     return {"protocol": "cli", "thread_id": thread_id, "item_id": item_id,
             "command": item["command"], "output": item["aggregated_output"],
             "status": item["status"], "exit_code": item["exit_code"],
-            "raw": record["raw"]}
+            "raw": record["raw"], "source": record["source"]}
 
 
 def _file_uri_to_path(uri: str) -> str:
     if not isinstance(uri, str) or not uri.startswith("file://"):
         raise CaptureError(f"cwd-unparseable: not a file URI: {uri!r}")
-    path = unquote(urlparse(uri).path)
+    parsed = urlparse(uri)
+    if parsed.netloc or parsed.query or parsed.fragment:
+        raise CaptureError("cwd-unparseable: only local file URIs without query/fragment are accepted")
+    path = unquote(parsed.path)
     if re.match(r"^/[A-Za-z]:($|/)", path):
         path = path[1:]
-    if not path:
-        raise CaptureError("cwd-unparseable: file URI holds no path")
+    if not re.match(r"^[A-Za-z]:/", path) or "\x00" in path:
+        raise CaptureError("cwd-unparseable: require an absolute Windows drive path")
     return path
 
 
 def _norm_path(path: str) -> str:
-    return os.path.normcase(os.path.normpath(path))
+    return ntpath.normcase(ntpath.normpath(path))
 
 
 def _require_expectations(*, expected_argv=None, expected_workdir=None, expected_exit=None,
@@ -263,6 +316,15 @@ def verify_desktop_binding(exec_record: Dict[str, Any], call_record: Dict[str, A
     """Verify a desktop execution against pinned expectations. Exact equality only."""
     _require_expectations(expected_argv=expected_argv, expected_workdir=expected_workdir,
                           expected_exit=expected_exit)
+    if (expected_argv is None or not isinstance(expected_workdir, str)
+            or not re.match(r"^[A-Za-z]:[\\/]", expected_workdir)
+            or expected_exit is None or not isinstance(expected_call_input, str)
+            or not expected_call_input):
+        raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+    if (call_record.get("execution_key") != (exec_record["thread_id"], exec_record["item_id"])
+            or call_record["turn_id"] != exec_record["turn_id"]
+            or call_record["source"] != exec_record["source"]):
+        raise CaptureError("call-execution-mismatch: execution is outside the selected call window")
     if list(exec_record["argv"]) != list(expected_argv):
         raise CaptureError("argv-mismatch: execution argv differs from the pinned invocation")
     if _norm_path(_file_uri_to_path(exec_record["cwd_uri"])) != _norm_path(expected_workdir):
@@ -283,7 +345,10 @@ def verify_desktop_binding(exec_record: Dict[str, Any], call_record: Dict[str, A
             "argv": list(exec_record["argv"]), "workdir": _norm_path(expected_workdir),
             "exit_code": exec_record["exit_code"],
             "output_digest": sha256_hex(exec_record["output"].encode("utf-8")),
-            "event_digest": sha256_hex(exec_record["raw"])}
+            "event_digest": sha256_hex(exec_record["raw"]),
+            "call_digest": sha256_hex(call_record["raw_call"]),
+            "call_output_digest": sha256_hex(call_record["raw_output"]),
+            "association": "single-execution-nonoverlapping-call-window/v1"}
 
 
 def verify_cli_binding(exec_record: Dict[str, Any], *, expected_command: str,
@@ -345,3 +410,30 @@ def verify_archive_consistency(manifest: Dict[str, Any], *, event_raw: bytes,
     if sha256_hex(output.encode("utf-8")) != want_output:
         raise CaptureError("archive-tampered: output bytes differ from the manifest digest")
 
+
+
+def verify_capture_archive(manifest: Dict[str, Any], *, archive_raw: bytes) -> None:
+    """Verify all sealed context bytes. This is consistency, not source authentication."""
+    if (not isinstance(manifest, dict) or manifest.get("protocol") != "desktop"
+            or not isinstance(manifest.get("event"), dict)):
+        raise CaptureError("manifest-malformed: require a desktop capture object")
+    event = manifest["event"]
+    for key in ("thread_id", "turn_id", "item_id", "call_id", "workdir"):
+        if not isinstance(event.get(key), str) or not event[key]:
+            raise CaptureError(f"manifest-malformed: missing string {key}")
+    if sha256_hex(archive_raw) != manifest.get("archive_digest"):
+        raise CaptureError("archive-tampered: capture context digest differs")
+    records = parse_jsonl(archive_raw, source_label="archive")
+    event = manifest["event"]
+    require_desktop_session_meta(records, event["thread_id"])
+    selected = select_desktop_execution(records, thread_id=event["thread_id"], item_id=event["item_id"])
+    call = select_desktop_tool_call(records, call_id=event["call_id"], turn_id=event["turn_id"])
+    verify_archive_consistency(manifest, event_raw=selected["raw"], output=selected["output"])
+    if (sha256_hex(call["raw_call"]) != event.get("call_digest")
+            or sha256_hex(call["raw_output"]) != event.get("call_output_digest")):
+        raise CaptureError("archive-tampered: call context differs")
+    recomputed = verify_desktop_binding(
+        selected, call, expected_argv=event.get("argv"), expected_workdir=event.get("workdir"),
+        expected_exit=event.get("exit_code"), expected_call_input=call["input"])
+    if recomputed != event:
+        raise CaptureError("archive-tampered: manifest facts differ from raw context")

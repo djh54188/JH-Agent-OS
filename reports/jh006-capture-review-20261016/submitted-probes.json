@@ -1,0 +1,20 @@
+[
+  {
+    "probe": "unrelated-same-turn-call",
+    "observed": "ACCEPTED",
+    "expected": "REJECT",
+    "synthetic": true
+  },
+  {
+    "probe": "nonlocal-file-uri",
+    "observed": "ACCEPTED",
+    "expected": "REJECT",
+    "synthetic": true
+  },
+  {
+    "probe": "conflicting-session-meta",
+    "observed": "ACCEPTED",
+    "expected": "REJECT",
+    "synthetic": true
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "path": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\jh006-capture-proof-20261016\\real-desktop-capture",
+  "reason": "Raw session_meta includes account identifiers and base instructions; retained locally under ignored data, not committed.",
+  "byte_preserved": true,
+  "sha256": {
+    "events.jsonl": "e9ebd5cafcc64d2e5877119e66f9249c3139610996a6caa6d5146967d9992639",
+    "manifest.json": "1aa9372aae8aa2f433404f535176ead8cb431b020bff1b5d372d93bcbedc9ea7"
+  },
+  "raw_archive_not_in_git": true
+}

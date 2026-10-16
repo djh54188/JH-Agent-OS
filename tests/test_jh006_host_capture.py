@@ -51,7 +51,7 @@ def _desktop_meta(thread=THREAD):
 
 
 def _desktop_exec(item=ITEM, thread=THREAD, turn=TURN, argv=None, cwd_uri=WORKDIR_URI,
-                  status="completed", exit_code=0, output=OUTPUT, ordinal=2):
+                  status="completed", exit_code=0, output=OUTPUT, ordinal=3):
     return {"timestamp": "2026-10-16T00:00:01Z", "ordinal": ordinal, "type": "event_msg",
             "payload": {"type": "item_completed", "thread_id": thread, "turn_id": turn,
                         "item": {"type": "CommandExecution", "id": item, "process_id": "4242",
@@ -64,7 +64,7 @@ def _desktop_exec(item=ITEM, thread=THREAD, turn=TURN, argv=None, cwd_uri=WORKDI
 
 
 def _desktop_call(call=CALL, turn=TURN, script=CALL_SCRIPT, name="exec",
-                  status="completed", ordinal=3):
+                  status="completed", ordinal=2):
     return {"timestamp": "2026-10-16T00:00:02Z", "ordinal": ordinal, "type": "response_item",
             "payload": {"type": "custom_tool_call", "id": "synth-ctc-1", "status": status,
                         "call_id": call, "name": name, "input": script,
@@ -79,6 +79,7 @@ def _desktop_call_output(call=CALL, turn=TURN, ordinal=4):
 
 
 def _desktop_segment(*lines):
+    lines = sorted(lines, key=lambda line: line.get("ordinal", 0))
     return ("\n".join(json.dumps(line, ensure_ascii=False) for line in lines) + "\n").encode()
 
 
@@ -126,7 +127,7 @@ class TestDesktopCapturePositive(unittest.TestCase):
         call = select_desktop_tool_call(records, call_id=CALL, turn_id=TURN)
         bindings = verify_desktop_binding(
             selected, call, expected_argv=FIXED_ARGV, expected_workdir=WORKDIR,
-            expected_exit=0)
+            expected_exit=0, expected_call_input=CALL_SCRIPT)
         manifest = build_capture_manifest(
             task_id="task_synth0001", delivery_id="dlv_synth_v1",
             artifact_claim={}, review_claim={}, apply_attempt_id="synth-apply-1",

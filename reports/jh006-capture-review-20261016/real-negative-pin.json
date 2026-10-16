@@ -1,0 +1,6 @@
+{
+  "exit": 2,
+  "stdout": "{\"captured\": false, \"reason\": \"call-input-mismatch: tool call script differs from the pinned script\"}\n",
+  "stderr": "",
+  "archive_exists": false
+}

@@ -1,0 +1,5 @@
+{
+  "exit": 2,
+  "stdout": "{\"captured\": false, \"reason\": \"archive-exists: refusing to overwrite existing evidence\"}\n",
+  "unchanged": true
+}

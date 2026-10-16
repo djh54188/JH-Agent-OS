@@ -1,0 +1,6 @@
+{
+  "exit": 2,
+  "stdout": "{\"captured\": false, \"reason\": \"cwd-mismatch: execution workdir differs from the pinned workspace\"}\n",
+  "stderr": "",
+  "archive_exists": false
+}

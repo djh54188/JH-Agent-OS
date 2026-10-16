@@ -1,0 +1,345 @@
+{
+  "scope": "Phase 2 offline control layer only; providers, tools and acceptance evaluator are fixtures",
+  "specification_baseline": "08aae16",
+  "python_version": "3.14.7",
+  "source_sha256": {
+    "scripts/verify_phase2_hardening.py": "779177c4f31ffa5192725eb86300f073f7c30abf4b4edc8cfc22636aa88666b7",
+    "src/acceptance.py": "9c2320f9529af992285ae90bf7341ac1a7316fd3e3f62d51bbe219fcb178e450",
+    "src/adapters.py": "b2b8539dda836c4c6818f94250dc3ef4b2e6d8cf19a5cd4b85fc7502a4bd1bed",
+    "src/anthropic_adapter.py": "66fa57f11bacd2e8c96c62f417e4b905d7c0084079ed515fc902413446f288ea",
+    "src/artifacts.py": "4bf0034cb301b9295e6f0ba0349cd1af7ee9d088a8c1041fb3a790ab83a9946b",
+    "src/cli.py": "011ddf5314ef933788e353cfb3aff9c2fbcbbab529b2c46a116747123b67efa2",
+    "src/code_delivery.py": "00d06bb47fa5761ce5312191124c1cd41de2a902c707449b33c219dba3d834d0",
+    "src/codex_managed.py": "57ce2c11bb6201875a1b67e7fc8c01dbd668f4128291e377ded315796b2ffeb2",
+    "src/control_guards.py": "f44b2727ec48ebdbbf007ba44f3e90287f304c1c1a1716d443833a325ffb419c",
+    "src/file_tools.py": "98b1a85cc51eb569ee6d19acbf17863b87e399cec1c21b3cbaaa55f5f2be37cb",
+    "src/host_capture.py": "1ede2a21d08ac184d7352b5b2bd32fdb46c2a3d9b7a5b6d146ccae5d503de6ff",
+    "src/memory.py": "b8580cf86b573ac4d3ad61b0c67e152e4c3352aa8d2c9909bcb8741d80af0e35",
+    "src/mock_components.py": "94633a2d4a5c6540494d84648e25a68a7a0a75f63053c5782624571fc3e4abfc",
+    "src/model_config.py": "5b10f126b25fb811496d303fdc0c9a4669da41543bdf5c1e5af5a818523284e0",
+    "src/orchestrator.py": "4f08855d175dbcc3c1a90058c352936cb8a74f416e2c11654ba2750d15b72195",
+    "src/production_executor.py": "713003e4774cf0f7ec9e2916c37fe57e208f96ac5551da9a69668033771c4d7e",
+    "src/responses_adapter.py": "8cdc1da464cb449cb6270ecec2f68d97dd22e330becc86a8d9e4ed00fa2514ae",
+    "src/router_policy.py": "343bac66ec457f0ddd13fc61ac987ada9bc3e78c962a2f38ea553d32ea0a5840",
+    "src/state_machine.py": "398cfbc842102dfb37bf5f2f4866378a47900b4b64a2cb00ecb7af77cca4828f",
+    "src/storage.py": "52e72cf0edb9694e6ab393a61ec1bffebc6f6a14dea544a546378c086f1c4992",
+    "tests/test_adapters.py": "254cefc3c52383deaa57b5364fd4f2cc3b3c5e6c9ba6865e7e28387c9bf5924a",
+    "tests/test_anthropic_adapter.py": "bf3a53a1b0a606b6019d40c51dc5851c36c542f7d88ee769351a2c0f69a981bc",
+    "tests/test_cli_assembly.py": "19a958db779472a84722d62c4113054409a400e29a85c4c025309ead44dd4d67",
+    "tests/test_codex_managed.py": "5a29596968e6c1158d9659350093a4db2b65552c1837c38001ce278a8ed552f2",
+    "tests/test_jh004_artifact_entry.py": "422385611c5e546b43705c4445a6d74162440284cc3b29a1bb3f811746930b3e",
+    "tests/test_jh006_capture_boundaries.py": "1f8c5ca144705be9bd7f9088b38ff9500a65897fb846d7bd97a36d9ca4228013",
+    "tests/test_jh006_code_delivery.py": "5470b4eed019ae08734b487d51e3187b2c708b4bca29338803e3b1df871b9635",
+    "tests/test_jh006_host_boundary.py": "9dd36094387286d05d3f593450c3bb68262314ecb4a06339d12ea01230e83c6a",
+    "tests/test_jh006_host_capture.py": "42fad948d177a2d87c4afbb7d4bc56094753920f4d51bcfcc01d948428771c3c",
+    "tests/test_jh006_review_regressions.py": "71967f92eb69b8e866536b7bdafbb304b4b776284ac9ad8a06b7a2d602e930ad",
+    "tests/test_phase2_control_layer.py": "a48838b9f88ee6cd8911ba77f0256e75a2b3d1c50a61e67e319c36b4077f3719",
+    "tests/test_phase2_hardening.py": "0586a76cebad072473f6402b5486a8d6db2528825e8c17ebfa0c767c4f05ddd0",
+    "tests/test_phase3_loop.py": "ffe41bed0842abf600c7f2c8186671163e001f2da4b3e44931ed3e002447d45e",
+    "tests/test_phase4_file_tools.py": "8c72ba537361c3f389f9637252d9eb5a660d134e570fef4b565df0eb94954e96",
+    "tests/test_responses_adapter.py": "ec8d8acf83d3356a61ac102557b17c216be658ec572bdd1266978f980d4aafd1",
+    "tests/test_schemas.py": "39537a1d90f6a8571aa45101f2a12a65527a29e88ed263b05e35918cf5ffe4e5"
+  },
+  "cases": [
+    {
+      "id": "OPT-01",
+      "test": "test_opt_01_complete_success",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-02",
+      "test": "test_opt_02_failed_acceptance",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-03",
+      "test": "test_opt_03_revision_is_bounded",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-04",
+      "test": "test_opt_04_wrong_task_review",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-05",
+      "test": "test_opt_05_old_artifact_hash",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-06",
+      "test": "test_opt_06_late_attempt_does_not_overwrite",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-07",
+      "test": "test_opt_07_contradictory_pass",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-08",
+      "test": "test_opt_08_invalid_evidence",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-09",
+      "test": "test_opt_09_planning_is_not_permission",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-10",
+      "test": "test_opt_10_declared_read_only_delete",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-11",
+      "test": "test_opt_11_model_approval_flag_ignored",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-12",
+      "test": "test_opt_12_sibling_prefix",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-13",
+      "test": "test_opt_13_normalized_escape",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-14",
+      "test": "test_opt_14_real_junction",
+      "status": "not_applicable_phase2",
+      "reason": "Phase 4: real junction resolution and filesystem race verification"
+    },
+    {
+      "id": "OPT-15",
+      "test": "test_opt_15_changed_approved_action",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-16",
+      "test": "test_opt_16_terminal_tool_request",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-17",
+      "test": "test_opt_17_remaining_timeout_reaches_transport",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-18",
+      "test": "test_opt_18_zero_time_no_call",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-19",
+      "test": "test_opt_19_input_exhausts_tokens",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-20",
+      "test": "test_opt_20_output_cap",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-21",
+      "test": "test_opt_21_unknown_usage_stops",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-22",
+      "test": "test_opt_22_repair_keeps_original_deadline",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-23",
+      "test": "test_opt_23_response_before_commit_crash",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-24",
+      "test": "test_opt_24_transaction_rolls_back_both",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-25",
+      "test": "test_opt_25_duplicate_completion_not_charged",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-26",
+      "test": "test_opt_26_duplicate_claims",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-27",
+      "test": "test_opt_27_pid_is_not_ownership",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-28",
+      "test": "test_opt_28_terminal_restart",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-29",
+      "test": "test_opt_29_reviewer_unavailable",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-30",
+      "test": "test_opt_30_invalid_provider_output",
+      "status": "passed",
+      "reason": null
+    }
+  ],
+  "case_counts": {
+    "passed": 29,
+    "failed": 0,
+    "not_applicable_phase2": 1
+  },
+  "unit_tests": {
+    "run": 299,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1
+  },
+  "mutation_checks": [
+    {
+      "mutation": "wrong_task_review",
+      "test": "test_opt_04_wrong_task_review",
+      "detected": true,
+      "assertion_failures": 1,
+      "runtime_errors": 0
+    },
+    {
+      "mutation": "stale_artifact_review",
+      "test": "test_opt_05_old_artifact_hash",
+      "detected": true,
+      "assertion_failures": 1,
+      "runtime_errors": 0
+    },
+    {
+      "mutation": "review_nonce",
+      "test": "test_invalid_review_nonce_rejected",
+      "detected": true,
+      "assertion_failures": 1,
+      "runtime_errors": 0
+    },
+    {
+      "mutation": "contradictory_verdict",
+      "test": "test_opt_07_contradictory_pass",
+      "detected": true,
+      "assertion_failures": 1,
+      "runtime_errors": 0
+    },
+    {
+      "mutation": "acceptance_failure",
+      "test": "test_opt_02_failed_acceptance",
+      "detected": true,
+      "assertion_failures": 1,
+      "runtime_errors": 0
+    },
+    {
+      "mutation": "approval_parameter_binding",
+      "test": "test_opt_15_changed_approved_action",
+      "detected": true,
+      "assertion_failures": 1,
+      "runtime_errors": 0
+    },
+    {
+      "mutation": "remaining_token_cap",
+      "test": "test_opt_20_output_cap",
+      "detected": true,
+      "assertion_failures": 1,
+      "runtime_errors": 0
+    },
+    {
+      "mutation": "transport_timeout",
+      "test": "test_opt_17_remaining_timeout_reaches_transport",
+      "detected": true,
+      "assertion_failures": 1,
+      "runtime_errors": 0
+    },
+    {
+      "mutation": "unknown_usage_stop",
+      "test": "test_opt_21_unknown_usage_stops",
+      "detected": true,
+      "assertion_failures": 1,
+      "runtime_errors": 0
+    },
+    {
+      "mutation": "transaction_atomicity",
+      "test": "test_opt_24_transaction_rolls_back_both",
+      "detected": true,
+      "assertion_failures": 1,
+      "runtime_errors": 0
+    },
+    {
+      "mutation": "duplicate_completion",
+      "test": "test_opt_25_duplicate_completion_not_charged",
+      "detected": true,
+      "assertion_failures": 1,
+      "runtime_errors": 0
+    },
+    {
+      "mutation": "single_owner",
+      "test": "test_opt_26_duplicate_claims",
+      "detected": true,
+      "assertion_failures": 1,
+      "runtime_errors": 0
+    },
+    {
+      "mutation": "terminal_tool_rejection",
+      "test": "test_opt_16_terminal_tool_request",
+      "detected": true,
+      "assertion_failures": 1,
+      "runtime_errors": 0
+    },
+    {
+      "mutation": "interrupted_attempt_replay",
+      "test": "test_crash_cannot_be_retried_without_reconciliation",
+      "detected": true,
+      "assertion_failures": 1,
+      "runtime_errors": 0
+    }
+  ],
+  "limitations": [
+    "OPT-14 real junction/TOCTOU behavior remains Phase 4 work.",
+    "No live provider invocation or real file/shell tool execution in this verification.",
+    "Token input reservation is an estimate; no hard token/cost guarantee is claimed.",
+    "Transport timeout is capped per request; a strict wall-clock network watchdog is not implemented.",
+    "Production acceptance evaluator must be supplied explicitly; absent evidence fails closed.",
+    "Recovery is an exclusive startup operation; no live multi-process takeover or PID adoption."
+  ],
+  "passed": true
+}

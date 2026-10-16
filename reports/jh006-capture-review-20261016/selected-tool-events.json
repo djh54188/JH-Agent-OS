@@ -1,0 +1,88 @@
+{
+  "kind": "derived-view-not-the-raw-archive",
+  "source_archive_sha256": "e9ebd5cafcc64d2e5877119e66f9249c3139610996a6caa6d5146967d9992639",
+  "records": [
+    {
+      "timestamp": "2026-10-16T09:48:51.240Z",
+      "ordinal": 4727,
+      "type": "response_item",
+      "payload": {
+        "type": "custom_tool_call",
+        "id": "ctc_00a3760789251f64016ad1f301fca48198b4e0296b7579f82f",
+        "status": "completed",
+        "call_id": "call_389bc76ed2fb4e458b639bd4bc6739ba",
+        "name": "exec",
+        "input": "text(await tools.exec_command({cmd:\"Write-Output 'JH_CAPTURE_PLUMBING_20261016_OK'\",workdir:\"D:\\\\JH-Agent OS\\\\data\\\\worktrees\\\\n1-artifact-entry\",max_output_tokens:1000}));\n",
+        "internal_chat_message_metadata_passthrough": {
+          "turn_id": "01a14413-7e08-7e72-b3b0-6e4efd8d6c09",
+          "create_time": 1792144129.995443
+        }
+      }
+    },
+    {
+      "timestamp": "2026-10-16T09:48:51.720Z",
+      "ordinal": 4729,
+      "type": "event_msg",
+      "payload": {
+        "type": "item_completed",
+        "thread_id": "01a120b3-bdb6-7b23-93d9-6173f4b7af69",
+        "turn_id": "01a14413-7e08-7e72-b3b0-6e4efd8d6c09",
+        "item": {
+          "type": "CommandExecution",
+          "id": "exec-a1233617-35e0-4e76-8803-087dc8ad729b",
+          "process_id": "73938",
+          "command": [
+            "C:\\Users\\a\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\powershell\\pwsh.exe",
+            "-Command",
+            "Write-Output 'JH_CAPTURE_PLUMBING_20261016_OK'"
+          ],
+          "cwd": "file:///D:/JH-Agent%20OS/data/worktrees/n1-artifact-entry",
+          "parsed_cmd": [
+            {
+              "type": "unknown",
+              "cmd": "Write-Output 'JH_CAPTURE_PLUMBING_20261016_OK'"
+            }
+          ],
+          "source": "unified_exec_startup",
+          "status": "completed",
+          "aggregated_output": "JH_CAPTURE_PLUMBING_20261016_OK\r\n",
+          "exit_code": 0,
+          "duration": {
+            "secs": 0,
+            "nanos": 142127800
+          }
+        },
+        "started_at_ms": 1792144131578,
+        "completed_at_ms": 1792144131720
+      }
+    },
+    {
+      "timestamp": "2026-10-16T09:48:51.778Z",
+      "ordinal": 4730,
+      "type": "response_item",
+      "payload": {
+        "type": "custom_tool_call_output",
+        "id": "ctco_01a1441d-46c2-7851-953a-b7b1c709c931",
+        "call_id": "call_389bc76ed2fb4e458b639bd4bc6739ba",
+        "output": [
+          {
+            "type": "input_text",
+            "text": "Script completed\nWall time 0.5 seconds\nOutput:\n"
+          },
+          {
+            "type": "input_text",
+            "text": "{\"chunk_id\":\"c4c530\",\"wall_time_seconds\":0.142173,\"exit_code\":0,\"original_token_count\":9,\"output\":\"JH_CAPTURE_PLUMBING_20261016_OK\\r\\n\"}"
+          }
+        ],
+        "internal_chat_message_metadata_passthrough": {
+          "turn_id": "01a14413-7e08-7e72-b3b0-6e4efd8d6c09",
+          "create_time": 1792144131.7782853
+        }
+      },
+      "metadata": {
+        "client_authored": false,
+        "fallback_token_limit_override": 12000
+      }
+    }
+  ]
+}
