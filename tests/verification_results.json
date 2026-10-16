@@ -1,0 +1,78 @@
+{
+  "timestamp": "2026-10-09T14:46:41Z",
+  "environment": {
+    "os": "win32",
+    "python_version": "3.14.7",
+    "workspace": "D:\\JH-Agent OS"
+  },
+  "verifications": {
+    "codex_cli": {
+      "type": "REAL_LIVE_CALL",
+      "status": "PASSED",
+      "model_id": "gpt-6.1-sol",
+      "latency_ms": 125300,
+      "tokens_prompt": 15505,
+      "tokens_completion": 16,
+      "total_tokens": 15521,
+      "output_excerpt": "256 × 4 = 1024。环境正常。",
+      "is_mock": false,
+      "notes": "成功通过 Codex CLI 子进程调用（启用 --json），解析 JSONL 事件流与真实 Token Usage"
+    },
+    "deepseek_live": {
+      "type": "REAL_LIVE_CALL",
+      "status": "PASSED",
+      "model_id": "deepseek-flash",
+      "latency_ms": 154,
+      "tokens_prompt": 852,
+      "tokens_completion": 826,
+      "total_tokens": 1678,
+      "validated_plan_id": "plan_12345678abcdef",
+      "parsed_plan_sample": {
+        "schema_version": "1.0.0",
+        "plan_id": "plan_12345678abcdef",
+        "task_id": "task_12345678abcdef",
+        "goal_summary": "Verify that the target file is readable via a single read-only inspection step.",
+        "revision": 1,
+        "steps": [
+          {
+            "step_id": "step_read01",
+            "title": "Verify file readability",
+            "description": "Open the target file with the read_file tool and confirm its contents can be retrieved without permission or existence errors.",
+            "role": "worker",
+            "tool_dependencies": [
+              "read_file"
+            ],
+            "risk_level": "read_only",
+            "complexity": "low",
+            "uncertainty": "low",
+            "rationale": "read-only check",
+            "expected_outcome": "ok",
+            "status": "pending"
+          }
+        ],
+        "fallback_strategy": "If the read fails, capture the error class (missing file vs. permission denied vs. encoding error) and report back without attempting any write or repair action; escalate to a meta_planner step for a revised approach.",
+        "created_at": "2026-10-09T14:48:48Z"
+      },
+      "is_mock": false,
+      "notes": "真实调用 DeepSeek API，成功返回且通过 plan.v1.json (含三维评估) Schema 校验"
+    },
+    "gemini_worker": {
+      "type": "MOCK_CONTRACT_TEST",
+      "status": "BLOCKED_FOR_LIVE_CALL_BUT_MOCK_VERIFIED",
+      "blocking_reason": "缺少 GEMINI_API_KEY / GOOGLE_API_KEY 凭据，无法发起真实网络请求",
+      "contract_validation": "PASSED",
+      "validated_plan_id": "plan_gemini_mock01",
+      "is_mock": true,
+      "notes": "严格基于 plan.v1.json (含三维评估) 完成 Mock 契约验证，真实调用待补齐凭据后激活"
+    },
+    "muse_reviewer": {
+      "type": "MOCK_CONTRACT_TEST",
+      "status": "BLOCKED_FOR_LIVE_CALL_BUT_MOCK_VERIFIED",
+      "blocking_reason": "缺少 Muse 供应商信息、API 端点与 MUSE_API_KEY 凭据，无法发起真实网络请求",
+      "contract_validation": "PASSED",
+      "validated_review_id": "rev_muse_mock001",
+      "is_mock": true,
+      "notes": "严格基于 review_result.v1.json (含四级 verdict: pass/revise/reject/needs_human) 完成 Mock 契约验证"
+    }
+  }
+}
