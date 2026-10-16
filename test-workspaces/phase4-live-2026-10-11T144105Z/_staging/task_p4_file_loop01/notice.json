@@ -1,0 +1,9 @@
+{
+  "notice": "Workspace notice staged and applied via controlled file loop",
+  "generated_by": "worker",
+  "items": [
+    "stage_write",
+    "review",
+    "apply"
+  ]
+}
