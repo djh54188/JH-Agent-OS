@@ -15,8 +15,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT), str(ROOT / "tests")]
 import src.host_capture as original
+import src.capture_binding as boundmod
 import test_jh006_capture_boundaries as boundary
 import test_jh006_host_capture as existing
+import test_jh006_capture_binding as bound
 
 
 def run_case(name, target, old, new, tests):
@@ -28,12 +30,17 @@ def run_case(name, target, old, new, tests):
     exec(compile(source.replace(old, new), target.__file__, "exec"), module.__dict__)
     suite = unittest.TestSuite()
     saved = {}
-    if target is original:
+    if target in (original, boundmod):
         # Tests import function aliases, so update every actual consumer.
-        for consumer in (boundary, existing):
+        consumers = (boundary, existing, bound, boundmod) if target is original else (bound,)
+        for consumer in consumers:
             for key in list(vars(consumer)):
                 value = getattr(consumer, key)
-                if callable(value) and getattr(value, "__module__", None) == original.__name__:
+                if value is target:
+                    saved[(consumer, key)] = value
+                    setattr(consumer, key, module)
+                    continue
+                if callable(value) and getattr(value, "__module__", None) == target.__name__:
                     saved[(consumer, key)] = value
                     setattr(consumer, key, getattr(module, key))
     else:
@@ -92,6 +99,66 @@ def main():
          'selected, call, expected_argv=event.get("argv"), expected_workdir=event.get("workdir"),',
          'selected, call, expected_argv=event.get("argv"), expected_workdir=_file_uri_to_path(selected["cwd_uri"]),',
          [(B, "test_manifest_workdir_must_match_raw_cwd")]),
+        ("binding-owner-held", boundmod,
+         "    if not storage.claim_task(task_id, owner_id):",
+         "    if False:",
+         [(bound.TestCaptureBindingLifecycle, "test_owner_held_refused")]),
+        ("binding-delivery-request", boundmod,
+         '        raise BindingRefused("delivery-mismatch: request delivery is not the current waiting delivery")',
+         "        pass",
+         [(bound.TestCaptureBindingRegister, "test_wrong_delivery_id_refused")]),
+        ("binding-claim-identity", boundmod,
+         '        raise BindingRefused("claim-identity-mismatch: manifest task/delivery claims differ from the request")',
+         "        pass",
+         [(bound.TestCaptureBindingClaims, "test_manifest_delivery_claim_mismatch_refused")]),
+        ("binding-claim-artifact", boundmod,
+         '        raise BindingRefused("claim-artifact-mismatch: manifest artifact claim differs from the prepared version")',
+         "        pass",
+         [(bound.TestCaptureBindingClaims, "test_manifest_artifact_claim_mismatch_refused")]),
+        ("binding-claim-review", boundmod,
+         '        raise BindingRefused("claim-review-mismatch: manifest review claim differs from the prepared review")',
+         "        pass",
+         [(bound.TestCaptureBindingClaims, "test_manifest_review_claim_mismatch_refused")]),
+        ("binding-artifact-current", boundmod,
+         '        raise BindingRefused("artifact-changed: current artifact differs from the prepared version")',
+         "        pass",
+         [(bound.TestCaptureBindingClaims, "test_changed_artifact_refused")]),
+        ("binding-review-current", boundmod,
+         '        raise BindingRefused("review-stale: current review differs from the prepared review")',
+         "        pass",
+         [(bound.TestCaptureBindingClaims, "test_new_review_attempt_refused")]),
+        ("binding-target-bytes", boundmod,
+         '        raise BindingRefused("target-bytes-mismatch: workspace target differs from expected_after")',
+         "        pass",
+         [(bound.TestCaptureBindingLifecycle, "test_baseline_target_refused_and_state_kept")]),
+        ("binding-liveness", boundmod,
+         '            raise BindingRefused("archive-live-mismatch: archived bytes differ from the live store")',
+         "            pass",
+         [(bound.TestCaptureBindingTruth, "test_live_bytes_diverged_refused")]),
+        ("binding-source", boundmod,
+         '        raise BindingRefused("source-not-production: only production tasks bind real captures")',
+         "        pass",
+         [(bound.TestCaptureBindingRegister, "test_fixture_task_refused")]),
+        ("binding-exit-passthrough", boundmod,
+         '        expected_exit=snapshot["check"]["expect_exit"],',
+         '        expected_exit=selected["exit_code"],',
+         [(bound.TestCaptureBindingTruth, "test_nonzero_exit_refused")]),
+        ("binding-marker-passthrough", boundmod,
+         '        expected_marker=snapshot["check"]["marker"] or None,',
+         "        expected_marker=None,",
+         [(bound.TestCaptureBindingTruth, "test_markerless_output_refused")]),
+        ("binding-argv", original,
+         '    if list(exec_record["argv"]) != list(expected_argv):',
+         "    if False:",
+         [(bound.TestCaptureBindingTruth, "test_echo_argv_refused")]),
+        ("binding-workdir", original,
+         '    if _norm_path(_file_uri_to_path(exec_record["cwd_uri"])) != _norm_path(expected_workdir):',
+         "    if False:",
+         [(bound.TestCaptureBindingTruth, "test_wrong_workdir_refused")]),
+        ("binding-output-digest", original,
+         '    if sha256_hex(output.encode("utf-8")) != want_output:',
+         "    if False:",
+         [(bound.TestCaptureBindingArchive, "test_tampered_manifest_digest_refused")]),
     ]
     results = [run_case(*case) for case in cases]
     report = {"kind": "synthetic-mutations", "mutations": len(results),
