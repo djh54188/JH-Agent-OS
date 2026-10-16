@@ -1,0 +1,700 @@
+{"captured": false, "reason": "source-untrusted: require a file in the observed desktop session store: 'D:\\\\JH-Agent OS\\\\data\\\\worktrees\\\\n1-artifact-entry\\\\tests\\\\test_jh006_capture_boundaries.py' is not in the subpath of 'C:\\\\Users\\\\a\\\\.codex\\\\sessions'"}
+.....................................................................EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE...EEEEEEEE................................................................................................................................................s.....................................................................................
+======================================================================
+ERROR: test_cli_protocol_archive_refused (test_jh006_capture_binding.TestCaptureBindingArchive.test_cli_protocol_archive_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 502, in test_cli_protocol_archive_refused
+    orch, tid, delivery, store = self._valid()
+                                 ~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 455, in _valid
+    orch, tid, delivery = self._prepared_production()
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 60, in _prepared_production
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_duplicate_archive_item_refused (test_jh006_capture_binding.TestCaptureBindingArchive.test_duplicate_archive_item_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 521, in test_duplicate_archive_item_refused
+    orch, tid, delivery, store = self._valid()
+                                 ~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 455, in _valid
+    orch, tid, delivery = self._prepared_production()
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 60, in _prepared_production
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_malformed_manifest_refused (test_jh006_capture_binding.TestCaptureBindingArchive.test_malformed_manifest_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 493, in test_malformed_manifest_refused
+    orch, tid, delivery, store = self._valid()
+                                 ~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 455, in _valid
+    orch, tid, delivery = self._prepared_production()
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 60, in _prepared_production
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_missing_archive_files_refused (test_jh006_capture_binding.TestCaptureBindingArchive.test_missing_archive_files_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 484, in test_missing_archive_files_refused
+    orch, tid, delivery, store = self._valid()
+                                 ~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 455, in _valid
+    orch, tid, delivery = self._prepared_production()
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 60, in _prepared_production
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_request_selection_mismatch_refused (test_jh006_capture_binding.TestCaptureBindingArchive.test_request_selection_mismatch_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 513, in test_request_selection_mismatch_refused
+    orch, tid, delivery, store = self._valid()
+                                 ~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 455, in _valid
+    orch, tid, delivery = self._prepared_production()
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 60, in _prepared_production
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_tampered_event_bytes_refused (test_jh006_capture_binding.TestCaptureBindingArchive.test_tampered_event_bytes_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 472, in test_tampered_event_bytes_refused
+    orch, tid, delivery, store = self._valid()
+                                 ~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 455, in _valid
+    orch, tid, delivery = self._prepared_production()
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 60, in _prepared_production
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_tampered_manifest_digest_refused (test_jh006_capture_binding.TestCaptureBindingArchive.test_tampered_manifest_digest_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 461, in test_tampered_manifest_digest_refused
+    orch, tid, delivery, store = self._valid()
+                                 ~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 455, in _valid
+    orch, tid, delivery = self._prepared_production()
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 60, in _prepared_production
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_changed_artifact_refused (test_jh006_capture_binding.TestCaptureBindingClaims.test_changed_artifact_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 330, in test_changed_artifact_refused
+    orch, tid, delivery, store = self._valid()
+                                 ~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 282, in _valid
+    orch, tid, delivery = self._prepared_production()
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 60, in _prepared_production
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_malformed_delivery_refused (test_jh006_capture_binding.TestCaptureBindingClaims.test_malformed_delivery_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 355, in test_malformed_delivery_refused
+    orch, tid, delivery, store = self._valid()
+                                 ~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 282, in _valid
+    orch, tid, delivery = self._prepared_production()
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 60, in _prepared_production
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_manifest_artifact_claim_mismatch_refused (test_jh006_capture_binding.TestCaptureBindingClaims.test_manifest_artifact_claim_mismatch_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 308, in test_manifest_artifact_claim_mismatch_refused
+    orch, tid, delivery, store = self._valid()
+                                 ~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 282, in _valid
+    orch, tid, delivery = self._prepared_production()
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 60, in _prepared_production
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_manifest_delivery_claim_mismatch_refused (test_jh006_capture_binding.TestCaptureBindingClaims.test_manifest_delivery_claim_mismatch_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 298, in test_manifest_delivery_claim_mismatch_refused
+    orch, tid, delivery, store = self._valid()
+                                 ~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 282, in _valid
+    orch, tid, delivery = self._prepared_production()
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 60, in _prepared_production
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_manifest_review_claim_mismatch_refused (test_jh006_capture_binding.TestCaptureBindingClaims.test_manifest_review_claim_mismatch_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 320, in test_manifest_review_claim_mismatch_refused
+    orch, tid, delivery, store = self._valid()
+                                 ~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 282, in _valid
+    orch, tid, delivery = self._prepared_production()
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 60, in _prepared_production
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_manifest_task_claim_mismatch_refused (test_jh006_capture_binding.TestCaptureBindingClaims.test_manifest_task_claim_mismatch_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 288, in test_manifest_task_claim_mismatch_refused
+    orch, tid, delivery, store = self._valid()
+                                 ~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 282, in _valid
+    orch, tid, delivery = self._prepared_production()
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 60, in _prepared_production
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_new_review_attempt_refused (test_jh006_capture_binding.TestCaptureBindingClaims.test_new_review_attempt_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 345, in test_new_review_attempt_refused
+    orch, tid, delivery, store = self._valid()
+                                 ~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 282, in _valid
+    orch, tid, delivery = self._prepared_production()
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 60, in _prepared_production
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_binding_survives_restart_and_reads_back (test_jh006_capture_binding.TestCaptureBindingCurrent.test_binding_survives_restart_and_reads_back)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 619, in test_binding_survives_restart_and_reads_back
+    orch, tid, delivery = self._prepared_production(use_file_db=True)
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 60, in _prepared_production
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_cancelled_task_binding_not_current_but_kept (test_jh006_capture_binding.TestCaptureBindingCurrent.test_cancelled_task_binding_not_current_but_kept)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 639, in test_cancelled_task_binding_not_current_but_kept
+    orch, tid, delivery = self._prepared_production()
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 60, in _prepared_production
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_changed_artifact_binding_not_current (test_jh006_capture_binding.TestCaptureBindingCurrent.test_changed_artifact_binding_not_current)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 654, in test_changed_artifact_binding_not_current
+    orch, tid, delivery = self._prepared_production()
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 60, in _prepared_production
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_deleted_archive_binding_not_current (test_jh006_capture_binding.TestCaptureBindingCurrent.test_deleted_archive_binding_not_current)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 671, in test_deleted_archive_binding_not_current
+    orch, tid, delivery = self._prepared_production()
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 60, in _prepared_production
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_missing_binding_reports_not_current (test_jh006_capture_binding.TestCaptureBindingCurrent.test_missing_binding_reports_not_current)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 684, in test_missing_binding_reports_not_current
+    verdict = verify_binding_current(orch.storage, "task_missing0001", "dlv_missing")
+                                     ^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'storage'
+
+======================================================================
+ERROR: test_pre_feature_database_reads_empty (test_jh006_capture_binding.TestCaptureBindingCurrent.test_pre_feature_database_reads_empty)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 690, in test_pre_feature_database_reads_empty
+    orch.storage._conn.execute("DROP TABLE capture_bindings")
+    ^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'storage'
+
+======================================================================
+ERROR: test_baseline_target_refused_and_state_kept (test_jh006_capture_binding.TestCaptureBindingLifecycle.test_baseline_target_refused_and_state_kept)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 547, in test_baseline_target_refused_and_state_kept
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_owner_held_refused (test_jh006_capture_binding.TestCaptureBindingLifecycle.test_owner_held_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 561, in test_owner_held_refused
+    orch, tid, delivery, store = self._valid()
+                                 ~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 538, in _valid
+    orch, tid, delivery = self._prepared_production()
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 60, in _prepared_production
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_same_call_conflicting_delivery_refused (test_jh006_capture_binding.TestCaptureBindingLifecycle.test_same_call_conflicting_delivery_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 592, in test_same_call_conflicting_delivery_refused
+    _, delivery_a = self._prepared_on(orch, payload_a)
+                    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 611, in _prepared_on
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_same_delivery_conflicting_call_refused (test_jh006_capture_binding.TestCaptureBindingLifecycle.test_same_delivery_conflicting_call_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 573, in test_same_delivery_conflicting_call_refused
+    orch, tid, delivery, store = self._valid()
+                                 ~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 538, in _valid
+    orch, tid, delivery = self._prepared_production()
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 60, in _prepared_production
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_fixture_task_refused (test_jh006_capture_binding.TestCaptureBindingRegister.test_fixture_task_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 267, in test_fixture_task_refused
+    self._assemble_reviewing(orch, payload, stamp_source="fixture",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_non_waiting_task_refused (test_jh006_capture_binding.TestCaptureBindingRegister.test_non_waiting_task_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 229, in test_non_waiting_task_refused
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_register_persists_binding_and_event (test_jh006_capture_binding.TestCaptureBindingRegister.test_register_persists_binding_and_event)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 167, in test_register_persists_binding_and_event
+    orch, tid, delivery = self._prepared_production()
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 60, in _prepared_production
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_repeat_registration_is_idempotent (test_jh006_capture_binding.TestCaptureBindingRegister.test_repeat_registration_is_idempotent)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 206, in test_repeat_registration_is_idempotent
+    orch, tid, delivery = self._prepared_production()
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 60, in _prepared_production
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_reviewing_without_delivery_refused (test_jh006_capture_binding.TestCaptureBindingRegister.test_reviewing_without_delivery_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 240, in test_reviewing_without_delivery_refused
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_unknown_task_raises_key_error (test_jh006_capture_binding.TestCaptureBindingRegister.test_unknown_task_raises_key_error)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 221, in test_unknown_task_raises_key_error
+    orch.storage, "task_missing0001", delivery_id="dlv_x",
+    ^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'storage'
+
+======================================================================
+ERROR: test_wrong_delivery_id_refused (test_jh006_capture_binding.TestCaptureBindingRegister.test_wrong_delivery_id_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 250, in test_wrong_delivery_id_refused
+    orch, tid, delivery = self._prepared_production()
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 60, in _prepared_production
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_duplicate_live_item_refused (test_jh006_capture_binding.TestCaptureBindingTruth.test_duplicate_live_item_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 443, in test_duplicate_live_item_refused
+    orch, tid, delivery, store = self._valid()
+                                 ~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 367, in _valid
+    orch, tid, delivery = self._prepared_production()
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 60, in _prepared_production
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_echo_argv_refused (test_jh006_capture_binding.TestCaptureBindingTruth.test_echo_argv_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 373, in test_echo_argv_refused
+    orch, tid, delivery, store = self._valid()
+                                 ~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 367, in _valid
+    orch, tid, delivery = self._prepared_production()
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 60, in _prepared_production
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_live_bytes_diverged_refused (test_jh006_capture_binding.TestCaptureBindingTruth.test_live_bytes_diverged_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 420, in test_live_bytes_diverged_refused
+    orch, tid, delivery, store = self._valid()
+                                 ~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 367, in _valid
+    orch, tid, delivery = self._prepared_production()
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 60, in _prepared_production
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_markerless_output_refused (test_jh006_capture_binding.TestCaptureBindingTruth.test_markerless_output_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 402, in test_markerless_output_refused
+    orch, tid, delivery, store = self._valid()
+                                 ~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 367, in _valid
+    orch, tid, delivery = self._prepared_production()
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 60, in _prepared_production
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_missing_live_thread_refused (test_jh006_capture_binding.TestCaptureBindingTruth.test_missing_live_thread_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 432, in test_missing_live_thread_refused
+    orch, tid, delivery, _ = self._valid()
+                             ~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 367, in _valid
+    orch, tid, delivery = self._prepared_production()
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 60, in _prepared_production
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_nonzero_exit_refused (test_jh006_capture_binding.TestCaptureBindingTruth.test_nonzero_exit_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 393, in test_nonzero_exit_refused
+    orch, tid, delivery, store = self._valid()
+                                 ~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 367, in _valid
+    orch, tid, delivery = self._prepared_production()
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 60, in _prepared_production
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_wrong_call_script_refused (test_jh006_capture_binding.TestCaptureBindingTruth.test_wrong_call_script_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 411, in test_wrong_call_script_refused
+    orch, tid, delivery, store = self._valid()
+                                 ~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 367, in _valid
+    orch, tid, delivery = self._prepared_production()
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 60, in _prepared_production
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+======================================================================
+ERROR: test_wrong_workdir_refused (test_jh006_capture_binding.TestCaptureBindingTruth.test_wrong_workdir_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 384, in test_wrong_workdir_refused
+    orch, tid, delivery, store = self._valid()
+                                 ~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 367, in _valid
+    orch, tid, delivery = self._prepared_production()
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_capture_binding.py", line 60, in _prepared_production
+    self._assemble_reviewing(orch, payload, stamp_source="production",
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             with_source_event=False)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_code_delivery.py", line 200, in _assemble_reviewing
+    orch.submit_task(payload)
+    ^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'submit_task'
+
+----------------------------------------------------------------------
+Ran 341 tests in 9.210s
+
+FAILED (errors=39, skipped=1)

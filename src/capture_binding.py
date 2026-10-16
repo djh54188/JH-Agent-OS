@@ -13,14 +13,12 @@ Trust design:
 - The archive directory argument is UNTRUSTED INPUT: every byte read from it
   is re-parsed, re-derived, and byte-compared against the live session store
   before anything persists. Caller-passed JSON/digests/paths confer nothing.
-- Fixed expectations come from control oracles (sealed fixture, trusted
-  workspace) plus two operator re-assertions (expected argv, expected call
-  script); both are byte-compared against live re-derived facts.
+- Fixed invocation, check seal, workspace and target hashes come from control
+  facts. Operator re-assertions must equal that single supported plan.
 - The live session root below is FIXED and mirrors the capture entry; no
   parameter substitutes it (a signature test pins the register surface).
-- Pinned argv/call-script SEMANTIC correctness (does this script run the
-  fixed check properly) is not mechanical; the exact texts are preserved
-  verbatim for per-package human review and listed as review items.
+- Only the fixed, control-generated Windows desktop wrapper is admitted.
+  Arbitrary scripts, echo substitutes and old delivery invocations are refused.
 - This module NEVER feeds complete_code_delivery and creates no task states.
   Production complete stays closed; bindings are evidence for review only.
 """
@@ -28,18 +26,24 @@ Trust design:
 import json
 import re
 import sqlite3
+import sys
 import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from src.adapters import SchemaValidationError
+from src.control_guards import validate_review
 from src.artifacts import content_sha256
 from src.code_delivery import (
     CODE_FIXTURE_ID,
+    is_clean_pass_review,
     CODE_TEMPLATES,
     CodeDeliveryRefused,
     resolve_target_path,
     sealed_fixture_bytes,
     template_for_task,
+    parse_fixture_patch,
+    verify_production_history_clean,
 )
 from src.host_capture import (
     MAX_INPUT_BYTES,
@@ -118,7 +122,12 @@ def _read_live_segments(thread_id: str) -> List[Dict[str, Any]]:
     segments = []
     for path in _resolve_live_segments(thread_id):
         try:
-            raw = path.read_bytes()
+            with path.open("rb") as handle:
+                raw = handle.read(MAX_INPUT_BYTES + 1)
+            with path.open("rb") as handle:
+                second = handle.read(MAX_INPUT_BYTES + 1)
+            if raw != second:
+                raise BindingRefused("source-unstable: live segment changed during read")
         except OSError as exc:
             raise BindingRefused(f"source-unreadable: live segment unreadable: {exc}") from None
         if len(raw) > MAX_INPUT_BYTES:
@@ -177,11 +186,11 @@ def _register_locked(storage, task_id: str, *, delivery_id: str, archive_dir: Pa
             storage, task_id, delivery_id=delivery_id, archive_dir=archive_dir,
             thread_id=thread_id, item_id=item_id, call_id=call_id,
             expected_argv=expected_argv, expected_call_input=expected_call_input)
-    except (CaptureError, CodeDeliveryRefused) as exc:
+    except (CaptureError, CodeDeliveryRefused, RecursionError) as exc:
         raise BindingRefused(str(exc)) from exc
 
 
-def _control_snapshot(storage, task_id: str, delivery_id: str) -> Dict[str, Any]:
+def _control_snapshot(storage, task_id: str, delivery_id: str, *, check_target=True) -> Dict[str, Any]:
     task = storage.get_task(task_id)
     if task["status"] != "reviewing":
         raise BindingRefused(f"status-mismatch: binding requires reviewing, got {task['status']!r}")
@@ -224,6 +233,37 @@ def _control_snapshot(storage, task_id: str, delivery_id: str) -> Dict[str, Any]
             or content_sha256(json.dumps(review, sort_keys=True)) != delivery.get("review_sha256")
             or storage.get_control(task_id).get("active_attempt_id") != delivery.get("review_attempt_id")):
         raise BindingRefused("review-stale: current review differs from the prepared review")
+    if (list(task.get("acceptance_criteria") or []) != tpl["criteria"]
+            or (task.get("context") or {}).get("target_files") != [tpl["authorized_target"]]):
+        raise BindingRefused("template-mismatch: acceptance or authorized targets changed")
+    if verify_production_history_clean(storage, task_id) is not None:
+        raise BindingRefused("source-not-production: model history is missing confirmed real provenance")
+    control = storage.get_control(task_id)
+    runtime = task["_runtime"]
+    if (control.get("pending_json") or storage.has_uncertain_attempt(task_id)
+            or runtime.get("tokens_unknown_count") or runtime.get("has_unconfirmed_side_effect")):
+        raise BindingRefused("control-blocked: approval, usage or execution result is unresolved")
+    target_ref = f"mem://{task_id}/{latest['artifact_id']}"
+    snapshots = {target_ref: {"content": latest["content"], "sha256": latest["sha256"]}}
+    if (latest.get("artifact_type") != "patch_text" or task.get("artifact_refs") != [target_ref]
+            or content_sha256(latest["content"]) != latest["sha256"]
+            or not is_clean_pass_review(review)
+            or attempts[-1].get("context", {}).get("artifact_hashes") != {target_ref: latest["sha256"]}):
+        raise BindingRefused("review-stale: no valid pass covering the current patch")
+    try:
+        validate_review(review, {"task_id": task_id, "review_id": review["review_id"],
+            "target_artifact_path": target_ref, "reviewer_role": review["reviewer_role"]},
+            snapshots, snapshots)
+        patch_result = parse_fixture_patch(latest["content"], tpl["authorized_target"])
+    except (SchemaValidationError, CodeDeliveryRefused, KeyError, TypeError) as exc:
+        raise BindingRefused(f"review-stale: current patch/review correlation invalid: {exc}") from None
+    if (patch_result["content_bytes"] != sealed_fixture_bytes(tpl, "reference_rel")
+            or delivery["baseline"] != {"path": tpl["authorized_target"],
+                 "sha256_before": sha256_hex(sealed_fixture_bytes(tpl, "baseline_rel"))}
+            or delivery["expected_after"] != {"path": tpl["authorized_target"],
+                 "sha256": sha256_hex(patch_result["content_bytes"])}
+            or delivery.get("authorized_files") != [tpl["authorized_target"]]):
+        raise BindingRefused("delivery-malformed: before/after/scope differs from the reviewed sealed patch")
     expectation = sealed_check_expectation()
     ws = (task.get("context") or {}).get("workspace_root")
     if not isinstance(ws, str) or not ws:
@@ -236,7 +276,7 @@ def _control_snapshot(storage, task_id: str, delivery_id: str) -> Dict[str, Any]
         actual_sha = sha256_hex(Path(target_abs).read_bytes())
     except OSError as exc:
         raise BindingRefused(f"target-unreadable: cannot read authorized target: {exc}") from None
-    if actual_sha != delivery["expected_after"]["sha256"]:
+    if check_target and actual_sha != delivery["expected_after"]["sha256"]:
         raise BindingRefused("target-bytes-mismatch: workspace target differs from expected_after")
     return {"task_id": task_id, "status": task["status"], "delivery": delivery,
             "workspace_root": ws, "authorized_target": tpl["authorized_target"],
@@ -250,15 +290,70 @@ def _control_snapshot(storage, task_id: str, delivery_id: str) -> Dict[str, Any]
             "snapshot_at": _utc_now_iso()}
 
 
+def _invocation_for_snapshot(snapshot):
+    """One frozen local Windows invocation. No arbitrary shell/JS validation."""
+    delivery = snapshot["delivery"]
+    context = {key: snapshot[key] for key in ("task_id", "workspace_root", "artifact", "review", "check")}
+    context["delivery"] = delivery
+    context_hash = sha256_hex(json.dumps(context, ensure_ascii=False, sort_keys=True).encode("utf8"))
+    target = resolve_target_path(snapshot["workspace_root"], snapshot["authorized_target"])
+    checker = str((Path(__file__).resolve().parents[1] / snapshot["check"]["check_rel"]).resolve())
+    # Execute exactly the bytes whose seal was checked. Verify target bytes before
+    # and after the check; no claim of exclusion against noncooperating writers.
+    program = "\n".join([
+        "import hashlib,sys",
+        "from pathlib import Path",
+        f"# JH delivery context {context_hash}",
+        f"target=Path({target!r})",
+        f"checker=Path({checker!r})",
+        f"expected={delivery['expected_after']['sha256']!r}",
+        "def require_target():",
+        "    if hashlib.sha256(target.read_bytes()).hexdigest()!=expected: raise SystemExit(3)",
+        "require_target()",
+        "raw=checker.read_bytes()",
+        f"if hashlib.sha256(raw).hexdigest()!={snapshot['check']['check_sha256']!r}: raise SystemExit(4)",
+        "sys.argv=[str(checker),'--target',str(target)]",
+        "try:",
+        "    exec(compile(raw,str(checker),'exec'),{'__name__':'__main__','__file__':str(checker)})",
+        "except SystemExit as result:",
+        "    if result.code not in (None,0): raise",
+        "require_target()",
+    ])
+    quote = lambda value: "'" + value.replace("'", "''") + "'"
+    command = "& " + " ".join(quote(t) for t in [str(Path(sys.executable).resolve()),
+              "-X", "utf8", "-B", "-c", program]) + "\nexit $LASTEXITCODE"
+    # This wrapper was measured in the actual desktop runtime. Other wrappers
+    # must be separately verified; they are not inferred from caller expectations.
+    shell = str(Path.home() / ".cache/codex-runtimes/codex-primary-runtime/dependencies/native/powershell/pwsh.exe")
+    call = "text(await tools.exec_command(" + json.dumps({"cmd": command,
+        "workdir": snapshot["workspace_root"], "max_output_tokens": 1000},
+        ensure_ascii=False, separators=(",", ":")) + "));\n"
+    return {"argv": [shell, "-Command", command], "call_input": call,
+            "apply_attempt_id": "capture-check-" + context_hash, "context_sha256": context_hash}
+
+
+def capture_invocation_for_delivery(storage, task_id, delivery_id):
+    """Read-only plan for the host, before or after host application.
+
+    Planning does not verify applied bytes or register any evidence. Registration
+    always calls the post-apply snapshot gate; no public bypass parameter exists.
+    """
+    return _invocation_for_snapshot(_control_snapshot(storage, task_id, delivery_id, check_target=False))
+
+
 def _read_archive(archive_dir: Path):
     try:
-        events_raw = (archive_dir / "events.jsonl").read_bytes()
-        manifest_raw = (archive_dir / "manifest.json").read_bytes()
+        with (archive_dir / "events.jsonl").open("rb") as handle:
+            events_raw = handle.read(MAX_INPUT_BYTES + 1)
+        with (archive_dir / "manifest.json").open("rb") as handle:
+            manifest_raw = handle.read(MAX_INPUT_BYTES + 1)
+        if max(len(events_raw), len(manifest_raw)) > MAX_INPUT_BYTES:
+            raise BindingRefused("archive-too-large: archive exceeds read bound")
     except OSError as exc:
         raise BindingRefused(f"archive-missing: capture archive unreadable: {exc}") from None
     try:
         manifest = json.loads(manifest_raw.decode("utf-8"))
-    except (UnicodeDecodeError, ValueError) as exc:
+    except (UnicodeDecodeError, ValueError, RecursionError) as exc:
         raise BindingRefused(f"manifest-malformed: manifest is not JSON: {exc}") from None
     if not isinstance(manifest, dict):
         raise BindingRefused("manifest-malformed: manifest is not an object")
@@ -313,13 +408,18 @@ def _bind_verified(storage, task_id: str, *, delivery_id: str, archive_dir: Path
     events_raw, manifest_raw, manifest = _read_archive(archive_dir)
     if manifest.get("task_claim") != task_id or manifest.get("delivery_claim") != delivery_id:
         raise BindingRefused("claim-identity-mismatch: manifest task/delivery claims differ from the request")
-    art_claim = manifest.get("artifact_claim") or {}
+    art_claim = manifest.get("artifact_claim")
+    if not isinstance(art_claim, dict):
+        raise BindingRefused("claim-artifact-mismatch: artifact claim must be an object")
     pinned = delivery.get("artifact") or {}
-    if (art_claim.get("version") != pinned.get("version")
+    if (type(art_claim.get("version")) is not int
+            or art_claim.get("version") != pinned.get("version")
             or art_claim.get("artifact_id") != pinned.get("artifact_id")
             or art_claim.get("sha256") != pinned.get("sha256")):
         raise BindingRefused("claim-artifact-mismatch: manifest artifact claim differs from the prepared version")
-    rev_claim = manifest.get("review_claim") or {}
+    rev_claim = manifest.get("review_claim")
+    if not isinstance(rev_claim, dict):
+        raise BindingRefused("claim-review-mismatch: review claim must be an object")
     if rev_claim.get("review_id") != delivery.get("review_id"):
         raise BindingRefused("claim-review-mismatch: manifest review claim differs from the prepared review")
     apply_attempt = manifest.get("apply_attempt_id")
@@ -336,6 +436,11 @@ def _bind_verified(storage, task_id: str, *, delivery_id: str, archive_dir: Path
         expected_exit=snapshot["check"]["expect_exit"],
         expected_marker=snapshot["check"]["marker"] or None,
         expected_call_input=expected_call_input)
+    invocation = _invocation_for_snapshot(snapshot)
+    if expected_argv != invocation["argv"] or expected_call_input != invocation["call_input"]:
+        raise BindingRefused("invocation-unverified: caller pin differs from the control-owned fixed check")
+    if apply_attempt != invocation["apply_attempt_id"]:
+        raise BindingRefused("apply-attempt-mismatch: capture does not identify the current delivery check")
     event_digest = sha256_hex(events_raw)
     manifest_digest = sha256_hex(manifest_raw)
     existing = storage.get_capture_binding(task_id, delivery_id)
@@ -347,6 +452,10 @@ def _bind_verified(storage, task_id: str, *, delivery_id: str, archive_dir: Path
         raise BindingRefused("binding-conflict: delivery already bound to a different capture")
     if storage.get_capture_binding_by_call(thread_id, item_id, call_id) is not None:
         raise BindingRefused("binding-conflict: capture call already bound to another delivery")
+    final_snapshot = _control_snapshot(storage, task_id, delivery_id)
+    if {k:v for k,v in snapshot.items() if k != "snapshot_at"} != {
+            k:v for k,v in final_snapshot.items() if k != "snapshot_at"}:
+        raise BindingRefused("control-snapshot-changed: facts drifted during source verification")
     binding = {
         "binding_id": f"cb_{uuid.uuid4().hex}",
         "task_id": task_id,
@@ -364,7 +473,7 @@ def _bind_verified(storage, task_id: str, *, delivery_id: str, archive_dir: Path
         "apply_attempt_id": apply_attempt,
         "recorded_at": _utc_now_iso(),
         "review_items_json": json.dumps(
-            ["pinned argv/call-script semantic correctness is operator-reviewed per package"],
+            [],
             ensure_ascii=False),
     }
     try:
@@ -414,39 +523,23 @@ def verify_binding_current(storage, task_id: str, delivery_id: str) -> Dict[str,
         return {"current": False, "reasons": ["no-binding"], "binding": None}
     reasons = []
     try:
-        task = storage.get_task(task_id)
-    except KeyError:
-        return {"current": False, "reasons": ["task-missing"], "binding": row}
-    delivery = (task.get("metadata") or {}).get("_delivery") or {}
-    if task.get("status") != "reviewing" or delivery.get("state") != "waiting_host":
-        reasons.append("task-not-waiting")
-    snapshot = json.loads(row["snapshot_json"])
-    if delivery.get("delivery_id") != row["delivery_id"]:
-        reasons.append("delivery-changed")
-    if (delivery.get("artifact") or {}) != (snapshot.get("delivery") or {}).get("artifact"):
-        reasons.append("artifact-changed")
-    if (delivery.get("review_id"), delivery.get("review_sha256")) != (
-            snapshot.get("review", {}).get("review_id"), snapshot.get("review", {}).get("sha256")):
-        reasons.append("review-changed")
-    latest = storage.get_latest_artifact(task_id)
-    snap_art = snapshot.get("artifact") or {}
-    if (latest is None or (latest["version"], latest["artifact_id"], latest["sha256"]) !=
-            (snap_art.get("version"), snap_art.get("artifact_id"), snap_art.get("sha256"))):
-        reasons.append("artifact-changed")
-    attempts = [a for a in storage.list_model_attempts(task_id)
-                if a.get("actor_role") == "reviewer" and a.get("status") == "completed"]
-    if not attempts or attempts[-1]["attempt_id"] != snapshot.get("review", {}).get("attempt_id"):
-        reasons.append("review-changed")
-    try:
-        events_raw = (Path(row["archive_dir"]) / "events.jsonl").read_bytes()
-        manifest_raw = (Path(row["archive_dir"]) / "manifest.json").read_bytes()
-    except OSError:
-        reasons.append("archive-missing")
-        return {"current": False, "reasons": reasons, "binding": row}
-    if sha256_hex(events_raw) != row["event_digest"]:
-        reasons.append("archive-tampered")
-    if sha256_hex(manifest_raw) != row["manifest_digest"]:
-        reasons.append("archive-tampered")
+        snapshot = json.loads(row["snapshot_json"])
+        current = _control_snapshot(storage, task_id, delivery_id)
+        def stable(value):
+            return {key: item for key, item in value.items() if key != "snapshot_at"}
+        if stable(snapshot) != stable(current):
+            reasons.append("control-snapshot-changed")
+        events_raw, manifest_raw, manifest = _read_archive(Path(row["archive_dir"]))
+        if sha256_hex(events_raw) != row["event_digest"] or sha256_hex(manifest_raw) != row["manifest_digest"]:
+            reasons.append("archive-tampered")
+        else:
+            verify_capture_archive(manifest, archive_raw=events_raw)
+        if json.loads(row["review_items_json"]):
+            reasons.append("invocation-unverified")
+    except (BindingRefused, CaptureError, CodeDeliveryRefused, KeyError, TypeError, ValueError) as exc:
+        reason = str(exc).split(":", 1)[0]
+        # Preserve the public coarse stale categories used by earlier controls.
+        reason = {"status-mismatch": "task-not-waiting", "review-stale": "review-changed",
+                  "delivery-mismatch": "delivery-changed"}.get(reason, reason)
+        reasons.append(reason)
     return {"current": not reasons, "reasons": reasons, "binding": row}
-
-

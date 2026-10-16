@@ -1,0 +1,7 @@
+{"captured": false, "reason": "source-untrusted: require a file in the observed desktop session store: 'D:\\\\JH-Agent OS\\\\data\\\\worktrees\\\\n1-artifact-entry\\\\tests\\\\test_jh006_capture_boundaries.py' is not in the subpath of 'C:\\\\Users\\\\a\\\\.codex\\\\sessions'"}
+{"passed": true, "cases": {"passed": 29, "failed": 0, "not_applicable_phase2": 1}, "mutations_detected": 14, "report": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\phase2-hardening-verification.json"}
+.................................................................................................................................................................................................................................................................................s.....................................................................................
+----------------------------------------------------------------------
+Ran 359 tests in 13.222s
+
+OK (skipped=1)

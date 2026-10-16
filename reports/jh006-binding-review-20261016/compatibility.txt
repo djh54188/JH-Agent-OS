@@ -1,0 +1,1 @@
+{"passed": true, "source_baseline": "ec103a0", "synthetic_data": true, "legacy_tables": 9, "legacy_rows_unchanged": true, "readonly_bytes_unchanged": true, "new_table_empty": true, "unique_indexes_present": true, "early_candidate_table_index_upgrade": true}

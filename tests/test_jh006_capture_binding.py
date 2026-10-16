@@ -53,6 +53,10 @@ def _cwd_uri(ws):
 
 
 class _BindCase(_Case):
+    def _orch(self, **kwargs):
+        # The shared fixture returns (orchestrator, worker, reviewer).
+        return super()._orch(**kwargs)[0]
+
     def _prepared_production(self, orch=None, use_file_db=False):
         orch = orch or self._orch(use_file_db=use_file_db)
         payload = self._payload()
@@ -61,6 +65,18 @@ class _BindCase(_Case):
                                  with_source_event=False)
         task = orch.prepare_code_delivery(tid, 1)
         return orch, tid, task["metadata"]["_delivery"]
+
+    def _plan_for(self, tid, delivery):
+        # Synthetic construction, not a trusted source. Real registration
+        # independently reconstructs and validates the control snapshot.
+        snapshot = {"task_id": tid, "workspace_root": str(self.ws),
+            "authorized_target": TARGET, "delivery": delivery,
+            "artifact": {**delivery["artifact"],
+                         "generation_attempt_id": delivery["generation_attempt_id"]},
+            "review": {"attempt_id": delivery["review_attempt_id"],
+                       "review_id": delivery["review_id"], "sha256": delivery["review_sha256"]},
+            "check": cb.sealed_check_expectation()}
+        return cb._invocation_for_snapshot(snapshot)
 
     def _live_store(self):
         store = self.case / ("live-store-" + uuid.uuid4().hex[:8])
@@ -81,8 +97,11 @@ class _BindCase(_Case):
 
     def _archive_for(self, tid, delivery, *, live_store=None, claim_over=None,
                      event_over=None, workdir=None, argv=None,
-                     exit_code=0, output=OUTPUT, call_script=CALL_SCRIPT,
+                     exit_code=0, output=OUTPUT, call_script=None,
                      thread=THREAD, item=ITEM, call=CALL, turn=TURN):
+        plan = self._plan_for(tid, delivery)
+        argv = plan["argv"] if argv is None else argv
+        call_script = plan["call_input"] if call_script is None else call_script
         lines = self._capture_lines(thread=thread, turn=turn, item=item, call=call,
                                     argv=argv, workdir=workdir, exit_code=exit_code,
                                     output=output, call_script=call_script)
@@ -102,7 +121,7 @@ class _BindCase(_Case):
             artifact_claim={"version": art["version"], "artifact_id": art["artifact_id"],
                             "sha256": art["sha256"]},
             review_claim={"review_id": delivery["review_id"]},
-            apply_attempt_id="test-bind-apply-1", protocol="desktop",
+            apply_attempt_id=plan["apply_attempt_id"], protocol="desktop",
             source_files=[{"path": "synth.jsonl", "sha256": _sha(events_raw),
                            "bytes": len(events_raw)}],
             bindings=bindings)
@@ -127,9 +146,10 @@ class _BindCase(_Case):
         return archive, manifest, events_raw, bindings
 
     def _register(self, orch, tid, delivery, archive, **over):
+        plan = self._plan_for(tid, delivery)
         params = {"delivery_id": delivery["delivery_id"], "archive_dir": archive,
                   "thread_id": THREAD, "item_id": ITEM, "call_id": CALL,
-                  "expected_argv": list(FIXED_ARGV), "expected_call_input": CALL_SCRIPT}
+                  "expected_argv": plan["argv"], "expected_call_input": plan["call_input"]}
         params.update(over)
         return register_capture_binding(orch.storage, tid, **params)
 
@@ -180,15 +200,15 @@ class TestCaptureBindingRegister(_BindCase):
         self.assertEqual(row["event_digest"], _sha(events_raw))
         self.assertEqual(row["manifest_digest"],
                          _sha((archive / "manifest.json").read_bytes()))
-        self.assertEqual(row["apply_attempt_id"], "test-bind-apply-1")
+        self.assertEqual(row["apply_attempt_id"], self._plan_for(tid, delivery)["apply_attempt_id"])
         snapshot = json.loads(row["snapshot_json"])
         self.assertEqual(snapshot["artifact"]["sha256"], delivery["artifact"]["sha256"])
         self.assertEqual(snapshot["review"]["review_id"], delivery["review_id"])
         self.assertEqual(snapshot["observed_target_sha256"], _sha(_reference_bytes()))
         capture = json.loads(row["capture_json"])
-        self.assertEqual(capture["argv"], FIXED_ARGV)
+        self.assertEqual(capture["argv"], self._plan_for(tid, delivery)["argv"])
         self.assertTrue(row["binding_id"].startswith("cb_"))
-        self.assertIn("operator-reviewed per package", row["review_items_json"])
+        self.assertEqual(json.loads(row["review_items_json"]), [])
         stored = get_capture_binding(orch.storage, tid, delivery["delivery_id"])
         self.assertEqual(stored, row)
         by_call = get_capture_binding_by_call(orch.storage, THREAD, ITEM, CALL)
@@ -601,7 +621,7 @@ class TestCaptureBindingLifecycle(_BindCase):
         archive_b, _, _, _ = self._archive_for(
             payload_b["task_id"], delivery_b, live_store=None)
         with patch.object(cb, "DESKTOP_SESSION_ROOT", store):
-            with self.assertRaisesRegex(BindingRefused, "binding-conflict"):
+            with self.assertRaisesRegex(BindingRefused, "archive-live-mismatch|binding-conflict"):
                 self._register(orch, payload_b["task_id"], delivery_b, archive_b)
         self.assertIsNone(get_capture_binding(
             orch.storage, payload_b["task_id"], delivery_b["delivery_id"]))

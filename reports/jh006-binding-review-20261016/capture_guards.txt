@@ -1,0 +1,309 @@
+{
+  "kind": "synthetic-mutations",
+  "mutations": 30,
+  "detected": 29,
+  "errors": 0,
+  "redundant": 1,
+  "results": [
+    {
+      "name": "source-root",
+      "tests_run": 1,
+      "assertion_failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "detected": true,
+      "detail": "assertion failure",
+      "redundant": false
+    },
+    {
+      "name": "file-uri-authority",
+      "tests_run": 1,
+      "assertion_failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "detected": true,
+      "detail": "assertion failure",
+      "redundant": false
+    },
+    {
+      "name": "session-conflict",
+      "tests_run": 1,
+      "assertion_failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "detected": true,
+      "detail": "assertion failure",
+      "redundant": false
+    },
+    {
+      "name": "single-execution",
+      "tests_run": 1,
+      "assertion_failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "detected": true,
+      "detail": "assertion failure",
+      "redundant": false
+    },
+    {
+      "name": "nonoverlapping-call",
+      "tests_run": 1,
+      "assertion_failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "detected": true,
+      "detail": "assertion failure",
+      "redundant": false
+    },
+    {
+      "name": "execution-window",
+      "tests_run": 1,
+      "assertion_failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "detected": true,
+      "detail": "assertion failure",
+      "redundant": false
+    },
+    {
+      "name": "mandatory-script-pin",
+      "tests_run": 1,
+      "assertion_failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "detected": true,
+      "detail": "assertion failure",
+      "redundant": false
+    },
+    {
+      "name": "exact-script-pin",
+      "tests_run": 1,
+      "assertion_failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "detected": true,
+      "detail": "assertion failure",
+      "redundant": false
+    },
+    {
+      "name": "whole-archive",
+      "tests_run": 1,
+      "assertion_failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "detected": true,
+      "detail": "assertion failure",
+      "redundant": false
+    },
+    {
+      "name": "manifest-facts",
+      "tests_run": 1,
+      "assertion_failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "detected": true,
+      "detail": "assertion failure",
+      "redundant": false
+    },
+    {
+      "name": "binding-owner-held",
+      "tests_run": 1,
+      "assertion_failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "detected": true,
+      "detail": "assertion failure",
+      "redundant": false
+    },
+    {
+      "name": "binding-delivery-request",
+      "tests_run": 1,
+      "assertion_failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "detected": true,
+      "detail": "assertion failure",
+      "redundant": false
+    },
+    {
+      "name": "binding-claim-identity",
+      "tests_run": 1,
+      "assertion_failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "detected": true,
+      "detail": "assertion failure",
+      "redundant": false
+    },
+    {
+      "name": "binding-claim-artifact",
+      "tests_run": 1,
+      "assertion_failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "detected": true,
+      "detail": "assertion failure",
+      "redundant": false
+    },
+    {
+      "name": "binding-claim-review",
+      "tests_run": 1,
+      "assertion_failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "detected": true,
+      "detail": "assertion failure",
+      "redundant": false
+    },
+    {
+      "name": "binding-artifact-current",
+      "tests_run": 1,
+      "assertion_failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "detected": true,
+      "detail": "assertion failure",
+      "redundant": false
+    },
+    {
+      "name": "binding-review-current",
+      "tests_run": 1,
+      "assertion_failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "detected": true,
+      "detail": "assertion failure",
+      "redundant": false
+    },
+    {
+      "name": "binding-target-bytes",
+      "tests_run": 1,
+      "assertion_failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "detected": true,
+      "detail": "assertion failure",
+      "redundant": false
+    },
+    {
+      "name": "binding-liveness",
+      "tests_run": 1,
+      "assertion_failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "detected": true,
+      "detail": "assertion failure",
+      "redundant": false
+    },
+    {
+      "name": "binding-source",
+      "tests_run": 1,
+      "assertion_failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "detected": true,
+      "detail": "assertion failure",
+      "redundant": false
+    },
+    {
+      "name": "binding-exit-passthrough",
+      "tests_run": 1,
+      "assertion_failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "detected": true,
+      "detail": "assertion failure",
+      "redundant": false
+    },
+    {
+      "name": "binding-marker-passthrough",
+      "tests_run": 1,
+      "assertion_failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "detected": true,
+      "detail": "assertion failure",
+      "redundant": false
+    },
+    {
+      "name": "binding-argv",
+      "tests_run": 1,
+      "assertion_failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "detected": true,
+      "detail": "assertion failure",
+      "redundant": false
+    },
+    {
+      "name": "binding-workdir",
+      "tests_run": 1,
+      "assertion_failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "detected": true,
+      "detail": "assertion failure",
+      "redundant": false
+    },
+    {
+      "name": "binding-output-digest",
+      "tests_run": 1,
+      "assertion_failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "detected": false,
+      "detail": "----------------------------------------------------------------------\nRan 1 test in 0.060s\n\nOK\n",
+      "redundant": true
+    },
+    {
+      "name": "binding-fixed-invocation",
+      "tests_run": 1,
+      "assertion_failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "detected": true,
+      "detail": "assertion failure",
+      "redundant": false
+    },
+    {
+      "name": "binding-current-reload",
+      "tests_run": 2,
+      "assertion_failures": 2,
+      "errors": 0,
+      "skipped": 0,
+      "detected": true,
+      "detail": "assertion failure",
+      "redundant": false
+    },
+    {
+      "name": "binding-atomic-event",
+      "tests_run": 1,
+      "assertion_failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "detected": true,
+      "detail": "assertion failure",
+      "redundant": false
+    },
+    {
+      "name": "binding-unique-call",
+      "tests_run": 1,
+      "assertion_failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "detected": true,
+      "detail": "assertion failure",
+      "redundant": false
+    },
+    {
+      "name": "binding-unique-item",
+      "tests_run": 1,
+      "assertion_failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "detected": true,
+      "detail": "assertion failure",
+      "redundant": false
+    }
+  ]
+}

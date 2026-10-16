@@ -65,7 +65,7 @@ source_count = sum(isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)) and n.
                    for n in ast.walk(ast.parse(p.read_text(encoding="utf-8-sig")) ))
 reported = re.search(r"Ran (\d+) tests", results["tests"]["tail"])
 base = "dce2e773c36f70c36003f8f05f93bace0758bb98"
-runtime_files = ["src/cli.py", "src/orchestrator.py", "src/acceptance.py"]
+runtime_files = ["src/cli.py", "src/orchestrator.py", "src/storage.py", "src/acceptance.py"]
 unchanged = {}
 for name in runtime_files:
     old = subprocess.check_output(["git", "show", base + ":" + name])
@@ -73,11 +73,6 @@ for name in runtime_files:
     current = subprocess.check_output(["git", "hash-object", name], text=True).strip()
     baseline = subprocess.check_output(["git", "rev-parse", base + ":" + name], text=True).strip()
     unchanged[name] = current == baseline
-# Binding batch: storage.py gains only the additive capture_bindings table.
-storage_diff = subprocess.check_output(["git", "diff", base, "--numstat", "--", "src/storage.py"], text=True).strip()
-storage_parts = storage_diff.split("\t") if storage_diff else ["0", "0", ""]
-storage_additive = (storage_parts[1] == "0"
-                    and b"CREATE TABLE IF NOT EXISTS capture_bindings" in (ROOT / "src/storage.py").read_bytes())
 # Raw archives and the sealed fixtures must stay exactly as accepted.
 preserved = {}
 for folder in ("tests/fixtures/n2", "reports/jh006-host-review-20261016/submitted"):
@@ -93,12 +88,11 @@ verify_capture_archive(manifest, archive_raw=(archive / "events.jsonl").read_byt
 summary = {"commands": results, "independent_ast_count": source_count,
     "reported_test_count": int(reported.group(1)) if reported else None,
     "runtime_unchanged": unchanged, "preserved_bytes": preserved,
-    "storage_additive": storage_additive,
     "real_capture_archive_readback": True,
     "scope": "capture-only, no production completion, no provider calls"}
 summary["passed"] = (all(r["exit"] == 0 for r in results.values())
-    and source_count == 341 and summary["reported_test_count"] == 341
-    and all(unchanged.values()) and all(preserved.values()) and storage_additive)
+    and source_count == 299 and summary["reported_test_count"] == 299
+    and all(unchanged.values()) and all(preserved.values()))
 (OUT / "verification.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf8")
 print(json.dumps({k:v for k,v in summary.items() if k not in ["commands", "preserved_bytes"]}, ensure_ascii=False))
 for name, result in results.items():

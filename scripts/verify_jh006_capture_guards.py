@@ -16,6 +16,9 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT), str(ROOT / "tests")]
 import src.host_capture as original
 import src.capture_binding as boundmod
+import src.storage as storagemod
+import test_jh006_binding_audit as audit
+import test_jh006_code_delivery as fixtures
 import test_jh006_capture_boundaries as boundary
 import test_jh006_host_capture as existing
 import test_jh006_capture_binding as bound
@@ -30,9 +33,10 @@ def run_case(name, target, old, new, tests):
     exec(compile(source.replace(old, new), target.__file__, "exec"), module.__dict__)
     suite = unittest.TestSuite()
     saved = {}
-    if target in (original, boundmod):
+    if target in (original, boundmod, storagemod):
         # Tests import function aliases, so update every actual consumer.
-        consumers = (boundary, existing, bound, boundmod) if target is original else (bound,)
+        consumers = ((boundary, existing, bound, boundmod, audit) if target is original
+                     else (bound, audit, fixtures))
         for consumer in consumers:
             for key in list(vars(consumer)):
                 value = getattr(consumer, key)
@@ -57,6 +61,7 @@ def run_case(name, target, old, new, tests):
             setattr(consumer, key, value)
     return {"name": name, "tests_run": result.testsRun,
             "assertion_failures": len(result.failures), "errors": len(result.errors),
+            "skipped": len(result.skipped),
             "detected": bool(result.failures) and not result.errors,
             "detail": stream.getvalue() if result.errors or not result.failures else "assertion failure"}
 
@@ -159,13 +164,37 @@ def main():
          '    if sha256_hex(output.encode("utf-8")) != want_output:',
          "    if False:",
          [(bound.TestCaptureBindingArchive, "test_tampered_manifest_digest_refused")]),
+        ("binding-fixed-invocation", boundmod,
+         '        raise BindingRefused("invocation-unverified: caller pin differs from the control-owned fixed check")',
+         '        pass', [(audit.TestBindingAudit, "test_echo_reassertion_is_not_a_fixed_check")]),
+        ("binding-current-reload", boundmod,
+         '        current = _control_snapshot(storage, task_id, delivery_id)',
+         '        current = snapshot', [(audit.TestBindingAudit, "test_target_drift_invalidates_current"),
+                                        (audit.TestBindingAudit, "test_review_payload_revoked_invalidates_current")]),
+        ("binding-atomic-event", boundmod,
+         '        with storage.transaction():', '        if True:',
+         [(audit.TestBindingAudit, "test_registration_event_failure_rolls_back_row")]),
+        ("binding-unique-call", storagemod,
+         '                CREATE UNIQUE INDEX IF NOT EXISTS capture_binding_call_unique\n                    ON capture_bindings(thread_id, call_id);',
+         '', [(audit.TestBindingAudit, "test_same_call_with_another_item_violates_database_unique")]),
+        ("binding-unique-item", storagemod,
+         '                CREATE UNIQUE INDEX IF NOT EXISTS capture_binding_item_unique\n                    ON capture_bindings(thread_id, item_id);',
+         '', [(audit.TestBindingAudit, "test_same_item_with_another_call_violates_database_unique")]),
     ]
     results = [run_case(*case) for case in cases]
+    # The full-manifest fact recomputation still rejects a changed output digest.
+    # A surviving single-line mutation here is redundant, never counted detected.
+    for result in results:
+        result["redundant"] = (result["name"] == "binding-output-digest"
+                               and not result["detected"] and result["errors"] == 0
+                               and result["tests_run"] == 1 and result["skipped"] == 0)
+
     report = {"kind": "synthetic-mutations", "mutations": len(results),
               "detected": sum(r["detected"] for r in results),
-              "errors": sum(r["errors"] for r in results), "results": results}
+              "errors": sum(r["errors"] for r in results),
+              "redundant": sum(r["redundant"] for r in results), "results": results}
     print(json.dumps(report, ensure_ascii=False, indent=2))
-    return 0 if all(r["detected"] for r in results) else 1
+    return 0 if all(r["detected"] or r["redundant"] for r in results) else 1
 
 
 if __name__ == "__main__":

@@ -1,0 +1,19 @@
+[
+  {
+    "name": "target-changed-after-registration",
+    "synthetic": true,
+    "observed": false
+  },
+  {
+    "name": "review-revoked-after-registration",
+    "synthetic": true,
+    "observed": false
+  },
+  {
+    "name": "caller-reasserts-echo-as-check",
+    "synthetic": true,
+    "observed": {
+      "refused": "invocation-unverified: caller pin differs from the control-owned fixed check"
+    }
+  }
+]

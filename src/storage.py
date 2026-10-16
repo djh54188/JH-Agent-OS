@@ -207,6 +207,10 @@ class TaskStorage:
                     UNIQUE(task_id, delivery_id),
                     UNIQUE(thread_id, item_id, call_id)
                 );
+                CREATE UNIQUE INDEX IF NOT EXISTS capture_binding_call_unique
+                    ON capture_bindings(thread_id, call_id);
+                CREATE UNIQUE INDEX IF NOT EXISTS capture_binding_item_unique
+                    ON capture_bindings(thread_id, item_id);
                 INSERT OR IGNORE INTO task_control(task_id) SELECT task_id FROM tasks;
                 """
             )
