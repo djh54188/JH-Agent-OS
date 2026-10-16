@@ -1,0 +1,25 @@
+{
+  "scope": "isolated synthetic fixtures only",
+  "rows": [
+    {
+      "probe": "entirely_self_reported",
+      "result": "succeeded",
+      "actual_host_commands_executed": 0
+    },
+    {
+      "probe": "marker_only_command",
+      "result": "succeeded",
+      "actual_host_commands_executed": 0
+    },
+    {
+      "probe": "wrong_workspace_in_command",
+      "result": "succeeded",
+      "actual_host_commands_executed": 0
+    },
+    {
+      "probe": "output_rehashed",
+      "result": "succeeded",
+      "actual_host_commands_executed": 0
+    }
+  ]
+}

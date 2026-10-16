@@ -1,0 +1,44 @@
+{
+  "candidate_commit": "82d3d0975d940012759ad0eae9e66663997d6a87",
+  "restored_baseline": "e390867ab3ee300cae059f2f543c28141acb06cf",
+  "status": "rejected_candidate_not_runtime",
+  "candidate_tests_archived_not_passed": 34,
+  "files": [
+    {
+      "path": "src/host_records.py",
+      "working_bytes_sha256": "2ea3ec8ef7cb6b2fd7b9ef94e927b5a3f39ae8952389289ac67c5b7ffdfd58db",
+      "git_blob_sha256": "2ea3ec8ef7cb6b2fd7b9ef94e927b5a3f39ae8952389289ac67c5b7ffdfd58db",
+      "same_source_text": true
+    },
+    {
+      "path": "tests/test_jh006_host_records.py",
+      "working_bytes_sha256": "c40e811a840bd153a7a5a9dcbdb9da996b9f73bf0753993dc7a32dbd9c4897b9",
+      "git_blob_sha256": "c40e811a840bd153a7a5a9dcbdb9da996b9f73bf0753993dc7a32dbd9c4897b9",
+      "same_source_text": true
+    },
+    {
+      "path": "src/orchestrator.py",
+      "working_bytes_sha256": "87920d21c3e24d35dedc09741f901d4260272382301a240c6a8c67495b758b5c",
+      "git_blob_sha256": "961127fdcc987f2d6798ba5c7859d1f4a56be68cbfa710c4c0f943f275d842a2",
+      "same_source_text": true
+    },
+    {
+      "path": "src/cli.py",
+      "working_bytes_sha256": "5833b52a6db1eb8b992f7cdf519d152f969e55352957a13f2a12d736d896625b",
+      "git_blob_sha256": "92ee93e8b3d4dca9c464a30b2a77584acc93ad9c3c88a5f1d2136d8d67232fc3",
+      "same_source_text": true
+    },
+    {
+      "path": ".agents/skills/jh-task/SKILL.md",
+      "working_bytes_sha256": "1775c73317554de73015297d2d49f93d4ea871814ba4f707b50ed3f97e2d5939",
+      "git_blob_sha256": "c862efc776a1407a1835a0b2b8b59050e82bc5bdf6d8052538c67a471fad0bd6",
+      "same_source_text": true
+    },
+    {
+      "path": "reports/jh006-host-records-implementation-20261015.md",
+      "working_bytes_sha256": "1940f3dd7a9685b608ed9391c8f99114d60d7549c4cfc135901653bd4c684c70",
+      "git_blob_sha256": "1940f3dd7a9685b608ed9391c8f99114d60d7549c4cfc135901653bd4c684c70",
+      "same_source_text": true
+    }
+  ]
+}

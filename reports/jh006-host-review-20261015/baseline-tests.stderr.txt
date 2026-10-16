@@ -1,0 +1,23 @@
+........................................................................................................................E......................E.......................................................s.....................................................................................
+======================================================================
+ERROR: test_review_claim_drift_refused (test_jh006_host_records.TestHostRecordBindingGates.test_review_claim_drift_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_host_records.py", line 419, in test_review_claim_drift_refused
+    record = self._host_record(tid, delivery, review,
+                               review={"review_id": "rev_other0001"})
+TypeError: _Case._host_record() got multiple values for argument 'review'
+
+======================================================================
+ERROR: test_host_record_completes_with_verified_apply (test_jh006_host_records.TestProductionHappyPath.test_host_record_completes_with_verified_apply)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\tests\test_jh006_host_records.py", line 245, in test_host_record_completes_with_verified_apply
+    self.assertEqual(accepted[0]["details"]["record"]["output_digest"],
+                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+KeyError: 'output_digest'
+
+----------------------------------------------------------------------
+Ran 285 tests in 8.423s
+
+FAILED (errors=2, skipped=1)

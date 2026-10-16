@@ -1,0 +1,34 @@
+{
+  "date": "2026-10-16",
+  "referenced_host_events_bytes": 0,
+  "original_root_host_events_bytes": 0,
+  "historical_command_index_entries": 12,
+  "codex_sessions_root_readable_in_architect_session": true,
+  "limitation": "Directory access in this session does not establish Muse session permissions, transcript authenticity, or a current-task bridge API. Historical command index demonstrates record shape only.",
+  "official_source": "https://learn.chatgpt.com/docs/non-interactive-mode",
+  "official_fact": "codex exec --json emits an event stream on stdout that the host launcher can capture; no Codex invocation performed in this review.",
+  "current_desktop_metadata_only_probe": {
+    "matching_segments": 4,
+    "current_thread": "01a120b3-bdb6-7b23-93d9-6173f4b7af69",
+    "source_path": "C:\\Users\\a\\.codex\\sessions\\2026\\10\\15\\rollout-2026-10-15T21-33-25-01a120b3-bdb6-7b23-93d9-6173f4b7af69_01a13fc4-8368-7ad2-b64b-aa2d418b71bf.jsonl",
+    "session_meta": {
+      "id": "01a120b3-bdb6-7b23-93d9-6173f4b7af69",
+      "cwd": "C:\\Users\\a\\Documents\\ChatGPT\\JH-Agent OS",
+      "originator": "Codex Desktop"
+    },
+    "tool_names": [
+      "exec"
+    ],
+    "last_tool_output_shape": {
+      "payload_keys": [
+        "type",
+        "id",
+        "call_id",
+        "output",
+        "internal_chat_message_metadata_passthrough"
+      ],
+      "output_type": "list"
+    },
+    "limitation": "Desktop session records are not the CLI item.completed/command_execution stream. Outer exec outputs must not be mistaken for independently attested nested command execution results."
+  }
+}

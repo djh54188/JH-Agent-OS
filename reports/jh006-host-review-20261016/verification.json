@@ -1,0 +1,106 @@
+{
+  "scope": "Safety containment only; host-record bridge verdict remains revise",
+  "post_commit": false,
+  "base_commit": "82d3d0975d940012759ad0eae9e66663997d6a87",
+  "api_calls": 0,
+  "checks": [
+    {
+      "name": "full-tests",
+      "exit_code": 0
+    },
+    {
+      "name": "jh005-fixtures",
+      "exit_code": 0
+    },
+    {
+      "name": "jh005-mutations",
+      "exit_code": 0
+    },
+    {
+      "name": "jh006-guards",
+      "exit_code": 0
+    },
+    {
+      "name": "host-boundary-replay",
+      "exit_code": 0
+    },
+    {
+      "name": "phase2-guards",
+      "exit_code": 0
+    },
+    {
+      "name": "phase2-hardening",
+      "exit_code": 0
+    },
+    {
+      "name": "phase3-guards",
+      "exit_code": 0
+    },
+    {
+      "name": "phase4-guards",
+      "exit_code": 0
+    },
+    {
+      "name": "responses-guards",
+      "exit_code": 0
+    },
+    {
+      "name": "anthropic-guards",
+      "exit_code": 0
+    }
+  ],
+  "unit_tests": {
+    "run": 259,
+    "passed": 258,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1,
+    "independent_ast_count": 259
+  },
+  "candidate_tests_archived_not_passed": 34,
+  "accepted_runtime_matches_e390867": true,
+  "guard_counts": {
+    "phase2-guards": 5,
+    "phase3-guards": 8,
+    "phase4-guards": 12,
+    "responses-guards": 8,
+    "anthropic-guards": 10,
+    "jh006-guards": 19,
+    "phase2-hardening": 14
+  },
+  "candidate_route_replay": {
+    "route_regressions": 1,
+    "counterexamples": 5,
+    "assertion_detections": 5,
+    "errors": 0
+  },
+  "fixture_variants_rejected": 14,
+  "sealed_non_manifest_files": 11,
+  "historical_report_unchanged": true,
+  "source_sha256": {
+    "src/acceptance.py": "9c2320f9529af992285ae90bf7341ac1a7316fd3e3f62d51bbe219fcb178e450",
+    "src/adapters.py": "b2b8539dda836c4c6818f94250dc3ef4b2e6d8cf19a5cd4b85fc7502a4bd1bed",
+    "src/anthropic_adapter.py": "66fa57f11bacd2e8c96c62f417e4b905d7c0084079ed515fc902413446f288ea",
+    "src/artifacts.py": "4bf0034cb301b9295e6f0ba0349cd1af7ee9d088a8c1041fb3a790ab83a9946b",
+    "src/cli.py": "011ddf5314ef933788e353cfb3aff9c2fbcbbab529b2c46a116747123b67efa2",
+    "src/code_delivery.py": "00d06bb47fa5761ce5312191124c1cd41de2a902c707449b33c219dba3d834d0",
+    "src/codex_managed.py": "57ce2c11bb6201875a1b67e7fc8c01dbd668f4128291e377ded315796b2ffeb2",
+    "src/control_guards.py": "f44b2727ec48ebdbbf007ba44f3e90287f304c1c1a1716d443833a325ffb419c",
+    "src/file_tools.py": "98b1a85cc51eb569ee6d19acbf17863b87e399cec1c21b3cbaaa55f5f2be37cb",
+    "src/memory.py": "b8580cf86b573ac4d3ad61b0c67e152e4c3352aa8d2c9909bcb8741d80af0e35",
+    "src/mock_components.py": "94633a2d4a5c6540494d84648e25a68a7a0a75f63053c5782624571fc3e4abfc",
+    "src/model_config.py": "5b10f126b25fb811496d303fdc0c9a4669da41543bdf5c1e5af5a818523284e0",
+    "src/orchestrator.py": "4f08855d175dbcc3c1a90058c352936cb8a74f416e2c11654ba2750d15b72195",
+    "src/production_executor.py": "713003e4774cf0f7ec9e2916c37fe57e208f96ac5551da9a69668033771c4d7e",
+    "src/responses_adapter.py": "8cdc1da464cb449cb6270ecec2f68d97dd22e330becc86a8d9e4ed00fa2514ae",
+    "src/router_policy.py": "343bac66ec457f0ddd13fc61ac987ada9bc3e78c962a2f38ea553d32ea0a5840",
+    "src/state_machine.py": "398cfbc842102dfb37bf5f2f4866378a47900b4b64a2cb00ecb7af77cca4828f",
+    "src/storage.py": "52e72cf0edb9694e6ab393a61ec1bffebc6f6a14dea544a546378c086f1c4992",
+    "tests/test_jh006_code_delivery.py": "5470b4eed019ae08734b487d51e3187b2c708b4bca29338803e3b1df871b9635",
+    "tests/test_jh006_host_boundary.py": "9dd36094387286d05d3f593450c3bb68262314ecb4a06339d12ea01230e83c6a",
+    "tests/test_jh006_review_regressions.py": "71967f92eb69b8e866536b7bdafbb304b4b776284ac9ad8a06b7a2d602e930ad",
+    "scripts/verify_jh006_host_boundary.py": "8629dc20e367475ef35ebdc2c13d96bbbb7429daa63054be2a1d334cb3027128"
+  },
+  "passed": true,
+  "verified_source": "uncommitted worktree bytes identified by source_sha256, not the base commit"
+}

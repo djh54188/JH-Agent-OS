@@ -1,2 +1,5 @@
 # Sealed N2 fixtures must retain exact bytes across Git checkouts.
 tests/fixtures/n2/** -text
+
+# Preserve rejected candidate evidence byte-for-byte.
+reports/jh006-host-review-20261016/submitted/** -text

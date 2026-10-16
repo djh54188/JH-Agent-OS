@@ -1,0 +1,1 @@
+{"passed": true, "cases": {"passed": 29, "failed": 0, "not_applicable_phase2": 1}, "mutations_detected": 14, "report": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\phase2-hardening-verification.json"}
