@@ -1,0 +1,92 @@
+{
+  "generated_at": "2026-10-12T14:32:50.408266+00:00",
+  "review": "JH-016",
+  "baseline": "80979f3884e605e75ff5c0c876f5bb0bf5684e99",
+  "verdict": "revise",
+  "phase_closed": false,
+  "production_file_write_gate": "remain_closed",
+  "findings": [
+    {
+      "id": "JH016-01",
+      "priority": "P1",
+      "location": "src/file_tools.py:465,495",
+      "title": "最终目标原地写入，短写与写入错误破坏原子落盘",
+      "evidence_cases": [
+        "short_write",
+        "write_error"
+      ],
+      "observed": "两个场景均 needs_attention，但最终目标是原文件与候选的混合字节；恢复 uncertain；备份仍完整。os.write 返回值未检查。",
+      "required": "完整写入隔离临时对象并校验后受控发布；短写循环或受控拒绝；发布前故障不能留下半份目标。保留版本/身份约束，原子替换本身不等于 CAS。"
+    },
+    {
+      "id": "JH016-02",
+      "priority": "P1",
+      "location": "src/file_tools.py:477,495",
+      "title": "原地写入连带改写未授权硬链接邻居",
+      "evidence_cases": [
+        "hardlink_alias"
+      ],
+      "observed": "仅授权 out/report.json；同工作区未授权邻居与目标同一文件对象且 nlink=2，最终两者都成为候选；任务 succeeded。",
+      "required": "对多链接对象明确拒绝，或使用能保证未授权别名不变的受控发布机制；普通路径和 reparse 校验不覆盖文件别名。"
+    },
+    {
+      "id": "JH016-03",
+      "priority": "P1",
+      "location": "src/file_tools.py:57,489,495",
+      "title": "单字节锁未覆盖最终版本校验后的外部写入",
+      "evidence_cases": [
+        "late_edit"
+      ],
+      "observed": "独立 Python 进程在最终写入前对偏移 1 正常写入一字节并 fsync，返回 0；父进程从同一已打开句柄读到该编辑，随后覆盖为候选且任务 succeeded。",
+      "required": "提供覆盖最终版本读取到发布的 OS 排他/版本机制；不能靠新增一次哈希或单字节锁宣称排除外部普通 I/O。不能可靠支持时明确拒绝该分支。"
+    },
+    {
+      "id": "JH016-04",
+      "priority": "P2",
+      "location": "scripts/verify_phase4_guards.py:112,142",
+      "title": "变异装配与检测口径导致 12/12 失真",
+      "evidence_files": [
+        "existing-mutations.json",
+        "corrected-mutation-assembly.json"
+      ],
+      "observed": "原脚本 10 次断言失败、2 次异常；FileToolExecutor 和 PathBoundaryError 未同步到使用者。校正内存装配后 3 项存活、9 次断言失败、0 异常，9 项中 3 项仅错误文字变化。",
+      "required": "同步类和异常引用；意外异常不得计为检出；以磁盘/状态/调用次数判定目标行为。冗余防线导致的合法存活单列，不强凑 12/12。"
+    }
+  ],
+  "validation": {
+    "unit_tests_same_session_before_interruption": {
+      "total": 145,
+      "passed": 144,
+      "skipped": 1,
+      "failures": 0,
+      "errors": 0,
+      "references": [
+        {
+          "file": "C:\\Users\\a\\.codex\\sessions\\2026\\10\\12\\rollout-2026-10-12T19-07-17-01a120b3-bdb6-7b23-93d9-6173f4b7af69_01a12fcb-a620-74f2-87f3-f69190e85ad4.jsonl",
+          "line": 623,
+          "timestamp_utc": "2026-10-12T13:38:05.922Z",
+          "excerpt": "Ran 145 tests in 2.546s\\\\r\\\\n\\\\r\\\\nOK (skipped=1)\\\\r\\\\n\"}'}]"
+        }
+      ]
+    },
+    "original_probe_count": 6,
+    "original_probes_closed_at_their_specific_interleavings": true,
+    "additional_cases_per_run": 5,
+    "additional_runs": 2,
+    "repeat_observations_equal": true,
+    "original_mutation_assertion_failures": 10,
+    "original_mutation_errors": 2,
+    "corrected_mutation_survivors": 3,
+    "corrected_mutation_assertion_failures": 9,
+    "corrected_mutation_errors": 0
+  },
+  "shared_source_unchanged": true,
+  "fixture_cleaned": true,
+  "api_calls": 0,
+  "limitations": [
+    "No new real Gemini/Muse loop or actual Codex Skill integration run.",
+    "No random race fuzz or full opened-handle/ancestor stability validation. Post-open checks inspect pathnames, not independently verified handle identity.",
+    "No claim that all 12 mutation tests prove violated safety invariants.",
+    "Prior E1-E3 acceptance retained; N1 not closed."
+  ]
+}

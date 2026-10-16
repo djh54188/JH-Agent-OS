@@ -1,0 +1,30 @@
+{
+  "docs_before_sha256": {
+    "STATUS.md": "f2e1c67cd69e289a0062ea91de2b1093262c8a3b3689f40be31c4bc963bbd2a1",
+    "TODO.md": "f54450d2b6025e38047c291a3ef0040713b3ac7cbe9aeefb672085852f1d2168",
+    "README.md": "62c370ce8385876add630bb46a5dd6dc990d6e9a6411da6dfa6f0e47d1431be2",
+    "ROADMAP.md": "22b0019112dbbe433cffce35f5cf26b41d727152023cef9e6616b844afdc374a",
+    "CHANGELOG.md": "c16b5af43c06b0a2a3a66cecbc36d0c34864102c14c57321d8e2c87e8b637674",
+    "docs/README.md": "ecfc6aafb02f85183c31ce28ff029649d2c52d3e10b3e893f47fceec3dde85e1",
+    "docs/n1-capability-ownership.md": "a4bafd0da2fdd6b2725741edf40b50c2d5ac2f17a72c46c5235e5f365bcbb412",
+    "docs/file-tools-contract.md": "04b684e9ae208ac84a968c991477f0ac43d20d9fe4338386a8fcf57b7c0c55e0",
+    "docs/adr/ADR-0003-codex-hosted-entry.md": "b0760ceaa7660f5d6550b2c0efd29a993b49d6630a527407766eda9ce9df9fc2",
+    "docs/handoffs/n1-20261012-execution.md": "2e26a1fe52652a2ca076b8b845b070ec50e5bfa6943d6818241f87347c247803",
+    "docs/handoffs/n1-20261012-review.md": "15ae3912ad97f533300268a0245052db8e3fcbb0c6409f556f023b02b239aaf8",
+    "docs/handoffs/muse-lead-gemini-workers.md": "b2f2bfbadb3265ed45bef9ee518d8d45303f869a68853ced221a350f26f5740d",
+    "docs/handoffs/jh015-after-jh016-20261012.md": "a852ef585895513c6e1a3a6478a047fb00a3c98f8826a8a1495529ef50567384",
+    "docs/handoffs/jh015-agent-resume-20261013.md": "1cd78792c1a13fd2fc6f1b7d9df6ee2f8e4a8c4c3bfb8faecc5dbde9acd69021",
+    "docs/handoffs/jh015-batch2-followup-20261013.md": "d2a088ac230bd62da8b6b2eab1c028298740b1df18d87439023290442e38b456"
+  },
+  "source_wip_patch_sha256": "5eefcf522b485d2b6d8ccc04c5ede22f405a7aa3b5ceb6602675c147022f78d7",
+  "source_sha256": {
+    "src/file_tools.py": "1e5108b804476bcf8ebc4b20db0d50c42c3d479c1f63b772736d8ce7604e319c",
+    "src/orchestrator.py": "fbfd07bf6886249fbef4f0e0fec2342a0ac0e2e8dcc33ff350da3237468db1e1",
+    "tests/test_phase4_file_tools.py": "6acc1bcc32f534a6bfffee1c7ea37dadaccc565617876379f9d81f99b228b864",
+    "scripts/verify_phase4_guards.py": "cfc6b15aa26ba5caf5d18a632b57f033b838f62308b420eab72ff3e3b3a5fa3f",
+    "docs/file-tools-apply-mechanism.md": "ce780e377e57e9ef75cc4b628b2e5dbcb4413c6798d17a8b592575061a2588ef",
+    "reports/jh015-batch2-continue-20261013/verify_share_matrix.py": "5d37146eb94aeaf06b469eb1c0481e88cbe86ff0938e76350d39e19c202e333d",
+    "reports/jh015-batch2-continue-20261013/runbook.md": "2dc95e5c28c0b30ea0cb4f677225e648478375f0cbb015c2dff7b6dba32e74ec"
+  },
+  "purpose": "preservation and comparison only; do not auto-apply"
+}

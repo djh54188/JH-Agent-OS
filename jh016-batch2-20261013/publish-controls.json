@@ -1,0 +1,124 @@
+{
+  "api_calls": 0,
+  "shared_source_modified": false,
+  "fixture_cleaned": true,
+  "runs": [
+    [
+      {
+        "case": "guarded_replace_control",
+        "new_write_open_allowed": false,
+        "write_open_winerror": null,
+        "replace_with_guard": "PermissionError",
+        "replace_winerror": 5,
+        "target_during_guard": "{\"old\":\"ORIGINAL\"}",
+        "same_replace_after_guard_closed": "succeeded",
+        "final_target": "[{\"region\": \"a\", \"sales\": 1}]"
+      },
+      {
+        "case": "preopened_ordinary_write_handle",
+        "guard_acquired": false,
+        "error": "apply refused: cannot guard target (open/share denied, likely changed concurrently): '<fixture>\\target.txt'",
+        "existing_writer_still_usable": true
+      },
+      {
+        "case": "target_recreated",
+        "interleaving_count": 1,
+        "concurrent_process_returncode": 0,
+        "concurrent_stderr": "",
+        "target_before_publish": "CONCURRENT_NEW",
+        "status": "succeeded",
+        "error_info": "",
+        "tool_statuses": [
+          {
+            "tool": "stage_write",
+            "status": "success"
+          },
+          {
+            "tool": "apply_staged_write",
+            "status": "success"
+          }
+        ],
+        "target_after": "[{\"region\": \"a\", \"sales\": 1}]",
+        "previous_object_preserved": true
+      },
+      {
+        "case": "parent_at_publish",
+        "interleaving_count": 1,
+        "status": "needs_attention",
+        "error_info": "Staged write apply blocked: apply refused: ancestor component is a link/junction: '<fixture>\\ws\\out' (raw: 'out/report.json')",
+        "tool_statuses": [
+          {
+            "tool": "stage_write",
+            "status": "success"
+          },
+          {
+            "tool": "apply_staged_write",
+            "status": "denied_by_policy"
+          }
+        ],
+        "sibling_file_created": true,
+        "sibling_content": "[{\"region\": \"a\", \"sales\": 1}]",
+        "original_workspace_target_exists": false
+      }
+    ],
+    [
+      {
+        "case": "guarded_replace_control",
+        "new_write_open_allowed": false,
+        "write_open_winerror": null,
+        "replace_with_guard": "PermissionError",
+        "replace_winerror": 5,
+        "target_during_guard": "{\"old\":\"ORIGINAL\"}",
+        "same_replace_after_guard_closed": "succeeded",
+        "final_target": "[{\"region\": \"a\", \"sales\": 1}]"
+      },
+      {
+        "case": "preopened_ordinary_write_handle",
+        "guard_acquired": false,
+        "error": "apply refused: cannot guard target (open/share denied, likely changed concurrently): '<fixture>\\target.txt'",
+        "existing_writer_still_usable": true
+      },
+      {
+        "case": "target_recreated",
+        "interleaving_count": 1,
+        "concurrent_process_returncode": 0,
+        "concurrent_stderr": "",
+        "target_before_publish": "CONCURRENT_NEW",
+        "status": "succeeded",
+        "error_info": "",
+        "tool_statuses": [
+          {
+            "tool": "stage_write",
+            "status": "success"
+          },
+          {
+            "tool": "apply_staged_write",
+            "status": "success"
+          }
+        ],
+        "target_after": "[{\"region\": \"a\", \"sales\": 1}]",
+        "previous_object_preserved": true
+      },
+      {
+        "case": "parent_at_publish",
+        "interleaving_count": 1,
+        "status": "needs_attention",
+        "error_info": "Staged write apply blocked: apply refused: ancestor component is a link/junction: '<fixture>\\ws\\out' (raw: 'out/report.json')",
+        "tool_statuses": [
+          {
+            "tool": "stage_write",
+            "status": "success"
+          },
+          {
+            "tool": "apply_staged_write",
+            "status": "denied_by_policy"
+          }
+        ],
+        "sibling_file_created": true,
+        "sibling_content": "[{\"region\": \"a\", \"sales\": 1}]",
+        "original_workspace_target_exists": false
+      }
+    ]
+  ],
+  "repeat_observations_equal": true
+}

@@ -1,0 +1,335 @@
+{
+  "scope": "Phase 2 offline control layer only; providers, tools and acceptance evaluator are fixtures",
+  "specification_baseline": "08aae16",
+  "python_version": "3.14.7",
+  "source_sha256": {
+    "scripts/verify_phase2_hardening.py": "779177c4f31ffa5192725eb86300f073f7c30abf4b4edc8cfc22636aa88666b7",
+    "src/acceptance.py": "df8e8beaef3af31e4339d503dd4f1ebb05fc5c6377f9570c80768333c12a56f8",
+    "src/adapters.py": "b2b8539dda836c4c6818f94250dc3ef4b2e6d8cf19a5cd4b85fc7502a4bd1bed",
+    "src/anthropic_adapter.py": "48a683c4c1b7dcc7f152b23dca5172314ad18b83152a427b732f9068d408a363",
+    "src/artifacts.py": "cc569f7634f4e4c88b6fccb73a6afd23fd967b665fa6aaf11cdcb54daeaa09a1",
+    "src/cli.py": "faabb5bdf74fffec023a9be2980a71dcfc7591bf14fc11d0e31fcfa3c001439d",
+    "src/codex_managed.py": "f5f068678cbb21b87d91c4850dff92a74ee9abde1e1096aed20ef5b4a4d96976",
+    "src/control_guards.py": "61c1a0bb3a2af263f2163420f864edd9a1c492897c0c858bb58eacdcb99ae1f9",
+    "src/file_tools.py": "88590a320f2bf682f067f9a3ea2942df48ccbcb7daa1733fd8221e6b7459d400",
+    "src/memory.py": "4be3042c39ca90ef8ca54f7e3e270c1156ca76ab106bb97a65a88701ccb767a6",
+    "src/mock_components.py": "94633a2d4a5c6540494d84648e25a68a7a0a75f63053c5782624571fc3e4abfc",
+    "src/model_config.py": "5b10f126b25fb811496d303fdc0c9a4669da41543bdf5c1e5af5a818523284e0",
+    "src/orchestrator.py": "f58f254bd4e22190ed1db99ac3e6282b7f52cbcb323983a7c05948795b164b64",
+    "src/responses_adapter.py": "f785ce45d91deaa473bddb4921efc5512c680ca7a8a842b2b55dddc4650f3f05",
+    "src/router_policy.py": "343bac66ec457f0ddd13fc61ac987ada9bc3e78c962a2f38ea553d32ea0a5840",
+    "src/state_machine.py": "afe829049cff7cc32bb170ff41ce20debcaa80f8c0bc60a596c6b56b1162da6b",
+    "src/storage.py": "4ad31180976ddfc468fa9bd634b3b5cde830a426ac36669a04bf4bf4ea48fada",
+    "tests/test_adapters.py": "3e14d5cc234a83e2840fba692d4699af796694ccd9ad54de1225884c765cd14d",
+    "tests/test_anthropic_adapter.py": "bf3a53a1b0a606b6019d40c51dc5851c36c542f7d88ee769351a2c0f69a981bc",
+    "tests/test_codex_managed.py": "ba1eebde812ee26aa943d7a20c47497c2490310483e0c1be0e56e5ecfb5d1fdc",
+    "tests/test_phase2_control_layer.py": "a48838b9f88ee6cd8911ba77f0256e75a2b3d1c50a61e67e319c36b4077f3719",
+    "tests/test_phase2_hardening.py": "2fcb1bed5a24a4640b31f30e6c5da8441b8cc0a071db6f6db3ec78e80cf217c1",
+    "tests/test_phase3_loop.py": "ffe41bed0842abf600c7f2c8186671163e001f2da4b3e44931ed3e002447d45e",
+    "tests/test_phase4_file_tools.py": "87f80837d7fa5b74c7b11fb4db2927f6dbe92809caa85b5eab151817d9bfa4d3",
+    "tests/test_responses_adapter.py": "ec8d8acf83d3356a61ac102557b17c216be658ec572bdd1266978f980d4aafd1",
+    "tests/test_schemas.py": "e62020a75d6bcd543cab9fa45fe32bd52b197b1b9a4842169d43581aa3c511eb"
+  },
+  "cases": [
+    {
+      "id": "OPT-01",
+      "test": "test_opt_01_complete_success",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-02",
+      "test": "test_opt_02_failed_acceptance",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-03",
+      "test": "test_opt_03_revision_is_bounded",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-04",
+      "test": "test_opt_04_wrong_task_review",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-05",
+      "test": "test_opt_05_old_artifact_hash",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-06",
+      "test": "test_opt_06_late_attempt_does_not_overwrite",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-07",
+      "test": "test_opt_07_contradictory_pass",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-08",
+      "test": "test_opt_08_invalid_evidence",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-09",
+      "test": "test_opt_09_planning_is_not_permission",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-10",
+      "test": "test_opt_10_declared_read_only_delete",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-11",
+      "test": "test_opt_11_model_approval_flag_ignored",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-12",
+      "test": "test_opt_12_sibling_prefix",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-13",
+      "test": "test_opt_13_normalized_escape",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-14",
+      "test": "test_opt_14_real_junction",
+      "status": "not_applicable_phase2",
+      "reason": "Phase 4: real junction resolution and filesystem race verification"
+    },
+    {
+      "id": "OPT-15",
+      "test": "test_opt_15_changed_approved_action",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-16",
+      "test": "test_opt_16_terminal_tool_request",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-17",
+      "test": "test_opt_17_remaining_timeout_reaches_transport",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-18",
+      "test": "test_opt_18_zero_time_no_call",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-19",
+      "test": "test_opt_19_input_exhausts_tokens",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-20",
+      "test": "test_opt_20_output_cap",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-21",
+      "test": "test_opt_21_unknown_usage_stops",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-22",
+      "test": "test_opt_22_repair_keeps_original_deadline",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-23",
+      "test": "test_opt_23_response_before_commit_crash",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-24",
+      "test": "test_opt_24_transaction_rolls_back_both",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-25",
+      "test": "test_opt_25_duplicate_completion_not_charged",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-26",
+      "test": "test_opt_26_duplicate_claims",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-27",
+      "test": "test_opt_27_pid_is_not_ownership",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-28",
+      "test": "test_opt_28_terminal_restart",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-29",
+      "test": "test_opt_29_reviewer_unavailable",
+      "status": "passed",
+      "reason": null
+    },
+    {
+      "id": "OPT-30",
+      "test": "test_opt_30_invalid_provider_output",
+      "status": "passed",
+      "reason": null
+    }
+  ],
+  "case_counts": {
+    "passed": 29,
+    "failed": 0,
+    "not_applicable_phase2": 1
+  },
+  "unit_tests": {
+    "run": 127,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1
+  },
+  "mutation_checks": [
+    {
+      "mutation": "wrong_task_review",
+      "test": "test_opt_04_wrong_task_review",
+      "detected": true,
+      "assertion_failures": 1,
+      "runtime_errors": 0
+    },
+    {
+      "mutation": "stale_artifact_review",
+      "test": "test_opt_05_old_artifact_hash",
+      "detected": true,
+      "assertion_failures": 1,
+      "runtime_errors": 0
+    },
+    {
+      "mutation": "review_nonce",
+      "test": "test_invalid_review_nonce_rejected",
+      "detected": true,
+      "assertion_failures": 1,
+      "runtime_errors": 0
+    },
+    {
+      "mutation": "contradictory_verdict",
+      "test": "test_opt_07_contradictory_pass",
+      "detected": true,
+      "assertion_failures": 1,
+      "runtime_errors": 0
+    },
+    {
+      "mutation": "acceptance_failure",
+      "test": "test_opt_02_failed_acceptance",
+      "detected": true,
+      "assertion_failures": 1,
+      "runtime_errors": 0
+    },
+    {
+      "mutation": "approval_parameter_binding",
+      "test": "test_opt_15_changed_approved_action",
+      "detected": true,
+      "assertion_failures": 1,
+      "runtime_errors": 0
+    },
+    {
+      "mutation": "remaining_token_cap",
+      "test": "test_opt_20_output_cap",
+      "detected": true,
+      "assertion_failures": 1,
+      "runtime_errors": 0
+    },
+    {
+      "mutation": "transport_timeout",
+      "test": "test_opt_17_remaining_timeout_reaches_transport",
+      "detected": true,
+      "assertion_failures": 1,
+      "runtime_errors": 0
+    },
+    {
+      "mutation": "unknown_usage_stop",
+      "test": "test_opt_21_unknown_usage_stops",
+      "detected": true,
+      "assertion_failures": 1,
+      "runtime_errors": 0
+    },
+    {
+      "mutation": "transaction_atomicity",
+      "test": "test_opt_24_transaction_rolls_back_both",
+      "detected": true,
+      "assertion_failures": 1,
+      "runtime_errors": 0
+    },
+    {
+      "mutation": "duplicate_completion",
+      "test": "test_opt_25_duplicate_completion_not_charged",
+      "detected": true,
+      "assertion_failures": 1,
+      "runtime_errors": 0
+    },
+    {
+      "mutation": "single_owner",
+      "test": "test_opt_26_duplicate_claims",
+      "detected": true,
+      "assertion_failures": 1,
+      "runtime_errors": 0
+    },
+    {
+      "mutation": "terminal_tool_rejection",
+      "test": "test_opt_16_terminal_tool_request",
+      "detected": true,
+      "assertion_failures": 1,
+      "runtime_errors": 0
+    },
+    {
+      "mutation": "interrupted_attempt_replay",
+      "test": "test_crash_cannot_be_retried_without_reconciliation",
+      "detected": true,
+      "assertion_failures": 1,
+      "runtime_errors": 0
+    }
+  ],
+  "limitations": [
+    "OPT-14 real junction/TOCTOU behavior remains Phase 4 work.",
+    "No live provider invocation or real file/shell tool execution in this verification.",
+    "Token input reservation is an estimate; no hard token/cost guarantee is claimed.",
+    "Transport timeout is capped per request; a strict wall-clock network watchdog is not implemented.",
+    "Production acceptance evaluator must be supplied explicitly; absent evidence fails closed.",
+    "Recovery is an exclusive startup operation; no live multi-process takeover or PID adoption."
+  ],
+  "passed": true
+}
