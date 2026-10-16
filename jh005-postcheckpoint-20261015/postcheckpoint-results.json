@@ -1,0 +1,25 @@
+{
+  "checkpoint": "bfc7839e8cbf41b69e685be2973ec2c8a11aed62",
+  "purpose": "unaccepted WIP, not an acceptance/release commit",
+  "tests": {
+    "total": 185,
+    "passed": 184,
+    "skipped": 1,
+    "failures": 0,
+    "errors": 0
+  },
+  "inconsistent_variants_still_wrongly_accepted": 8,
+  "probe_outputs_identical": true,
+  "unreviewed_extra_bytes_still_pass_behavior_tests": true,
+  "formal_seals_changed": false,
+  "product_schema_original_source_unchanged": true,
+  "source_fix_applied_by_reviewer": false,
+  "real_model_calls": 0,
+  "worktree": "clean",
+  "JH005": "revise",
+  "findings": {
+    "P1": 1,
+    "P2": 3
+  },
+  "JH006": "not started"
+}

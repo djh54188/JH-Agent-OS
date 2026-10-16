@@ -1,0 +1,16 @@
+This is a bounded PRODUCT INTEGRATION TEST of the existing Codex host and JH Skill+CLI. Use $jh-task to submit, check, resume, and collect ONE synthetic records task. Discover the skill from the project skills available to you, read its actual SKILL.md, and follow its worktree preflight. Do not claim discovery merely because this prompt names it.
+
+The working directory must be D:\JH-Agent OS\data\worktrees\n1-artifact-entry. Expected branch n1-artifact-entry, commit c7d7421. The task has already been prepared at D:\JH-Agent OS\data\worktrees\n1-artifact-entry\data\integration-evidence\jh004-20261014\task.json.
+Use --db "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\data\integration-evidence\jh004-20261014\state.sqlite3" --workspace "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\data\integration-evidence\jh004-20261014\ws".
+Task id: task_jh004_real_20261014_8b880432.
+Save per-command stdout JSON in D:\JH-Agent OS\data\worktrees\n1-artifact-entry\data\integration-evidence\jh004-20261014, using new filenames a-submit.json, b-status.json, c-resume.json, d-artifact.json and d-summary.json. Keep real CLI exit codes and stop on the first nonzero CLI exit.
+
+Required sequence, at least four distinct Python CLI interpreter invocations:
+A. submit task.json WITHOUT --run. No model call yet.
+B. Read-only status of that same task. Before and after this query, copy the CLOSED SQLite main database to D:\JH-Agent OS\data\worktrees\n1-artifact-entry\data\integration-evidence\jh004-20261014\before-query.sqlite3 and D:\JH-Agent OS\data\worktrees\n1-artifact-entry\data\integration-evidence\jh004-20261014\after-query.sqlite3 respectively (these are synthetic evidence snapshots, no other process is using this DB). Do not write to the database yourself.
+C. resume that same task once using production adapters. This calls the already approved local proxy Gemini worker and Muse reviewer. Existing keys are loaded by the product from user environment. Never print keys or dump environment/config credentials.
+D. Read-only artifact and summary of that same task.
+
+Use only ordinary Codex tool and approval mechanisms under workspace-write. Do not disable the sandbox/approval or change global config. If your execution channel or authentication/network fails, save the actual error and stop, do not try another model/database or widen permissions to retry. No child agents, code changes, Git commits/checkouts, patching, fixtures, mocks, approve/recover, target-file application, extra tasks, or extra backend retries. You may create only the command-output and synthetic evidence files in the fixture folder. No user data is involved. JH budget is already fixed to 6 turns / 16000 tokens / 600 seconds and must not be reset.
+
+Return the observed preflight root/branch/commit/module path, skill actually read, command exit codes, final task status/artifact hash/review/criteria/usage/blockers. Do not announce phase acceptance. If a required step cannot be performed, state exactly which evidence remains unverified. Host token usage will be captured independently from your JSON event stream.

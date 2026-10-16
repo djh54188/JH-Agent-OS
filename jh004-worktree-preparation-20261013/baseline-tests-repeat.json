@@ -1,0 +1,25 @@
+{
+  "verified_at": "2026-10-13T14:17:19.810101+00:00",
+  "command": [
+    "python",
+    "-X",
+    "utf8",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests"
+  ],
+  "cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry",
+  "head": "9a7c5dd6e1f244db076003c17da62966b05d7ef3",
+  "duration_seconds": 2.757,
+  "exit_code": 0,
+  "total": 145,
+  "skipped": 1,
+  "passed": 144,
+  "scope": "existing 80979f3 product source after documentation-only checkpoint; not JH-004 A-E implementation validation",
+  "source_diff_from_base": "",
+  "status_after": "",
+  "model_calls_by_preparation": 0
+}

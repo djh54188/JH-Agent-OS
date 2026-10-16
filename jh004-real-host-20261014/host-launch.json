@@ -1,0 +1,21 @@
+{
+  "pid": 14100,
+  "args": [
+    "D:\\npm-global\\node_modules\\@openai\\codex\\node_modules\\@openai\\codex-win32-x64\\vendor\\x86_64-pc-windows-msvc\\bin\\codex.exe",
+    "exec",
+    "-C",
+    "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry",
+    "--sandbox",
+    "workspace-write",
+    "--approve-for-me",
+    "--ephemeral",
+    "--json",
+    "--output-last-message",
+    "D:\\JH-Agent OS\\reports\\jh004-real-host-20261014\\host-final.txt",
+    "-"
+  ],
+  "timeout_seconds": 900,
+  "config_changes": false,
+  "sandbox": "workspace-write",
+  "approval": "auto review"
+}

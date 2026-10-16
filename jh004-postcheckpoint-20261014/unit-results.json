@@ -1,0 +1,11 @@
+{
+  "total": 180,
+  "failures": 1,
+  "errors": 0,
+  "skipped": 1,
+  "exit_code": 1,
+  "duration_seconds": 5.34,
+  "head": "58d6058875ffa0e1f3464a49625c4610386e25ef",
+  "known_failure": "test_skill_binds_to_own_worktree",
+  "passed": 178
+}

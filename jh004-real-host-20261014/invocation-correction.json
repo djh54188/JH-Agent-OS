@@ -1,0 +1,6 @@
+{
+  "attempt0": "argument parser rejected mutually exclusive --sandbox and --approve-for-me before model or task execution",
+  "attempt1": "use only --approve-for-me, which selects normal workspace-write plus approval auto review",
+  "backend_db_existed": false,
+  "credential_or_config_changes": false
+}

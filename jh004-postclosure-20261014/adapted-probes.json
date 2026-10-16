@@ -1,0 +1,274 @@
+{
+  "client_date": "2026-10-14",
+  "api_calls": 0,
+  "scope": "offline independent fault injection; source_false_control simulates source flag false and is not real model evidence",
+  "rows": [
+    {
+      "case": "wrong_999",
+      "exit_code": 1,
+      "body": {
+        "command_ok": false,
+        "error": "Template records_transform_v1 requires exactly the two standard criteria in order; non-template, misordered, or extra conditions refused"
+      },
+      "db_not_created": true,
+      "model_assembly_reached": false
+    },
+    {
+      "case": "wrong_order",
+      "exit_code": 1,
+      "body": {
+        "command_ok": false,
+        "error": "Template records_transform_v1 requires exactly the two standard criteria in order; non-template, misordered, or extra conditions refused"
+      },
+      "db_not_created": true,
+      "model_assembly_reached": false
+    },
+    {
+      "case": "extra_condition",
+      "exit_code": 1,
+      "body": {
+        "command_ok": false,
+        "error": "Template records_transform_v1 requires exactly the two standard criteria in order; non-template, misordered, or extra conditions refused"
+      },
+      "db_not_created": true,
+      "model_assembly_reached": false
+    },
+    {
+      "case": "known_mock_assembly",
+      "exit_code": 1,
+      "body": {
+        "command_ok": false,
+        "error": "Production assembly refused known mock worker adapter 'ScriptedWorkerAdapter' (model_id 'mock-gemini-worker')"
+      },
+      "tasks": 0,
+      "attempts": 0
+    },
+    {
+      "case": "source_false_control",
+      "exit_code": 0,
+      "status": "succeeded",
+      "review_bindings": 1,
+      "source_records": [
+        {
+          "attempt_id": "attempt_135efb2428f343d3951f502e822f6ff0",
+          "role": "worker",
+          "adapter_class": "OfflineTransport",
+          "model_id": "offline-source-gate-worker",
+          "is_mock": false
+        },
+        {
+          "attempt_id": "attempt_b59eb62446434e81a619310a8ceac099",
+          "role": "worker",
+          "adapter_class": "OfflineTransport",
+          "model_id": "offline-source-gate-worker",
+          "is_mock": false
+        },
+        {
+          "attempt_id": "attempt_077df54a7bd1471a8a4d7559b1c56171",
+          "role": "reviewer",
+          "adapter_class": "OfflineTransport",
+          "model_id": "offline-source-gate-reviewer",
+          "is_mock": false
+        }
+      ],
+      "responses": [
+        {
+          "phase": "planning",
+          "declared_is_mock": false
+        },
+        {
+          "phase": "generation",
+          "declared_is_mock": false
+        },
+        {
+          "phase": "review",
+          "declared_is_mock": false
+        }
+      ]
+    },
+    {
+      "case": "mock_planning",
+      "exit_code": 1,
+      "status": "failed",
+      "review_bindings": 0,
+      "source_records": [
+        {
+          "attempt_id": "attempt_0546674c09f14939a4bd68b83be2d3f4",
+          "role": "worker",
+          "adapter_class": "OfflineTransport",
+          "model_id": "offline-source-gate-worker",
+          "is_mock": true
+        }
+      ],
+      "responses": [
+        {
+          "phase": "planning",
+          "declared_is_mock": true
+        }
+      ]
+    },
+    {
+      "case": "mock_generation",
+      "exit_code": 1,
+      "status": "failed",
+      "review_bindings": 0,
+      "source_records": [
+        {
+          "attempt_id": "attempt_473ebfb3a2f748b1b65ebc227bb77577",
+          "role": "worker",
+          "adapter_class": "OfflineTransport",
+          "model_id": "offline-source-gate-worker",
+          "is_mock": false
+        },
+        {
+          "attempt_id": "attempt_7a2cf31758e24c179a6a2f0eac5c780d",
+          "role": "worker",
+          "adapter_class": "OfflineTransport",
+          "model_id": "offline-source-gate-worker",
+          "is_mock": true
+        }
+      ],
+      "responses": [
+        {
+          "phase": "planning",
+          "declared_is_mock": false
+        },
+        {
+          "phase": "generation",
+          "declared_is_mock": true
+        }
+      ]
+    },
+    {
+      "case": "mock_review",
+      "exit_code": 1,
+      "status": "needs_attention",
+      "review_bindings": 0,
+      "source_records": [
+        {
+          "attempt_id": "attempt_a93be0ddb50b4a0f936fe971e117036a",
+          "role": "worker",
+          "adapter_class": "OfflineTransport",
+          "model_id": "offline-source-gate-worker",
+          "is_mock": false
+        },
+        {
+          "attempt_id": "attempt_fcfd0114d9bf4c89821bbef1819160d4",
+          "role": "worker",
+          "adapter_class": "OfflineTransport",
+          "model_id": "offline-source-gate-worker",
+          "is_mock": false
+        },
+        {
+          "attempt_id": "attempt_58486fb995944e98a12a895f2a96f91f",
+          "role": "reviewer",
+          "adapter_class": "OfflineTransport",
+          "model_id": "offline-source-gate-reviewer",
+          "is_mock": true
+        }
+      ],
+      "responses": [
+        {
+          "phase": "planning",
+          "declared_is_mock": false
+        },
+        {
+          "phase": "generation",
+          "declared_is_mock": false
+        },
+        {
+          "phase": "review",
+          "declared_is_mock": true
+        }
+      ]
+    },
+    {
+      "case": "missing_generation_source",
+      "exit_code": 1,
+      "status": "failed",
+      "review_bindings": 0,
+      "source_records": [
+        {
+          "attempt_id": "attempt_a01642a630f54e70aae3049586e912e0",
+          "role": "worker",
+          "adapter_class": "OfflineTransport",
+          "model_id": "offline-source-gate-worker",
+          "is_mock": false
+        },
+        {
+          "attempt_id": "attempt_3c65d13db3624e7e9da0e17910104662",
+          "role": "worker",
+          "adapter_class": "OfflineTransport",
+          "model_id": "offline-source-gate-worker",
+          "is_mock": null
+        }
+      ],
+      "responses": [
+        {
+          "phase": "planning",
+          "declared_is_mock": false
+        },
+        {
+          "phase": "generation",
+          "declared_is_mock": null
+        }
+      ]
+    },
+    {
+      "case": "historical_missing_source",
+      "blocker_before": "completed worker call has no trusted source record (attempt attempt_d7370b2b63cc40de92ef6d1a95ce19ec); re-submit or reconcile manually",
+      "exit_code": 1,
+      "status": "created",
+      "legacy_completed_attempt": "attempt_d7370b2b63cc40de92ef6d1a95ce19ec",
+      "attempts": 1,
+      "source_records": 0,
+      "uncovered_completed_attempts": [
+        "attempt_d7370b2b63cc40de92ef6d1a95ce19ec"
+      ],
+      "summary_source": null,
+      "responses": [],
+      "model_adapter_load_was_allowed": false
+    },
+    {
+      "case": "missing_task_queries",
+      "results": [
+        {
+          "command": "status",
+          "exit_code": 1,
+          "error": "\"Task 'task_missing_rereview' not found\""
+        },
+        {
+          "command": "summary",
+          "exit_code": 1,
+          "error": "\"Task 'task_missing_rereview' not found\""
+        },
+        {
+          "command": "events",
+          "exit_code": 1,
+          "error": "\"Task 'task_missing_rereview' not found\""
+        },
+        {
+          "command": "artifact",
+          "exit_code": 1,
+          "error": "\"Task 'task_missing_rereview' not found\""
+        }
+      ],
+      "db_unchanged": true
+    },
+    {
+      "case": "skill_worktree_module",
+      "skill_derived_root": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry",
+      "git_root": "D:/JH-Agent OS/data/worktrees/n1-artifact-entry",
+      "module": [
+        "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\src\\cli.py",
+        "True"
+      ],
+      "exit_code": 0,
+      "hardcoded_original_root_absent": true,
+      "host_skill_discovery_verified": false
+    }
+  ],
+  "fixtures_cleaned": true,
+  "old_evidence_modified": false,
+  "historical_missing_source_closed": true
+}

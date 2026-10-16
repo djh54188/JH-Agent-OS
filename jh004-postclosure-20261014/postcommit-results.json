@@ -1,0 +1,12 @@
+{
+  "commit": "c7d7421d485619ff7c0d31cd607052bcd637b530",
+  "tests_total": 185,
+  "passed": 184,
+  "skipped": 1,
+  "failures": 0,
+  "errors": 0,
+  "adapted_probes_exit_code": 0,
+  "source_unchanged": true,
+  "real_model_calls": 0,
+  "elapsed_seconds": 6.611
+}

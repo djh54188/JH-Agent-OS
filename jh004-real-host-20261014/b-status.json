@@ -1,0 +1,39 @@
+{
+  "task_id": "task_jh004_real_20261014_8b880432",
+  "title": "JH-004 bounded real-host records transform",
+  "status": "created",
+  "is_terminal": false,
+  "review_verdict": null,
+  "error_info": null,
+  "assigned_worker": "gemini_worker",
+  "assigned_reviewer": "muse_reviewer",
+  "budget": {
+    "max_turns": 6,
+    "max_tokens": 16000,
+    "max_execution_time_seconds": 600
+  },
+  "runtime_usage": {
+    "turns_used": 0,
+    "tokens_used": null,
+    "tokens_unknown_count": 0,
+    "repair_count": 0,
+    "has_unconfirmed_side_effect": false
+  },
+  "current_artifact": null,
+  "artifact_refs": [],
+  "latest_review": null,
+  "acceptance_results": [],
+  "source_binding": {
+    "source": "production",
+    "template_id": "records_transform_v1",
+    "execution_mode": "generate"
+  },
+  "delivery_scope": {
+    "generated_artifact": false,
+    "target_applied": false,
+    "note": "JH-004 delivers generated artifacts only; no target files are applied"
+  },
+  "pending_approval": null,
+  "blockers": [],
+  "updated_at": "2026-10-14T13:30:19.423852Z"
+}

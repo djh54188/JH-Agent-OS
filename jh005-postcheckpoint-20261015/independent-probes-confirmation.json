@@ -1,0 +1,103 @@
+{
+  "scope": "Offline fixture/spec verification only; not production authorization evidence",
+  "original_fixture_manifests_modified": false,
+  "real_model_calls": 0,
+  "scratch_root": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\review-fixtures\\jh005-9d109117",
+  "results": [
+    {
+      "case": "behavior:target/widget.py",
+      "exit_code": 1,
+      "stdout": "case 0: FAIL got=['c', 'b'] expected=['a', 'b']\ncase 1: FAIL got=['c', 'b', 'a'] expected=['a', 'b', 'c']\ncase 2: ok\ncase 3: ok\nFAIL\n",
+      "stderr": ""
+    },
+    {
+      "case": "behavior:expected/widget.py",
+      "exit_code": 0,
+      "stdout": "case 0: ok\ncase 1: ok\ncase 2: ok\ncase 3: ok\nPASS\n",
+      "stderr": ""
+    },
+    {
+      "case": "reference_byte_contract",
+      "expected_single_edit_equals_reference": false,
+      "baseline_sha256": "e27d9e7dc341fe5fd2081daaecbebfa2e06f94bde29f121a2a8ecfed98f54e13",
+      "reference_sha256": "70d710354652343818cd3332f9d67e0de94374cd437176df1fd2e76ba8119477",
+      "diff": "--- baseline\n+++ reference\n@@ -1,12 +1,12 @@\n-\"\"\"Fixture target: regional sales ranking widget (N2 code task baseline).\n+\"\"\"Fixture target: regional sales ranking widget (N2 code task expected state).\n \n-Baseline contains exactly one defect: `reverse=True` inverts the ranking order.\n-See task.json for the required behavior table. Synthetic fixture only; never a\n-user file.\n+Reference fixed version: the `reverse=True` defect is removed, nothing else\n+changes. Used by checks and review; the real fix is produced by the model and\n+applied by the host in JH-006.\n \"\"\"\n \n \n def top_regions(records, n):\n     \"\"\"Return the top-n region names by sales desc, ties by region asc.\"\"\"\n-    ranked = sorted(records, key=lambda r: (-r[\"sales\"], r[\"region\"]), reverse=True)\n+    ranked = sorted(records, key=lambda r: (-r[\"sales\"], r[\"region\"]))\n     return [r[\"region\"] for r in ranked[:n]]\n"
+    },
+    {
+      "case": "code_sortfix_task_schema",
+      "errors": [
+        {
+          "path": "",
+          "message": "Additional properties are not allowed ('acceptance_note' was unexpected)"
+        }
+      ],
+      "after_workspace_substitution": true
+    },
+    {
+      "case": "data_rollup_task_schema",
+      "errors": [],
+      "after_workspace_substitution": true
+    },
+    {
+      "case": "data_template_resolver_without_materialization",
+      "result": {
+        "accepted": false,
+        "error": "TrustedAssemblyError: Template records_transform_v1 requires records: non-empty list of {region: str, sales: number}"
+      }
+    },
+    {
+      "case": "sealed_control",
+      "exit_code": 0,
+      "stdout": "{\n  \"status\": \"ok\",\n  \"fixtures\": [\n    \"code_sortfix\",\n    \"data_rollup\"\n  ]\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "data_input_mismatch",
+      "exit_code": 0,
+      "stdout": "{\n  \"status\": \"ok\",\n  \"fixtures\": [\n    \"code_sortfix\",\n    \"data_rollup\"\n  ]\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "manifest_empty",
+      "exit_code": 0,
+      "stdout": "{\n  \"status\": \"ok\",\n  \"fixtures\": [\n    \"code_sortfix\",\n    \"data_rollup\"\n  ]\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "manifest_omits_expected",
+      "exit_code": 0,
+      "stdout": "{\n  \"status\": \"ok\",\n  \"fixtures\": [\n    \"code_sortfix\",\n    \"data_rollup\"\n  ]\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "absolute_target",
+      "exit_code": 0,
+      "stdout": "{\n  \"status\": \"ok\",\n  \"fixtures\": [\n    \"code_sortfix\",\n    \"data_rollup\"\n  ]\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "scenarios_empty",
+      "exit_code": 0,
+      "stdout": "{\n  \"status\": \"ok\",\n  \"fixtures\": [\n    \"code_sortfix\",\n    \"data_rollup\"\n  ]\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "checks_empty",
+      "exit_code": 0,
+      "stdout": "{\n  \"status\": \"ok\",\n  \"fixtures\": [\n    \"code_sortfix\",\n    \"data_rollup\"\n  ]\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "boolean_sales",
+      "exit_code": 0,
+      "stdout": "{\n  \"status\": \"ok\",\n  \"fixtures\": [\n    \"code_sortfix\",\n    \"data_rollup\"\n  ]\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "manifest_string_seal",
+      "exit_code": 0,
+      "stdout": "{\n  \"status\": \"ok\",\n  \"fixtures\": [\n    \"code_sortfix\",\n    \"data_rollup\"\n  ]\n}\n",
+      "stderr": ""
+    }
+  ]
+}
