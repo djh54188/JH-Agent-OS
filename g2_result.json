@@ -1,0 +1,134 @@
+{
+  "model_id": "gemini-3.8-flash-high",
+  "is_mock": false,
+  "latency_ms": 126436,
+  "tokens_prompt": 11897,
+  "tokens_completion": 4730,
+  "total_tokens": 16627,
+  "payload": {
+    "summary": "The review/apply/recover binding in src/orchestrator.py enforces cryptographic continuity across tool execution, review snapshots, post-review apply, and on-disk verification for single-turn, single-target workflows, failing closed to needs_attention on tampering. However, a historical leakage gap exists across repair loops: _apply_staged_writes iterates over all historical stage_write executions for the task and rejects the entire apply if any prior turn's staged_path (e.g., from a rejected repair round or a different target_path) is no longer in the current turn's artifact_refs, or conversely could interact poorly when staged_paths are distinct per turn. Additionally, the SimulatedInterruptionError 'applied' recovery branch skips the post-apply on-disk read-back check.",
+    "binding_chain": [
+      "1. Stage Write Recording: FileToolExecutor.execute('stage_write') computes content_sha256 of staged bytes and target_pre_sha256 of current target, persisted in tool_executions[i].result.structured_data.",
+      "2. Pre-Review Snapshot: Orchestrator._snapshot_artifacts(task['artifact_refs']) reads staged files from disk into snapshots[staged_path] = {content, sha256}.",
+      "3. Stage-to-Snapshot Verification (_verify_staged_snapshots_match_tool_records): Compares snapshots[ref]['sha256'] == latest_by_staged[ref]['content_sha256']; mismatches raise SchemaValidationError -> needs_attention.",
+      "4. Reviewer Execution & Validation (validate_review): Compares review_json metadata/artifact_hashes against review_metadata and pre-review snapshots[ref]['sha256'], and compares pre-review snapshots against a fresh post-review _snapshot_artifacts() call.",
+      "5. Acceptance Evaluation & Post-Acceptance Re-verification: Runs acceptance_evaluator against _DispatchSnapshotView(_snapshot_artifacts), then re-runs validate_review against another fresh _snapshot_artifacts() call.",
+      "6. Apply Eligibility & Snapshot-to-Record Check (_apply_staged_writes): Verifies sd['staged_path'] in set(task['artifact_refs']), then compares reviewed_sha (snapshots[staged_path]['sha256']) == sd['content_sha256'].",
+      "7. Executor Atomic Apply (executor.apply_staged): Re-verifies on-disk staged file sha256 == content_sha256 (reviewed_sha) and on-disk target sha256 == sd['target_pre_sha256'] before replacing target.",
+      "8. Post-Apply Disk Verification (_apply_staged_writes): Re-reads resolved target_path from disk and checks disk_sha == reviewed_sha and outcome['applied_sha256'] == reviewed_sha.",
+      "9. Review Binding & Success Gate (bind_review & transition_task_state): Persists snapshots and review_attempt; success gate verifies a pass verdict on the latest review binding and an apply_staged_write execution whose applied_sha256 matches the reviewed artifact sha set."
+    ],
+    "verdict": "PARTIALLY SATISFIED: Within a single execution turn, the chain strictly binds apply and recovery to the current reviewed snapshot SHA-256 and pre-review target SHA-256. However, across multi-turn repair loops, _apply_staged_writes queries all historical successful stage_write records for the task (self.storage.list_tool_executions(task_id)) rather than scoping to the current turn or filtering by current artifact_refs before checking membership. If a previous repair turn staged a file with a different staged_path (or a different target_path abandoned in repair), `if sd.get('staged_path') not in reviewed_refs: raise ApplyBlockedError` will erroneously block a valid current review, or if staged_path names are reused across turns while a prior target was dropped, historical records pollute the apply set. Furthermore, the SimulatedInterruptionError recovery branch for `recovery['state'] == 'applied'` records `recovery['target_sha256']` and `continue`s without asserting `recovery['target_sha256'] == reviewed_sha` in orchestrator.",
+    "attacks": [
+      {
+        "name": "Pre-Review Staged File Tampering (TOCTOU between stage_write and snapshot)",
+        "capability": "Local workspace/staging directory tampering after stage_write completes but before Reviewer snapshot is taken.",
+        "steps": [
+          "Worker executes stage_write for target 'app.py', writing benign content (SHA_A) to staged_path.",
+          "Attacker modifies bytes at staged_path to malicious content (SHA_B) before _snapshot_artifacts runs.",
+          "Orchestrator calls _snapshot_artifacts, recording SHA_B in snapshots.",
+          "Orchestrator calls _verify_staged_snapshots_match_tool_records(task_id, snapshots)."
+        ],
+        "stopping_check": "Orchestrator._verify_staged_snapshots_match_tool_records (snap.get('sha256') != sd.get('content_sha256'))",
+        "expected_outcome": "Raises SchemaValidationError, caught in review block; task transitions to 'needs_attention' (reason='reviewer_unavailable_or_invalid_fail_closed'); target file 'app.py' remains untouched on disk."
+      },
+      {
+        "name": "Mid-Review Staged File Tampering (TOCTOU during Reviewer model call)",
+        "capability": "Staged file modification on disk while Reviewer model adapter is executing invoke_structured.",
+        "steps": [
+          "stage_write writes SHA_A; pre-review snapshot records SHA_A; _verify_staged_snapshots_match_tool_records passes.",
+          "While reviewer.invoke_structured is in flight, attacker overwrites staged_path on disk with SHA_B.",
+          "Reviewer returns 'pass' verdict bound to SHA_A.",
+          "Orchestrator invokes validate_review(review_json, review_metadata, snapshots, self._snapshot_artifacts(task.get('artifact_refs', [])))."
+        ],
+        "stopping_check": "validate_review post-review snapshot comparison (post-review _snapshot_artifacts sha256 != pre-review snapshots sha256)",
+        "expected_outcome": "validate_review raises SchemaValidationError/ValidationError; task transitions to 'needs_attention'; _apply_staged_writes is never called; target on disk is untouched."
+      },
+      {
+        "name": "Post-Review / Pre-Apply Staged File Tampering",
+        "capability": "Tampering with staged_path on disk after validate_review after-acceptance check completes, just before executor.apply_staged reads the staged file.",
+        "steps": [
+          "Worker stages SHA_A; Reviewer passes SHA_A; both validate_review calls pass.",
+          "Immediately before executor.apply_staged is invoked inside _apply_staged_writes, attacker mutates staged_path on disk to SHA_B.",
+          "_apply_staged_writes passes content_sha256=reviewed_sha (SHA_A) into executor.apply_staged.",
+          "Even if executor failed to stop it, orchestrator re-reads verified_target.read_bytes() and checks disk_sha != reviewed_sha."
+        ],
+        "stopping_check": "FileToolExecutor.apply_staged (staged file hash check against content_sha256) and Orchestrator._apply_staged_writes (disk_sha != reviewed_sha)",
+        "expected_outcome": "Raises ApplyBlockedError; task transitions to 'needs_attention' (reason='staged_write_apply_refused'); target is either unmodified (blocked in executor) or task halts in needs_attention."
+      },
+      {
+        "name": "Concurrent Target File Modification Before Apply (Lost Update Attack)",
+        "capability": "External process or concurrent actor modifies the live workspace target file between stage_write (which captured target_pre_sha256) and _apply_staged_writes.",
+        "steps": [
+          "Target 'app.py' initially has SHA_PRE_1 when Worker calls stage_write.",
+          "Reviewer reviews and passes the staged artifact.",
+          "Before _apply_staged_writes executes apply_staged, an external edit changes 'app.py' on disk to SHA_PRE_2.",
+          "_apply_staged_writes invokes executor.apply_staged with target_pre_sha256=SHA_PRE_1."
+        ],
+        "stopping_check": "FileToolExecutor.apply_staged (pre-image hash check against target_pre_sha256) raising OSError/ApplyBlockedError, caught in _apply_staged_writes",
+        "expected_outcome": "Task transitions to 'needs_attention' (reason='staged_write_apply_refused'); external changes at 'app.py' (SHA_PRE_2) are NOT overwritten."
+      },
+      {
+        "name": "Interrupted Apply with Corrupt/Uncertain Target State",
+        "capability": "Process crash / SimulatedInterruptionError during apply_staged accompanied by partial write or third-party target mutation (SHA_CORRUPT != SHA_PRE and != SHA_REVIEWED).",
+        "steps": [
+          "Reviewer passes SHA_REVIEWED; _apply_staged_writes calls executor.apply_staged.",
+          "apply_staged raises SimulatedInterruptionError while target on disk holds SHA_CORRUPT.",
+          "Catch block invokes executor.recover_apply(..., content_sha256=reviewed_sha, target_pre_sha256=SHA_PRE).",
+          "recover_apply classifies state as 'uncertain' because target_sha256 matches neither SHA_PRE nor SHA_REVIEWED."
+        ],
+        "stopping_check": "Orchestrator._apply_staged_writes SimulatedInterruptionError handler (`else: raise ApplyBlockedError('apply outcome uncertain...')`)",
+        "expected_outcome": "Raises ApplyBlockedError without replaying apply_staged; task transitions to 'needs_attention' (reason='staged_write_apply_refused')."
+      },
+      {
+        "name": "Compromised Reviewer Forging Approval for Unreviewed Content",
+        "capability": "Malicious or hallucinating Reviewer adapter returns verdict='pass' while attempting to alter metadata or artifact_hashes to match unreviewed content.",
+        "steps": [
+          "Worker stages SHA_A; pre-review snapshot records SHA_A.",
+          "Reviewer returns verdict='pass' but alters review_json metadata or artifact_hashes to SHA_FORGED.",
+          "Orchestrator runs validate_review(review_json, review_metadata, snapshots, ...)."
+        ],
+        "stopping_check": "validate_review (verifies review_json metadata and hashes against control-owned review_metadata and snapshots)",
+        "expected_outcome": "Raises SchemaValidationError; caught and transitioned to 'needs_attention' (reason='reviewer_unavailable_or_invalid_fail_closed'); no apply occurs."
+      }
+    ],
+    "risks": [
+      {
+        "location": "Orchestrator._apply_staged_writes (lines 167-177)",
+        "description": "Iterating over all historical `stage_write` executions for the task and raising `ApplyBlockedError` if any `sd.get('staged_path') not in reviewed_refs` breaks multi-turn repair loops whenever a repair turn writes to a new staged_path or drops a previously staged target file.",
+        "severity": "high"
+      },
+      {
+        "location": "Orchestrator._apply_staged_writes (lines 234-249)",
+        "description": "In the `SimulatedInterruptionError` recovery branch where `recovery['state'] == 'applied'`, the code records `applied_sha256: recovery['target_sha256']` and `continue`s without executing the post-apply on-disk verification (`disk_sha != reviewed_sha` at line 260) or explicitly asserting `recovery['target_sha256'] == reviewed_sha`.",
+        "severity": "medium"
+      },
+      {
+        "location": "Orchestrator._apply_staged_writes (lines 185-186)",
+        "description": "If `snapshots` is passed as `None` or lacks `staged_path`, `reviewed_sha` falls back to `sd['content_sha256']` (the unreviewed tool record hash), rendering the `if reviewed_sha != sd.get('content_sha256')` check a tautology instead of failing closed on a missing snapshot.",
+        "severity": "medium"
+      },
+      {
+        "location": "Orchestrator._run_task (lines 525-528 & 582-588)",
+        "description": "When `read_file` is used alongside `stage_write` in `file_tools` mode, `path_param` for `read_file` (where `staged_rel` is `None`) is appended to `produced_artifacts` (`artifact_refs`), causing non-staged workspace files to be snapshotted into `artifacts` and causing `_apply_staged_writes` or `_verify_staged_snapshots_match_tool_records` to misbehave or skip validation on non-staged refs.",
+        "severity": "medium"
+      },
+      {
+        "location": "Orchestrator._run_task (lines 651-657)",
+        "description": "The `acceptance_evaluator` receives `_DispatchSnapshotView(self._snapshot_artifacts)` which re-reads files from disk dynamically rather than reading the immutable `snapshots` dictionary passed to the Reviewer, creating a narrow TOCTOU window where acceptance evaluates different bytes than the Reviewer saw before the second `validate_review` catches it.",
+        "severity": "low"
+      }
+    ],
+    "probe": {
+      "name": "post_review_pre_apply_staged_tamper_fail_closed",
+      "objective": "Prove that tampering with the staged file on disk after Reviewer approval (and after post-acceptance validate_review) but before apply_staged is caught and fails closed to needs_attention without overwriting the target file.",
+      "code": "import argparse, hashlib, json, shutil, sys, tempfile\nfrom pathlib import Path\n\nfrom src.orchestrator import Orchestrator\nfrom src.storage import TaskStorage\nfrom src.tools import FileToolExecutor\nfrom src.adapters import ScriptedWorkerAdapter, ScriptedReviewerAdapter\n\ndef main() -> int:\n    parser = argparse.ArgumentParser()\n    parser.add_argument(\"--temp-base\", default=tempfile.gettempdir())\n    args = parser.parse_args()\n\n    base = Path(args.temp_base)\n    base.mkdir(parents=True, exist_ok=True)\n    root = Path(tempfile.mkdtemp(prefix=\"probe_jh015_\", dir=str(base)))\n    try:\n        ws = root / \"workspace\"\n        ws.mkdir(parents=True, exist_ok=True)\n        target_rel = \"hello.txt\"\n        reviewed_content = \"reviewed-safe-content\\n\"\n        tampered_content = \"tampered-unreviewed-payload\\n\"\n        reviewed_sha = hashlib.sha256(reviewed_content.encode(\"utf-8\")).hexdigest()\n\n        storage = TaskStorage(\":memory:\")\n        executor = FileToolExecutor(workspace_root=str(ws))\n\n        task_data = {\n            \"task_id\": \"task_probe_001\",\n            \"title\": \"Write hello.txt\",\n            \"description\": \"Stage and apply hello.txt safely\",\n            \"acceptance_criteria\": [\"Write hello.txt\"],\n            \"budget\": {\"max_turns\": 5, \"max_tokens\": 10000, \"max_execution_time_seconds\": 60},\n            \"context\": {\"workspace_root\": str(ws), \"target_files\": [target_rel]},\n            \"risk_assessment\": {\"risk_level\": \"low\"},\n            \"metadata\": {\"execution_mode\": \"file_tools\"},\n        }\n        storage.create_task(task_data)\n        task_id = task_data[\"task_id\"]\n\n        worker = ScriptedWorkerAdapter(\n            model_id=\"worker-scripted\",\n            plans=[{\n                \"schema_version\": \"1.0.0\",\n                \"plan_id\": \"plan_001\",\n                \"task_id\": task_id,\n                \"summary\": \"Stage write hello.txt\",\n                \"steps\": [{\"step_id\": \"s1\", \"description\": \"stage hello.txt\", \"tool_name\": \"stage_write\"}],\n                \"estimated_tokens\": 100,\n                \"created_at\": \"2025-01-01T00:00:00Z\",\n            }],\n            tool_plans=[{\n                \"schema_version\": \"1.0.0\",\n                \"plan_id\": \"tplan_001\",\n                \"task_id\": task_id,\n                \"tool_requests\": [{\n                    \"schema_version\": \"1.0.0\",\n                    \"request_id\": \"treq_stage_001\",\n                    \"task_id\": task_id,\n                    \"step_id\": \"s1\",\n                    \"caller_role\": \"worker\",\n                    \"tool_name\": \"stage_write\",\n                    \"parameters\": {\"path\": target_rel, \"content\": reviewed_content},\n                    \"timeout_ms\": 5000,\n                    \"risk_level\": \"workspace_write\",\n                    \"requires_human_approval\": False,\n                    \"created_at\": \"2025-01-01T00:00:00Z\",\n                }],\n                \"created_at\": \"2025-01-01T00:00:00Z\",\n            }],\n        )\n        reviewer = ScriptedReviewerAdapter(model_id=\"reviewer-scripted\", verdict=\"pass\", score=95)\n\n        orig_apply_staged = executor.apply_staged\n        def tampered_apply_staged(t_id, *, target_path, staged_path, content_sha256, target_pre_sha256=None, authorized_files=None):\n            staged_full = executor.resolve_workspace_path(staged_path)\n            staged_full.write_text(tampered_content, encoding=\"utf-8\")\n            return orig_apply_staged(\n                t_id,\n                target_path=target_path,\n                staged_path=staged_path,\n                content_sha256=content_sha256,\n                target_pre_sha256=target_pre_sha256,\n                authorized_files=authorized_files,\n            )\n        executor.apply_staged = tampered_apply_staged\n\n        orch = Orchestrator(storage=storage, tool_executor=executor, worker_adapter=worker, reviewer_adapter=reviewer)\n        final_task = orch.run_task(task_id) if hasattr(orch, \"run_task\") else orch._run_task(task_id)\n\n        target_file = ws / target_rel\n        target_exists = target_file.exists()\n        disk_sha = hashlib.sha256(target_file.read_bytes()).hexdigest() if target_exists else None\n        defect_reproduced = (final_task[\"status\"] == \"succeeded\") or (target_exists and disk_sha != reviewed_sha)\n\n        print(json.dumps({\n            \"probe\": \"post_review_pre_apply_staged_tamper_fail_closed\",\n            \"status\": final_task[\"status\"],\n            \"target_exists\": target_exists,\n            \"disk_sha\": disk_sha,\n            \"reviewed_sha\": reviewed_sha,\n            \"defect_reproduced\": defect_reproduced,\n        }))\n    except Exception as exc:\n        print(json.dumps({\n            \"probe\": \"post_review_pre_apply_staged_tamper_fail_closed\",\n            \"status\": f\"error:{type(exc).__name__}:{exc}\",\n            \"target_exists\": False,\n            \"disk_sha\": None,\n            \"reviewed_sha\": None,\n            \"defect_reproduced\": False,\n        }))\n    finally:\n        shutil.rmtree(root, ignore_errors=True)\n    return 0\n\nif __name__ == \"__main__\":\n    sys.exit(main())\n",
+      "expected": "JSON output with status=='needs_attention', target_exists==False, disk_sha==None, reviewed_sha==<sha256 of reviewed_content>, defect_reproduced==False."
+    },
+    "open_questions": [
+      "In FileToolExecutor.stage_write, is staged_path deterministically derived from target_path alone, or does it include request_id / turn index? If it includes request_id, every repair turn produces a new staged_path and triggers the historical stage_execs ApplyBlockedError on line 174.",
+      "Does storage.transition_task_state('succeeded') validate that EVERY target_path in task['artifact_refs'] has a matching apply_staged_write execution bound to the latest review_id, or does it only check that at least one apply_staged_write exists with an applied_sha256 in the reviewed set?",
+      "Why is self.storage.bind_review(...) called AFTER self._apply_staged_writes(...) (line 675 vs 665)? If _apply_staged_writes succeeds on target 1 and fails on target 2 (or hits an unhandled exception), the review binding is never persisted even though side effects occurred on disk."
+    ]
+  }
+}

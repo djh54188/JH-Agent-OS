@@ -1,0 +1,63 @@
+{
+  "shared_source_modified": false,
+  "api_calls": 0,
+  "temp_root_cleaned": true,
+  "variants": [
+    {
+      "variant": "V1-taskdir-junction-truncates-outside",
+      "outcome": "PathBoundaryError",
+      "outside_after": "",
+      "outside_bytes": 0,
+      "invariant_holds": false
+    },
+    {
+      "variant": "V1b-mkdir-creates-outside-dir",
+      "outcome": "PathBoundaryError",
+      "outside_taskdir_created": true,
+      "invariant_holds": false
+    },
+    {
+      "variant": "V2-preexisting-backup-overwritten",
+      "applied": true,
+      "backup_after": "ORIG_DOC",
+      "invariant_holds": false
+    },
+    {
+      "variant": "V3a-concurrent-edit-after-temp-write",
+      "applied": true,
+      "target_after": "CAND3",
+      "invariant_holds": false
+    },
+    {
+      "variant": "V3b-replayed-apply-refused",
+      "first_applied": true,
+      "replay_outcome": "PathBoundaryError",
+      "target_after": "CAND_R",
+      "invariant_holds": true
+    },
+    {
+      "variant": "V4-parent-swap-at-apply-start",
+      "outcome": "OSError: backup verification failed; apply aborted before any target modification",
+      "outside_after": "OUTSIDE_V4",
+      "inside_after": "INSIDE_V4",
+      "invariant_holds": true
+    },
+    {
+      "variant": "V5-repair-restage-different-content",
+      "status": "needs_attention",
+      "error": "Staged write apply blocked: apply refused: apply refused: staged content sha 3ae40f8dfb3b... != reviewed 29aee58ffe32...",
+      "disk_content": null,
+      "reviewed_content": "[{\"region\":\"a\",\"sales\":100}]",
+      "disk_eq_reviewed": null,
+      "invariant_holds": false
+    },
+    {
+      "variant": "V6-same-basename-staged-path-collision",
+      "staged1": "D:\\JH-Agent OS\\.test-tmp\\review-variant-64dda312730442e4b10069fc6aea7bcf\\v6-staged-basename\\_staging\\task_c\\r.json",
+      "staged2": "D:\\JH-Agent OS\\.test-tmp\\review-variant-64dda312730442e4b10069fc6aea7bcf\\v6-staged-basename\\_staging\\task_c\\r.json",
+      "same_path": true,
+      "disk_content": "{\"which\":\"B\"}",
+      "invariant_holds": false
+    }
+  ]
+}
