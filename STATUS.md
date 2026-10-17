@@ -1,11 +1,17 @@
 # STATUS · JH-Agent OS · 会话续接卡
 
-更新：2026-10-16。本文记录当前项目快照；恢复工作时同时核对 Git 工作树与最新交付。
+更新：2026-10-17。本文记录当前项目快照；恢复工作时同时核对 Git 工作树与最新交付。
 
 方向见 [产品需求](docs/product-requirements-v1.0.md)，阶段与验收见 [ROADMAP.md](ROADMAP.md)，任务看板见 [TODO.md](TODO.md)，历史见 [CHANGELOG.md](CHANGELOG.md)。
 
 
 
+
+## 2026-10-17 · JH-006 受控宿主入口接线运行验证通过，生产桥接未准入
+
+执行方完成 host-entry 接线批的整改与复跑。接手检查点 `a94c848`（未验证），起点已验收提交 `1f605c30`。全量 **389 项：388 通过、0 失败/错误、1 既有跳过**；变异 **33：32 检出、1 冗余（binding-output-digest）、0 异常**；`verify_all` `passed:true`（AST 389 = 报告 389，runtime 未变、storage/cli 加法），JH-005 封存/14 变体、既有 JH-006 守卫、1 路由 × 5 反例、旧库 9 表兼容均未退化。此前 386 项版本的 `cli_main` 别名重绑异常与汇总失败已关闭，并加三项 harness 回归反空跑。见[实施记录](reports/jh006-host-entry-20261017.md)。
+
+本批仅接线运行验证通过；**无真实模型调用、无实际用户项目补丁应用、无真实宿主来源登记**。真实数据库、等待宿主的 task/delivery、真实 Codex 固定调用执行、原始归档四项仍缺，须由架构师宿主会话另行承接。production complete 与 FileToolExecutor 保持关闭，N2/P1 未完成，N1 结项不变。交架构师审查，未自宣结项。
 
 ## 2026-10-16 · 离线持久化绑定审查通过，生产完成保持关闭
 

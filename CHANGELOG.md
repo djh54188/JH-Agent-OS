@@ -5,6 +5,12 @@
 
 
 
+## 2026-10-17 · JH-006 受控宿主入口接线运行验证通过
+
+- 接手检查点`a94c848`保存全部在途内容（未验证，非验收）。整改变异 harness：按原函数名处理`cli_main`等导入别名，消费者引用/`sys.modules`/父包属性统一替换并恢复，删除死代码，新增3项`climod`变异与3项harness反空跑回归。
+- 全量**389项388过/1既有跳过/0失败错误**；**33变异32检出+1冗余(binding-output-digest)/0异常**；`verify_all` `passed:true`（AST 389=报告389，runtime未变、storage/cli加法）。历史386项版本的`cli_main`别名异常与汇总失败关闭。JH-005封存/14变体、既有守卫、1路由×5反例、旧库9表兼容未退化。
+- CLI新增`plan-host-check`/`register-host-capture`/`capture-binding-status`三条命令与Skill说明；复用`capture_binding`，未改判定。无真实模型调用、无用户项目补丁应用、无真实来源登记。complete/FileToolExecutor保持关闭，N2/P1未完成。见[实施记录](reports/jh006-host-entry-20261017.md)。
+
 ## 2026-10-16 · JH-006 离线绑定审查与补强通过
 
 - 保存afb3ac1未验证原交付；首测341项39错误。独立发现目标漂移、审核撤回及echo重申误收；已修复夹具装配、控制固定调用、当前性、来源有界读取、事务/唯一约束。
