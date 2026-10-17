@@ -1,15 +1,15 @@
 # 当前方向与续接 · 2026-10-17
 
-**用户已确认：模块化统一 GUI + 可替换 Agent 协作中间站。** 方向文档已更新；除 JH-018 已按明确指令单独派发外，暂不向执行 AI 派发其他新实施任务。
+**用户已确认：模块化统一 GUI + 可替换 Agent 协作中间站。** 方向文档已更新；JH-018、JH-019 已按各自范围验收，JH-020 已部分派发（首批 C-2/C-3 由执行方、V-1/V-2 验证器修复由 Hark）。
 权威方向：[产品需求 v1.1](docs/product-requirements-v1.1.md)、[模块化架构](docs/modular-architecture.md)、[ADR-0005](docs/adr/ADR-0005-modular-gui-agent-hub.md)、[路线 v3.0](ROADMAP.md)。
 
 - GUI 为目标用户入口，Codex 保留默认主控/架构审查；Agent 应用、会话、模型、角色分离，支持跨应用和同应用不同会话的设计方向。ZCode 为首个候选，**其会话接口已于 JH-018 实测**（见下）。
-- 新 GUI、统一应用接口、产品级 AgentSessionAdapter 与自动审查流转尚未实现/验收；既有 API 与 Skill/CLI 不能代替。
-- 已验收 N1、JH-005 和 JH-006 原成果保留。架构师已批准 c6c0af57 host-entry 接线批；d650bd3 仅补真实输入盘点；JH-018 于 d9cf37de 基线完成接口探测与契约设计。
-- 原运行证据：389 项 388 过/1 既有跳过，33 变异 32 检出/1 冗余/0 异常，来自既有提交前后日志。JH-018 之后全量 **398 项 397 过/1 既有跳过**。
+- GUI 与统一应用接口已按「最小模块化 GUI＋只读查询＋草案」范围验收（JH-019）；产品级 AgentSessionAdapter 与自动审查流转仍未实现/验收，既有 API 与 Skill/CLI 不能代替。
+- 已验收 N1、JH-005 和 JH-006 原成果保留。架构师已批准 c6c0af57 host-entry 接线批；d650bd3 仅补真实输入盘点；JH-018 于 d9cf37de 基线完成接口探测与契约设计，JH-019 于 6052cf31 基线验收。
+- 原运行证据：389 项 388 过/1 既有跳过，33 变异 32 检出/1 冗余/0 异常，来自既有提交前后日志。JH-019 之后全量 **511 项 510 过/1 既有跳过**（含 JH-020 首批 C-2/C-3 新增 19 项）。
 - 真实来源登记缺口仍在；N2/P1 未完成。production complete、FileToolExecutor 关闭，原树 80979f3 失败 WIP/STOP 和旧否决候选保留。
 - 实现工作树仍是 D:/JH-Agent OS/data/worktrees/n1-artifact-entry，分支 n1-artifact-entry。原树仅保留 WIP 和方向跳转，不用于新验收。
-- 除 JH-018 外，TODO 中新事项仅登记，未派发。当前不启动 GUI 实现、真实模型取证或新会话。
+- TODO 中其余新事项仅登记；JH-020 首批的真实派发与指定会话审查**未做**（本批闭环未通过），不启动真实模型取证或新会话。
 
 ---
 
@@ -29,7 +29,9 @@
 
 **仅接口能力层**：未实现 GUI、统一应用接口或产品闭环；`codex queue`、`review/start`、`turn/interrupt`、`turn/steer` 未实跑（daemon 未起或未调用）；未向用户在用会话写入；mock 适配器不算第二个应用接入。全量 **422 项 421 通过 / 1 既有跳过**。本轮不调用真实模型。`production complete`、`FileToolExecutor` 继续关闭；N2/P1 未完成。
 
-## 2026-10-17 · JH-019 最小模块化 GUI 与统一应用接口（本批交付，待审）
+## 2026-10-17 · JH-019 最小模块化 GUI 与统一应用接口（已验收；基线 6052cf31）
+
+> 下文中 R1—R4 / 二次整改段落标注的「待审」为**当时**状态，验收后不再适用；保留以便对照。
 
 按明确指令派发并实现：本机可打开的最小 GUI（工作台 / 任务详情 / Agent·会话 / 审查与交付），并在真实浏览器中实际打开验证。分层为**页面模块 / 公共组件 / 数据访问层**，业务操作全部经统一应用接口 `src/app_api.py`；传输层 `src/gui_http.py` 仅用标准库暴露 JSON 并服务静态资源。**复用**既有 `build_task_summary` 与 `TaskStorage` 只读查询，不复制状态机与审核规则；存储只新增只读 `list_tasks()`。
 
@@ -41,6 +43,17 @@
 **二次整改（2026-10-17，待审）**：修跨面板干扰——草案代次改为**归属具体面板**（原为模块级，失效面板的回调会推进代次、使当前面板在途请求被判过期而丢列表）；新增行为场景 `save_pending_across_view_switch` 复现该序列并断言当前列表显示草案且不重复，原 3 场景保留，并用基线版本反跑确认该场景能捕获缺陷。证据重采为 `jh019-draft-after-save-v2.png/.txt`（单帧视口、反馈不再重复卡片字段），旧证据保留并说明替换原因。累计**未复现**的并发 500 口径改为"根因未确认、有界重试属预防性加固"。全量 **492 项 491 通过 / 1 既有跳过**（JH-019 共 66 项）。本轮不调用真实模型、不触发工具；`production complete` 与 `FileToolExecutor` 继续关闭；未自宣 N2/P1 完成。
 
 ---
+
+## 2026-10-17 · JH-020 首批（C-2/C-3）控制层加固（实现完成、离线验证通过，**待独立验收**）
+
+按明确指令派发本批的一个真实工具任务，并在并行分工下承担其中两项控制层加固（`V-1/V-2 验证器修复`交 Hark，本批**未改验证器**）：
+
+- **C-3**：`complete` 现从**同一份封存 `checks.json`** 取出 `expect_stdout_contains`，校验**已登记原始输出**是否满足该封存断言；不满足即 `needs_attention`。修复前只比对回执自述摘要，`case 0: FAIL` 的输出也能 `succeeded`（Hark R2 探针实测）。控制层**不重跑宿主命令**。
+- **C-2**：任务带 `waiting_host` 交付而因取消/超时/不确定离开 `reviewing` 时，在同一事务内**持久**写入 `has_unconfirmed_side_effect` 与交付字段，并记 `host_effect_unconfirmed` 事件；新增 `reconcile-delivery` 对账入口，**只读目标字节**比对 `baseline`/`expected_after`，记 `matches_expected_after|matches_baseline|diverged` 并清标记，**不授予成功、不改任务状态**。
+
+改动仅**加法**（复用既有列、无 Schema 迁移）；新增 19 项正反控、1 个定向变异验证器（5/5 检出）；全量 **511 项 510 过/1 既有跳过**；既有 JH-006/采集/Phase4/JH-005 变异与夹具验证器、JH-018 契约、JH-019 前端全部保持通过。见[报告](reports/jh020-first-batch-20261017.md)。
+
+**真实路径未通过**：指定 Codex 架构师会话 `01a14a25-…` 经**只读**核对（存在、`cwd=D:\JH-Agent OS`、末条 `task_complete`），**未发送任何内容**；真实派发与指定会话审查不在本切片内 ⇒ **本批 JH-020 闭环未通过**，交当前 Codex 架构师独立验收。不以 Mock/人工复制/另建会话补成成功。`production complete`、`FileToolExecutor` 保持关闭。
 
 ---
 

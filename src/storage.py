@@ -23,6 +23,11 @@ from src.state_machine import InvalidStateTransitionError, is_terminal_state, va
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SCHEMAS_DIR = PROJECT_ROOT / "docs" / "schemas"
 
+# Control-owned code delivery states and the task states that leave a
+# prepared-but-unconfirmed host apply behind (JH-006 two-step delivery).
+WAITING_DELIVERY_STATE = "waiting_host"
+UNCONFIRMED_HOST_EFFECT_TARGETS = frozenset({"failed", "cancelled", "needs_attention"})
+
 
 def _utc_now_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -370,6 +375,26 @@ class TaskStorage:
                     existing_ev.append(ev)
             task_dict["tool_execution_evidence"] = existing_ev
 
+        # A host apply that was prepared but never confirmed leaves the target
+        # workspace in an unknown state once the task leaves 'reviewing'. Persist
+        # that uncertainty durably so it can never be reported as success and can
+        # be reconciled explicitly later.
+        flag_unconfirmed = False
+        unconfirmed_reason = None
+        if target_state in UNCONFIRMED_HOST_EFFECT_TARGETS:
+            meta = dict(task_dict.get("metadata") or {})
+            delivery = meta.get("_delivery")
+            if (isinstance(delivery, dict) and delivery.get("state") == WAITING_DELIVERY_STATE
+                    and not delivery.get("unconfirmed_host_effect")):
+                unconfirmed_reason = reason or (
+                    f"task left '{current_state}' for '{target_state}' before the host apply was confirmed")
+                delivery = dict(delivery)
+                delivery["unconfirmed_host_effect"] = True
+                delivery["unconfirmed_reason"] = unconfirmed_reason
+                meta["_delivery"] = delivery
+                task_dict["metadata"] = meta
+                flag_unconfirmed = True
+
         self.validate_task_dict(task_dict)
 
         turns_used = row["turns_used"] + (1 if increment_turn else 0)
@@ -393,6 +418,7 @@ class TaskStorage:
                     tokens_used = ?,
                     tokens_unknown_count = ?,
                     repair_count = ?,
+                    has_unconfirmed_side_effect = ?,
                     task_json = ?,
                     updated_at = ?
                 WHERE task_id = ?
@@ -407,6 +433,7 @@ class TaskStorage:
                     current_tokens,
                     tokens_unknown_count,
                     repair_count,
+                    1 if flag_unconfirmed else row["has_unconfirmed_side_effect"],
                     json.dumps(task_dict, ensure_ascii=False),
                     now,
                     task_id,
@@ -425,6 +452,19 @@ class TaskStorage:
             tokens_used=tokens_delta,
             details=ev_details,
         )
+        if flag_unconfirmed:
+            self.record_event(
+                task_id=task_id,
+                event_type="host_effect_unconfirmed",
+                from_state=current_state,
+                to_state=target_state,
+                actor_role=actor_role,
+                details={
+                    "delivery_id": (task_dict.get("metadata") or {}).get("_delivery", {}).get("delivery_id"),
+                    "reason": unconfirmed_reason,
+                    "reconciliation_required": True,
+                },
+            )
         return self.get_task(task_id)
 
     @atomic
@@ -991,6 +1031,19 @@ class TaskStorage:
             (json.dumps(task_dict, ensure_ascii=False), task_dict["updated_at"], task_id),
         )
         return self.get_task(task_id)
+
+    @atomic
+    def set_unconfirmed_side_effect(self, task_id: str, unconfirmed: bool) -> None:
+        """Set or clear the durable unconfirmed-side-effect marker for a task.
+
+        Used by the host-apply reconciliation entry to release a task whose
+        unconfirmed apply has been reconciled. It never grants success and never
+        touches task state; the success gate still rejects an unset marker.
+        """
+        self._conn.execute(
+            "UPDATE tasks SET has_unconfirmed_side_effect = ?, updated_at = ? WHERE task_id = ?",
+            (1 if unconfirmed else 0, _utc_now_iso(), task_id),
+        )
 
     # ------------------------------------------------------------------
     # Capture bindings (JH-006 offline binding; additive table, no migration)

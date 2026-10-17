@@ -25,8 +25,11 @@ from src.code_delivery import (
     is_code_delivery_task,
     materialized_post_apply_command,
     parse_fixture_patch,
+    registered_host_raw_output,
+    registered_output_satisfies_sealing,
     resolve_target_path,
     sealed_fixture_bytes,
+    sealed_post_apply_expectation,
     template_for_task,
     validate_apply_receipt,
     verify_production_history_clean,
@@ -483,6 +486,12 @@ class Orchestrator:
             raise CodeDeliveryRefused("review attempt is no longer active")
         if not fixture_host_evidence_matches(self.storage, task_id, norm):
             return self._complete_uncertain(task_id, delivery, "host record missing or differs from the receipt/raw output")
+        expectation = sealed_post_apply_expectation(tpl)
+        raw_output = registered_host_raw_output(self.storage, task_id, norm)
+        if raw_output is not None and not registered_output_satisfies_sealing(raw_output, expectation):
+            return self._complete_uncertain(
+                task_id, delivery,
+                "registered host output does not satisfy the sealed post-apply assertion")
         expected_script = f"{tpl['fixture_dir']}/{tpl['check_rel']}"
         if norm["tests"]["check_script"] != expected_script:
             raise CodeDeliveryRefused("receipt check script path differs from the fixed check")

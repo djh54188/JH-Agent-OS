@@ -1,3 +1,14 @@
+# 2026-10-17 · JH-020 首批（C-2/C-3）控制层加固（待独立验收）
+
+- **C-3 封存断言校验**：`complete_code_delivery` 现从**同一份封存 `checks.json`** 取具名模板条目的 `expect_stdout_contains`，校验**已登记原始输出**是否含该断言（`sealed_post_apply_expectation` + `registered_host_raw_output` + `registered_output_satisfies_sealing`）；不满足即 `_complete_uncertain`（`needs_attention`）。修复前仅比对回执自述 `output_digest` 与已登记输出的摘要，**从不看输出文本**——一份 `case 0: FAIL\nFAIL` 的输出可让任务 `succeeded`（Hark R2 探针实测）。控制层**不重跑宿主命令**；既有 `fixture_host_evidence_matches` 原文未动，保持既有变异锚点。
+- **C-2 未确认副作用持久化**：`transition_task_state` 在目标态为 `failed|cancelled|needs_attention` 且任务带 `waiting_host` 交付时，同一事务内写 `has_unconfirmed_side_effect=1`、`_delivery.unconfirmed_host_effect/unconfirmed_reason`，并记 `host_effect_unconfirmed` 事件。集中于此即覆盖 CLI `cancel`、预算超时、`_complete_uncertain` 三条路径。修复前 `expired`/`cancelled` 两例未标记（Hark R2 实测）。
+- **C-2 对账入口**：新增 `reconcile_host_effect`（`src/code_delivery.py`）与 CLI `reconcile-delivery`——**只读**目标字节与 `baseline`/`expected_after` 比对，判定 `matches_expected_after|matches_baseline|diverged|unreadable`，记 `host_effect_reconciled`、写回 `reconciled`、清持久标记；**不授予成功、不改任务状态**；已对账/无未确认副作用时拒绝。
+- **GUI/摘要事实**：`build_task_summary` 的 `delivery_scope` 增 `host_effect_unconfirmed/unconfirmed_reason/reconciled`。仅**加法**改动，无 Schema 迁移。
+- **验证**：新增 `tests/test_jh020_delivery_reconcile.py`（19 项正反控）与 `scripts/verify_jh020_delivery_guards.py`（**5/5 定向变异检出**，`errors=0`）；全量 **511 项 510 过/1 既有跳过**；既有 JH-006（19/19）、采集、Phase4（12/12）、JH-005 夹具/变体、JH-018 契约、JH-019 前端验证器**全部保持通过**。原树与 Hark 归档未动；`production complete`、`FileToolExecutor` 关闭。
+- **真实路径**：指定 Codex 架构师会话经**只读**核对后**未发送**；真实派发与指定会话审查不在本切片内 ⇒ **本批闭环未通过**，交架构师独立验收。状态：**待独立验收**。
+
+---
+
 # 2026-10-17 · JH-019 二次整改：跨面板草案代次（待审）
 
 - **跨面板干扰修复**：草案列表代次原先挂在模块级，任何面板的回调都会推进它。复现路径：保存挂起 → 切走 → 返回工作台（新面板列表请求挂起）→ 旧保存完成（推进模块级代次）→ 新面板列表返回被判过期丢弃、页面显示 0 条。修复为**代次归属具体面板**（`draftPanel(panelGeneration)` 内的面板级计数器），并在刷新与绘制前校验面板是否仍是当前渲染代次；失效面板的回调既不发新请求，也不能使当前面板的在途请求失效。

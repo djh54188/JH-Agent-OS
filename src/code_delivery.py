@@ -14,6 +14,7 @@ import json
 import os
 import re
 import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -218,6 +219,55 @@ def materialized_post_apply_command(template: Dict[str, Any], workspace_root) ->
     return command
 
 
+def sealed_post_apply_expectation(template: Dict[str, Any]) -> Dict[str, Any]:
+    """The sealed assertion a registered post-apply raw output must satisfy.
+
+    Read from the same sealed checks.json template the fixed command comes
+    from: the expected exit code and the stdout marker the host output must
+    contain. 'complete' checks the logged raw output against this; the control
+    layer never re-runs the host command itself.
+    """
+    try:
+        sealed_checks = json.loads(sealed_fixture_bytes(template, "checks_rel"))
+    except (OSError, ValueError) as exc:
+        raise CodeDeliveryRefused(f"fixture checks unreadable: {exc}") from None
+    entries = sealed_checks.get("checks", []) if isinstance(sealed_checks, dict) else []
+    entry = next((e for e in entries
+                  if isinstance(e, dict) and e.get("name") == template["check_name"]), None)
+    if entry is None or entry.get("template") is not True:
+        raise CodeDeliveryRefused("sealed post-apply check template missing")
+    expect_exit = entry.get("expect_exit")
+    if isinstance(expect_exit, bool) or not isinstance(expect_exit, int):
+        raise CodeDeliveryRefused("sealed check template lacks an integer exit expectation")
+    expect_stdout = entry.get("expect_stdout_contains")
+    if not isinstance(expect_stdout, str) or not expect_stdout:
+        raise CodeDeliveryRefused("sealed check template lacks a stdout assertion")
+    return {"expect_exit": expect_exit, "expect_stdout_contains": expect_stdout}
+
+
+def registered_host_raw_output(storage, task_id: str, receipt: Dict[str, Any]) -> Optional[str]:
+    """Raw host output registered for a receipt, or None when it cannot be read.
+
+    Called only after fixture_host_evidence_matches accepted the same receipt,
+    so the single matching record and its string output are known to exist.
+    """
+    records = [e for e in storage.list_events(task_id)
+               if e.get("event_type") == "fixture_host_record"
+               and e.get("event_id") == receipt.get("host_call_id")
+               and e.get("actor_role") == "fixture_host"]
+    if len(records) != 1:
+        return None
+    output = (records[0].get("details") or {}).get("raw_output")
+    return output if isinstance(output, str) else None
+
+
+def registered_output_satisfies_sealing(raw_output: Any, expectation: Dict[str, Any]) -> bool:
+    """Whether a registered raw host output carries the sealed stdout assertion."""
+    marker = expectation.get("expect_stdout_contains")
+    return (isinstance(raw_output, str) and isinstance(marker, str)
+            and bool(marker) and marker in raw_output)
+
+
 def validate_apply_receipt(receipt: Dict[str, Any], *, task_id: str, delivery_id: str,
                            authorized_target: str, expected_command) -> Dict[str, Any]:
     """Validate receipt shape + ids + fixed command. Never mutates, never trusts.
@@ -313,6 +363,76 @@ def fixture_host_evidence_matches(storage, task_id, receipt):
 
 def sha256_hex(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
+
+
+def _utc_now_iso() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+HOST_EFFECT_RECONCILED_EVENT = "host_effect_reconciled"
+
+
+def host_effect_observation(workspace_root, authorized_target: str,
+                            delivery: Dict[str, Any]) -> Dict[str, Any]:
+    """Read-only classification of the current target bytes against a delivery.
+
+    Compares the target on disk with the prepared baseline and expected_after
+    hashes. Reads bytes only; it never runs the host check command, so it is a
+    reconciliation aid, not fresh evidence.
+    """
+    summary: Dict[str, Any] = {"path": authorized_target, "state": "unreadable", "sha256": None}
+    try:
+        target_abs = resolve_target_path(workspace_root, authorized_target)
+        data = Path(target_abs).read_bytes()
+    except (CodeDeliveryRefused, OSError) as exc:
+        summary["error"] = str(exc)
+        return summary
+    sha = sha256_hex(data)
+    baseline = (delivery.get("baseline") or {}).get("sha256_before")
+    expected = (delivery.get("expected_after") or {}).get("sha256")
+    summary["sha256"] = sha
+    if expected is not None and sha == expected:
+        summary["state"] = "matches_expected_after"
+    elif baseline is not None and sha == baseline:
+        summary["state"] = "matches_baseline"
+    else:
+        summary["state"] = "diverged"
+    return summary
+
+
+def reconcile_host_effect(storage, task_id: str, *, note: str = "",
+                          actor_role: str = "operator") -> Dict[str, Any]:
+    """Control-owned reconciliation entry for an unconfirmed host apply.
+
+    Reads the current target bytes (never re-runs the host check), records what
+    it observed alongside the delivery, clears the durable unconfirmed marker,
+    and writes one audit event. It never grants success and never changes the
+    task state: reconciliation records the observed reality, it does not
+    re-decide the outcome.
+    """
+    with storage.transaction():
+        task = storage.get_task(task_id)
+        delivery = (task.get("metadata") or {}).get("_delivery")
+        if not isinstance(delivery, dict) or delivery.get("state") != "waiting_host":
+            raise CodeDeliveryRefused("no waiting-host delivery to reconcile")
+        if not (task.get("_runtime") or {}).get("has_unconfirmed_side_effect"):
+            raise CodeDeliveryRefused("no unconfirmed host side effect to reconcile")
+        tpl = template_for_task(task)
+        workspace_root = (task.get("context") or {}).get("workspace_root")
+        observation = host_effect_observation(workspace_root, tpl["authorized_target"], delivery)
+        done = dict(delivery)
+        done["unconfirmed_host_effect"] = False
+        done["reconciled"] = {"at": _utc_now_iso(), "observation": observation,
+                              "note": note, "actor_role": actor_role}
+        storage.save_code_delivery(task_id, done)
+        storage.set_unconfirmed_side_effect(task_id, False)
+        status = storage.get_task(task_id)["status"]
+        storage.record_event(task_id=task_id, event_type=HOST_EFFECT_RECONCILED_EVENT,
+                             from_state=status, to_state=status, actor_role=actor_role,
+                             details={"delivery_id": delivery.get("delivery_id"),
+                                      "observation": observation, "note": note,
+                                      "task_status": status})
+    return storage.get_task(task_id)
 
 
 def is_clean_pass_review(review: Any) -> bool:

@@ -21,7 +21,13 @@ from typing import Any, Callable, Dict, List, Optional
 from src.acceptance import code_deferred_acceptance_evaluator, file_write_acceptance_evaluator, transform_acceptance_evaluator
 from src.adapters import AdapterError, CredentialMissingError, MockModelAdapter, SchemaValidationError
 from src.capture_binding import BindingRefused, capture_invocation_for_delivery, register_capture_binding, verify_binding_current
-from src.code_delivery import CODE_FIXTURE_ID, CODE_TEMPLATE_ID, CODE_TEMPLATES, CodeDeliveryRefused
+from src.code_delivery import (
+    CODE_FIXTURE_ID,
+    CODE_TEMPLATE_ID,
+    CODE_TEMPLATES,
+    CodeDeliveryRefused,
+    reconcile_host_effect,
+)
 from src.file_tools import FileToolExecutor
 from src.mock_components import MockToolExecutor, ScriptedReviewerAdapter, ScriptedWorkerAdapter
 from src.model_config import has_credential, load_model_adapter
@@ -125,6 +131,9 @@ def build_task_summary(storage: TaskStorage, task_id: str) -> Dict[str, Any]:
                 "delivery_id": delivery.get("delivery_id"),
                 "target_applied": delivery_state == "applied" and task["status"] == "succeeded",
                 "evidence_kind": "offline_fixture" if delivery and ((task.get("metadata") or {}).get(TRUSTED_STAMP_KEY) or {}).get("source") == "fixture" else None,
+                "host_effect_unconfirmed": bool(delivery.get("unconfirmed_host_effect")),
+                "unconfirmed_reason": delivery.get("unconfirmed_reason"),
+                "reconciled": delivery.get("reconciled"),
                 "note": delivery_note,
             },
             "pending_approval": pending_approval,
@@ -524,6 +533,12 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     subparsers.add_parser("recover", help="Reconcile interrupted tasks after restart without blind replay")
 
+    sub_reconcile = subparsers.add_parser(
+        "reconcile-delivery",
+        help="Reconcile an unconfirmed host apply: read the target bytes, clear the marker, never grant success")
+    sub_reconcile.add_argument("task_id", help="Task ID")
+    sub_reconcile.add_argument("--note", default="", help="Operator note recorded with the reconciliation")
+
     sub_prepare = subparsers.add_parser(
         "prepare-code-delivery",
         help="Prepare a reviewed code patch for host apply (no models, no file writes)",
@@ -856,6 +871,21 @@ def main(argv: Optional[List[str]] = None) -> int:
             try:
                 summary = storage.recover_interrupted_tasks()
                 print(json.dumps({"command_ok": True, "recovered": summary}, ensure_ascii=False, indent=2))
+                return 0
+            finally:
+                storage.close()
+
+        if args.command == "reconcile-delivery":
+            storage = TaskStorage(args.db, read_only=False)
+            try:
+                record = reconcile_host_effect(storage, args.task_id, note=args.note)
+                out = build_task_summary(storage, args.task_id)
+                out["read_only"] = False
+                out["test_fixture_mode"] = bool(args.test_fixture_mode)
+                out["reconciliation"] = ((record.get("metadata") or {}).get("_delivery") or {}).get("reconciled")
+                out["note"] = ("reconciliation records the observed target bytes; it never "
+                               "grants success and never changes the task state")
+                print(json.dumps(out, ensure_ascii=False, indent=2))
                 return 0
             finally:
                 storage.close()
