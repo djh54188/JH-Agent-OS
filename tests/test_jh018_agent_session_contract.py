@@ -176,6 +176,23 @@ class TestCancelSemantics(unittest.TestCase):
                 self.assertEqual(adapter.status(_address(), run.run_id).state,
                                  RunState.CANCEL_REQUESTED)
 
+    def test_repeated_cancel_after_confirmation_stays_cancelled(self):
+        """Confirming a cancel is terminal: repeating it must not append a turn
+        and must not regress to the request-pending state."""
+        for cls in ADAPTERS:
+            with self.subTest(adapter=cls.__name__):
+                adapter = cls()
+                run = adapter.submit(_request())
+                adapter.cancel(_address(), run.run_id)
+                adapter.confirm_cancel(_address(), run.run_id)
+                turns_before = len(adapter.inspect(run.run_id).turns)
+                again = adapter.cancel(_address(), run.run_id)
+                self.assertEqual(again.state, RunState.CANCELLED)
+                self.assertNotEqual(again.state, RunState.CANCEL_REQUESTED)
+                self.assertIn("already cancelled", again.note)
+                self.assertEqual(len(adapter.inspect(run.run_id).turns), turns_before)
+                self.assertEqual(adapter.status(_address(), run.run_id).state, RunState.CANCELLED)
+
     def test_cancelled_only_after_native_confirmation(self):
         for cls in ADAPTERS:
             with self.subTest(adapter=cls.__name__):
@@ -375,6 +392,46 @@ class TestRemediationIdempotency(unittest.TestCase):
                 replayed = adapter.continue_run(_address(), run.run_id, "fix", idempotency_key="r1")
                 self.assertEqual(replayed.state, adapter.status(_address(), run.run_id).state)
 
+    def test_interleaved_replay_returns_the_operations_own_turn(self):
+        """A(key=A), B(key=B), then replay A: the replay must identify A's turn,
+        never B's, and must not disturb the run's current state."""
+        for cls in ADAPTERS:
+            with self.subTest(adapter=cls.__name__):
+                adapter = cls()
+                run = adapter.submit(_request())
+                a = adapter.continue_run(_address(), run.run_id, "remediation A", idempotency_key="A")
+                b = adapter.continue_run(_address(), run.run_id, "remediation B", idempotency_key="B")
+                self.assertNotEqual(a.native_turn.native_turn_id, b.native_turn.native_turn_id)
+                replay_a = adapter.continue_run(_address(), run.run_id, "remediation A",
+                                                idempotency_key="A")
+                self.assertEqual(replay_a.native_turn.native_turn_id,
+                                 a.native_turn.native_turn_id)          # A, not B
+                self.assertNotEqual(replay_a.native_turn.native_turn_id,
+                                    b.native_turn.native_turn_id)
+                self.assertEqual(replay_a.latest_turn.native_turn_id,
+                                 b.native_turn.native_turn_id)          # run's current latest
+                self.assertIn(a.native_turn.native_turn_id, replay_a.note)
+                self.assertEqual(len(adapter.inspect(run.run_id).turns), 3)  # initial + A + B
+                # replaying B is symmetric
+                replay_b = adapter.continue_run(_address(), run.run_id, "remediation B",
+                                                idempotency_key="B")
+                self.assertEqual(replay_b.native_turn.native_turn_id,
+                                 b.native_turn.native_turn_id)
+
+    def test_replay_does_not_roll_back_current_state(self):
+        for cls in ADAPTERS:
+            with self.subTest(adapter=cls.__name__):
+                adapter = cls()
+                run = adapter.submit(_request())
+                adapter.continue_run(_address(), run.run_id, "A", idempotency_key="A")
+                adapter.continue_run(_address(), run.run_id, "B", idempotency_key="B")
+                replay_a = adapter.continue_run(_address(), run.run_id, "A", idempotency_key="A")
+                queried = adapter.status(_address(), run.run_id)
+                self.assertEqual(replay_a.state, queried.state)              # current, not historical
+                self.assertEqual(replay_a.latest_turn.native_turn_id,
+                                 queried.latest_turn.native_turn_id)
+                self.assertEqual(queried.state, RunState.RUNNING)
+
     def test_confirmed_cancel_refuses_remediation(self):
         for cls in ADAPTERS:
             with self.subTest(adapter=cls.__name__):
@@ -405,6 +462,58 @@ class TestRemediationIdempotency(unittest.TestCase):
                 self.assertEqual(record.binding.attempt, 1)
                 self.assertEqual(record.request_fingerprint,
                                  adapter.inspect(run.run_id).request_fingerprint)  # unchanged
+
+
+class TestCombinedSequenceConsistency(unittest.TestCase):
+    """The architect's sequence, end to end: every returned value must agree
+    with the recorded run at that moment."""
+
+    def test_dispatch_replay_query_cancel_sequence(self):
+        for cls in ADAPTERS:
+            with self.subTest(adapter=cls.__name__):
+                adapter = cls()
+                address = _address()
+
+                submitted = adapter.submit(_request())
+                self.assertEqual(submitted.state,
+                                 adapter.status(address, submitted.run_id).state)
+
+                a = adapter.continue_run(address, submitted.run_id, "A", idempotency_key="A")
+                self.assertEqual(a.state, adapter.status(address, submitted.run_id).state)
+                b = adapter.continue_run(address, submitted.run_id, "B", idempotency_key="B")
+                self.assertEqual(b.state, adapter.status(address, submitted.run_id).state)
+
+                replay_a = adapter.continue_run(address, submitted.run_id, "A", idempotency_key="A")
+                record = adapter.inspect(submitted.run_id)
+                self.assertEqual(replay_a.native_turn.native_turn_id, a.native_turn.native_turn_id)
+                self.assertEqual(replay_a.latest_turn.native_turn_id, b.native_turn.native_turn_id)
+                self.assertEqual(replay_a.state, record.state)
+                self.assertEqual([t.native_turn_id for t in record.turns],
+                                 [submitted.native_turn.native_turn_id,
+                                  a.native_turn.native_turn_id,
+                                  b.native_turn.native_turn_id])
+
+                with self.assertRaises(IdempotencyConflict):
+                    adapter.continue_run(address, submitted.run_id, "A2", idempotency_key="A")
+
+                requested = adapter.cancel(address, submitted.run_id)
+                self.assertEqual(requested.state, RunState.CANCEL_REQUESTED)
+                self.assertEqual(adapter.status(address, submitted.run_id).state,
+                                 RunState.CANCEL_REQUESTED)
+
+                confirmed = adapter.confirm_cancel(address, submitted.run_id)
+                self.assertEqual(confirmed.state, RunState.CANCELLED)
+                repeat = adapter.cancel(address, submitted.run_id)
+                self.assertEqual(repeat.state, RunState.CANCELLED)
+                self.assertEqual(len(adapter.inspect(submitted.run_id).turns), 3)
+
+                with self.assertRaises(RemediationRefused):
+                    adapter.continue_run(address, submitted.run_id, "C", idempotency_key="C")
+                self.assertEqual(len(adapter.inspect(submitted.run_id).turns), 3)
+
+                collected = adapter.collect(address, submitted.run_id)
+                self.assertEqual(collected.run_id, submitted.run_id)
+                self.assertNotEqual(collected.declared_status, "succeeded")
 
 
 class TestCoreHoldsNoConcreteAdapter(unittest.TestCase):

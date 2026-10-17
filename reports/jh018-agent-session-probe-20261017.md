@@ -137,6 +137,13 @@
 - **R2**：幂等指纹改为 **SHA-256 over 规范化 JSON**（`canonical_request`/`fingerprint`），覆盖地址、任务、attempt、工作区、授权范围、预算、指令与**产物引用及其版本/内容哈希**；不再使用分隔符拼接，输入里含 `|` 等字符也不会碰撞（已用 `t|1`+`x` 与 `t`+`1|x` 反例锁定）。`submit` 时保存**请求快照**（规范化 JSON + 指纹）；调用方事后修改自己的可变 dict 不改变已登记事实，且该修改会被判为"不同请求"→ `IdempotencyConflict`。
 - **R3**：同一 run + 同一幂等键 + 同一整改请求**只追加一个原生轮次**（重放返回同一 turn）；同键不同请求 `IdempotencyConflict`；`continue_run` 返回值与随后 `status` 查询一致（都置 `RUNNING`）；**已确认取消的运行**再要求整改抛 `RemediationRefused` 且不追加轮次；两个不同类 mock 都跑这些行为测试，历史/预算/授权范围保持。
 
-**本次整改的验证**：全量 **422 项 421 通过 / 1 既有跳过**（`test_phase2_hardening.py:152`）；ZCode selftest 19/19、Codex selftest 13/13（退出码 0）；契约夹具 33 项行为测试。**本轮不调用真实模型**：判据改动只用离线假传输与既有真实记录（`raw/` 副本、`codex-app-server-schema/`）验证；真实往返判据未重跑（旧实测记录已归档保留）。
+**本轮收口 B（异步启动 / 整改重放关联 / 取消终态）**
+
+- **异步启动**：ZCode 等待改为**两段有界**——先等本次执行开始（`start_timeout`），再等终态（`settle_timeout`）。`accepted` 之后先出现一段 `idle` **不再判失败**；仍保留三条拒绝判据：从未启动（`*.started`）、超时仍活跃（`*.not_active_on_timeout`）、失败终态（`*.terminal_ok`）。取消路径不做开始等待（`require_active_first=False`），停止后立即 idle 照旧通过，未回退。新增正例 `async_start_idle_then_running`（实测 `polls_before_active=2`，即容忍了一段 idle 后仍 settled）。
+- **整改重放关联**：幂等记录改为保存"请求指纹 + 该请求对应的**原生轮次**"。交错序列 A(key=A) → B(key=B) → 重放 A 时，返回的是 **A 自己的操作轮次**，不会把 B 当作 A。`RunStatus` 明确区分 `native_turn`（本操作对应轮次）与 `latest_turn`（运行当前最新轮次），`state` 始终是运行**当前**状态，为返回历史轮次不会倒退当前状态。两个适配器都补了交错重放与"重放不倒退状态"测试。
+- **取消终态**：确认取消后重复取消保持 `CANCELLED`，不追加轮次、不回退为 `CANCEL_REQUESTED`（note 标 `already cancelled`）；已取消运行拒绝整改的行为保留。两个适配器均补回归。
+- **组合序列自检**：新增 `TestCombinedSequenceConsistency`，对两个适配器逐一跑 `派发 → 整改 A → 整改 B → 重放 A → 状态查询 → 取消请求 → 重复取消 → 确认取消 → 再取消 → 拒绝整改 → 收集`，断言每一步返回值与记录一致（重放返回 A 的轮次、`state` 跟记录、轮次总数 3、收集不报 `succeeded`）。
+
+**本轮验证**：全量 **426 项 425 通过 / 1 既有跳过**（`test_phase2_hardening.py:152`）；ZCode selftest **20 例**（3 正 + 17 反，反例断言具体原因）、Codex selftest 13 例；契约夹具 37 项行为测试。**不调用真实模型**：只用离线假传输与既有真实记录（`raw/` 副本、`codex-app-server-schema/`）验证；真实往返判据未重跑（旧实测记录已归档保留）。
 
 **边界**：`production complete`、`FileToolExecutor` 继续关闭；未恢复失败方案；未改凭据、封存夹具、Schema、门禁与权限；未把 mock 适配器当作"第二个应用已接入"；未把 `accepted:true`、`turn.completed` 或"消息已投递"当作任务成功；**本批状态为"整改待审"**。

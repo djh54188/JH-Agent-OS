@@ -1,3 +1,13 @@
+# 2026-10-17 · JH-018 收口 B：异步启动 / 整改重放关联 / 取消终态（待审）
+
+- 异步启动：ZCode 等待改为两段有界（`start_timeout` 等开始、`settle_timeout` 等终态）。`accepted` 之后先出现一段 `idle` **不再判失败**；仍保留从未启动（`*.started`）、超时仍活跃（`*.not_active_on_timeout`）、失败终态（`*.terminal_ok`）三条拒绝判据。取消路径不做开始等待，停止后立即 idle 照旧通过，未回退。新增正例 `async_start_idle_then_running`（实测容忍 1 次 idle 后才进入 running 并 settled）。
+- 整改重放关联：幂等记录改存「请求指纹 + 该请求对应的原生轮次」。A(key=A)、B(key=B)、再重放 A 时返回 **A 自己的操作轮次**，不会把 B 当 A。`RunStatus` 明确区分 `native_turn`（本操作对应轮次）与 `latest_turn`（运行当前最新轮次）；`state` 始终为运行**当前**状态，不因返回历史轮次而倒退。
+- 取消终态：确认取消后重复取消保持 `CANCELLED`，不追加轮次、不回退为 `CANCEL_REQUESTED`（note 标 `already cancelled`）；已取消运行拒绝整改的行为保留。
+- 两个适配器（dict 索引 / 列表线性扫描）均补交错重放、重放不倒退、重复取消回归；新增组合序列自检 `TestCombinedSequenceConsistency`，逐步断言返回值与记录一致。
+- 全量 **426 项 425 通过 / 1 既有跳过**；ZCode selftest 20 例（3 正 + 17 反，反例断言具体原因）、Codex selftest 13 例；契约夹具 37 项。**不调用真实模型**，只用离线假传输与既有真实记录验证。不改生产流程/Schema/门禁/权限/夹具；`production complete`、`FileToolExecutor` 继续关闭。状态：**整改待审**。
+
+---
+
 # 2026-10-17 · JH-018 收口 R1—R3（待审）
 
 - R1 ZCode 生命周期判据：完成判定不再以"不属于错误状态"代替成功终态——必须落到 `idle/completed`；**超时仍 running/queued/paused/waiting 一律失败**（独立检查 `*.not_active_on_timeout`），失败终态亦失败，调度路径须先观察到 active；取消试验沿用停止前已观察到的 active 事实，**停止后立即 idle 即通过**（不再要求重入 running）。新增"持续运行直到超时"负例、正常取消正例、停止请求被拒/停止后仍运行/取消前未 active 负例，并**断言每个反例的具体失败原因**（ZCode selftest 19 例）。

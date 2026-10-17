@@ -228,10 +228,20 @@ class NativeTurn:
 
 @dataclass
 class RunStatus:
+    """Returned state of one operation on a run.
+
+    `native_turn` is the turn THIS operation corresponds to (for an idempotent
+    replay it is the turn the original call created, never a later one).
+    `latest_turn` is the run's current latest turn, and `state` is the run's
+    current state — returning a historical operation turn must not roll the
+    run's state backwards.
+    """
+
     run_id: Optional[str]
     state: str
     binding: Optional[RunBinding] = None
     native_turn: Optional[NativeTurn] = None
+    latest_turn: Optional[NativeTurn] = None
     native_state: Optional[str] = None
     evidence_ref: Optional[str] = None
     note: str = ""
@@ -311,7 +321,7 @@ class _MockRun:
     budget_spent: int = 0
     cancel_confirmed: bool = False
     native_state: Optional[str] = None
-    remediation_keys: Dict[str, str] = field(default_factory=dict)
+    remediation_keys: Dict[str, Tuple[str, NativeTurn]] = field(default_factory=dict)
 
 
 class _MockBase(AgentSessionAdapter):
@@ -347,8 +357,9 @@ class _MockBase(AgentSessionAdapter):
                 if stored_fingerprint != fingerprint:
                     raise IdempotencyConflict(request.idempotency_key)
                 run = self._by_run_id(run_id)
+                first = run.turns[0] if run.turns else None
                 return RunStatus(run_id=run_id, state=run.state, binding=run.binding,
-                                 native_turn=run.turns[-1] if run.turns else None,
+                                 native_turn=first, latest_turn=run.turns[-1] if run.turns else None,
                                  native_state=run.native_state,
                                  note="idempotent replay of the same request")
         run_id = self._next_run_id()
@@ -362,7 +373,7 @@ class _MockBase(AgentSessionAdapter):
         if request.idempotency_key:
             self._put_idem(request.idempotency_key, fingerprint, run_id)
         return RunStatus(run_id=run_id, state=run.state, binding=run.binding,
-                         native_turn=turn, native_state="accepted")
+                         native_turn=turn, latest_turn=turn, native_state="accepted")
 
     def _resolve(self, session: SessionAddress, run_id: Optional[str]) -> Optional[_MockRun]:
         run = self._by_run_id(run_id or "")
@@ -380,8 +391,9 @@ class _MockBase(AgentSessionAdapter):
         if run is None:
             return RunStatus(run_id=run_id, state=RunState.UNKNOWN,
                              note="no run with this id")
+        latest = run.turns[-1] if run.turns else None
         return RunStatus(run_id=run.run_id, state=run.state, binding=run.binding,
-                         native_turn=run.turns[-1] if run.turns else None,
+                         native_turn=latest, latest_turn=latest,
                          native_state=run.native_state)
 
     def collect(self, session: SessionAddress, run_id: Optional[str]) -> CollectedResult:
@@ -411,12 +423,18 @@ class _MockBase(AgentSessionAdapter):
         if idempotency_key:
             known = run.remediation_keys.get(idempotency_key)
             if known is not None:
-                if known != fingerprint:
+                known_fingerprint, known_turn = known
+                if known_fingerprint != fingerprint:
                     raise IdempotencyConflict(idempotency_key)
                 # Same run + same key + same request: exactly one turn, replayed.
+                # The OPERATION turn is the one this key created; the run's state
+                # and latest turn are the CURRENT ones (never rolled back).
                 return RunStatus(run_id=run.run_id, state=run.state, binding=run.binding,
-                                 native_turn=run.turns[-1], native_state=run.native_state,
-                                 note="idempotent replay of the same remediation request")
+                                 native_turn=known_turn,
+                                 latest_turn=run.turns[-1] if run.turns else None,
+                                 native_state=run.native_state,
+                                 note=f"idempotent replay of the same remediation request; "
+                                      f"operation turn {known_turn.native_turn_id}")
 
         turn = NativeTurn(self._next_turn_id(run.run_id), session.session_id, "remediation")
         run.turns.append(turn)                      # history preserved
@@ -425,9 +443,9 @@ class _MockBase(AgentSessionAdapter):
         # scope and budget are deliberately untouched: remediation adds no
         # authorization, does not restart the attempt and does not reset budget.
         if idempotency_key:
-            run.remediation_keys[idempotency_key] = fingerprint
+            run.remediation_keys[idempotency_key] = (fingerprint, turn)
         return RunStatus(run_id=run.run_id, state=run.state, binding=run.binding,
-                         native_turn=turn, native_state=run.native_state,
+                         native_turn=turn, latest_turn=turn, native_state=run.native_state,
                          note="remediation turn added; attempt, budget and scope preserved")
 
     def cancel(self, session: SessionAddress, run_id: Optional[str]) -> RunStatus:
@@ -435,6 +453,13 @@ class _MockBase(AgentSessionAdapter):
         run = self._resolve(session, run_id)
         if run is None:
             return RunStatus(run_id=run_id, state=RunState.UNKNOWN, note="no run with this id")
+        if run.cancel_confirmed or run.state == RunState.CANCELLED:
+            # Terminal: a repeated cancel neither appends a turn nor regresses
+            # to the request-pending state.
+            return RunStatus(run_id=run.run_id, state=RunState.CANCELLED, binding=run.binding,
+                             latest_turn=run.turns[-1] if run.turns else None,
+                             native_state=run.native_state,
+                             note="already cancelled; state unchanged")
         # Request only. Native confirmation is a separate, observable step.
         run.state = RunState.CANCEL_REQUESTED
         run.native_state = "cancel-requested"
