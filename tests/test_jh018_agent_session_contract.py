@@ -27,11 +27,13 @@ from src.agent_session import (
     CollectedResult,
     IdempotencyConflict,
     MockAgentSessionAdapter,
+    RemediationRefused,
     RunState,
     SecondMockAgentSessionAdapter,
     SessionAddress,
     SubmitRequest,
     UnsupportedCapability,
+    canonical_request,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -185,24 +187,7 @@ class TestCancelSemantics(unittest.TestCase):
 
 
 class TestRemediationPreservesTaskContext(unittest.TestCase):
-    """R3: remediation adds a native turn; task history, budget and scope stay."""
-
-    def test_continue_adds_turn_and_keeps_history_budget_and_scope(self):
-        for cls in ADAPTERS:
-            with self.subTest(adapter=cls.__name__):
-                adapter = cls()
-                run = adapter.submit(_request(allowed_scope=("target/widget.py",),
-                                              budget_tokens=1000))
-                first_turn = run.native_turn.native_turn_id
-                rem = adapter.continue_run(_address(), run.run_id, "fix line 12")
-                self.assertEqual(rem.run_id, run.run_id)          # same logical task
-                self.assertNotEqual(rem.native_turn.native_turn_id, first_turn)
-                record = adapter.inspect(run.run_id)
-                self.assertEqual(len(record.turns), 2)            # history kept
-                self.assertEqual([t.native_turn_id for t in record.turns][0], first_turn)
-                self.assertEqual(tuple(record.scope), ("target/widget.py",))  # scope unchanged
-                self.assertEqual(record.budget_tokens, 1000)      # budget not restarted
-                self.assertEqual(record.handle.binding.attempt, 1)
+    """R3: remediation never widens scope or restarts the attempt."""
 
     def test_remediation_does_not_widen_scope(self):
         for cls in ADAPTERS:
@@ -210,7 +195,9 @@ class TestRemediationPreservesTaskContext(unittest.TestCase):
                 adapter = cls()
                 run = adapter.submit(_request(allowed_scope=("target/widget.py",)))
                 adapter.continue_run(_address(), run.run_id, "also touch other/file.py")
-                self.assertEqual(tuple(adapter.inspect(run.run_id).scope), ("target/widget.py",))
+                record = adapter.inspect(run.run_id)
+                self.assertEqual(tuple(record.scope), ("target/widget.py",))
+                self.assertEqual(record.binding.attempt, 1)
 
 
 class TestReplacementNeedsNoCoreEdit(unittest.TestCase):
@@ -274,6 +261,150 @@ class TestUnsupportedIsExplicit(unittest.TestCase):
                 self.assertEqual(set(report), set(CAPABILITIES))
                 for name, info in report.items():
                     self.assertIn("supported", info, name)
+
+
+class TestFingerprintIsUnambiguous(unittest.TestCase):
+    """Fingerprint must cover semantics-bearing fields and survive odd inputs."""
+
+    def test_same_request_reuses_the_run(self):
+        for cls in ADAPTERS:
+            with self.subTest(adapter=cls.__name__):
+                adapter = cls()
+                first = adapter.submit(_request(idempotency_key="k", artifacts=({"ref": "a", "version": 1, "sha256": "aa"},)))
+                again = adapter.submit(_request(idempotency_key="k", artifacts=({"ref": "a", "version": 1, "sha256": "aa"},)))
+                self.assertEqual(first.run_id, again.run_id)
+                self.assertEqual(len(adapter.inspect(first.run_id).turns), 1)
+
+    def test_same_key_different_artifact_conflicts(self):
+        for cls in ADAPTERS:
+            with self.subTest(adapter=cls.__name__):
+                adapter = cls()
+                adapter.submit(_request(idempotency_key="k", artifacts=({"ref": "a", "version": 1, "sha256": "aa"},)))
+                for other in ({"ref": "a", "version": 2, "sha256": "aa"},
+                              {"ref": "a", "version": 1, "sha256": "bb"},
+                              {"ref": "b", "version": 1, "sha256": "aa"}):
+                    with self.assertRaises(IdempotencyConflict):
+                        adapter.submit(_request(idempotency_key="k", artifacts=(other,)))
+
+    def test_separator_collision_does_not_false_hit(self):
+        """A naive '|'.join would let these two collide; canonical JSON must not."""
+        a = _request(idempotency_key="ka", task_id="t|1", instructions="x")
+        b = _request(idempotency_key="kb", task_id="t", instructions="1|x")
+        self.assertNotEqual(a.fingerprint(), b.fingerprint())
+        # and the two must not be treated as one request when sharing a key
+        for cls in ADAPTERS:
+            with self.subTest(adapter=cls.__name__):
+                adapter = cls()
+                adapter.submit(a)
+                b_same_key = _request(idempotency_key="ka", task_id="t", instructions="1|x")
+                with self.assertRaises(IdempotencyConflict):
+                    adapter.submit(b_same_key)
+
+    def test_scope_and_budget_are_part_of_the_fingerprint(self):
+        base = _request(idempotency_key="k")
+        variants = (
+            _request(idempotency_key="k", allowed_scope=("other/file.py",)),
+            _request(idempotency_key="k", budget_tokens=2000),
+            _request(idempotency_key="k", workspace="elsewhere"),
+            _request(idempotency_key="k", attempt=2),
+            _request(idempotency_key="k", session=_address(session_id="sess-9")),
+        )
+        for variant in variants:
+            self.assertNotEqual(base.fingerprint(), variant.fingerprint())
+
+    def test_snapshot_immune_to_caller_mutation(self):
+        """Registered facts must not change when the caller mutates its own dict."""
+        for cls in ADAPTERS:
+            with self.subTest(adapter=cls.__name__):
+                adapter = cls()
+                artifact = {"ref": "a", "version": 1, "sha256": "aa"}
+                run = adapter.submit(_request(idempotency_key="k", artifacts=(artifact,)))
+                record = adapter.inspect(run.run_id)
+                before_snapshot, before_fingerprint = record.request_snapshot, record.request_fingerprint
+                artifact["sha256"] = "MUTATED"
+                artifact["version"] = 999
+                self.assertEqual(record.request_snapshot, before_snapshot)
+                self.assertEqual(record.request_fingerprint, before_fingerprint)
+                # the mutated caller object is now a different request -> conflict
+                with self.assertRaises(IdempotencyConflict):
+                    adapter.submit(_request(idempotency_key="k", artifacts=(artifact,)))
+
+    def test_snapshot_is_the_canonical_pre_image(self):
+        request = _request(idempotency_key="k", artifacts=({"ref": "a", "version": 1},))
+        self.assertEqual(canonical_request(request), request.snapshot())
+
+
+class TestRemediationIdempotency(unittest.TestCase):
+    """R3: same run + same key + same request appends exactly one turn."""
+
+    def test_same_key_same_request_appends_one_turn(self):
+        for cls in ADAPTERS:
+            with self.subTest(adapter=cls.__name__):
+                adapter = cls()
+                run = adapter.submit(_request())
+                first = adapter.continue_run(_address(), run.run_id, "fix line 12",
+                                             idempotency_key="r1")
+                again = adapter.continue_run(_address(), run.run_id, "fix line 12",
+                                             idempotency_key="r1")
+                self.assertEqual(len(adapter.inspect(run.run_id).turns), 2)   # initial + one
+                self.assertEqual(first.native_turn.native_turn_id,
+                                 again.native_turn.native_turn_id)
+                self.assertEqual(again.note.count("replay"), 1)
+
+    def test_same_key_different_request_conflicts(self):
+        for cls in ADAPTERS:
+            with self.subTest(adapter=cls.__name__):
+                adapter = cls()
+                run = adapter.submit(_request())
+                adapter.continue_run(_address(), run.run_id, "fix line 12", idempotency_key="r1")
+                with self.assertRaises(IdempotencyConflict):
+                    adapter.continue_run(_address(), run.run_id, "fix a different thing",
+                                         idempotency_key="r1")
+                self.assertEqual(len(adapter.inspect(run.run_id).turns), 2)   # unchanged
+
+    def test_returned_state_matches_following_status_query(self):
+        for cls in ADAPTERS:
+            with self.subTest(adapter=cls.__name__):
+                adapter = cls()
+                run = adapter.submit(_request())
+                returned = adapter.continue_run(_address(), run.run_id, "fix", idempotency_key="r1")
+                queried = adapter.status(_address(), run.run_id)
+                self.assertEqual(returned.state, queried.state)
+                self.assertEqual(returned.native_turn.native_turn_id,
+                                 queried.native_turn.native_turn_id)
+                replayed = adapter.continue_run(_address(), run.run_id, "fix", idempotency_key="r1")
+                self.assertEqual(replayed.state, adapter.status(_address(), run.run_id).state)
+
+    def test_confirmed_cancel_refuses_remediation(self):
+        for cls in ADAPTERS:
+            with self.subTest(adapter=cls.__name__):
+                adapter = cls()
+                run = adapter.submit(_request())
+                adapter.cancel(_address(), run.run_id)
+                adapter.confirm_cancel(_address(), run.run_id)
+                before = len(adapter.inspect(run.run_id).turns)
+                with self.assertRaises(RemediationRefused) as ctx:
+                    adapter.continue_run(_address(), run.run_id, "keep going",
+                                         idempotency_key="r2")
+                self.assertIn("cancel confirmed", str(ctx.exception))
+                self.assertEqual(len(adapter.inspect(run.run_id).turns), before)  # nothing appended
+
+    def test_remediation_keeps_history_budget_and_scope(self):
+        for cls in ADAPTERS:
+            with self.subTest(adapter=cls.__name__):
+                adapter = cls()
+                run = adapter.submit(_request(allowed_scope=("target/widget.py",),
+                                              budget_tokens=1000))
+                initial_turn = run.native_turn.native_turn_id
+                adapter.continue_run(_address(), run.run_id, "fix", idempotency_key="r1")
+                record = adapter.inspect(run.run_id)
+                self.assertEqual([t.native_turn_id for t in record.turns][0], initial_turn)
+                self.assertEqual([t.purpose for t in record.turns], ["initial", "remediation"])
+                self.assertEqual(tuple(record.scope), ("target/widget.py",))
+                self.assertEqual(record.budget_tokens, 1000)
+                self.assertEqual(record.binding.attempt, 1)
+                self.assertEqual(record.request_fingerprint,
+                                 adapter.inspect(run.run_id).request_fingerprint)  # unchanged
 
 
 class TestCoreHoldsNoConcreteAdapter(unittest.TestCase):

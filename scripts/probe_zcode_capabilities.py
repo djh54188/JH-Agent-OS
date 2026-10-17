@@ -73,7 +73,11 @@ ENUMERATE_METHODS = [
     "controller/tasks-index", "controller/workspaces",
 ]
 
-ACTIVE_STATES = ("running", "queued", "paused")
+# ZCode reports status in {"idle","running","waiting","paused","completed","error"}.
+# A run is settled only at a TERMINAL_OK state; a timeout while STILL_ACTIVE is a
+# failure, and TERMINAL_BAD is a failure with its own reason.
+STILL_ACTIVE = ("running", "queued", "paused", "waiting")
+TERMINAL_OK = ("idle", "completed")
 TERMINAL_BAD = ("error", "failed", "stopped")
 
 
@@ -292,27 +296,69 @@ def _status(transport, sid: str) -> dict:
             if isinstance(result.get("session"), dict) else None}
 
 
-def _poll_until_settled(transport, sid: str, timeout: float, verdict: Verdict, label: str,
-                        interval: float = 2.0) -> dict:
-    seen, turns, saw_active = [], 0, False
+def _await_active(transport, sid: str, timeout: float, interval: float = 2.0) -> dict:
+    """Observe whether the session is (or becomes) genuinely active. This is the
+    pre-stop fact a cancel trial must reuse; it makes no success claim."""
+    seen, active = [], False
     deadline = time.time() + timeout
-    while time.time() < deadline:
+    while True:
+        status = _status(transport, sid).get("status")
+        if not seen or seen[-1] != status:
+            seen.append(status)
+        if status in STILL_ACTIVE:
+            active = True
+            break
+        if status in TERMINAL_OK or status in TERMINAL_BAD:
+            break
+        if time.time() >= deadline:
+            break
+        time.sleep(interval)
+    return {"active": active, "status": seen[-1] if seen else None, "transitions": seen}
+
+
+def _await_terminal(transport, sid: str, timeout: float, verdict: Verdict, label: str,
+                    interval: float = 2.0, require_active_first: bool = True) -> dict:
+    """Wait for a settled status and judge it.
+
+    A timeout while STILL_ACTIVE always fails, with its own reason — never
+    treated as success merely because it is "not an error state". With
+    `require_active_first=False` an already-terminal state counts (used right
+    after a cancel request, where the stop may land before the first poll).
+    """
+    seen, turns, saw_active = [], 0, False
+    outcome = "timeout_while_active"
+    deadline = time.time() + timeout
+    while True:
         st = _status(transport, sid)
         status = st.get("status")
         turns = max(turns, st.get("turnCount") or 0)
         if not seen or seen[-1] != status:
             seen.append(status)
-        if status in ACTIVE_STATES:
+        if status in STILL_ACTIVE:
             saw_active = True
-        if saw_active and (status == "idle" or status in TERMINAL_BAD):
+        if status in TERMINAL_BAD:
+            outcome = "bad_terminal"
+            break
+        if status in TERMINAL_OK:
+            if saw_active or not require_active_first:
+                outcome = "settled"
+            else:
+                outcome = "settled_without_active"
+            break
+        if time.time() >= deadline:
+            outcome = "timeout_while_active"
             break
         time.sleep(interval)
     final = seen[-1] if seen else None
-    verdict.require(f"{label}.observed_active", saw_active,
-                    f"never became active; transitions={seen}")
-    verdict.require(f"{label}.terminal_ok", final == "idle" or (saw_active and final not in TERMINAL_BAD),
-                    f"final status={final!r} transitions={seen}")
-    return {"transitions": seen, "final": final, "turnCount": turns}
+    if require_active_first:
+        verdict.require(f"{label}.observed_active", saw_active,
+                        f"never observed active; transitions={seen}")
+    verdict.require(f"{label}.not_active_on_timeout", outcome != "timeout_while_active",
+                    f"timed out still {final!r} (never reached a terminal state); transitions={seen}")
+    verdict.require(f"{label}.terminal_ok", outcome == "settled",
+                    f"outcome={outcome} final={final!r}; transitions={seen}")
+    return {"transitions": seen, "final": final, "turnCount": turns,
+            "outcome": outcome, "timed_out": outcome == "timeout_while_active"}
 
 
 def _check_unknown_server_requests(transport, verdict: Verdict) -> list:
@@ -390,8 +436,8 @@ def run_roundtrip(transport, workspace: str, model: str, reasoning_level: str,
         verdict.require("roundtrip.send.same_session", result.get("sessionId") == sid,
                         f"send answered for {result.get('sessionId')!r}, expected {sid!r}")
 
-    report["lifecycle"] = _poll_until_settled(transport, sid, poll_timeout, verdict, "roundtrip",
-                                              poll_interval)
+    report["lifecycle"] = _await_terminal(transport, sid, poll_timeout, verdict, "roundtrip",
+                                          poll_interval, require_active_first=True)
 
     msgs = transport.request("session/messages", {"sessionId": sid}, timeout=60)
     result = _result_of(msgs)
@@ -427,7 +473,8 @@ def run_roundtrip(transport, workspace: str, model: str, reasoning_level: str,
 
 
 def run_cancel_trial(transport, workspace: str, model: str, reasoning_level: str,
-                     active_wait: float = 60.0) -> tuple:
+                     active_wait: float = 60.0, stop_settle: float = 60.0,
+                     poll_interval: float = 2.0) -> tuple:
     """Dispatch a longer task, confirm it is genuinely running, then stop it."""
     verdict = Verdict()
     report: dict = {"model_pinned": model}
@@ -445,20 +492,21 @@ def run_cancel_trial(transport, workspace: str, model: str, reasoning_level: str
     verdict.require("cancel.send", not _is_timeout(sent) and not _is_error(sent)
                     and _result_of(sent).get("accepted") is True, _err(sent) if _is_error(sent) else "not accepted")
 
-    deadline = time.time() + active_wait
-    running = False
-    while time.time() < deadline:
-        if _status(transport, sid).get("status") in ACTIVE_STATES:
-            running = True
-            break
-        time.sleep(2)
-    report["was_running_before_stop"] = running
-    verdict.require("cancel.reached_running", running, "never observed an active state to cancel")
+    # Pre-stop fact: something is running that the stop request can act on.
+    pre = _await_active(transport, sid, active_wait, poll_interval)
+    report["was_active_before_stop"] = pre
+    verdict.require("cancel.observed_active_before_stop", pre["active"],
+                    f"never observed an active state to cancel; transitions={pre['transitions']}")
 
     stop = transport.request("session/stop", {"sessionId": sid}, timeout=30)
     report["stop"] = _summarize(stop)
-    verdict.require("cancel.stop_request", not _is_timeout(stop) and not _is_error(stop), _err(stop))
-    report["after_stop"] = _poll_until_settled(transport, sid, 60, verdict, "cancel.after_stop")
+    verdict.require("cancel.stop_request", not _is_timeout(stop) and not _is_error(stop),
+                    "stop request timed out" if _is_timeout(stop) else _err(stop))
+    # After the request a run may already be terminal: immediate idle must pass,
+    # so this does NOT require re-entering an active state.
+    report["after_stop"] = _await_terminal(transport, sid, stop_settle, verdict,
+                                           "cancel.after_stop", poll_interval,
+                                           require_active_first=False)
     report["unknown_server_requests"] = _check_unknown_server_requests(transport, verdict)
     return report, verdict
 
@@ -479,7 +527,8 @@ def run_events_trial(transport, workspace: str, model: str, reasoning_level: str
         "content": "Reply with exactly the token PROBE_OK and nothing else."})
     verdict.require("events.send", not _is_timeout(sent) and not _is_error(sent)
                     and _result_of(sent).get("accepted") is True, _err(sent) if _is_error(sent) else "not accepted")
-    _poll_until_settled(transport, sid, poll_timeout, verdict, "events")
+    _await_terminal(transport, sid, poll_timeout, verdict, "events", 2.0,
+                    require_active_first=True)
 
     events = transport.request("session/events", {"sessionId": sid}, timeout=30)
     items = _result_of(events).get("events")
@@ -540,6 +589,8 @@ def _fault(case: str) -> Verdict:
         script["session/send"] = [_frame_result(accepted=True, sessionId="sess_other")]
     elif case == "never_active":
         script["session/read"] = [_frame_result(projection={"status": "idle", "turnCount": 0})]
+    elif case == "runs_until_timeout":
+        script["session/read"] = [_frame_result(projection={"status": "running", "turnCount": 1})]
     elif case == "failed_terminal":
         script["session/read"] = [
             _frame_result(projection={"status": "idle", "turnCount": 0}),
@@ -570,31 +621,96 @@ def _fault(case: str) -> Verdict:
     return transport
 
 
+def _cancel_transport(stop_frame=None, active_forever=False, never_active=False) -> FakeTransport:
+    """Purpose-built fake for cancel trials: active until a stop is requested,
+    then terminal — with switches for the negative variants."""
+    transport = FakeTransport(_happy_script())
+    state = {"stopped": False}
+    original = transport.request
+
+    def request(method, params, timeout=30.0):
+        if method == "session/read":
+            transport.calls.append({"method": method, "params": params})
+            if never_active:
+                status = "idle"
+            elif state["stopped"] and not active_forever:
+                status = "idle"
+            else:
+                status = "running"
+            return _frame_result(projection={"status": status, "turnCount": 1})
+        if method == "session/stop":
+            transport.calls.append({"method": method, "params": params})
+            state["stopped"] = True
+            return stop_frame if stop_frame is not None else _frame_result()
+        return original(method, params, timeout)
+
+    transport.request = request
+    return transport
+
+
 def selftest() -> tuple:
-    """Return (report, ok). Every fault must be caught; the happy path must pass."""
+    """Return (report, ok). The happy paths must pass and every planted fault
+    must fail FOR ITS OWN REASON (a specific check name, asserted below)."""
     cases = {}
     happy = FakeTransport(_happy_script())
     _, verdict = run_roundtrip(happy, r"D:\tmp\jh018-selftest", "new-provider-3/exo-free", "high",
                                poll_timeout=2.0, poll_interval=0.02)
     cases["happy_path"] = {"ok": verdict.ok, "failures": verdict.failures}
 
-    faults = ["create_protocol_error", "create_timeout", "setmodel_error", "send_not_accepted",
-              "send_wrong_session", "never_active", "failed_terminal", "zero_usage",
-              "usage_wrong_session", "no_assistant_message", "assistant_wrong_model",
-              "unknown_server_request", "not_ready"]
-    for name in faults:
+    # case -> the check name its failure must include
+    faults = {
+        "create_protocol_error": "roundtrip.create",
+        "create_timeout": "roundtrip.create",
+        "setmodel_error": "roundtrip.setModel",
+        "send_not_accepted": "roundtrip.send.accepted",
+        "send_wrong_session": "roundtrip.send.same_session",
+        "never_active": "roundtrip.observed_active",
+        "runs_until_timeout": "roundtrip.not_active_on_timeout",
+        "failed_terminal": "roundtrip.terminal_ok",
+        "zero_usage": "roundtrip.usage.model_requests",
+        "usage_wrong_session": "roundtrip.usage",
+        "no_assistant_message": "roundtrip.messages",
+        "assistant_wrong_model": "roundtrip.messages.model_binding",
+        "unknown_server_request": "no_unknown_server_requests",
+        "not_ready": "app_server_ready",
+    }
+    for name, expected in faults.items():
         transport = _fault(name)
         _, verdict = run_roundtrip(transport, r"D:\tmp\jh018-selftest",
-                                   "new-provider-3/exo-free", "high", poll_timeout=2.0, poll_interval=0.02)
-        cases[name] = {"detected": not verdict.ok, "failures": verdict.failures}
+                                   "new-provider-3/exo-free", "high",
+                                   poll_timeout=2.0, poll_interval=0.02)
+        detected = not verdict.ok
+        right_reason = any(expected in f for f in verdict.failures)
+        cases[name] = {"detected": detected, "expected_reason": expected,
+                       "reason_matched": right_reason, "failures": verdict.failures}
 
-    # Cancel trial: a stop request that is rejected must fail the trial.
-    bad_cancel = FakeTransport(_happy_script())
-    bad_cancel.script["session/stop"] = [{"id": 1, "error": {"code": -32603, "message": "no"}}]
-    _, cancel_verdict = run_cancel_trial(bad_cancel, ".", "new-provider-3/exo-free", "high",
-                                        active_wait=1.0)
-    cases["cancel_stop_rejected"] = {"detected": not cancel_verdict.ok,
-                                     "failures": cancel_verdict.failures}
+    # --- cancel trials: one positive, three negatives ---------------------
+    _, ok_cancel = run_cancel_trial(_cancel_transport(), ".", "new-provider-3/exo-free", "high",
+                                    active_wait=1.0, stop_settle=2.0, poll_interval=0.02)
+    cases["cancel_happy_path"] = {"ok": ok_cancel.ok, "failures": ok_cancel.failures}
+
+    cancel_faults = {
+        "cancel_stop_rejected": (_cancel_transport(
+            stop_frame={"id": 1, "error": {"code": -32603, "message": "no"}}),
+            "cancel.stop_request"),
+        "cancel_active_forever": (_cancel_transport(active_forever=True),
+                                  "cancel.after_stop.not_active_on_timeout"),
+        "cancel_never_active": (_cancel_transport(never_active=True),
+                                "cancel.observed_active_before_stop"),
+    }
+    for name, (transport, expected) in cancel_faults.items():
+        _, cancel_verdict = run_cancel_trial(transport, ".", "new-provider-3/exo-free", "high",
+                                            active_wait=1.0, stop_settle=2.0, poll_interval=0.02)
+        detected = not cancel_verdict.ok
+        right_reason = any(expected in f for f in cancel_verdict.failures)
+        cases[name] = {"detected": detected, "expected_reason": expected,
+                       "reason_matched": right_reason, "failures": cancel_verdict.failures}
+
+    ok = (cases["happy_path"]["ok"] and cases["cancel_happy_path"]["ok"]
+          and all(v.get("detected") and v.get("reason_matched")
+                  for k, v in cases.items()
+                  if k not in ("happy_path", "cancel_happy_path")))
+    return {"cases": cases, "all_faults_detected_for_the_right_reason": ok}, ok
 
     ok = cases["happy_path"]["ok"] and all(v.get("detected") for k, v in cases.items()
                                            if k != "happy_path")

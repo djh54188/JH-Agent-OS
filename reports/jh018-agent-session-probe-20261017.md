@@ -114,8 +114,10 @@
 
 **脚本**（均可离线自测）：
 
-- `scripts/probe_zcode_capabilities.py`：实时模式 `--enumerate`（schema，独立判据）/`--roundtrip`/`--cancel-trial`/`--events-trial`；`--selftest` 用离线假传输跑 15 例（1 正 + 14 反，含协议错、超时、未接受、错 session、从未 active、失败终态、用量为 0/错会话、无 assistant 消息、模型绑定不符、未知服务端请求、未 ready）。判据失败即退出非零。
+- `scripts/probe_zcode_capabilities.py`：实时模式 `--enumerate`（schema，独立判据）/`--roundtrip`/`--cancel-trial`/`--events-trial`；`--selftest` 用离线假传输跑 **19 例**（2 正 + 17 反），且**每个反例都断言具体失败原因**（`expected_reason` 必须出现在失败列表里，避免因别的错误侥幸通过）。覆盖：协议错、超时、未接受、错 session、从未 active、**持续运行直到超时**、失败终态、用量为 0/错会话、无 assistant 消息、模型绑定不符、未知服务端请求、未 ready；取消侧含**正常取消正例**、**停止请求被拒负例**、**停止后仍持续运行负例**、**取消前从未 active 负例**。判据失败即退出非零。
 - `scripts/probe_codex_sessions.py`：`--thread` + `--expect-cwd` + `--expect-preview`；**归属不明则拒发**（退出码 3，不发送）；完成通知必须匹配本 thread 与本 turn 且 status/error 合规；未知服务端请求回错误并判失败；`--selftest` 用离线假传输跑 13 例（含归属拒发且未调用 resume/turn-start）。
+
+**生命周期判据（本轮收紧）**：ZCode 的完成判定不再以"不属于错误状态"代替成功终态。运行必须落到 `TERMINAL_OK`（`idle`/`completed`）；**超时仍处于 `running/queued/paused/waiting` 一律失败**（独立检查项 `*.not_active_on_timeout`），`error/failed/stopped` 亦失败（`*.terminal_ok`）；调度路径要求先观察到 active（`*.observed_active`）。取消试验**沿用停止前已观察到的 active 事实**（`cancel.observed_active_before_stop`），停止后**立即 idle 即可通过**（`require_active_first=False`），不要求再次进入 running。
 
 **实测证据目录** `data/jh018-probes-20261017/`（`data/` 未跟踪，不入 Git）：
 
@@ -123,8 +125,18 @@
 - `precommit/`、`postcommit/`：上一提交 `9595b347` 的提交前后全量测试原文与退出码（各 398 项 OK/skipped=1，退出码 0）。
 - `raw/`：**原始探测文件只读副本**，见 `raw/README.md`。
 
-**`exec1.exit=1` 与成功回复并存（已查明，未覆盖旧文件）**：`exec1.*` 被两次尝试共用文件名——第一次缺 `--skip-git-repo-check` 失败（退出 1，stderr 记 `Not inside a trusted directory…`）并写了 `exec1.exit`；第二次成功，命令把 stdout/stderr 重定向覆盖但退出码只打印未回写。故 `.exit` 停留在第一次、`.jsonl` 是第二次的成功输出。`raw/codex-exec/` 同时保留两者；结论只引第二次的成功回复。
+**`exec1.exit=1` 与成功回复并存（已修正口径，未覆盖旧文件）**
 
-**本次整改的验证**：全量 **412 项 411 通过 / 1 既有跳过**（`test_phase2_hardening.py:152`）；ZCode selftest 15/15、Codex selftest 13/13；契约夹具 23 项。提交前后各跑一轮，原文与退出码随提交记录。
+- **可直接核实的事实**：`raw/codex-exec/exec1.exit` 内容为 `EXIT=1`；同目录 `exec1.jsonl` 是 4 行成功事件（`thread.started`/`turn.started`/`item.completed(PROBE_OK)`/`turn.completed(usage)`）；`exec1.err` 仅剩 `Reading additional input from stdin...`。`resume1.*` 为单次尝试，`.exit`=0 与 `.jsonl` 一致。
+- **执行方说明（未独立证实）**：这两个文件被两次尝试共用文件名——第一次缺 `--skip-git-repo-check` 失败（退出 1，stderr 为 `Not inside a trusted directory and --skip-git-repo-check was not specified.`）并写了 `exec1.exit`；第二次成功，命令把 stdout/stderr 重定向覆盖、退出码只打印未回写，故 `.exit` 停留在第一次的值。
+- **为何只能算"说明"**：已检索本机 ZCode 执行日志（`~/.zcode/cli/exec/<session>/`）与仓库，**未找到**该次失败的原始终端/命令记录（该目录只有 stdout 日志，无 stderr），第一次的 stderr 文本已被第二次重定向覆盖。因此失败原因不可独立复核，只能作为执行方陈述；成功回复与 `.exit` 的矛盾本身是可直接观察的事实。结论只引第二次的成功回复。未重跑模型补造历史。
+
+**本轮收口（R1 生命周期 / R2 指纹 / R3 整改）**
+
+- **R1**：见上"生命周期判据"；新增"持续运行直到超时""停止后仍持续运行"两个负例与"正常取消"正例，负例断言具体原因。
+- **R2**：幂等指纹改为 **SHA-256 over 规范化 JSON**（`canonical_request`/`fingerprint`），覆盖地址、任务、attempt、工作区、授权范围、预算、指令与**产物引用及其版本/内容哈希**；不再使用分隔符拼接，输入里含 `|` 等字符也不会碰撞（已用 `t|1`+`x` 与 `t`+`1|x` 反例锁定）。`submit` 时保存**请求快照**（规范化 JSON + 指纹）；调用方事后修改自己的可变 dict 不改变已登记事实，且该修改会被判为"不同请求"→ `IdempotencyConflict`。
+- **R3**：同一 run + 同一幂等键 + 同一整改请求**只追加一个原生轮次**（重放返回同一 turn）；同键不同请求 `IdempotencyConflict`；`continue_run` 返回值与随后 `status` 查询一致（都置 `RUNNING`）；**已确认取消的运行**再要求整改抛 `RemediationRefused` 且不追加轮次；两个不同类 mock 都跑这些行为测试，历史/预算/授权范围保持。
+
+**本次整改的验证**：全量 **422 项 421 通过 / 1 既有跳过**（`test_phase2_hardening.py:152`）；ZCode selftest 19/19、Codex selftest 13/13（退出码 0）；契约夹具 33 项行为测试。**本轮不调用真实模型**：判据改动只用离线假传输与既有真实记录（`raw/` 副本、`codex-app-server-schema/`）验证；真实往返判据未重跑（旧实测记录已归档保留）。
 
 **边界**：`production complete`、`FileToolExecutor` 继续关闭；未恢复失败方案；未改凭据、封存夹具、Schema、门禁与权限；未把 mock 适配器当作"第二个应用已接入"；未把 `accepted:true`、`turn.completed` 或"消息已投递"当作任务成功；**本批状态为"整改待审"**。
