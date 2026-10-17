@@ -17,11 +17,13 @@ sys.path[:0] = [str(ROOT), str(ROOT / "tests")]
 import src.host_capture as original
 import src.capture_binding as boundmod
 import src.storage as storagemod
+import src.cli as climod
 import test_jh006_binding_audit as audit
 import test_jh006_code_delivery as fixtures
 import test_jh006_capture_boundaries as boundary
 import test_jh006_host_capture as existing
 import test_jh006_capture_binding as bound
+import test_jh006_host_entry as hostentry
 
 
 def run_case(name, target, old, new, tests):
@@ -33,24 +35,48 @@ def run_case(name, target, old, new, tests):
     exec(compile(source.replace(old, new), target.__file__, "exec"), module.__dict__)
     suite = unittest.TestSuite()
     saved = {}
-    if target in (original, boundmod, storagemod):
-        # Tests import function aliases, so update every actual consumer.
-        consumers = ((boundary, existing, bound, boundmod, audit) if target is original
-                     else (bound, audit, fixtures))
-        for consumer in consumers:
-            for key in list(vars(consumer)):
-                value = getattr(consumer, key)
-                if value is target:
-                    saved[(consumer, key)] = value
-                    setattr(consumer, key, module)
-                    continue
-                if callable(value) and getattr(value, "__module__", None) == target.__name__:
-                    saved[(consumer, key)] = value
-                    setattr(consumer, key, getattr(module, key))
-    else:
-        saved[(boundary, "entry")] = boundary.entry
-        boundary.entry = module
+    saved_modules: dict = {}
+    saved_parent_attrs: list = []
     try:
+        if target in (original, boundmod, storagemod, climod):
+            # Validate-then-apply: install every import alias into the
+            # mutated module BEFORE touching consumers, so assembly cannot
+            # fail halfway and leave partial patches behind.
+            consumers = ((boundary, existing, bound, boundmod, audit) if target is original
+                         else ((fixtures, hostentry) if target is climod else (bound, audit, fixtures)))
+            for _consumer in consumers:
+                for _key in list(vars(_consumer)):
+                    _value = getattr(_consumer, _key)
+                    if (callable(_value)
+                            and getattr(_value, "__module__", None) == target.__name__
+                            and _key not in module.__dict__):
+                        _real = next((n for n, v in vars(target).items() if v is _value), None)
+                        if _real is None:
+                            _real = getattr(_value, "__name__", None)
+                        if _real is None or _real not in module.__dict__:
+                            raise RuntimeError("alias anchor has no mutated counterpart")
+                        module.__dict__[_key] = module.__dict__[_real]
+            for consumer in consumers:
+                for key in list(vars(consumer)):
+                    value = getattr(consumer, key)
+                    if value is target:
+                        saved[(consumer, key)] = value
+                        setattr(consumer, key, module)
+                        continue
+                    if callable(value) and getattr(value, "__module__", None) == target.__name__:
+                        saved[(consumer, key)] = value
+                        setattr(consumer, key, getattr(module, key))
+            saved_modules[target.__name__] = sys.modules.get(target.__name__)
+            sys.modules[target.__name__] = module
+            parent_name, _, child_name = target.__name__.rpartition(".")
+            if parent_name and parent_name in sys.modules:
+                parent_module = sys.modules[parent_name]
+                if getattr(parent_module, child_name, None) is target:
+                    saved_parent_attrs.append((parent_module, child_name, target))
+                    setattr(parent_module, child_name, module)
+        else:
+            saved[(boundary, "entry")] = boundary.entry
+            boundary.entry = module
         for cls, test in tests:
             suite.addTest(cls(test))
         stream = io.StringIO()
@@ -59,6 +85,13 @@ def run_case(name, target, old, new, tests):
     finally:
         for (consumer, key), value in saved.items():
             setattr(consumer, key, value)
+        for mod_name, mod in saved_modules.items():
+            if mod is None:
+                sys.modules.pop(mod_name, None)
+            else:
+                sys.modules[mod_name] = mod
+        for parent_module, child_name, prior in saved_parent_attrs:
+            setattr(parent_module, child_name, prior)
     return {"name": name, "tests_run": result.testsRun,
             "assertion_failures": len(result.failures), "errors": len(result.errors),
             "skipped": len(result.skipped),
@@ -87,7 +120,7 @@ def main():
          "pass", [(B, "test_nested_call_window_refused")]),
         ("execution-window", original,
          'and _is_int(ordinal) and start < ordinal < end\n                    and calls[0]["line_no"] < r["line_no"] < outputs[0]["line_no"]',
-         'and _is_int(ordinal)', 
+         'and _is_int(ordinal)',
          [(B, "test_execution_before_call_refused")]),
         ("mandatory-script-pin", original,
          'or expected_exit is None or not isinstance(expected_call_input, str)\n            or not expected_call_input):',
@@ -180,6 +213,18 @@ def main():
         ("binding-unique-item", storagemod,
          '                CREATE UNIQUE INDEX IF NOT EXISTS capture_binding_item_unique\n                    ON capture_bindings(thread_id, item_id);',
          '', [(audit.TestBindingAudit, "test_same_item_with_another_call_violates_database_unique")]),
+        ("entry-plan-readonly", climod,
+         "            ro_storage = open_readonly_storage(args.db)",
+         "            ro_storage = TaskStorage(args.db)",
+         [(hostentry.TestHostEntryPlan, "test_plan_missing_db_creates_nothing")]),
+        ("entry-register-plan-argv", climod,
+         '                    expected_argv=invocation["argv"],',
+         "                    expected_argv=[],",
+         [(hostentry.TestHostEntryRegister, "test_register_persists_binding_and_event")]),
+        ("entry-register-plan-script", climod,
+         '                    expected_call_input=invocation["call_input"])',
+         '                    expected_call_input="x")',
+         [(hostentry.TestHostEntryRegister, "test_register_persists_binding_and_event")]),
     ]
     results = [run_case(*case) for case in cases]
     # The full-manifest fact recomputation still rejects a changed output digest.

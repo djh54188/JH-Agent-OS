@@ -1,6 +1,6 @@
 ---
 name: jh-task
-description: Run a JH-Agent OS task end to end. Use when the user wants to submit, check, resume, collect results, or run offline code-delivery prepare/complete for a JH task through the project's structured CLI.
+description: Run a JH-Agent OS task end to end. Use when the user wants to submit, check, resume, collect results, run offline code-delivery prepare/complete, or plan/register/query host-capture bindings for a JH task through the project's structured CLI.
 ---
 
 # JH Task Entry (Codex-hosted)
@@ -29,6 +29,8 @@ From the run directory, verify and record all three; stop on any mismatch:
   `n1-artifact-entry`).
 - `python -X utf8 -B -c "import src.cli; print(src.cli.__file__); print(hasattr(src.cli,'RECORDS_TRANSFORM_TEMPLATE_ID'))"`
   prints a `cli.py` path inside the run directory, followed by `True`.
+- `python -X utf8 -B -c "import src.cli; print(hasattr(src.cli,'HOST_ENTRY_COMMANDS'))"`
+  prints `True` (host-entry surface present in the loaded module).
 
 ## Commands
 
@@ -42,6 +44,10 @@ All commands print JSON.
 - Stop: `cancel <task_id> --reason <text>`
 - Code delivery (JH-006 offline batch only): `prepare-code-delivery <task_id> <artifact_version>`
   and `complete-code-delivery <task_id> <receipt.json>` (never call models, never write target files)
+- Host entry (controlled bridge wiring only): `plan-host-check <task_id> <delivery_id>`
+  prints the control-owned fixed invocation; `register-host-capture <task_id> <delivery_id> <archive_dir> <thread_id> <item_id> <call_id>`
+  binds one independently captured execution; `capture-binding-status <task_id> <delivery_id>`
+  reports whether the persisted binding is current (never call models; registration never succeeds a task)
 
 ## Output shapes
 
@@ -51,6 +57,12 @@ All commands print JSON.
   with a structured error instead of printing `[]`.
 - `artifact` prints a wrapper with `task_status`, `latest_artifact`,
   `artifact_versions`, `review_bindings`, and `memory_records`.
+- `plan-host-check` prints a wrapper with `task_id`, `delivery_id`, `workdir`,
+  `invocation` (`argv`, `call_input`, `apply_attempt_id`, `context_sha256`), and a note.
+- `register-host-capture` prints a wrapper with `binding_id`, thread/item/call ids,
+  and digests; refusals print `command_ok: false` with an `error` reason instead.
+- `capture-binding-status` prints `bound`, `current`, `reasons`, and the persisted
+  `binding` (or null); `current: true` never implies task success.
 - Never assume every command returns `task_result`. A successful query
   command does not mean the task succeeded.
 
@@ -79,7 +91,7 @@ succeeded — vs `applied` verified), and `target_applied` (true only after a
 verified complete). `resume` on a waiting task returns the parked state and
 must not add model calls. Synthetic applies/receipts must be marked
 `fixture-offline-host/v1` and run in isolated workspaces; production host
-assembly remains unimplemented and production complete still refuses.
+assembly now has a controlled CLI entry (see below); production complete still refuses.
 A recorder string alone is never proof: offline complete requires an existing
 fixture host record with host_call_id/apply_attempt_id and matching raw-output
 digest. Only the explicit test harness can register synthetic fixture evidence;
@@ -92,6 +104,33 @@ The 2026-10-15 host-transcript candidate is rejected and archived. Its
 self-reported output/digest and command-marker rules grant no production
 authority. Keep production complete refused; follow the current STATUS and
 independent-capture handoff before proposing any production bridge.
+
+## Host entry (controlled bridge wiring)
+
+Three steps, in order, through the CLI only:
+
+1. `plan-host-check <task_id> <delivery_id>` prints the single control-owned
+   fixed invocation for the waiting delivery. A plan is an instruction, never
+   evidence; it proves nothing ran.
+2. Execute the pinned call EXACTLY (same argv, same call script, same workdir)
+   in a Codex Desktop session, capture with the probe script into an ignored
+   `data/` directory, then `register-host-capture` with the archive path and
+   the thread/item/call ids. Registration re-verifies every fact against the
+   live session store and the current control snapshot; mismatches refuse.
+3. `capture-binding-status <task_id> <delivery_id>` re-reads the persisted
+   binding. `current: true` means the association still holds NOW; it never
+   means the task succeeded, and production complete stays closed.
+
+Scope and prohibitions: fixed `code_sortfix_v1` template only; only the
+measured Codex desktop exec wrapper is admitted — Muse shell output must
+never be presented as a Codex record. `apply_attempt_id` labels the capture
+check, not a verified file apply; applied-baseline and full-scope proof
+belong to a future production-delivery review. Never edit expected argv,
+scripts, hashes, or workdirs to make a check pass; never mix fixture and
+production runs; mark every substitute log or source `synthetic`. Keep
+raw session bytes (account ids, full chat) out of git: archives live under
+ignored `data/` paths. Real Codex source registration is performed by the
+architect host session, not here.
 
 ## Rules
 
@@ -107,12 +146,17 @@ independent-capture handoff before proposing any production bridge.
 - A successful query command does not mean the task succeeded. Report
   `task_result.status`, current artifact version/SHA-256, review verdict,
   acceptance results, budget/usage, and blockers separately.
+- Never present a Muse-executed command, a hand-written receipt, or a fixture
+  record as an independent Codex capture. Quote `delivery_id`, `thread_id`,
+  `item_id`, `call_id`, and digests from CLI output, never from memory.
 
 ## Result handoff
 
 Return the run directory, branch/commit, and `src.cli` module path verified
 in pre-flight, plus the task id, final task status, current artifact version
 and SHA-256, reviewer verdict, per-criterion acceptance, usage totals, and
-any blockers or unverified items. On failure, quote the structured `error`
+any blockers or unverified items. For host entry, also return the plan context
+hash, binding id, thread/item/call ids, digests, and the query's current/reasons.
+On failure, quote the structured `error`
 field verbatim and stop; do not retry with wider permissions or a different
 database.

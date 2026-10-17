@@ -20,6 +20,7 @@ from typing import Any, Callable, Dict, List, Optional
 
 from src.acceptance import code_deferred_acceptance_evaluator, file_write_acceptance_evaluator, transform_acceptance_evaluator
 from src.adapters import AdapterError, CredentialMissingError, MockModelAdapter, SchemaValidationError
+from src.capture_binding import BindingRefused, capture_invocation_for_delivery, register_capture_binding, verify_binding_current
 from src.code_delivery import CODE_FIXTURE_ID, CODE_TEMPLATE_ID, CODE_TEMPLATES, CodeDeliveryRefused
 from src.file_tools import FileToolExecutor
 from src.mock_components import MockToolExecutor, ScriptedReviewerAdapter, ScriptedWorkerAdapter
@@ -32,6 +33,10 @@ from src.storage import TaskStorage
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DB_PATH = PROJECT_ROOT / "data" / "jh_agent_os.sqlite3"
 READ_ONLY_COMMANDS = frozenset({"status", "events", "artifact", "summary"})
+# Host-entry read surface; registration below writes bindings, never task success.
+READ_ONLY_COMMANDS |= frozenset({"plan-host-check", "capture-binding-status"})
+# Canonical host-entry command names, checked by the skill pre-flight.
+HOST_ENTRY_COMMANDS = ("plan-host-check", "register-host-capture", "capture-binding-status")
 
 # JH-004 fixed template: records transform with a trusted sort rule and exactly
 # two required conditions. The id is stamped into the trusted binding at submit.
@@ -533,6 +538,31 @@ def main(argv: Optional[List[str]] = None) -> int:
     sub_complete.add_argument("task_id", help="Task ID")
     sub_complete.add_argument("receipt_file", help="Path to apply receipt JSON assembled by the trusted host")
 
+    sub_plan = subparsers.add_parser(
+        "plan-host-check",
+        help="Read-only: print the control-owned fixed host-check invocation for a waiting delivery",
+    )
+    sub_plan.add_argument("task_id", help="Task ID")
+    sub_plan.add_argument("delivery_id", help="Waiting delivery ID")
+
+    sub_register_capture = subparsers.add_parser(
+        "register-host-capture",
+        help="Bind one independently captured host execution to a waiting delivery (no models)",
+    )
+    sub_register_capture.add_argument("task_id", help="Task ID")
+    sub_register_capture.add_argument("delivery_id", help="Waiting delivery ID")
+    sub_register_capture.add_argument("archive_dir", help="Capture archive directory (events.jsonl + manifest.json)")
+    sub_register_capture.add_argument("thread_id", help="Host session thread ID")
+    sub_register_capture.add_argument("item_id", help="Host execution item ID")
+    sub_register_capture.add_argument("call_id", help="Host tool call ID")
+
+    sub_binding_status = subparsers.add_parser(
+        "capture-binding-status",
+        help="Read-only: report whether a persisted capture binding is current",
+    )
+    sub_binding_status.add_argument("task_id", help="Task ID")
+    sub_binding_status.add_argument("delivery_id", help="Delivery ID")
+
     args = parser.parse_args(argv)
     trusted_ws = Path(args.workspace).resolve()
 
@@ -552,6 +582,44 @@ def main(argv: Optional[List[str]] = None) -> int:
             elif args.command == "events":
                 ro_storage.get_task(args.task_id)  # fail closed on missing task, like other queries
                 print(json.dumps(ro_storage.list_events(args.task_id), ensure_ascii=False, indent=2))
+            elif args.command == "plan-host-check":
+                try:
+                    invocation = capture_invocation_for_delivery(
+                        ro_storage, args.task_id, args.delivery_id)
+                    workdir = ro_storage.get_task(args.task_id)["context"]["workspace_root"]
+                except (KeyError, BindingRefused) as exc:
+                    print(json.dumps({"command_ok": False, "read_only": True,
+                                      "error": str(exc)}, ensure_ascii=False, indent=2))
+                    return 1
+                print(json.dumps({
+                    "command_ok": True,
+                    "read_only": True,
+                    "task_id": args.task_id,
+                    "delivery_id": args.delivery_id,
+                    "workdir": workdir,
+                    "invocation": invocation,
+                    "note": ("plan only; not evidence. Execute exactly, capture, "
+                             "then register; binding current=true never implies succeeded."),
+                }, ensure_ascii=False, indent=2))
+            elif args.command == "capture-binding-status":
+                try:
+                    ro_storage.get_task(args.task_id)  # fail closed on missing task, like other queries
+                    verdict = verify_binding_current(ro_storage, args.task_id, args.delivery_id)
+                except KeyError as exc:
+                    print(json.dumps({"command_ok": False, "read_only": True,
+                                      "error": str(exc)}, ensure_ascii=False, indent=2))
+                    return 1
+                binding = verdict["binding"]
+                print(json.dumps({
+                    "command_ok": True,
+                    "read_only": True,
+                    "task_id": args.task_id,
+                    "delivery_id": args.delivery_id,
+                    "bound": binding is not None,
+                    "current": verdict["current"],
+                    "reasons": verdict["reasons"],
+                    "binding": binding,
+                }, ensure_ascii=False, indent=2))
             elif args.command == "artifact":
                 summary = build_task_summary(ro_storage, args.task_id)
                 print(json.dumps({
@@ -732,6 +800,44 @@ def main(argv: Optional[List[str]] = None) -> int:
             print(json.dumps(out, ensure_ascii=False, indent=2))
             return 0 if task["status"] == "succeeded" else 1
 
+        if args.command == "register-host-capture":
+            _, _, blockers = _existing_task_for_control(args, trusted_ws)
+            if blockers:
+                print(json.dumps({
+                    "command_ok": False,
+                    "error": "register blocked: " + ", ".join(blockers),
+                    "blockers": blockers,
+                }, ensure_ascii=False, indent=2))
+                return 1
+            storage = TaskStorage(args.db, read_only=False)
+            try:
+                invocation = capture_invocation_for_delivery(
+                    storage, args.task_id, args.delivery_id)
+                row = register_capture_binding(
+                    storage, args.task_id, delivery_id=args.delivery_id,
+                    archive_dir=args.archive_dir, thread_id=args.thread_id,
+                    item_id=args.item_id, call_id=args.call_id,
+                    expected_argv=invocation["argv"],
+                    expected_call_input=invocation["call_input"])
+                print(json.dumps({
+                    "command_ok": True,
+                    "read_only": False,
+                    "test_fixture_mode": bool(args.test_fixture_mode),
+                    "task_id": args.task_id,
+                    "delivery_id": args.delivery_id,
+                    "binding_id": row["binding_id"],
+                    "thread_id": row["thread_id"],
+                    "item_id": row["item_id"],
+                    "call_id": row["call_id"],
+                    "event_digest": row["event_digest"],
+                    "manifest_digest": row["manifest_digest"],
+                    "note": ("capture bound; binding current=true never implies "
+                             "succeeded; production complete stays closed"),
+                }, ensure_ascii=False, indent=2))
+                return 0
+            finally:
+                storage.close()
+
         if args.command == "cancel":
             storage = TaskStorage(args.db, read_only=False)
             try:
@@ -762,6 +868,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         SchemaValidationError,
         InvalidStateTransitionError,
         CodeDeliveryRefused,
+        BindingRefused,
         FileNotFoundError,
         KeyError,
     ) as exc:
