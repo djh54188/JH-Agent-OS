@@ -6,12 +6,15 @@ process rather than assumed. The static assets, the JSON endpoints, the error
 shapes and the traversal guard are all exercised.
 """
 import json
+import os
 import tempfile
 import threading
 import unittest
 import urllib.error
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from unittest import mock
 
 from src.gui_http import make_server
 from src.storage import TaskStorage
@@ -160,6 +163,114 @@ class TestGuiEndpoints(_ServerCase):
         status, body = self.post("/api/drafts", {"title": "t", "goal": "g", "dispatch": True})
         self.assertEqual(status, 409)
         self.assertEqual(json.loads(body)["error"]["code"], "draft_cannot_execute")
+
+
+class TestLoopbackBindingOnly(unittest.TestCase):
+    """R3: this batch binds loopback only, and refuses anything else BEFORE binding."""
+
+    def test_loopback_hosts_are_accepted_by_validation(self):
+        """The boundary rule itself: all three loopback literals pass validation."""
+        from src.gui_http import validate_host, LOOPBACK_HOSTS
+        self.assertEqual(sorted(LOOPBACK_HOSTS), ["127.0.0.1", "::1", "localhost"])
+        for host in ("127.0.0.1", "::1", "localhost", "  127.0.0.1  "):
+            with self.subTest(host=host):
+                self.assertEqual(validate_host(host).strip(), host.strip())
+
+    def test_loopback_hosts_can_actually_bind(self):
+        """End-to-end for the literals this machine can bind (IPv6 may be absent)."""
+        from src.gui_http import make_server
+        for host in ("127.0.0.1", "localhost"):
+            with self.subTest(host=host):
+                server = make_server(host, 0)
+                try:
+                    self.assertTrue(server.server_address[0])
+                finally:
+                    server.server_close()
+
+    def test_non_loopback_hosts_are_refused_without_binding(self):
+        from src import gui_http
+        for host in ("0.0.0.0", "::", "192.168.1.5", "10.0.0.1", "example.com"):
+            with self.subTest(host=host):
+                with mock.patch.object(gui_http, "ThreadingHTTPServer") as server_class:
+                    with self.assertRaises(ValueError) as ctx:
+                        gui_http.make_server(host, 0)
+                    self.assertIn("环回", str(ctx.exception))
+                    server_class.assert_not_called()       # nothing was ever bound
+
+    def test_default_host_is_loopback(self):
+        from src.gui_http import make_server
+        server = make_server(port=0)
+        try:
+            self.assertEqual(server.server_address[0], "127.0.0.1")
+        finally:
+            server.server_close()
+
+
+class _DraftServerCase(unittest.TestCase):
+    """A server with its own drafts file, for write-path tests."""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.tmp = Path(self._tmp.name)
+        self.drafts = self.tmp / "drafts.json"
+        self.httpd = make_server("127.0.0.1", 0, db_path=str(self.tmp / "absent.sqlite3"),
+                                 drafts_path=str(self.drafts))
+        self.port = self.httpd.server_address[1]
+        self.thread = threading.Thread(target=self.httpd.serve_forever, daemon=True)
+        self.thread.start()
+
+    def tearDown(self):
+        self.httpd.shutdown()
+        self.httpd.server_close()
+        self._tmp.cleanup()
+
+    def post(self, payload):
+        data = json.dumps(payload).encode("utf-8")
+        request = urllib.request.Request(f"http://127.0.0.1:{self.port}/api/drafts", data=data,
+                                         method="POST", headers={"Content-Type": "application/json"})
+        try:
+            with urllib.request.urlopen(request, timeout=15) as response:
+                return response.status, json.loads(response.read())
+        except urllib.error.HTTPError as exc:
+            return exc.code, json.loads(exc.read())
+
+    def get_drafts(self):
+        with urllib.request.urlopen(f"http://127.0.0.1:{self.port}/api/drafts", timeout=15) as response:
+            return json.loads(response.read())
+
+
+class TestDraftWritesOverRealHTTP(_DraftServerCase):
+    def test_concurrent_saves_over_http_all_persist(self):
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            outcomes = list(pool.map(
+                lambda i: self.post({"title": f"t{i}", "goal": f"g{i}"}), range(8)))
+        statuses = [status for status, _ in outcomes]
+        self.assertEqual(statuses, [201] * 8,
+                         f"non-201 bodies: {[b for st, b in outcomes if st != 201]}")
+        returned = {body["draft"]["draft_id"] for _, body in outcomes}
+        self.assertEqual(len(returned), 8)
+        listed = self.get_drafts()
+        self.assertEqual(listed["count"], 8)
+        self.assertEqual({d["draft_id"] for d in listed["drafts"]}, returned)
+
+    def test_refused_save_leaves_no_record(self):
+        status, body = self.post({"title": "t", "goal": "g", "dispatch": True})
+        self.assertEqual(status, 409)
+        self.assertEqual(body["error"]["code"], "draft_cannot_execute")
+        self.assertEqual(self.get_drafts()["count"], 0)
+
+    def test_failed_publish_returns_an_error_and_keeps_old_data(self):
+        status, _ = self.post({"title": "keep", "goal": "g"})
+        self.assertEqual(status, 201)
+        before = self.drafts.read_bytes()
+        with mock.patch("src.app_api.os.replace", side_effect=OSError("disk full")):
+            status, body = self.post({"title": "lost", "goal": "g"})
+        self.assertEqual(status, 500)
+        self.assertEqual(body["error"]["code"], "internal_error")
+        self.assertEqual(self.drafts.read_bytes(), before)
+        self.assertEqual(self.get_drafts()["count"], 1)
+        leftovers = [p.name for p in self.tmp.iterdir() if p.name.endswith(".tmp")]
+        self.assertEqual(leftovers, [])
 
 
 class TestMissingDatabaseIsShownHonestly(_ServerCase):

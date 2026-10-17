@@ -23,6 +23,9 @@ from __future__ import annotations
 
 import json
 import os
+import tempfile
+import time
+import threading
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -86,6 +89,17 @@ SESSION_REGISTRY: List[Dict[str, Any]] = [
 ]
 
 DRAFT_KIND = "jh019-goal-draft/v1"
+# A stored draft entry must carry all of these; a file missing any of them is
+# structurally wrong and is reported, not silently read as an empty list.
+REQUIRED_DRAFT_KEYS = ("kind", "draft_id", "draft", "execution", "title", "goal")
+
+# Bounded retry for the final atomic rename. On Windows a just-written temp file
+# (or the destination) can be transiently locked by an indexer/scanner/open
+# reader, which fails the rename with PermissionError even though the bytes are
+# complete. Retrying the rename briefly resolves that class of race; the rename
+# stays atomic and a persistent failure still leaves the old file untouched.
+REPLACE_ATTEMPTS = 5
+REPLACE_BACKOFF_SECONDS = 0.02
 DEFAULT_DRAFTS_PATH = Path(__file__).resolve().parents[1] / "data" / "gui" / "goal-drafts.json"
 
 
@@ -97,6 +111,37 @@ class ApiError(Exception):
         self.code = code
         self.message = message
         self.http_status = http_status
+
+
+# Single-process write boundary: one lock per resolved drafts path, held across
+# the whole read → append → publish cycle. Multi-process coordination is out of
+# scope for this batch.
+_DRAFT_LOCKS: Dict[str, "threading.RLock"] = {}
+_DRAFT_LOCKS_GUARD = threading.Lock()
+
+
+def _drafts_lock(path: Path) -> "threading.RLock":
+    key = str(Path(path).resolve())
+    with _DRAFT_LOCKS_GUARD:
+        lock = _DRAFT_LOCKS.get(key)
+        if lock is None:
+            lock = threading.RLock()
+            _DRAFT_LOCKS[key] = lock
+        return lock
+
+
+def _atomic_replace(tmp_name: str, destination: Path) -> None:
+    """os.replace with a bounded retry for transient Windows sharing errors."""
+    last: Optional[BaseException] = None
+    for attempt in range(REPLACE_ATTEMPTS):
+        try:
+            os.replace(tmp_name, destination)
+            return
+        except PermissionError as exc:
+            last = exc
+            if attempt + 1 < REPLACE_ATTEMPTS:
+                time.sleep(REPLACE_BACKOFF_SECONDS * (attempt + 1))
+    raise last
 
 
 def _now() -> str:
@@ -241,28 +286,69 @@ class AppInterface:
             "target_session_id": payload.get("target_session_id"),
             "note": "显式标记的草案：不会派发、不调用模型、不启动工具",
         }
-        drafts = self._read_drafts()
-        drafts.append(draft)
-        self._write_drafts(drafts)
+        # One process-wide lock per drafts file spans the ENTIRE read → append →
+        # publish cycle, so two concurrent saves in this process cannot lose a
+        # record or collide on a temporary file. Multi-process coordination is
+        # deliberately out of scope for this batch (single local process).
+        with _drafts_lock(self.drafts_path):
+            drafts = self._read_drafts_locked()
+            drafts.append(draft)
+            self._publish_drafts_locked(drafts)
         return {"ok": True, "read_only": False, "draft": draft,
                 "note": "已保存为草案；未触发任何执行"}
 
     def list_drafts(self) -> Dict[str, Any]:
-        drafts = self._read_drafts()
+        with _drafts_lock(self.drafts_path):
+            drafts = self._read_drafts_locked()
         return {"ok": True, "read_only": True, "drafts": drafts, "count": len(drafts),
                 "note": "草案不是任务；不会出现在任务索引中"}
 
-    def _read_drafts(self) -> List[Dict[str, Any]]:
+    def _read_drafts_locked(self) -> List[Dict[str, Any]]:
+        """Strict read; the caller holds the drafts lock.
+
+        Three distinct outcomes, none of which is "pretend it is empty":
+        absent file → empty list; unparseable bytes → `drafts_unreadable`;
+        parseable JSON of the wrong shape → `drafts_malformed`. A failed read
+        never rewrites the original bytes.
+        """
         if not self.drafts_path.is_file():
             return []
+        raw = self.drafts_path.read_bytes()
         try:
-            data = json.loads(self.drafts_path.read_text(encoding="utf-8"))
-        except ValueError:
-            raise ApiError("drafts_unreadable", "草案文件损坏，未覆盖原文件", 500)
-        return data if isinstance(data, list) else []
+            data = json.loads(raw.decode("utf-8"))
+        except (ValueError, UnicodeDecodeError):
+            raise ApiError("drafts_unreadable", "草案文件无法解析，未覆盖原文件", 500)
+        if not isinstance(data, list):
+            raise ApiError("drafts_malformed",
+                           f"草案文件顶层应为数组，实际为 {type(data).__name__}；未覆盖原文件", 500)
+        for index, entry in enumerate(data):
+            if not isinstance(entry, dict):
+                raise ApiError("drafts_malformed",
+                               f"草案文件第 {index} 条不是对象；未覆盖原文件", 500)
+            missing = [key for key in REQUIRED_DRAFT_KEYS if key not in entry]
+            if missing:
+                raise ApiError("drafts_malformed",
+                               f"草案文件第 {index} 条缺少字段 {missing}；未覆盖原文件", 500)
+        return data
 
-    def _write_drafts(self, drafts: List[Dict[str, Any]]) -> None:
-        self.drafts_path.parent.mkdir(parents=True, exist_ok=True)
-        tmp = self.drafts_path.with_suffix(".json.tmp")
-        tmp.write_text(json.dumps(drafts, ensure_ascii=False, indent=2), encoding="utf-8")
-        os.replace(tmp, self.drafts_path)
+    def _publish_drafts_locked(self, drafts: List[Dict[str, Any]]) -> None:
+        """Write to a uniquely named temp file in the same directory, then
+        atomically replace. A failure at any point leaves the previous file
+        byte-identical, and concurrent writers cannot share a temp path."""
+        parent = self.drafts_path.parent
+        parent.mkdir(parents=True, exist_ok=True)
+        payload = json.dumps(drafts, ensure_ascii=False, indent=2).encode("utf-8")
+        handle, tmp_name = tempfile.mkstemp(dir=str(parent), prefix=".goal-drafts-",
+                                            suffix=".tmp")
+        try:
+            with os.fdopen(handle, "wb") as stream:
+                stream.write(payload)
+                stream.flush()
+                os.fsync(stream.fileno())
+            _atomic_replace(tmp_name, self.drafts_path)
+        except BaseException:
+            try:
+                os.unlink(tmp_name)
+            except OSError:
+                pass
+            raise

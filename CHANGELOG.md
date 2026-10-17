@@ -1,3 +1,14 @@
+# 2026-10-17 · JH-019 整改 R1—R4（待审）
+
+- **R1 草案存储可靠性**：按草案路径取进程级锁，跨越整个「读取 → 追加 → 发布」周期（不只保护最后一次替换）；临时文件改为 `tempfile.mkstemp` 唯一名 + `flush`/`fsync` + `os.replace`，失败删除临时文件且旧文件字节不变；顶层非数组、条目非对象、条目缺字段一律报 `drafts_malformed`（不再静默当空列表），不可解析报 `drafts_unreadable`，三者均保留原字节；写明单进程写入边界，不新建存储平台。测试：线程并发 8 次保存后每个返回的 draft_id 都在、临时名互不相同、发布失败不破坏旧数据、真实 HTTP 8 并发全部落盘。
+- **R2 前端请求归属**：视图切换与任务选择维护 `renderGeneration`，迟到响应不覆盖当前页面；任务详情/审查与交付另加 `currentTaskId` 守卫；草案列表用独立 `draftsGeneration`，旧响应不回写空列表也不重复追加。新增 DOM 桩 + 可控 Promise 顺序的**行为测试台** `tests/js/jh019_generation_harness.mjs`（3 场景）与 Python 包装测试，取代纯字符串检查。
+- **R3 本机服务边界**：`validate_host` 仅允许 `127.0.0.1`/`::1`/`localhost`，在**创建 socket 前**拒绝其它主机；补允许（校验 + 实际绑定）与拒绝（抛错且断言 `ThreadingHTTPServer` 未被构造）两类测试。未引入远程访问或认证平台。
+- **R4 证据与口径**：整改后真机复验四视图与草案保存刷新；归档 `data/jh019-gui/evidence/jh019-workbench.png`、`jh019-views-snapshots.json`、`jh019-draft-after-save.{txt,png}`（`data/` 未跟踪）；演示库标注为**演示数据、非真实模型任务**。
+- 最终原子改名加**有界重试**（仅 Windows 短暂占用型 `PermissionError`），并补「重试后成功」与「持续失败保留字节」测试；起因是全量套件曾出现 1 次并发 500，单独 240 次并发与随后 6 次全套件均未复现，按偶发竞态加固而非放宽断言。
+- 全量 **491 项 490 通过 / 1 既有跳过**（JH-019 新增 65 项），连续 5 次全量运行稳定通过。不改现有成功规则/Schema/权限/门禁；`production complete`、`FileToolExecutor` 继续关闭。状态：**本批待审**。
+
+---
+
 # 2026-10-17 · JH-019 最小模块化 GUI 与统一应用接口（待审）
 
 - 新增统一应用接口 `src/app_api.py`：能力声明、任务索引、任务详情、会话登记、审查与交付、目标草案。**复用** `src.cli.build_task_summary` 与 `TaskStorage` 只读查询，不复制任务状态机与审核规则；不直接持有数据库连接（无驱动 import、无手写 SQL）。

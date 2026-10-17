@@ -10,11 +10,14 @@ browser, no static assets — and pin the truthfulness rules of this batch:
 * a saved goal is a marked DRAFT: no task is created, no Agent/model/tool runs.
 """
 import json
+import os
 import subprocess
 import sys
 import tempfile
+import threading
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from src.app_api import AppInterface, ApiError
 from src.storage import TaskStorage
@@ -205,6 +208,131 @@ class TestGoalDraftIsInert(_Base):
             self.api().list_drafts()
         self.assertEqual(ctx.exception.code, "drafts_unreadable")
         self.assertEqual(self.drafts.read_bytes(), before)              # untouched
+
+
+class TestDraftStoreReliability(_Base):
+    """R1: the whole read→append→publish cycle is protected and structural
+    errors are reported without destroying bytes."""
+
+    def test_concurrent_saves_in_one_process_lose_nothing(self):
+        api = self.api()
+        saved, errors = [], []
+        barrier = threading.Barrier(8)
+
+        def worker(index):
+            barrier.wait()
+            try:
+                result = api.save_goal_draft({"title": f"t{index}", "goal": f"g{index}"})
+                saved.append(result["draft"]["draft_id"])
+            except Exception as exc:                        # pragma: no cover
+                errors.append(repr(exc))
+
+        threads = [threading.Thread(target=worker, args=(i,)) for i in range(8)]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+
+        self.assertEqual(errors, [])
+        self.assertEqual(len(saved), 8)
+        listed = api.list_drafts()
+        self.assertEqual(listed["count"], 8)
+        on_disk = {draft["draft_id"] for draft in listed["drafts"]}
+        self.assertEqual(on_disk, set(saved))               # every returned id persisted
+
+    def test_concurrent_writers_never_share_a_temp_file(self):
+        api = self.api()
+        seen = []
+        real_replace = os.replace
+
+        def recording_replace(src, dst):
+            seen.append(str(src))
+            return real_replace(src, dst)
+
+        with mock.patch("src.app_api.os.replace", side_effect=recording_replace):
+            threads = [threading.Thread(target=lambda i=i: api.save_goal_draft(
+                {"title": f"t{i}", "goal": "g"})) for i in range(6)]
+            for thread in threads:
+                thread.start()
+            for thread in threads:
+                thread.join()
+        self.assertEqual(len(seen), 6)
+        self.assertEqual(len(set(seen)), 6, f"temp names collided: {seen}")
+
+    def test_failed_publish_preserves_the_previous_file(self):
+        api = self.api()
+        api.save_goal_draft({"title": "keep", "goal": "g"})
+        before = self.drafts.read_bytes()
+        with mock.patch("src.app_api.os.replace", side_effect=OSError("disk full")):
+            with self.assertRaises(OSError):
+                api.save_goal_draft({"title": "lost", "goal": "g"})
+        self.assertEqual(self.drafts.read_bytes(), before)          # untouched
+        self.assertEqual(self.api().list_drafts()["count"], 1)      # old record still readable
+        leftovers = [p.name for p in self.drafts.parent.iterdir() if p.name.endswith(".tmp")]
+        self.assertEqual(leftovers, [], f"temp files left behind: {leftovers}")
+
+    def test_transient_replace_lock_is_retried_then_succeeds(self):
+        """A transient Windows rename lock must not lose a save."""
+        api = self.api()
+        api.save_goal_draft({"title": "first", "goal": "g"})
+        real_replace = os.replace
+        calls = {"n": 0}
+
+        def flaky(src, dst):
+            calls["n"] += 1
+            if calls["n"] <= 2:
+                raise PermissionError("transient lock")
+            return real_replace(src, dst)
+
+        with mock.patch("src.app_api.os.replace", side_effect=flaky):
+            api.save_goal_draft({"title": "second", "goal": "g"})
+        self.assertGreaterEqual(calls["n"], 3)
+        titles = [d["title"] for d in self.api().list_drafts()["drafts"]]
+        self.assertEqual(titles, ["first", "second"])
+
+    def test_persistent_permission_error_preserves_bytes(self):
+        api = self.api()
+        api.save_goal_draft({"title": "keep", "goal": "g"})
+        before = self.drafts.read_bytes()
+        with mock.patch("src.app_api.os.replace", side_effect=PermissionError("locked")):
+            with self.assertRaises(PermissionError):
+                api.save_goal_draft({"title": "lost", "goal": "g"})
+        self.assertEqual(self.drafts.read_bytes(), before)
+        self.assertEqual(self.api().list_drafts()["count"], 1)
+
+    def test_top_level_not_an_array_is_reported_not_empty(self):
+        self.drafts.parent.mkdir(parents=True, exist_ok=True)
+        self.drafts.write_text('{"drafts": []}', encoding="utf-8")
+        before = self.drafts.read_bytes()
+        with self.assertRaises(ApiError) as ctx:
+            self.api().list_drafts()
+        self.assertEqual(ctx.exception.code, "drafts_malformed")
+        with self.assertRaises(ApiError) as ctx:
+            self.api().save_goal_draft({"title": "t", "goal": "g"})
+        self.assertEqual(ctx.exception.code, "drafts_malformed")
+        self.assertEqual(self.drafts.read_bytes(), before)
+
+    def test_entry_shape_errors_are_reported(self):
+        for payload, reason in (('["not an object"]', "不是对象"),
+                                ('[{"kind": "x"}]', "缺少字段")):
+            with self.subTest(payload=payload):
+                self.drafts.parent.mkdir(parents=True, exist_ok=True)
+                self.drafts.write_text(payload, encoding="utf-8")
+                before = self.drafts.read_bytes()
+                with self.assertRaises(ApiError) as ctx:
+                    self.api().list_drafts()
+                self.assertEqual(ctx.exception.code, "drafts_malformed")
+                self.assertIn(reason, ctx.exception.message)
+                self.assertEqual(self.drafts.read_bytes(), before)
+
+    def test_unparseable_bytes_stay_a_distinct_error(self):
+        self.drafts.parent.mkdir(parents=True, exist_ok=True)
+        self.drafts.write_text("{not json", encoding="utf-8")
+        before = self.drafts.read_bytes()
+        with self.assertRaises(ApiError) as ctx:
+            self.api().list_drafts()
+        self.assertEqual(ctx.exception.code, "drafts_unreadable")
+        self.assertEqual(self.drafts.read_bytes(), before)
 
 
 class TestCoreHasNoExecutionPath(_Base):

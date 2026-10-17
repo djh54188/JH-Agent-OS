@@ -35,7 +35,9 @@
 
 目标输入保存为**显式标记草案**（`draft=true`、`execution=not_triggered`），草案不建任务、不触发任何执行；带执行意图的草案请求被拒（409）。会话登记全部 `connected=false`/`simulated=true` 并附 JH-018 实测证据；数据库缺失、未知任务、空数据、损坏草案文件各有显式状态，不展示虚假连接或完成。**不支持**的能力（`dispatch`/`collect`/`review_trigger`）显式列为未接入（属 JH-020）。
 
-产出：`src/app_api.py`、`src/gui_http.py`、`gui/`（5 文件）、`src/storage.py` 加法、3 个测试文件、[报告](reports/jh019-minimal-gui-20261017.md)。全量 **472 项 471 通过 / 1 既有跳过**（JH-019 新增 46 项）。本轮不调用真实模型、不触发工具；`production complete` 与 `FileToolExecutor` 继续关闭；未自宣 N2/P1 完成。
+产出：`src/app_api.py`、`src/gui_http.py`、`gui/`（5 文件）、`src/storage.py` 加法、5 个测试文件与 1 个前端行为测试台、[报告](reports/jh019-minimal-gui-20261017.md)。
+
+**整改 R1—R4（2026-10-17，待审）**：① 草案存储——进程级锁跨越整个读取→追加→发布周期，`mkstemp` 唯一临时文件 + 原子替换，发布失败保留旧字节；顶层/条目结构错误报 `drafts_malformed` 并保留原字节，不再当空列表；单进程写入边界写明（不建复杂存储平台）。② 前端请求归属——视图/任务切换自增代次，迟到响应不覆盖当前页面；草案列表独立代次防止旧空列表回写或重复追加；用 DOM 桩 + 可控 Promise 顺序的**行为测试**验证三场景。③ 服务边界——只允许环回绑定，非环回参数在创建 socket 前拒绝，补允许/拒绝两类测试。④ 证据——整改后真机复验四视图与草案保存刷新；截图与 DOM 记录归档到忽略目录 `data/jh019-gui/evidence/`；演示库明确标注为**演示数据、非真实模型任务**。全量 **491 项 490 通过 / 1 既有跳过**。本轮不调用真实模型、不触发工具；`production complete` 与 `FileToolExecutor` 继续关闭；未自宣 N2/P1 完成。
 
 ---
 

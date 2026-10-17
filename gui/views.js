@@ -13,8 +13,21 @@ JH.views = (function () {
   const C = function () { return JH.components; };
   const root = function () { return document.getElementById("view-root"); };
 
-  function render(children) {
+  /* Request generations. Every view switch and every task selection starts a
+   * new generation; a response may only paint when its generation is still the
+   * current one, so a late reply can never overwrite the page the user is on.
+   * The draft list keeps its own counter so an older list reply cannot回写 an
+   * empty list or append twice. */
+  let renderGeneration = 0;
+  let draftsGeneration = 0;
+  let currentTaskId = null;      // shared by the task/delivery views
+
+  function beginRender() { renderGeneration += 1; return renderGeneration; }
+  function isCurrent(gen) { return gen === renderGeneration; }
+
+  function render(children, gen) {
     const node = root();
+    if (gen !== undefined) { node.dataset.generation = String(gen); }
     node.textContent = "";
     children.forEach(function (child) { node.appendChild(child); });
   }
@@ -36,9 +49,12 @@ JH.views = (function () {
 
   /* 工作台：任务索引 + 草案入口。 */
   function workbench() {
-    render([heading("工作台", "只读任务索引；草案是明确的输入，不会自动执行")]);
+    const gen = beginRender();
+    render([heading("工作台", "只读任务索引；草案是明确的输入，不会自动执行"),
+            C().loadingState("正在读取任务索引…")], gen);
 
     JH.api.listTasks().then(function (envelope) {
+      if (!isCurrent(gen)) { return; }             // a newer view took over
       envelopeOrError("工作台", envelope, function () {
         const panel = C().el("section", "panel");
         if (envelope.database_present === false) {
@@ -74,7 +90,7 @@ JH.views = (function () {
         const child = [panel];
         child.push(draftPanel());
         render([heading("工作台",
-          "只读任务索引；草案是明确的输入，不会自动执行")].concat(child));
+          "只读任务索引；草案是明确的输入，不会自动执行")].concat(child), gen);
       });
     });
   }
@@ -104,8 +120,13 @@ JH.views = (function () {
     /* Re-read the stored drafts. Called on load and after every successful save
      * so the list is never stale next to a success message. */
     function refreshDrafts() {
+      draftsGeneration += 1;
+      const myGeneration = draftsGeneration;
       list.textContent = "";
       JH.api.listDrafts().then(function (envelope) {
+        // An older list reply must not clear or append to the current list.
+        if (myGeneration !== draftsGeneration) { return; }
+        list.textContent = "";
         if (!envelope || envelope.ok !== true) {
           list.appendChild(C().errorState((envelope && envelope.error) || {}));
           return;
@@ -148,13 +169,17 @@ JH.views = (function () {
 
   /* 任务详情。 */
   function taskDetail(taskId) {
-    render([heading("任务详情", taskId ? ("task_id " + taskId) : "请从工作台选择任务")]);
+    const gen = beginRender();
+    const requested = taskId;
+    render([heading("任务详情", taskId ? ("task_id " + taskId) : "请从工作台选择任务")], gen);
     if (!taskId) {
       render([heading("任务详情", "请从工作台选择任务"),
-              C().emptyState("未选择任务")]);
+              C().emptyState("未选择任务")], gen);
       return;
     }
     JH.api.taskDetail(taskId).then(function (envelope) {
+      // Ignore a reply for a task the user has already navigated away from.
+      if (!isCurrent(gen) || currentTaskId !== requested) { return; }
       envelopeOrError("任务详情", envelope, function () {
         const task = envelope.task_result;
         const panel = C().el("section", "panel");
@@ -192,15 +217,18 @@ JH.views = (function () {
           panel.appendChild(C().el("h4", null, "阻塞"));
           task.blockers.forEach(function (b) { panel.appendChild(C().el("div", "muted", b)); });
         }
-        render([heading("任务详情", "task_id " + taskId), panel]);
+        render([heading("任务详情", "task_id " + taskId), panel], gen);
       });
     });
   }
 
   /* Agent / 会话：全部为静态登记，必须显式显示未连接。 */
   function sessions() {
-    render([heading("Agent / 会话", "静态登记视图：未接入适配器，不存在真实连接")]);
+    const gen = beginRender();
+    render([heading("Agent / 会话", "静态登记视图：未接入适配器，不存在真实连接"),
+            C().loadingState("正在读取会话登记…")], gen);
     JH.api.listSessions().then(function (envelope) {
+      if (!isCurrent(gen)) { return; }
       envelopeOrError("Agent / 会话", envelope, function () {
         const panel = C().el("section", "panel");
         panel.appendChild(C().note("传输来源：" + envelope.transport + "；" + envelope.note));
@@ -215,20 +243,23 @@ JH.views = (function () {
           card.appendChild(C().evidenceList(session.evidence));
           panel.appendChild(card);
         });
-        render([heading("Agent / 会话", "静态登记视图：未接入适配器，不存在真实连接"), panel]);
+        render([heading("Agent / 会话", "静态登记视图：未接入适配器，不存在真实连接"), panel], gen);
       });
     });
   }
 
   /* 审查与交付。 */
   function delivery(taskId) {
-    render([heading("审查与交付", taskId ? ("task_id " + taskId) : "请从工作台选择任务")]);
+    const gen = beginRender();
+    const requested = taskId;
+    render([heading("审查与交付", taskId ? ("task_id " + taskId) : "请从工作台选择任务")], gen);
     if (!taskId) {
       render([heading("审查与交付", "请从工作台选择任务"),
-              C().emptyState("未选择任务")]);
+              C().emptyState("未选择任务")], gen);
       return;
     }
     JH.api.reviewDelivery(taskId).then(function (envelope) {
+      if (!isCurrent(gen) || currentTaskId !== requested) { return; }
       envelopeOrError("审查与交付", envelope, function () {
         const panel = C().el("section", "panel");
         const row = C().el("div", "row");
@@ -260,14 +291,13 @@ JH.views = (function () {
         }
         panel.appendChild(acc);
         panel.appendChild(C().field("review_bindings_count", envelope.review_bindings_count));
-        render([heading("审查与交付", "task_id " + taskId), panel]);
+        render([heading("审查与交付", "task_id " + taskId), panel], gen);
       });
     });
   }
 
   function start() {
     const tabs = document.getElementById("tabs");
-    let currentTaskId = null;
 
     function show(view) {
       Array.prototype.forEach.call(tabs.querySelectorAll(".tab"), function (tab) {

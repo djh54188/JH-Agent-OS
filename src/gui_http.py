@@ -99,6 +99,9 @@ class GuiHandler(BaseHTTPRequestHandler):
                                                         "message": f"未知路径：{path}"}})
         except ApiError as exc:
             self._api_error(exc)
+        except Exception as exc:                       # never drop the connection
+            self._json(500, {"ok": False, "error": {"code": "internal_error",
+                                                    "message": f"服务内部错误：{exc}"}})
 
     def do_POST(self) -> None:                                 # noqa: N802
         path = urlparse(self.path).path
@@ -118,11 +121,33 @@ class GuiHandler(BaseHTTPRequestHandler):
                                                         "message": f"未知路径：{path}"}})
         except ApiError as exc:
             self._api_error(exc)
+        except Exception as exc:                       # never drop the connection
+            self._json(500, {"ok": False, "error": {"code": "internal_error",
+                                                    "message": f"服务内部错误：{exc}"}})
+
+
+# Only loopback binding is permitted in this batch. The check runs BEFORE the
+# socket is created, so a non-loopback request fails without ever listening.
+LOOPBACK_HOSTS = frozenset({"127.0.0.1", "::1", "localhost"})
+
+
+def validate_host(host: str) -> str:
+    """Return the host if it is a loopback literal, else refuse.
+
+    This batch deliberately exposes no remote access and no authentication
+    platform: anything that would listen beyond loopback is rejected outright.
+    """
+    candidate = str(host).strip()
+    if candidate not in LOOPBACK_HOSTS:
+        raise ValueError(
+            f"本批只允许环回绑定；拒绝主机 {candidate!r}（允许：{sorted(LOOPBACK_HOSTS)}）")
+    return candidate
 
 
 def make_server(host: str = "127.0.0.1", port: int = 8765,
                 db_path: str | None = None, drafts_path: str | None = None,
                 gui_dir: Path | None = None) -> ThreadingHTTPServer:
+    host = validate_host(host)                      # refuse before binding
     handler = type("BoundGuiHandler", (GuiHandler,), {})
     handler.api = AppInterface(db_path=db_path, drafts_path=drafts_path)
     handler.gui_dir = Path(gui_dir) if gui_dir else GUI_DIR

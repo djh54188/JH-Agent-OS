@@ -49,9 +49,36 @@
 
 HTTP 层由 `tests/test_jh019_gui_http.py` 在临时端口上自建服务并实测：`/`、`/static/*`、`/api/capabilities|tasks|sessions|drafts`、`POST /api/drafts`、未知路径 404、`/static/../src/cli.py` 越界被拦。
 
+## 4b. 整改 R1—R4（基线 8bfc9405）
+
+**R1 草案存储可靠性**
+- 单进程写入边界：按解析后的草案路径取进程级锁（`_drafts_lock`），**跨越整个「读取 → 追加 → 发布」周期**，不只是最后一次替换；多进程协调明确不在本批范围（单本地进程）。
+- 临时文件唯一化：改用 `tempfile.mkstemp`（同一目录、唯一名），写完 `flush`+`fsync` 后原子发布；任何失败路径都删除临时文件并保持旧文件字节不变。
+- 最终改名加**有界重试**（`_atomic_replace`，仅针对 Windows 上临时/目标文件被索引器或读取方短暂占用导致的 `PermissionError`）；改名本身仍原子，持续失败仍保持旧文件不变。**起因说明**：全量套件曾出现 1 次并发 500，单独复现 30×8=240 次并发保存与随后 6 次全套件均未复现，故原因为偶发、非系统性；按该竞态加固并补「重试后成功」与「持续失败保留字节」两个测试，而非仅放宽断言。
+- 结构错误不再当空列表：顶层非数组 → `drafts_malformed`；条目非对象或缺字段 → `drafts_malformed`；不可解析 → `drafts_unreadable`。三者都保留原字节、不覆盖。
+- 测试：8 线程并发保存后**每个返回的 draft_id 都存在**（计数一致）；并发保存时**临时文件名互不相同**（拦截 `os.replace` 记录）；注入发布失败 → 旧文件字节不变、无临时残留、错误以结构化 500 返回；真实 HTTP 并发（8 并发 POST）同样全部落盘。
+
+**R2 前端请求归属**
+- `renderGeneration` 在每次视图切换/任务选择时自增；视图响应只在代次仍为当前时绘制，**迟到响应不会覆盖当前页面**。
+- 任务详情/审查与交付双条件守卫：代次一致**且** `currentTaskId` 未变。
+- 草案列表独立 `draftsGeneration`：旧列表响应既不回写空列表也不重复追加（绘制前再次清空）。
+- 行为验证（非字符串检查）：`tests/js/jh019_generation_harness.mjs` 在 DOM 桩中真实执行 `components.js`/`views.js`，用可控制完成顺序的 Promise 复现三个场景——工作台→会话页（旧工作台响应迟到）、任务 A→B（A 响应迟到）、保存后列表（旧空列表迟到）；断言迟到响应不改变 DOM。
+
+**R3 本机服务边界**
+- 只允许环回：`LOOPBACK_HOSTS = {127.0.0.1, ::1, localhost}`，`validate_host` 在**创建 socket 之前**拒绝其它主机（`0.0.0.0`、`::`、私网 IP、域名）。
+- 测试分两类：允许（三个字面量通过校验；本机可绑定的 `127.0.0.1`/`localhost` 实际绑定成功）与拒绝（非环回参数抛 `ValueError`，且断言 `ThreadingHTTPServer` **未被构造**）。未引入远程访问或认证平台。
+
+**R4 最终 GUI 证据（整改后复验）**
+- 四个视图与草案保存刷新已在真实浏览器中复验通过；草案保存后列表**即时**出现该草案并显示 `draft=true`、`execution=not_triggered`。
+- 归档到项目忽略目录（`data/` 未跟踪，不入 Git）：
+  - `data/jh019-gui/evidence/jh019-workbench.png`（工作台整页截图）
+  - `data/jh019-gui/evidence/jh019-views-snapshots.json`（任务详情 / Agent·会话 / 审查与交付 三视图 DOM 记录）
+  - `data/jh019-gui/evidence/jh019-draft-after-save.txt` 与 `.png`（保存后草案区记录与截图）
+- 演示库 `data/jh019-gui/gui-demo.sqlite3` 在 `data/jh019-gui/README.md` 中明确标注为**演示数据**：执行方本地构造，仅用于展示只读渲染，**不是真实模型任务**，不含真实 Agent/模型执行记录。
+
 ## 5. 验证与计数
 
-全量 **472 项 471 通过 / 1 既有跳过**（`test_phase2_hardening.py:152`），其中 JH-019 新增 46 项（应用接口 21、分层约束 12、真机 HTTP 13）。本轮**不调用真实模型、不触发工具**；GUI 只读既有记录 + 写草案文件。
+全量 **491 项 490 通过 / 1 既有跳过**（`test_phase2_hardening.py:152`），其中 JH-019 新增 65 项（应用接口 29、分层约束 12、真机 HTTP 19、前端请求归属行为 4 + 前端行为测试台 3 场景）。R2 为**行为测试**（DOM 桩 + 可控 Promise 顺序），不是源码字符串检查。本轮**不调用真实模型、不触发工具**；GUI 只读既有记录 + 写草案文件。
 
 ## 6. 边界与遗留
 
