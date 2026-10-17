@@ -1,0 +1,41 @@
+{
+ "verify_phase2_guards": {
+  "exit": 1,
+  "noop_mutants": 5,
+  "noop_reported_detected": [
+   "worker_completion_bypass_review",
+   "reviewer_failure_auto_pass"
+  ]
+ },
+ "verify_phase3_guards": {
+  "exit": 1,
+  "noop_mutants": 8,
+  "noop_reported_detected": []
+ },
+ "verify_phase4_guards": {
+  "exit": 1,
+  "noop_mutants": 12,
+  "noop_reported_detected": [
+   "workspace_containment_removed",
+   "junction_ancestor_check_removed",
+   "apply_target_version_check_removed",
+   "apply_staged_hash_check_removed",
+   "arch01_staging_dir_reparse_removed",
+   "arch03_locked_handle_version_check_removed",
+   "workspace_ctor_reparse_removed"
+  ]
+ },
+ "verify_phase2_hardening": {
+  "exit": 0,
+  "noop_mutants": 13,
+  "noop_reported_detected": []
+ },
+ "verify_jh006_guards": {
+  "exit": 1,
+  "noop_mutants": 19,
+  "noop_reported_detected": [
+   "sealed_check_command",
+   "final_deadline_gate"
+  ]
+ }
+}
