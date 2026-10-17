@@ -145,6 +145,6 @@
 - **取消终态**：确认取消后重复取消保持 `CANCELLED`，不追加轮次、不回退为 `CANCEL_REQUESTED`（note 标 `already cancelled`）；已取消运行拒绝整改的行为保留。两个适配器均补回归。
 - **组合序列自检**：新增 `TestCombinedSequenceConsistency`，对两个适配器逐一跑 `派发 → 整改 A → 整改 B → 重放 A → 状态查询 → 取消请求 → 重复取消 → 确认取消 → 再取消 → 拒绝整改 → 收集`，断言每一步返回值与记录一致（重放返回 A 的轮次、`state` 跟记录、轮次总数 3、收集不报 `succeeded`）。
 
-**本轮验证**：全量 **426 项 425 通过 / 1 既有跳过**（`test_phase2_hardening.py:152`）；ZCode selftest **20 例**（3 正 + 17 反，反例断言具体原因）、Codex selftest 13 例；契约夹具 37 项行为测试。**不调用真实模型**：只用离线假传输与既有真实记录（`raw/` 副本、`codex-app-server-schema/`）验证；真实往返判据未重跑（旧实测记录已归档保留）。
+**本轮验证**：全量 **426 项 425 通过 / 1 既有跳过**（`test_phase2_hardening.py:152`）；ZCode selftest **21 例**（4 正 + 17 反，反例断言具体原因）、Codex selftest 13 例；契约夹具 37 项行为测试。**不调用真实模型**：只用离线假传输与既有真实记录（`raw/` 副本、`codex-app-server-schema/`）验证；真实往返判据未重跑（旧实测记录已归档保留）。
 
 **边界**：`production complete`、`FileToolExecutor` 继续关闭；未恢复失败方案；未改凭据、封存夹具、Schema、门禁与权限；未把 mock 适配器当作"第二个应用已接入"；未把 `accepted:true`、`turn.completed` 或"消息已投递"当作任务成功；**本批状态为"整改待审"**。

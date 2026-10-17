@@ -1,3 +1,16 @@
+# 2026-10-17 · JH-019 最小模块化 GUI 与统一应用接口（待审）
+
+- 新增统一应用接口 `src/app_api.py`：能力声明、任务索引、任务详情、会话登记、审查与交付、目标草案。**复用** `src.cli.build_task_summary` 与 `TaskStorage` 只读查询，不复制任务状态机与审核规则；不直接持有数据库连接（无驱动 import、无手写 SQL）。
+- 新增标准库传输层 `src/gui_http.py`：仅把应用接口暴露为 `/api/*` 并服务 `gui/` 静态资源；含路径越界拦截；无业务规则。
+- 新增最小 GUI `gui/`：页面模块 `views.js`（工作台/任务详情/Agent·会话/审查与交付）、公共组件 `components.js`、数据访问层 `data_access.js`（唯一 `fetch` 处）、`index.html`/`styles.css`。DOM 用 `textContent` 构建，不用 `innerHTML`。
+- 目标输入保存为**显式标记草案**：`draft=true`、`execution=not_triggered`；草案不建任务；带 `dispatch/execute/run/start_task` 的请求 409 拒绝。**不触发 Agent／模型／工具执行**。
+- 真实性：会话登记全部 `connected=false`/`simulated=true` 并附 JH-018 逐能力实测证据；数据库缺失/未知任务/空数据/损坏草案各有显式状态；不支持能力（`dispatch`/`collect`/`review_trigger`）显式列为未接入。
+- 存储仅加法新增只读 `list_tasks()`（仅 SELECT，无写语句）。
+- 真机验证：用内置浏览器实际打开本地 GUI，四个视图、草案保存与列表即时刷新、模拟会话未连接提示、审查与交付记录事实均确认；HTTP 层由测试在临时端口自建服务实测。
+- 全量 **472 项 471 通过 / 1 既有跳过**（JH-019 新增 46 项：应用接口 21、分层约束 12、真机 HTTP 13）。不改生产流程/Schema/门禁/权限/夹具；`production complete`、`FileToolExecutor` 继续关闭；未自宣 N2/P1 完成。状态：**本批待审**。
+
+---
+
 # 2026-10-17 · JH-018 收口 C：取消前的异步启动等待（待审）
 
 - `_await_active`（取消试验停止前观察）首次看到 `idle` 不再立即结束：在 `active_wait` 内继续观察，直到实际 active、明确失败终态、或期限耗尽；返回值增 `outcome`（`active`/`failed_terminal`/`never_started`）与 `polls_before_active`，失败原因据此区分。

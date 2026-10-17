@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JH-Agent OS · 最小 GUI（JH-019）</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <strong>JH-Agent OS</strong>
+    <span class="scope-badge" id="scope-badge">只读 + 草案 · 不触发执行</span>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab" data-view="workbench">工作台</button>
+    <button class="tab" data-view="task">任务详情</button>
+    <button class="tab" data-view="sessions">Agent / 会话</button>
+    <button class="tab" data-view="delivery">审查与交付</button>
+  </nav>
+
+  <main id="view-root"></main>
+
+  <footer class="footer">
+    <span id="capability-summary">能力信息加载中…</span>
+  </footer>
+
+  <!-- 数据访问层：唯一与后端通信的地方（页面模块不得直接 fetch） -->
+  <script src="/static/data_access.js"></script>
+  <!-- 公共组件 -->
+  <script src="/static/components.js"></script>
+  <!-- 页面模块 -->
+  <script src="/static/views.js"></script>
+  <script>JH.views.start();</script>
+</body>
+</html>

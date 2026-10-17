@@ -287,6 +287,19 @@ class TaskStorage:
         }
         return task_dict
 
+    def list_tasks(self, limit: int = 50) -> List[Dict[str, Any]]:
+        """Read-only task list for an index view (no state-machine or review logic).
+
+        Returns the columns an index needs plus the recorded artifact/review
+        pointers; callers that need the full picture use get_task()/the summary.
+        """
+        cur = self._conn.execute(
+            "SELECT task_id, title, status, review_verdict, updated_at FROM tasks "
+            "ORDER BY datetime(updated_at) DESC, rowid DESC LIMIT ?",
+            (int(limit),),
+        )
+        return [dict(row) for row in cur.fetchall()]
+
     @atomic
     def transition_task_state(
         self,

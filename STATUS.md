@@ -25,7 +25,19 @@
 
 **收口 B（2026-10-17，待审）**：① 异步启动——等待改为两段有界（先等执行开始，再等终态）；`accepted` 后先出现 `idle` **不再判失败**，保留"从未启动/超时仍活跃/失败终态"三条拒绝判据，取消路径仍允许停止后立即 idle。② 整改重放——幂等记录改存"指纹 + 该请求对应的原生轮次"；交错 A→B→重放 A 返回 **A 自己的操作轮次**，`RunStatus` 区分 `native_turn`（本操作）与 `latest_turn`（运行当前），`state` 始终是当前状态、不因返回历史轮次而倒退。③ 取消终态——确认取消后重复取消保持 `CANCELLED`，不追加轮次、不回退为请求中；已取消拒绝整改保留。另修取消前的异步启动等待：`_await_active` 首次看到 `idle` 不再立即结束，在 `active_wait` 内继续观察到真正 active、明确失败或期限耗尽；补完整取消路径正例（send accepted → 首查 idle → running → stop → 立即 idle），实测确等到了 running。两个适配器均补交错重放、重放不倒退、重复取消回归，并新增组合序列自检（派发→A→B→重放 A→查询→取消→重复取消→确认→再取消→拒绝整改→收集）。
 
-**仅接口能力层（整改待审）**：未实现 GUI、统一应用接口或产品闭环；`codex queue`、`review/start`、`turn/interrupt`、`turn/steer` 未实跑（daemon 未起或未调用）；未向用户在用会话写入；mock 适配器不算第二个应用接入。全量 **422 项 421 通过 / 1 既有跳过**。本轮不调用真实模型。`production complete`、`FileToolExecutor` 继续关闭；N2/P1 未完成。
+**验收（2026-10-17）**：架构师已按「接口探测与契约设计」范围验收 JH-018（基线 `dc162bed`）。以下为历史待审表述，保留以便对照。
+
+**仅接口能力层**：未实现 GUI、统一应用接口或产品闭环；`codex queue`、`review/start`、`turn/interrupt`、`turn/steer` 未实跑（daemon 未起或未调用）；未向用户在用会话写入；mock 适配器不算第二个应用接入。全量 **422 项 421 通过 / 1 既有跳过**。本轮不调用真实模型。`production complete`、`FileToolExecutor` 继续关闭；N2/P1 未完成。
+
+## 2026-10-17 · JH-019 最小模块化 GUI 与统一应用接口（本批交付，待审）
+
+按明确指令派发并实现：本机可打开的最小 GUI（工作台 / 任务详情 / Agent·会话 / 审查与交付），并在真实浏览器中实际打开验证。分层为**页面模块 / 公共组件 / 数据访问层**，业务操作全部经统一应用接口 `src/app_api.py`；传输层 `src/gui_http.py` 仅用标准库暴露 JSON 并服务静态资源。**复用**既有 `build_task_summary` 与 `TaskStorage` 只读查询，不复制状态机与审核规则；存储只新增只读 `list_tasks()`。
+
+目标输入保存为**显式标记草案**（`draft=true`、`execution=not_triggered`），草案不建任务、不触发任何执行；带执行意图的草案请求被拒（409）。会话登记全部 `connected=false`/`simulated=true` 并附 JH-018 实测证据；数据库缺失、未知任务、空数据、损坏草案文件各有显式状态，不展示虚假连接或完成。**不支持**的能力（`dispatch`/`collect`/`review_trigger`）显式列为未接入（属 JH-020）。
+
+产出：`src/app_api.py`、`src/gui_http.py`、`gui/`（5 文件）、`src/storage.py` 加法、3 个测试文件、[报告](reports/jh019-minimal-gui-20261017.md)。全量 **472 项 471 通过 / 1 既有跳过**（JH-019 新增 46 项）。本轮不调用真实模型、不触发工具；`production complete` 与 `FileToolExecutor` 继续关闭；未自宣 N2/P1 完成。
+
+---
 
 ---
 
