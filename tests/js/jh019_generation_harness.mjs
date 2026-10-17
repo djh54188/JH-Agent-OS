@@ -239,6 +239,77 @@ async function scenarioDraftListOutOfOrder() {
   return { cardsAfterSave, cardsAfterStale: countDraftCards(world), staleIgnored: true };
 }
 
+async function scenarioSaveAcrossViewSwitch() {
+  /* The reported sequence: save pending -> switch to sessions -> back to the
+   * workbench -> NEW list request pending -> OLD save completes -> the new list
+   * returns the draft. The new list must render; a stale panel's callback must
+   * not invalidate the current panel's request. */
+  const world = newWorld();
+  world.JH.views.start();
+  world.pending.capabilities.shift().resolve({ ok: true, unsupported: [], note: "n" });
+  await world.tick();
+  world.pending.listTasks.shift().resolve(tasksPayload([]));
+  await world.tick();                                        // panel A + list request L1
+
+  await saveDraft(world, "跨面板草案", "保存请求挂起时切走再回来");   // save pending
+  const save = world.pending.saveGoalDraft.shift();
+
+  clickTab(world, "sessions");
+  await world.tick();
+  world.pending.listSessions.shift().resolve(sessionsPayload());
+  await world.tick();
+  if (!world.root.textContent.includes("Agent / 会话")) throw new Error("sessions view did not render");
+
+  clickTab(world, "workbench");
+  await world.tick();
+  world.pending.listTasks.shift().resolve(tasksPayload([]));
+  await world.tick();                                        // panel B + list request L2
+
+  const listA = world.pending.listDrafts.shift();             // panel A's request
+  const listB = world.pending.listDrafts.shift();             // panel B's request
+  if (!listA || !listB) throw new Error("expected one list request per panel");
+
+  save.resolve({ ok: true, read_only: false,
+                 draft: { draft_id: "draft-SWITCH", draft: true, execution: "not_triggered",
+                          title: "跨面板草案", created_at: "2026-10-17T00:00:00Z" },
+                 note: "已保存为草案；未触发任何执行" });
+  await world.tick();
+  // The stale panel must NOT have issued a further request that could invalidate
+  // the current panel's in-flight one.
+  if (world.pending.listDrafts.length !== 0) {
+    throw new Error("stale panel issued another draft-list request");
+  }
+
+  listB.resolve({ ok: true, read_only: true, count: 1,
+                  drafts: [{ draft_id: "draft-SWITCH", title: "跨面板草案",
+                             execution: "not_triggered", created_at: "2026-10-17T00:00:00Z" }],
+                  note: "n" });
+  await world.tick();
+  const cardsAfterCurrentList = countDraftCards(world);
+  if (cardsAfterCurrentList !== 1) {
+    throw new Error("current panel list did not render the draft (cards=" + cardsAfterCurrentList + ")");
+  }
+  if (world.root.textContent.includes("还没有草案")) {
+    throw new Error("current panel shows the empty state despite a stored draft");
+  }
+
+  listA.resolve({ ok: true, read_only: true, drafts: [], count: 0, note: "n" });   // stale, last
+  await world.tick();
+  if (countDraftCards(world) !== 1) throw new Error("stale panel reply changed the card count");
+  return { cardsAfterCurrentList, cardsAfterStale: countDraftCards(world), stalePanelInert: true };
+}
+
+async function saveDraft(world, title, goal) {
+  const save = findByText(world.root, "保存草案");
+  if (!save) throw new Error("save button not found");
+  const titleInput = findAll(world.root, (n) => n.tagName === "input")[0];
+  const goalInput = findAll(world.root, (n) => n.tagName === "textarea")[0];
+  titleInput.value = title;
+  goalInput.value = goal;
+  save.listeners.find((l) => l.type === "click").fn();
+  await world.tick();
+}
+
 function countDraftCards(world) {
   let list = null;
   walk(world.root, (n) => { if (!list && n.className === "draft-list") list = n; });
@@ -251,6 +322,7 @@ const scenarios = {
   workbench_then_sessions_late_workbench: scenarioWorkbenchThenSessions,
   task_switch_late_A_after_B: scenarioTaskSwitch,
   draft_list_stale_empty_after_save: scenarioDraftListOutOfOrder,
+  save_pending_across_view_switch: scenarioSaveAcrossViewSwitch,
 };
 
 const report = { harness: "jh019-generation", scenarios: {}, ok: true };

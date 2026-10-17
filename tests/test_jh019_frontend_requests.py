@@ -47,9 +47,18 @@ class TestFrontendRequestOwnership(unittest.TestCase):
         self.assertEqual(set(scenarios), {
             "workbench_then_sessions_late_workbench",
             "task_switch_late_A_after_B",
-            "draft_list_stale_empty_after_save"})
+            "draft_list_stale_empty_after_save",
+            "save_pending_across_view_switch"})
         for name, result in scenarios.items():
             self.assertTrue(result["ok"], f"{name}: {result.get('error')}")
+
+    def test_save_across_view_switch_keeps_the_current_panel_list(self):
+        """A save resolving after the user navigated away must not invalidate the
+        new panel's in-flight draft-list request."""
+        detail = self.report["scenarios"]["save_pending_across_view_switch"]["detail"]
+        self.assertEqual(detail["cardsAfterCurrentList"], 1)
+        self.assertEqual(detail["cardsAfterStale"], 1)
+        self.assertTrue(detail["stalePanelInert"])
 
     def test_scenarios_assert_the_intended_effects(self):
         scenarios = self.report["scenarios"]

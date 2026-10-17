@@ -19,7 +19,6 @@ JH.views = (function () {
    * The draft list keeps its own counter so an older list reply cannot回写 an
    * empty list or append twice. */
   let renderGeneration = 0;
-  let draftsGeneration = 0;
   let currentTaskId = null;      // shared by the task/delivery views
 
   function beginRender() { renderGeneration += 1; return renderGeneration; }
@@ -88,14 +87,14 @@ JH.views = (function () {
           });
         }
         const child = [panel];
-        child.push(draftPanel());
+        child.push(draftPanel(gen));
         render([heading("工作台",
           "只读任务索引；草案是明确的输入，不会自动执行")].concat(child), gen);
       });
     });
   }
 
-  function draftPanel() {
+  function draftPanel(panelGeneration) {
     const panel = C().el("section", "panel");
     panel.appendChild(C().el("h3", null, "目标草案"));
     panel.appendChild(C().note("保存为显式标记的草案（draft=true、execution=not_triggered）；"
@@ -117,15 +116,24 @@ JH.views = (function () {
     const list = C().el("div", "draft-list");
     panel.appendChild(list);
 
-    /* Re-read the stored drafts. Called on load and after every successful save
-     * so the list is never stale next to a success message. */
+    /* The list generation belongs to THIS panel, not to the module: a stale
+     * panel's late reply must never invalidate the panel the user is looking
+     * at. A save that resolves after the user navigated away therefore leaves
+     * the current panel's in-flight list request untouched. */
+    let panelDraftsGeneration = 0;
+
     function refreshDrafts() {
-      draftsGeneration += 1;
-      const myGeneration = draftsGeneration;
+      if (panelGeneration !== renderGeneration) {
+        return;                        // this panel is no longer on screen
+      }
+      panelDraftsGeneration += 1;
+      const myGeneration = panelDraftsGeneration;
       list.textContent = "";
       JH.api.listDrafts().then(function (envelope) {
-        // An older list reply must not clear or append to the current list.
-        if (myGeneration !== draftsGeneration) { return; }
+        // An older reply for this panel must not clear or append to its list,
+        // and a replaced panel must not paint at all.
+        if (myGeneration !== panelDraftsGeneration) { return; }
+        if (panelGeneration !== renderGeneration) { return; }
         list.textContent = "";
         if (!envelope || envelope.ok !== true) {
           list.appendChild(C().errorState((envelope && envelope.error) || {}));
@@ -149,13 +157,12 @@ JH.views = (function () {
     button.addEventListener("click", function () {
       result.textContent = "";
       JH.api.saveGoalDraft({ title: title.value, goal: goal.value }).then(function (envelope) {
+        if (panelGeneration !== renderGeneration) { return; }   // panel replaced
         if (envelope && envelope.ok === true) {
+          // One line of feedback; the stored facts are shown by the list card
+          // below, so the same draft is not printed twice.
           result.appendChild(C().el("div", "notice notice-ok",
             "已保存草案 " + envelope.draft.draft_id + "（未触发任何执行）"));
-          result.appendChild(C().evidenceList({
-            draft: String(envelope.draft.draft),
-            execution: envelope.draft.execution
-          }));
           refreshDrafts();
         } else {
           result.appendChild(C().errorState((envelope && envelope.error) || {}));
