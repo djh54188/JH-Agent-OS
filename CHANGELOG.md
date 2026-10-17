@@ -1,3 +1,12 @@
+# 2026-10-17 · JH-018 收口 C：取消前的异步启动等待（待审）
+
+- `_await_active`（取消试验停止前观察）首次看到 `idle` 不再立即结束：在 `active_wait` 内继续观察，直到实际 active、明确失败终态、或期限耗尽；返回值增 `outcome`（`active`/`failed_terminal`/`never_started`）与 `polls_before_active`，失败原因据此区分。
+- 新增完整取消路径正例 `cancel_async_start_then_stop`：`session/send accepted → 首查 idle → 随后 running → stop → 立即 idle`，ZCode selftest 实测通过并证明**确实等到 running**（`transitions=['idle','running']`、`polls_before_active=2`）。从未启动、停止被拒、停止后仍运行三个负例及具体失败原因保留。
+- 报告内过时的 selftest 数量与检查项名称同步：19 例（2 正 + 17 反）→ **21 例（4 正 + 17 反）**；`*.observed_active` → `*.started`；补充两段有界等待与"首查 idle 不判失败"的说明。
+- 普通派发等待、整改重放关联、取消终态已复核关闭，本轮未改动。全量 **426 项 425 通过 / 1 既有跳过**；ZCode selftest 21 例、Codex selftest 13 例。**不调用真实模型**。不改生产流程/Schema/门禁/权限/夹具；`production complete`、`FileToolExecutor` 继续关闭。状态：**整改待审**。
+
+---
+
 # 2026-10-17 · JH-018 收口 B：异步启动 / 整改重放关联 / 取消终态（待审）
 
 - 异步启动：ZCode 等待改为两段有界（`start_timeout` 等开始、`settle_timeout` 等终态）。`accepted` 之后先出现一段 `idle` **不再判失败**；仍保留从未启动（`*.started`）、超时仍活跃（`*.not_active_on_timeout`）、失败终态（`*.terminal_ok`）三条拒绝判据。取消路径不做开始等待，停止后立即 idle 照旧通过，未回退。新增正例 `async_start_idle_then_running`（实测容忍 1 次 idle 后才进入 running 并 settled）。

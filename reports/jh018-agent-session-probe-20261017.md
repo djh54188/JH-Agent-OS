@@ -114,10 +114,10 @@
 
 **脚本**（均可离线自测）：
 
-- `scripts/probe_zcode_capabilities.py`：实时模式 `--enumerate`（schema，独立判据）/`--roundtrip`/`--cancel-trial`/`--events-trial`；`--selftest` 用离线假传输跑 **19 例**（2 正 + 17 反），且**每个反例都断言具体失败原因**（`expected_reason` 必须出现在失败列表里，避免因别的错误侥幸通过）。覆盖：协议错、超时、未接受、错 session、从未 active、**持续运行直到超时**、失败终态、用量为 0/错会话、无 assistant 消息、模型绑定不符、未知服务端请求、未 ready；取消侧含**正常取消正例**、**停止请求被拒负例**、**停止后仍持续运行负例**、**取消前从未 active 负例**。判据失败即退出非零。
+- `scripts/probe_zcode_capabilities.py`：实时模式 `--enumerate`（schema，独立判据）/`--roundtrip`/`--cancel-trial`/`--events-trial`；`--selftest` 用离线假传输跑 **21 例**（4 正 + 17 反），且**每个反例都断言具体失败原因**（`expected_reason` 必须出现在失败列表里，避免因别的错误侥幸通过）。正例含普通派发、**异步启动**（`accepted` 后先 idle 再 running）、正常取消、**取消前异步启动**（首查 idle → running → stop → 立即 idle）。反例覆盖：协议错、超时、未接受、错 session、**从未启动**（`*.started`）、**持续运行直到超时**（`*.not_active_on_timeout`）、失败终态（`*.terminal_ok`）、用量为 0/错会话、无 assistant 消息、模型绑定不符、未知服务端请求、未 ready，以及取消侧**停止请求被拒**、**停止后仍持续运行**、**取消前从未 active**。判据失败即退出非零。
 - `scripts/probe_codex_sessions.py`：`--thread` + `--expect-cwd` + `--expect-preview`；**归属不明则拒发**（退出码 3，不发送）；完成通知必须匹配本 thread 与本 turn 且 status/error 合规；未知服务端请求回错误并判失败；`--selftest` 用离线假传输跑 13 例（含归属拒发且未调用 resume/turn-start）。
 
-**生命周期判据（本轮收紧）**：ZCode 的完成判定不再以"不属于错误状态"代替成功终态。运行必须落到 `TERMINAL_OK`（`idle`/`completed`）；**超时仍处于 `running/queued/paused/waiting` 一律失败**（独立检查项 `*.not_active_on_timeout`），`error/failed/stopped` 亦失败（`*.terminal_ok`）；调度路径要求先观察到 active（`*.observed_active`）。取消试验**沿用停止前已观察到的 active 事实**（`cancel.observed_active_before_stop`），停止后**立即 idle 即可通过**（`require_active_first=False`），不要求再次进入 running。
+**生命周期判据**：ZCode 的完成判定不以"不属于错误状态"代替成功终态。调度路径的等待分**两段有界**：先等本次执行开始（`start_timeout`，检查项 `*.started`），再等终态（`settle_timeout`）。运行必须落到 `TERMINAL_OK`（`idle`/`completed`）；**超时仍处于 `running/queued/paused/waiting` 一律失败**（`*.not_active_on_timeout`），`error/failed/stopped` 亦失败（`*.terminal_ok`）。`accepted` 之后先出现一段 `idle` **不判失败**。取消路径不做开始等待：**停止后立即 idle 即可通过**（`require_active_first=False`），不要求再次进入 running。取消试验的停止前观察（`_await_active`）同样**容忍首次 idle**，在 `active_wait` 内继续观察到真正 active、明确失败或期限耗尽，结果记在 `cancel.observed_active_before_stop`。
 
 **实测证据目录** `data/jh018-probes-20261017/`（`data/` 未跟踪，不入 Git）：
 
@@ -141,6 +141,7 @@
 
 - **异步启动**：ZCode 等待改为**两段有界**——先等本次执行开始（`start_timeout`），再等终态（`settle_timeout`）。`accepted` 之后先出现一段 `idle` **不再判失败**；仍保留三条拒绝判据：从未启动（`*.started`）、超时仍活跃（`*.not_active_on_timeout`）、失败终态（`*.terminal_ok`）。取消路径不做开始等待（`require_active_first=False`），停止后立即 idle 照旧通过，未回退。新增正例 `async_start_idle_then_running`（实测 `polls_before_active=2`，即容忍了一段 idle 后仍 settled）。
 - **整改重放关联**：幂等记录改为保存"请求指纹 + 该请求对应的**原生轮次**"。交错序列 A(key=A) → B(key=B) → 重放 A 时，返回的是 **A 自己的操作轮次**，不会把 B 当作 A。`RunStatus` 明确区分 `native_turn`（本操作对应轮次）与 `latest_turn`（运行当前最新轮次），`state` 始终是运行**当前**状态，为返回历史轮次不会倒退当前状态。两个适配器都补了交错重放与"重放不倒退状态"测试。
+- **取消前的异步启动**：停止前观察（`_await_active`）首次看到 `idle` 不再立即结束，在 `active_wait` 内继续观察到真正 active、明确失败或期限耗尽。新增完整取消路径正例 `cancel_async_start_then_stop`（`send accepted → 首查 idle → running → stop → 立即 idle`），实测 `transitions=['idle','running']`、`polls_before_active=2`，即**确实等到了 running** 才发停止；从未启动 / 停止被拒 / 停止后仍运行三个负例与具体失败原因保留。
 - **取消终态**：确认取消后重复取消保持 `CANCELLED`，不追加轮次、不回退为 `CANCEL_REQUESTED`（note 标 `already cancelled`）；已取消运行拒绝整改的行为保留。两个适配器均补回归。
 - **组合序列自检**：新增 `TestCombinedSequenceConsistency`，对两个适配器逐一跑 `派发 → 整改 A → 整改 B → 重放 A → 状态查询 → 取消请求 → 重复取消 → 确认取消 → 再取消 → 拒绝整改 → 收集`，断言每一步返回值与记录一致（重放返回 A 的轮次、`state` 跟记录、轮次总数 3、收集不报 `succeeded`）。
 

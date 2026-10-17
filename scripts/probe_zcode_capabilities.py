@@ -297,23 +297,35 @@ def _status(transport, sid: str) -> dict:
 
 
 def _await_active(transport, sid: str, timeout: float, interval: float = 2.0) -> dict:
-    """Observe whether the session is (or becomes) genuinely active. This is the
-    pre-stop fact a cancel trial must reuse; it makes no success claim."""
-    seen, active = [], False
+    """Observe whether this execution actually becomes active.
+
+    This is the pre-stop fact a cancel trial reuses; it makes no success claim.
+    An initial `idle` right after `accepted` is NOT the end of the observation:
+    the wait continues inside `timeout` until the run is genuinely active, ends
+    in an explicit failure state, or the deadline is exhausted. Breaking out on
+    the first `idle` would make an asynchronous start look like "never ran".
+    """
+    seen, active, outcome = [], False, "never_started"
+    polls = 0
+    polls_before_active = None
     deadline = time.time() + timeout
     while True:
+        polls += 1
         status = _status(transport, sid).get("status")
         if not seen or seen[-1] != status:
             seen.append(status)
         if status in STILL_ACTIVE:
-            active = True
+            active, outcome, polls_before_active = True, "active", polls
             break
-        if status in TERMINAL_OK or status in TERMINAL_BAD:
+        if status in TERMINAL_BAD:
+            outcome = "failed_terminal"
             break
         if time.time() >= deadline:
+            outcome = "never_started"
             break
         time.sleep(interval)
-    return {"active": active, "status": seen[-1] if seen else None, "transitions": seen}
+    return {"active": active, "outcome": outcome, "status": seen[-1] if seen else None,
+            "transitions": seen, "polls": polls, "polls_before_active": polls_before_active}
 
 
 def _await_terminal(transport, sid: str, start_timeout: float, settle_timeout: float,
@@ -512,7 +524,8 @@ def run_cancel_trial(transport, workspace: str, model: str, reasoning_level: str
     pre = _await_active(transport, sid, active_wait, poll_interval)
     report["was_active_before_stop"] = pre
     verdict.require("cancel.observed_active_before_stop", pre["active"],
-                    f"never observed an active state to cancel; transitions={pre['transitions']}")
+                    f"never became active to cancel (outcome={pre['outcome']}); "
+                    f"transitions={pre['transitions']}")
 
     stop = transport.request("session/stop", {"sessionId": sid}, timeout=30)
     report["stop"] = _summarize(stop)
@@ -640,9 +653,11 @@ def _fault(case: str) -> Verdict:
     return transport
 
 
-def _cancel_transport(stop_frame=None, active_forever=False, never_active=False) -> FakeTransport:
+def _cancel_transport(stop_frame=None, active_forever=False, never_active=False,
+                      async_start=False) -> FakeTransport:
     """Purpose-built fake for cancel trials: active until a stop is requested,
-    then terminal — with switches for the negative variants."""
+    then terminal — with switches for the negative variants and for an
+    asynchronous start (the first look after `accepted` is still idle)."""
     transport = FakeTransport(_happy_script())
     state = {"stopped": False}
     original = transport.request
@@ -650,10 +665,13 @@ def _cancel_transport(stop_frame=None, active_forever=False, never_active=False)
     def request(method, params, timeout=30.0):
         if method == "session/read":
             transport.calls.append({"method": method, "params": params})
+            reads = sum(1 for c in transport.calls if c["method"] == "session/read")
             if never_active:
                 status = "idle"
             elif state["stopped"] and not active_forever:
                 status = "idle"
+            elif async_start and reads == 1:
+                status = "idle"          # not started yet: must NOT end the wait
             else:
                 status = "running"
             return _frame_result(projection={"status": status, "turnCount": 1})
@@ -722,10 +740,25 @@ def selftest() -> tuple:
         cases[name] = {"detected": detected, "expected_reason": expected,
                        "reason_matched": right_reason, "failures": verdict.failures}
 
-    # --- cancel trials: one positive, three negatives ---------------------
+    # --- cancel trials: two positives, three negatives ---------------------
     _, ok_cancel = run_cancel_trial(_cancel_transport(), ".", "new-provider-3/exo-free", "high",
                                     active_wait=1.0, stop_settle=2.0, poll_interval=0.02)
     cases["cancel_happy_path"] = {"ok": ok_cancel.ok, "failures": ok_cancel.failures}
+
+    # The full asynchronous cancel path the architect asked for:
+    # send accepted -> first query idle -> running -> stop -> immediate idle.
+    async_cancel_report, async_cancel = run_cancel_trial(
+        _cancel_transport(async_start=True), ".", "new-provider-3/exo-free", "high",
+        active_wait=1.0, stop_settle=2.0, poll_interval=0.02)
+    pre = async_cancel_report["was_active_before_stop"]
+    cases["cancel_async_start_then_stop"] = {
+        "ok": (async_cancel.ok and pre["outcome"] == "active"
+               and (pre["polls_before_active"] or 0) >= 2
+               and pre["transitions"][:2] == ["idle", "running"]),
+        "transitions": pre["transitions"],
+        "polls_before_active": pre["polls_before_active"],
+        "after_stop": async_cancel_report["after_stop"],
+        "failures": async_cancel.failures}
 
     cancel_faults = {
         "cancel_stop_rejected": (_cancel_transport(
@@ -744,7 +777,8 @@ def selftest() -> tuple:
         cases[name] = {"detected": detected, "expected_reason": expected,
                        "reason_matched": right_reason, "failures": cancel_verdict.failures}
 
-    positives = ("happy_path", "async_start_idle_then_running", "cancel_happy_path")
+    positives = ("happy_path", "async_start_idle_then_running",
+                 "cancel_happy_path", "cancel_async_start_then_stop")
     ok = (all(cases[k].get("ok") for k in positives)
           and all(v.get("detected") and v.get("reason_matched")
                   for k, v in cases.items() if k not in positives))
