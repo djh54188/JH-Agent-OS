@@ -1,0 +1,14 @@
+{
+  "fixture": "n2-data-rollup/v1",
+  "status": "not_run",
+  "cwd": "repo-root",
+  "checks": [
+    {
+      "name": "expected-recomputed",
+      "command": ["python", "scripts/verify_jh005_fixtures.py", "--fixture", "data_rollup"],
+      "expect_exit": 0,
+      "expect_stdout_contains": "\"status\": \"ok\"",
+      "note": "The checker re-derives expected.json from input.json with the fixed (region, sales) rule and compares exactly, order included."
+    }
+  ]
+}

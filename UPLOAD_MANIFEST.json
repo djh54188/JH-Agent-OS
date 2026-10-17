@@ -1,0 +1,1207 @@
+{
+  "date": "2026-10-16",
+  "repository": "djh54188/JH-Agent-OS",
+  "source_revision": "1f605c30fbca8573b6865f9cde2a1244f8f9ae4c",
+  "source_branch": "n1-artifact-entry",
+  "selection": "committed reviewed snapshot; local WIP excluded; no local Git history",
+  "product_status": "N1 accepted; JH-006 offline binding accepted; N2/P1 incomplete",
+  "production_complete": "closed",
+  "automatic_file_application": "closed",
+  "hark_execution": "not yet performed",
+  "uncommitted_source_paths_excluded": [
+    " M .agents/skills/jh-task/SKILL.md",
+    " M reports/jh006-binding-review-20261016/verify_all.py",
+    " M scripts/verify_jh006_capture_guards.py",
+    " M src/cli.py",
+    "?? tests/test_jh006_guard_harness.py",
+    "?? tests/test_jh006_host_entry.py"
+  ],
+  "omitted_committed_paths": [
+    "reports/jh004-closure-20261014/adapted-probes.json",
+    "reports/jh004-closure-20261014/adapted_probes.py",
+    "reports/jh004-closure-20261014/docs-before/isolated-worktree/CHANGELOG.md",
+    "reports/jh004-closure-20261014/docs-before/isolated-worktree/STATUS.md",
+    "reports/jh004-closure-20261014/docs-before/isolated-worktree/TODO.md",
+    "reports/jh004-closure-20261014/docs-before/isolated-worktree/docs/README.md",
+    "reports/jh004-closure-20261014/docs-before/isolated-worktree/docs/handoffs/jh004-artifact-entry-20261013.md",
+    "reports/jh004-closure-20261014/docs-before/isolated-worktree/docs/handoffs/jh004-r02-followup-20261014.md",
+    "reports/jh004-closure-20261014/docs-before/isolated-worktree/docs/handoffs/jh004-start-here-20261013.md",
+    "reports/jh004-closure-20261014/docs-before/isolated-worktree/docs/handoffs/muse-lead-gemini-workers.md",
+    "reports/jh004-closure-20261014/docs-before/isolated-worktree/docs/handoffs/n1-20261012-execution.md",
+    "reports/jh004-closure-20261014/docs-before/isolated-worktree/docs/handoffs/n1-20261012-review.md",
+    "reports/jh004-closure-20261014/docs-before/original-root/CHANGELOG.md",
+    "reports/jh004-closure-20261014/docs-before/original-root/STATUS.md",
+    "reports/jh004-closure-20261014/docs-before/original-root/TODO.md",
+    "reports/jh004-closure-20261014/docs-before/original-root/docs/README.md",
+    "reports/jh004-closure-20261014/docs-before/original-root/docs/handoffs/jh004-artifact-entry-20261013.md",
+    "reports/jh004-closure-20261014/docs-before/original-root/docs/handoffs/jh004-start-here-20261013.md",
+    "reports/jh004-closure-20261014/docs-before/original-root/docs/handoffs/muse-lead-gemini-workers.md",
+    "reports/jh004-closure-20261014/docs-before/original-root/docs/handoffs/n1-20261012-execution.md",
+    "reports/jh004-closure-20261014/docs-before/original-root/docs/handoffs/n1-20261012-review.md",
+    "reports/jh004-closure-20261014/document-alignment.json",
+    "reports/jh004-closure-20261014/guard_mutations.py",
+    "reports/jh004-closure-20261014/mutation-results.json",
+    "reports/jh004-closure-20261014/review-summary.json",
+    "reports/jh004-closure-20261014/source-snapshot.json",
+    "reports/jh004-closure-20261014/submitted-source-wip.patch",
+    "reports/jh004-closure-20261014/unit-results.json",
+    "reports/jh004-closure-20261014/unit.stderr.txt",
+    "reports/jh004-closure-20261014/unit.stdout.txt",
+    "reports/jh004-independent-review-20261013/behavioural-probes-first.json",
+    "reports/jh004-independent-review-20261013/behavioural-probes.json",
+    "reports/jh004-independent-review-20261013/behavioural-reproducibility.json",
+    "reports/jh004-independent-review-20261013/behavioural_probes.py",
+    "reports/jh004-independent-review-20261013/docs-before/isolated-worktree/CHANGELOG.md",
+    "reports/jh004-independent-review-20261013/docs-before/isolated-worktree/STATUS.md",
+    "reports/jh004-independent-review-20261013/docs-before/isolated-worktree/TODO.md",
+    "reports/jh004-independent-review-20261013/docs-before/isolated-worktree/docs/README.md",
+    "reports/jh004-independent-review-20261013/docs-before/isolated-worktree/docs/handoffs/jh004-artifact-entry-20261013.md",
+    "reports/jh004-independent-review-20261013/docs-before/isolated-worktree/docs/handoffs/jh004-start-here-20261013.md",
+    "reports/jh004-independent-review-20261013/docs-before/isolated-worktree/docs/handoffs/muse-lead-gemini-workers.md",
+    "reports/jh004-independent-review-20261013/docs-before/isolated-worktree/docs/handoffs/n1-20261012-execution.md",
+    "reports/jh004-independent-review-20261013/docs-before/isolated-worktree/docs/handoffs/n1-20261012-review.md",
+    "reports/jh004-independent-review-20261013/docs-before/original-root/CHANGELOG.md",
+    "reports/jh004-independent-review-20261013/docs-before/original-root/STATUS.md",
+    "reports/jh004-independent-review-20261013/docs-before/original-root/TODO.md",
+    "reports/jh004-independent-review-20261013/docs-before/original-root/docs/README.md",
+    "reports/jh004-independent-review-20261013/docs-before/original-root/docs/handoffs/jh004-artifact-entry-20261013.md",
+    "reports/jh004-independent-review-20261013/docs-before/original-root/docs/handoffs/jh004-start-here-20261013.md",
+    "reports/jh004-independent-review-20261013/docs-before/original-root/docs/handoffs/muse-lead-gemini-workers.md",
+    "reports/jh004-independent-review-20261013/docs-before/original-root/docs/handoffs/n1-20261012-execution.md",
+    "reports/jh004-independent-review-20261013/docs-before/original-root/docs/handoffs/n1-20261012-review.md",
+    "reports/jh004-independent-review-20261013/document-alignment.json",
+    "reports/jh004-independent-review-20261013/guard_mutations.py",
+    "reports/jh004-independent-review-20261013/mutation-followup-results.json",
+    "reports/jh004-independent-review-20261013/mutation-harness-correction.json",
+    "reports/jh004-independent-review-20261013/mutation-initial-results.json",
+    "reports/jh004-independent-review-20261013/mutation-results.json",
+    "reports/jh004-independent-review-20261013/package-verification.json",
+    "reports/jh004-independent-review-20261013/probe-instrumentation-note.json",
+    "reports/jh004-independent-review-20261013/review-summary.json",
+    "reports/jh004-independent-review-20261013/source-snapshot.json",
+    "reports/jh004-independent-review-20261013/submitted-wip.patch",
+    "reports/jh004-independent-review-20261013/unit-results.json",
+    "reports/jh004-independent-review-20261013/unit.stderr.txt",
+    "reports/jh004-independent-review-20261013/unit.stdout.txt",
+    "reports/jh004-postclosure-20261014/adapted-probes.json",
+    "reports/jh004-postclosure-20261014/adapted_probes.py",
+    "reports/jh004-postclosure-20261014/postcommit-results.json",
+    "reports/jh004-postclosure-20261014/probes.stderr.txt",
+    "reports/jh004-postclosure-20261014/probes.stdout.txt",
+    "reports/jh004-postclosure-20261014/unit.stderr.txt",
+    "reports/jh004-postclosure-20261014/unit.stdout.txt",
+    "reports/jh004-real-host-20261014/a-submit.json",
+    "reports/jh004-real-host-20261014/after-query.sqlite3",
+    "reports/jh004-real-host-20261014/archive-manifest.json",
+    "reports/jh004-real-host-20261014/b-status.json",
+    "reports/jh004-real-host-20261014/before-query.sqlite3",
+    "reports/jh004-real-host-20261014/c-resume.json",
+    "reports/jh004-real-host-20261014/d-artifact.json",
+    "reports/jh004-real-host-20261014/d-summary.json",
+    "reports/jh004-real-host-20261014/database-records.json",
+    "reports/jh004-real-host-20261014/fixture-info.json",
+    "reports/jh004-real-host-20261014/fixture-task.json",
+    "reports/jh004-real-host-20261014/host-attempt-1/host-events.jsonl",
+    "reports/jh004-real-host-20261014/host-attempt-1/host-final.txt",
+    "reports/jh004-real-host-20261014/host-attempt-1/host-launch.json",
+    "reports/jh004-real-host-20261014/host-attempt-1/host-process-result.json",
+    "reports/jh004-real-host-20261014/host-attempt-1/host-prompt.txt",
+    "reports/jh004-real-host-20261014/host-attempt-1/host-stderr.txt",
+    "reports/jh004-real-host-20261014/host-attempt-1/run_host.py",
+    "reports/jh004-real-host-20261014/host-command-index.json",
+    "reports/jh004-real-host-20261014/host-events.jsonl",
+    "reports/jh004-real-host-20261014/host-launch.json",
+    "reports/jh004-real-host-20261014/host-process-result.json",
+    "reports/jh004-real-host-20261014/host-prompt.txt",
+    "reports/jh004-real-host-20261014/host-stderr.txt",
+    "reports/jh004-real-host-20261014/independent-verification.json",
+    "reports/jh004-real-host-20261014/invocation-correction.json",
+    "reports/jh004-real-host-20261014/run_host.py",
+    "reports/jh004-real-host-20261014/state.sqlite3",
+    "reports/jh004-real-host-20261014/verify_evidence.py",
+    "reports/jh004-rereview-20261014/adapted-probes-first.json",
+    "reports/jh004-rereview-20261014/adapted-probes.json",
+    "reports/jh004-rereview-20261014/adapted_probes.py",
+    "reports/jh004-rereview-20261014/checkpoint-record.json",
+    "reports/jh004-rereview-20261014/docs-before/isolated-worktree/CHANGELOG.md",
+    "reports/jh004-rereview-20261014/docs-before/isolated-worktree/STATUS.md",
+    "reports/jh004-rereview-20261014/docs-before/isolated-worktree/TODO.md",
+    "reports/jh004-rereview-20261014/docs-before/isolated-worktree/docs/README.md",
+    "reports/jh004-rereview-20261014/docs-before/isolated-worktree/docs/handoffs/jh004-after-review-20261013.md",
+    "reports/jh004-rereview-20261014/docs-before/isolated-worktree/docs/handoffs/jh004-artifact-entry-20261013.md",
+    "reports/jh004-rereview-20261014/docs-before/isolated-worktree/docs/handoffs/jh004-start-here-20261013.md",
+    "reports/jh004-rereview-20261014/docs-before/isolated-worktree/docs/handoffs/muse-lead-gemini-workers.md",
+    "reports/jh004-rereview-20261014/docs-before/isolated-worktree/docs/handoffs/n1-20261012-execution.md",
+    "reports/jh004-rereview-20261014/docs-before/isolated-worktree/docs/handoffs/n1-20261012-review.md",
+    "reports/jh004-rereview-20261014/docs-before/original-root/CHANGELOG.md",
+    "reports/jh004-rereview-20261014/docs-before/original-root/STATUS.md",
+    "reports/jh004-rereview-20261014/docs-before/original-root/TODO.md",
+    "reports/jh004-rereview-20261014/docs-before/original-root/docs/README.md",
+    "reports/jh004-rereview-20261014/docs-before/original-root/docs/handoffs/jh004-artifact-entry-20261013.md",
+    "reports/jh004-rereview-20261014/docs-before/original-root/docs/handoffs/jh004-start-here-20261013.md",
+    "reports/jh004-rereview-20261014/docs-before/original-root/docs/handoffs/muse-lead-gemini-workers.md",
+    "reports/jh004-rereview-20261014/docs-before/original-root/docs/handoffs/n1-20261012-execution.md",
+    "reports/jh004-rereview-20261014/docs-before/original-root/docs/handoffs/n1-20261012-review.md",
+    "reports/jh004-rereview-20261014/document-alignment.json",
+    "reports/jh004-rereview-20261014/guard_mutations.py",
+    "reports/jh004-rereview-20261014/mutation-results.json",
+    "reports/jh004-rereview-20261014/probe-reproducibility.json",
+    "reports/jh004-rereview-20261014/review-summary.json",
+    "reports/jh004-rereview-20261014/source-snapshot.json",
+    "reports/jh004-rereview-20261014/stage-manifest.json",
+    "reports/jh004-rereview-20261014/submitted-source-wip.patch",
+    "reports/jh004-rereview-20261014/unit-results.json",
+    "reports/jh004-rereview-20261014/unit.stderr.txt",
+    "reports/jh004-rereview-20261014/unit.stdout.txt",
+    "reports/jh005-rereview-20261015/binding-probes-after.json",
+    "reports/jh005-rereview-20261015/binding-probes-before.json",
+    "reports/jh005-rereview-20261015/binding_probes.py",
+    "reports/jh005-rereview-20261015/document-alignment.json",
+    "reports/jh005-rereview-20261015/final-mutations.stderr.txt",
+    "reports/jh005-rereview-20261015/final-mutations.stdout.json",
+    "reports/jh005-rereview-20261015/final-unit.stderr.txt",
+    "reports/jh005-rereview-20261015/final-unit.stdout.txt",
+    "reports/jh005-rereview-20261015/guard-source-mutations.json",
+    "reports/jh005-rereview-20261015/guard_source_mutations.py",
+    "reports/jh005-rereview-20261015/materialized-post-apply-controls.json",
+    "reports/jh005-rereview-20261015/review-summary.json",
+    "reports/jh005-rereview-20261015/reviewer-guard-fix.json",
+    "reports/jh005-rereview-20261015/seal-record.json",
+    "reports/jh005-rereview-20261015/sealed-fixtures.stderr.txt",
+    "reports/jh005-rereview-20261015/sealed-fixtures.stdout.txt",
+    "reports/jh005-rereview-20261015/sealed-mutations.stderr.txt",
+    "reports/jh005-rereview-20261015/sealed-mutations.stdout.txt",
+    "reports/jh005-rereview-20261015/source-snapshot.json",
+    "reports/jh005-rereview-20261015/submitted-changes.patch",
+    "reports/jh005-rereview-20261015/submitted-mutations.stderr.txt",
+    "reports/jh005-rereview-20261015/submitted-mutations.stdout.json",
+    "reports/jh005-rereview-20261015/submitted/CHANGELOG.md",
+    "reports/jh005-rereview-20261015/submitted/STATUS.md",
+    "reports/jh005-rereview-20261015/submitted/TODO.md",
+    "reports/jh005-rereview-20261015/submitted/docs/host-delivery-contract.md",
+    "reports/jh005-rereview-20261015/submitted/docs/n2-acceptance-spec.md",
+    "reports/jh005-rereview-20261015/submitted/reports/jh005-followup-fixes-20261015.md",
+    "reports/jh005-rereview-20261015/submitted/scripts/verify_jh005_fixtures.py",
+    "reports/jh005-rereview-20261015/submitted/scripts/verify_jh005_mutations.py",
+    "reports/jh005-rereview-20261015/submitted/tests/fixtures/n2/code_sortfix/checks.json",
+    "reports/jh005-rereview-20261015/submitted/tests/fixtures/n2/code_sortfix/expected/widget.py",
+    "reports/jh005-rereview-20261015/submitted/tests/fixtures/n2/code_sortfix/scenarios.json",
+    "reports/jh005-rereview-20261015/submitted/tests/fixtures/n2/code_sortfix/task.json",
+    "reports/jh005-rereview-20261015/submitted/tests/fixtures/n2/data_rollup/task.json",
+    "reports/jh005-rereview-20261015/unit.stderr.txt",
+    "reports/jh005-rereview-20261015/unit.stdout.txt",
+    "reports/jh005-rereview-20261015/unsealed.stderr.txt",
+    "reports/jh005-rereview-20261015/unsealed.stdout.json",
+    "reports/jh005-review-20261015/document-alignment.json",
+    "reports/jh005-review-20261015/host-byte-binding-counterexample.json",
+    "reports/jh005-review-20261015/independent-probes-confirmation.json",
+    "reports/jh005-review-20261015/independent-probes.json",
+    "reports/jh005-review-20261015/independent_probes.py",
+    "reports/jh005-review-20261015/initial-run-results.json",
+    "reports/jh005-review-20261015/review-summary.json",
+    "reports/jh005-review-20261015/source-snapshot.json",
+    "reports/jh005-review-20261015/submitted-checker.stderr.txt",
+    "reports/jh005-review-20261015/submitted-checker.stdout.json",
+    "reports/jh005-review-20261015/submitted-doc-changes.patch",
+    "reports/jh005-review-20261015/submitted/CHANGELOG.md",
+    "reports/jh005-review-20261015/submitted/STATUS.md",
+    "reports/jh005-review-20261015/submitted/TODO.md",
+    "reports/jh005-review-20261015/submitted/docs/host-delivery-contract.md",
+    "reports/jh005-review-20261015/submitted/docs/n2-acceptance-spec.md",
+    "reports/jh005-review-20261015/submitted/scripts/verify_jh005_fixtures.py",
+    "reports/jh005-review-20261015/submitted/tests/fixtures/n2/code_sortfix/check_widget.py",
+    "reports/jh005-review-20261015/submitted/tests/fixtures/n2/code_sortfix/checks.json",
+    "reports/jh005-review-20261015/submitted/tests/fixtures/n2/code_sortfix/expected/widget.py",
+    "reports/jh005-review-20261015/submitted/tests/fixtures/n2/code_sortfix/manifest.json",
+    "reports/jh005-review-20261015/submitted/tests/fixtures/n2/code_sortfix/scenarios.json",
+    "reports/jh005-review-20261015/submitted/tests/fixtures/n2/code_sortfix/target/widget.py",
+    "reports/jh005-review-20261015/submitted/tests/fixtures/n2/code_sortfix/task.json",
+    "reports/jh005-review-20261015/submitted/tests/fixtures/n2/data_rollup/checks.json",
+    "reports/jh005-review-20261015/submitted/tests/fixtures/n2/data_rollup/expected.json",
+    "reports/jh005-review-20261015/submitted/tests/fixtures/n2/data_rollup/input.json",
+    "reports/jh005-review-20261015/submitted/tests/fixtures/n2/data_rollup/manifest.json",
+    "reports/jh005-review-20261015/submitted/tests/fixtures/n2/data_rollup/scenarios.json",
+    "reports/jh005-review-20261015/submitted/tests/fixtures/n2/data_rollup/task.json",
+    "reports/jh005-review-20261015/unit.stderr.txt",
+    "reports/jh005-review-20261015/unit.stdout.txt",
+    "reports/jh006-binding-review-20261016/anthropic_guards.txt",
+    "reports/jh006-binding-review-20261016/baseline_probes.py",
+    "reports/jh006-binding-review-20261016/capture_guards.txt",
+    "reports/jh006-binding-review-20261016/compatibility.txt",
+    "reports/jh006-binding-review-20261016/fixed_probes.txt",
+    "reports/jh006-binding-review-20261016/host_boundary.txt",
+    "reports/jh006-binding-review-20261016/jh005_fixtures.txt",
+    "reports/jh006-binding-review-20261016/jh005_mutations.txt",
+    "reports/jh006-binding-review-20261016/jh006_guards.txt",
+    "reports/jh006-binding-review-20261016/original_probes.txt",
+    "reports/jh006-binding-review-20261016/phase2-hardening-verification.json",
+    "reports/jh006-binding-review-20261016/phase2_guards.txt",
+    "reports/jh006-binding-review-20261016/phase2_hardening.txt",
+    "reports/jh006-binding-review-20261016/phase3_guards.txt",
+    "reports/jh006-binding-review-20261016/phase4_guards.txt",
+    "reports/jh006-binding-review-20261016/regression_probes.py",
+    "reports/jh006-binding-review-20261016/responses_guards.txt",
+    "reports/jh006-binding-review-20261016/submitted-mutations.txt",
+    "reports/jh006-binding-review-20261016/submitted-probes.json",
+    "reports/jh006-binding-review-20261016/submitted-tests.txt",
+    "reports/jh006-binding-review-20261016/tests.txt",
+    "reports/jh006-binding-review-20261016/verify_all.py",
+    "reports/jh006-binding-review-20261016/verify_compatibility.py",
+    "reports/jh006-capture-review-20261016/anthropic_guards.txt",
+    "reports/jh006-capture-review-20261016/argv-pin.json",
+    "reports/jh006-capture-review-20261016/call-input-pin.js",
+    "reports/jh006-capture-review-20261016/capture_guards.txt",
+    "reports/jh006-capture-review-20261016/host_boundary.txt",
+    "reports/jh006-capture-review-20261016/jh005_fixtures.txt",
+    "reports/jh006-capture-review-20261016/jh005_mutations.txt",
+    "reports/jh006-capture-review-20261016/jh006_guards.txt",
+    "reports/jh006-capture-review-20261016/phase2-hardening-verification.json",
+    "reports/jh006-capture-review-20261016/phase2_guards.txt",
+    "reports/jh006-capture-review-20261016/phase2_hardening.txt",
+    "reports/jh006-capture-review-20261016/phase3_guards.txt",
+    "reports/jh006-capture-review-20261016/phase4_guards.txt",
+    "reports/jh006-capture-review-20261016/raw-archive-location.json",
+    "reports/jh006-capture-review-20261016/real-negative-cwd.json",
+    "reports/jh006-capture-review-20261016/real-negative-overwrite.json",
+    "reports/jh006-capture-review-20261016/real-negative-pin.json",
+    "reports/jh006-capture-review-20261016/real-positive.json",
+    "reports/jh006-capture-review-20261016/replay_capture.py",
+    "reports/jh006-capture-review-20261016/responses_guards.txt",
+    "reports/jh006-capture-review-20261016/selected-tool-events.json",
+    "reports/jh006-capture-review-20261016/submitted-probes.json",
+    "reports/jh006-capture-review-20261016/submitted-tests.txt",
+    "reports/jh006-capture-review-20261016/tests.txt",
+    "reports/jh006-capture-review-20261016/verification.json",
+    "reports/jh006-capture-review-20261016/verify_all.py",
+    "reports/jh006-host-review-20261015/baseline-probes.json",
+    "reports/jh006-host-review-20261015/baseline-tests.stderr.txt",
+    "reports/jh006-host-review-20261015/baseline-tests.stdout.txt",
+    "reports/jh006-host-review-20261016/anthropic-guards.stderr.txt",
+    "reports/jh006-host-review-20261016/anthropic-guards.stdout.txt",
+    "reports/jh006-host-review-20261016/candidate-archive.json",
+    "reports/jh006-host-review-20261016/full-tests.stderr.txt",
+    "reports/jh006-host-review-20261016/full-tests.stdout.txt",
+    "reports/jh006-host-review-20261016/host-boundary-replay.stderr.txt",
+    "reports/jh006-host-review-20261016/host-boundary-replay.stdout.txt",
+    "reports/jh006-host-review-20261016/jh005-fixtures.stderr.txt",
+    "reports/jh006-host-review-20261016/jh005-fixtures.stdout.txt",
+    "reports/jh006-host-review-20261016/jh005-mutations.stderr.txt",
+    "reports/jh006-host-review-20261016/jh005-mutations.stdout.txt",
+    "reports/jh006-host-review-20261016/jh006-guards.stderr.txt",
+    "reports/jh006-host-review-20261016/jh006-guards.stdout.txt",
+    "reports/jh006-host-review-20261016/phase2-guards.stderr.txt",
+    "reports/jh006-host-review-20261016/phase2-guards.stdout.txt",
+    "reports/jh006-host-review-20261016/phase2-hardening-verification.json",
+    "reports/jh006-host-review-20261016/phase2-hardening.stderr.txt",
+    "reports/jh006-host-review-20261016/phase2-hardening.stdout.txt",
+    "reports/jh006-host-review-20261016/phase3-guards.stderr.txt",
+    "reports/jh006-host-review-20261016/phase3-guards.stdout.txt",
+    "reports/jh006-host-review-20261016/phase4-guards.stderr.txt",
+    "reports/jh006-host-review-20261016/phase4-guards.stdout.txt",
+    "reports/jh006-host-review-20261016/responses-guards.stderr.txt",
+    "reports/jh006-host-review-20261016/responses-guards.stdout.txt",
+    "reports/jh006-host-review-20261016/source-probes.json",
+    "reports/jh006-host-review-20261016/submitted/.agents/skills/jh-task/SKILL.md",
+    "reports/jh006-host-review-20261016/submitted/reports/jh006-host-records-implementation-20261015.md",
+    "reports/jh006-host-review-20261016/submitted/src/cli.py",
+    "reports/jh006-host-review-20261016/submitted/tests/test_jh006_host_records.py",
+    "reports/jh006-host-review-20261016/verification.json",
+    "reports/jh006-review-20261015/anthropic-guards.stderr.txt",
+    "reports/jh006-review-20261015/anthropic-guards.stdout.txt",
+    "reports/jh006-review-20261015/baseline-probes.json",
+    "reports/jh006-review-20261015/full-tests.stderr.txt",
+    "reports/jh006-review-20261015/full-tests.stdout.txt",
+    "reports/jh006-review-20261015/independent-counts.json",
+    "reports/jh006-review-20261015/jh005-fixtures.stderr.txt",
+    "reports/jh006-review-20261015/jh005-fixtures.stdout.txt",
+    "reports/jh006-review-20261015/jh005-mutations.stderr.txt",
+    "reports/jh006-review-20261015/jh005-mutations.stdout.txt",
+    "reports/jh006-review-20261015/jh006-guards.stderr.txt",
+    "reports/jh006-review-20261015/jh006-guards.stdout.txt",
+    "reports/jh006-review-20261015/phase2-guards.stderr.txt",
+    "reports/jh006-review-20261015/phase2-guards.stdout.txt",
+    "reports/jh006-review-20261015/phase2-hardening-verification.json",
+    "reports/jh006-review-20261015/phase2-hardening.stderr.txt",
+    "reports/jh006-review-20261015/phase2-hardening.stdout.txt",
+    "reports/jh006-review-20261015/phase3-guards.stderr.txt",
+    "reports/jh006-review-20261015/phase3-guards.stdout.txt",
+    "reports/jh006-review-20261015/phase4-guards.stderr.txt",
+    "reports/jh006-review-20261015/phase4-guards.stdout.txt",
+    "reports/jh006-review-20261015/responses-guards.stderr.txt",
+    "reports/jh006-review-20261015/responses-guards.stdout.txt",
+    "reports/jh006-review-20261015/verification.json",
+    "reports/jh015-batch2-continue-20261013/runbook.md",
+    "reports/jh015-batch2-continue-20261013/share-matrix.json",
+    "reports/jh015-batch2-continue-20261013/verify_share_matrix.py",
+    "reports/jh015-resume-20261013/file-tools-wip.patch",
+    "reports/jh015-resume-20261013/snapshot.json",
+    "reports/jh015-verification-20261012.json",
+    "reports/jh016-20261012/additional-integrity-checks.json",
+    "reports/jh016-20261012/additional_integrity_checks.py",
+    "reports/jh016-20261012/check_mutation_assembly.py",
+    "reports/jh016-20261012/corrected-mutation-assembly.json",
+    "reports/jh016-20261012/document-sync.json",
+    "reports/jh016-20261012/existing-mutations.json",
+    "reports/jh016-20261012/existing-probes.json",
+    "reports/jh016-20261012/package-verification.json",
+    "reports/jh016-20261012/review-summary.json",
+    "reports/jh016-batch2-20261013/document-sync.json",
+    "reports/jh016-batch2-20261013/mutations-summary.json",
+    "reports/jh016-batch2-20261013/mutations.stderr.txt",
+    "reports/jh016-batch2-20261013/mutations.stdout.json",
+    "reports/jh016-batch2-20261013/package-verification.json",
+    "reports/jh016-batch2-20261013/publish-controls.json",
+    "reports/jh016-batch2-20261013/review-summary.json",
+    "reports/jh016-batch2-20261013/source-hashes.json",
+    "reports/jh016-batch2-20261013/verify_publish_controls.py",
+    "reports/jh016-parent-publish-20261013/delivery-verification.json",
+    "reports/jh016-parent-publish-20261013/docs-before/CHANGELOG.md",
+    "reports/jh016-parent-publish-20261013/docs-before/README.md",
+    "reports/jh016-parent-publish-20261013/docs-before/ROADMAP.md",
+    "reports/jh016-parent-publish-20261013/docs-before/STATUS.md",
+    "reports/jh016-parent-publish-20261013/docs-before/TODO.md",
+    "reports/jh016-parent-publish-20261013/docs-before/docs/README.md",
+    "reports/jh016-parent-publish-20261013/docs-before/docs/adr/ADR-0003-codex-hosted-entry.md",
+    "reports/jh016-parent-publish-20261013/docs-before/docs/file-tools-contract.md",
+    "reports/jh016-parent-publish-20261013/docs-before/docs/handoffs/jh015-after-jh016-20261012.md",
+    "reports/jh016-parent-publish-20261013/docs-before/docs/handoffs/jh015-agent-resume-20261013.md",
+    "reports/jh016-parent-publish-20261013/docs-before/docs/handoffs/jh015-batch2-followup-20261013.md",
+    "reports/jh016-parent-publish-20261013/docs-before/docs/handoffs/muse-lead-gemini-workers.md",
+    "reports/jh016-parent-publish-20261013/docs-before/docs/handoffs/n1-20261012-execution.md",
+    "reports/jh016-parent-publish-20261013/docs-before/docs/handoffs/n1-20261012-review.md",
+    "reports/jh016-parent-publish-20261013/docs-before/docs/n1-capability-ownership.md",
+    "reports/jh016-parent-publish-20261013/gate-verification.json",
+    "reports/jh016-parent-publish-20261013/preservation.json",
+    "reports/jh016-parent-publish-20261013/source-wip.patch",
+    "reports/muse-verification.json",
+    "reports/n1-acceptance-20261014.json",
+    "reports/n1-architecture-probes-20261012.json",
+    "reports/n1-architecture-probes-20261012.py",
+    "reports/phase2-hardening-independent.json",
+    "reports/phase2-hardening-verification.json",
+    "reports/phase2-verification.json",
+    "reports/phase3-repair-fault-429.json",
+    "reports/phase3-repair-verification.json",
+    "reports/phase3-verification.json",
+    "reports/phase4-file-loop-verification.json"
+  ],
+  "upstream_files": [
+    {
+      "path": ".agents/skills/jh-task/SKILL.md",
+      "sha256": "ef0bbeb75e963f6e8b2409378e75994407a18893c2b0bfae67702b759ecf3ce5",
+      "bytes": 6193
+    },
+    {
+      "path": ".gitattributes",
+      "sha256": "df0348238ba328d431f43c3e285379fe55272a5c505e5695cc69f3187ec011ac",
+      "bytes": 208
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "7e449982968ea71cd0da3686170c9c17f08c164cf701e7fb5ac46c6cb17480e7",
+      "bytes": 126
+    },
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "c4b1bc8f1de2c6ab80e6012239def3ec4c9c80f542aa3c551cc4251dbcfe5b9b",
+      "bytes": 25358
+    },
+    {
+      "path": "README.md",
+      "sha256": "9ab2b1a3efa2e67023bfd44f481657d8ec8d63d9473f19a4ff6ecf215d2dae18",
+      "bytes": 7079
+    },
+    {
+      "path": "ROADMAP.md",
+      "sha256": "4844c607bd2a00a8d0ffd7e91106bf02f7dfa71488735ee2a3a5a97e96a033ea",
+      "bytes": 7750
+    },
+    {
+      "path": "STATUS.md",
+      "sha256": "c1f4d0283d2c780613687c2cfa49cedb13495a0f6dd4a457d77901584848b0bd",
+      "bytes": 20796
+    },
+    {
+      "path": "TODO.md",
+      "sha256": "6da22ed572379111248f1d07992638086dd040dd577893a6f1aae38f86c865c7",
+      "bytes": 7208
+    },
+    {
+      "path": "configs/adapters.example.json",
+      "sha256": "fa7c474de49c798440d557df04b67e96ce64961d34323d24b43e712413d2d0df",
+      "bytes": 2424
+    },
+    {
+      "path": "configs/env.example",
+      "sha256": "79ff4377c315312e98e50170b2f70f439fe55dee536183bc6a921b322aef448a",
+      "bytes": 704
+    },
+    {
+      "path": "docs/README.md",
+      "sha256": "1d8f4b5a53e9c9468bb2916442ebce0881d0e0522877824f081153dcb2f14c79",
+      "bytes": 6753
+    },
+    {
+      "path": "docs/adapter-contracts.md",
+      "sha256": "159fffcf9f3473d73b778ee2dcaed38f98a13e7256a383db0fed9dc15efec272",
+      "bytes": 6815
+    },
+    {
+      "path": "docs/adr/ADR-0001-codex-integration.md",
+      "sha256": "2e9cbde73bad1ef8b6a6eb7c7b454be4be6086e265dc15e9b34539a96f7e0ee5",
+      "bytes": 8905
+    },
+    {
+      "path": "docs/adr/ADR-0002-gemini-local-proxy.md",
+      "sha256": "b5d65bfc1d56c1fc9a03ad24349c0efe5439c5301a6e40b1d91cf0c783c06915",
+      "bytes": 3567
+    },
+    {
+      "path": "docs/adr/ADR-0003-codex-hosted-entry.md",
+      "sha256": "1dd618851c3ffe5735d2dd8d6dd3d4a2309c1c882e8b6b55f6aa48e5a939a1db",
+      "bytes": 4198
+    },
+    {
+      "path": "docs/adr/ADR-0004-n1-artifact-first.md",
+      "sha256": "a9e9aa5e45594fecf4a2f7b83b6739bf679dffaf54ab260b814f32c4ef4894eb",
+      "bytes": 4134
+    },
+    {
+      "path": "docs/architecture-roadmap-v1.1.md",
+      "sha256": "dd9b498758748d9477c83db7eac6d715442626a4ed147286d4c01a0e45e08b09",
+      "bytes": 13435
+    },
+    {
+      "path": "docs/danger-action-policy.md",
+      "sha256": "3256a2cfe4c941cbf16b6db8aa9c4f52f12bf6a981012fe7c80047e80ef1078c",
+      "bytes": 7122
+    },
+    {
+      "path": "docs/file-tools-apply-mechanism.md",
+      "sha256": "c1f4b4a0a2774b1e0a8a68c212c79ce81809b422d9edc438ff6b00459b12b713",
+      "bytes": 6494
+    },
+    {
+      "path": "docs/file-tools-contract.md",
+      "sha256": "dc5b247a9642fee87531f4f86a6e091ce4f85e7114433218ed1d980fd5c9c58d",
+      "bytes": 6258
+    },
+    {
+      "path": "docs/gemini-setup.md",
+      "sha256": "9d4094feb9f326d70b86176340e417fd3dd1664a2f674feaf1929dec3bd8f2ff",
+      "bytes": 2448
+    },
+    {
+      "path": "docs/handoffs/jh004-after-review-20261013.md",
+      "sha256": "247a9b1510195333a2522b7c6f521951cb1ce13b714dc715889a8d7c8e2ccc97",
+      "bytes": 4287
+    },
+    {
+      "path": "docs/handoffs/jh004-artifact-entry-20261013.md",
+      "sha256": "d32f7bfe0b2976f2f1390e13a8d5804ac4f61b5c8852c7ff009e2614caf2d2c3",
+      "bytes": 8163
+    },
+    {
+      "path": "docs/handoffs/jh004-r02-followup-20261014.md",
+      "sha256": "16a1a4e18e0b7d423924c2643e74d76f5d7fa8768e42add9c21cd4b240940756",
+      "bytes": 3341
+    },
+    {
+      "path": "docs/handoffs/jh004-ready-20261013.md",
+      "sha256": "93bf9fe6c2f25ef575ce4d4b6b486c5ac61c4a7c04867e2e958ccb488234ce7e",
+      "bytes": 5662
+    },
+    {
+      "path": "docs/handoffs/jh004-real-evidence-20261014.md",
+      "sha256": "716c531377f250bad41e408daaaaed1c5a07676379bd9297be23eab903a21f5e",
+      "bytes": 3261
+    },
+    {
+      "path": "docs/handoffs/jh004-start-here-20261013.md",
+      "sha256": "cd0ee471a46899ff2bb943954c72d072052e0b5a78adc1248a00c1efc6eb78b6",
+      "bytes": 2908
+    },
+    {
+      "path": "docs/handoffs/jh005-followup-20261015.md",
+      "sha256": "0df8f5570db9e3e44083d4fcb8628b2a1c8ce6560ea998520aca51595d46f05b",
+      "bytes": 6654
+    },
+    {
+      "path": "docs/handoffs/jh005-n2-acceptance-20261014.md",
+      "sha256": "9c0419efb2b75f3d02a0e453e37a6ae467603801ee6d268007562a5314633b09",
+      "bytes": 3186
+    },
+    {
+      "path": "docs/handoffs/jh006-capture-binding-20261016.md",
+      "sha256": "7b9bb6172cc70e72d81a156a5eeeddb55707fa386eb31c93912697c668776328",
+      "bytes": 3463
+    },
+    {
+      "path": "docs/handoffs/jh006-host-capture-only-20261016.md",
+      "sha256": "0b031e03c074e64f1cce3086f664906bb25d873d5511215765b2bf798b49d177",
+      "bytes": 3025
+    },
+    {
+      "path": "docs/handoffs/jh006-host-entry-20261016.md",
+      "sha256": "256c890128757691f03d6471aa442230225cf82176b7da61acdfaffff6a60320",
+      "bytes": 2835
+    },
+    {
+      "path": "docs/handoffs/jh006-host-records-20261015.md",
+      "sha256": "3435beef8f363737dcc3d2457e0fafc8a84d5189e0290eb8ff7e018560b416d2",
+      "bytes": 1582
+    },
+    {
+      "path": "docs/handoffs/jh006-offline-code-delivery-20261015.md",
+      "sha256": "26bae9f9c13a9767ee2b2f19cc57a5f795610c71bcc9c968fbd70c88d20e0a17",
+      "bytes": 4943
+    },
+    {
+      "path": "docs/handoffs/jh015-after-jh016-20261012.md",
+      "sha256": "ffec7e56ee5c90d16dd26fb0f50a448ce3a0b39d6d8e73f0de1a2d17f2c06721",
+      "bytes": 5004
+    },
+    {
+      "path": "docs/handoffs/jh015-agent-resume-20261013.md",
+      "sha256": "d17a00505fc2c6e11f333812a2ba80b6f237a50b9224adb8ed74853ffc7f913e",
+      "bytes": 5396
+    },
+    {
+      "path": "docs/handoffs/jh015-batch2-followup-20261013.md",
+      "sha256": "ea552e197ce1acebf0c0ebcc27408c005a99149566de1bdc8baa111fab6d16ab",
+      "bytes": 3850
+    },
+    {
+      "path": "docs/handoffs/muse-lead-gemini-workers.md",
+      "sha256": "fdcb01db8e94f1dbb0c437222b937f0ea558673a0e8edf080db953db5bfc1360",
+      "bytes": 6282
+    },
+    {
+      "path": "docs/handoffs/n1-20261012-execution.md",
+      "sha256": "2343657614e1aa5b226f01ee09b85b8b2fcc179bac95bba2ea6897f7c9eb0562",
+      "bytes": 2284
+    },
+    {
+      "path": "docs/handoffs/n1-20261012-review.md",
+      "sha256": "22198486469c1229f550f198732fb4af30f7f1b369b1b7f59a6b66a7c199e1df",
+      "bytes": 4857
+    },
+    {
+      "path": "docs/host-delivery-contract.md",
+      "sha256": "83b6ec362bdc4e86949c76645c9b493a590a79ff115b4dcd7860eeb9f30a9989",
+      "bytes": 4670
+    },
+    {
+      "path": "docs/muse-setup.md",
+      "sha256": "b26c9f5dd6afb8f54c7a795787f4c496f105f2b537e74e51bd7feb861fa6ee01",
+      "bytes": 2255
+    },
+    {
+      "path": "docs/mvp-acceptance-cases.md",
+      "sha256": "986f9453aa1e72158567118000b477dd3444f30cd071390077cf2bca955721bb",
+      "bytes": 8745
+    },
+    {
+      "path": "docs/n1-capability-ownership.md",
+      "sha256": "40b7f3eb85536ccf44a4f19bf6592a4a62ce3200057d0d6660b3bf2e052e60d7",
+      "bytes": 13037
+    },
+    {
+      "path": "docs/n2-acceptance-spec.md",
+      "sha256": "39997f4f8c926c6fab7152e49c4a635281a764986e5cdd3d2a2317d6c947c90d",
+      "bytes": 6977
+    },
+    {
+      "path": "docs/optimization-20261010-side/acceptance-cases.json",
+      "sha256": "655677eff0879cafaf61a5dbfb454e624334c9f417a204bf22838867e50b51a9",
+      "bytes": 11206
+    },
+    {
+      "path": "docs/optimization-20261010-side/execution-handoff.txt",
+      "sha256": "c06f0ba4d11b1970cc950f212e124738bfb91782acca0efc98d483aad3a3fd39",
+      "bytes": 1428
+    },
+    {
+      "path": "docs/optimization-20261010-side/review.md",
+      "sha256": "212622b0b0cc2f72fbe04b019dc21508e4b4c19d39f47f0187aa035bbb75a9eb",
+      "bytes": 6830
+    },
+    {
+      "path": "docs/phase-status.md",
+      "sha256": "34e375001ec87f6f7dc78721367361d927578e94a54d019d4890bbff6f676bdf",
+      "bytes": 2574
+    },
+    {
+      "path": "docs/product-requirements-v1.0.md",
+      "sha256": "ea8c0288f9ac6ac4ed2d37ae9e0ce9ffa5aace57c0c019a1adb5443dd2643b54",
+      "bytes": 5059
+    },
+    {
+      "path": "docs/schemas/README.md",
+      "sha256": "e42f3a4aced131396e91bf229fdf5a3c3b0040c1f7a4f2f4f6a429538fad10a9",
+      "bytes": 4010
+    },
+    {
+      "path": "docs/schemas/artifact.v1.json",
+      "sha256": "6f4db58fb28c50fa77397bbde66e4913b451ca55ce00065e54f68feaaa1ba8ec",
+      "bytes": 1504
+    },
+    {
+      "path": "docs/schemas/memory_record.v1.json",
+      "sha256": "6b92a753b8ed62321a59f990508fe4d2659488a00e51d3a957587fc39d2e427c",
+      "bytes": 2202
+    },
+    {
+      "path": "docs/schemas/plan.v1.json",
+      "sha256": "12c1b84bf73bc4204c351c9c46b74325d78bb7ae2a1a656a39d737f917a8112f",
+      "bytes": 3186
+    },
+    {
+      "path": "docs/schemas/review_result.v1.json",
+      "sha256": "fdc2e9affa8d11c88342a0e453327956749d2911651dc12b56dbe0ecbac76b88",
+      "bytes": 3405
+    },
+    {
+      "path": "docs/schemas/task.v1.json",
+      "sha256": "a71c149429dcf6a67202a1ceed49347714710c7fad68a6caea9e42ecea42cfa7",
+      "bytes": 5183
+    },
+    {
+      "path": "docs/schemas/tool_plan.v1.json",
+      "sha256": "3efd3769d3754f94d40b253460974aac1de877674de68fdc22ed50ba908a55e2",
+      "bytes": 2608
+    },
+    {
+      "path": "docs/schemas/tool_request.v1.json",
+      "sha256": "87b8731acb081e51fed506565a4564557a5e4a1aab6b76957d62bf02087da47a",
+      "bytes": 1957
+    },
+    {
+      "path": "docs/schemas/tool_result.v1.json",
+      "sha256": "9689595a9a31391c83f37c7f8234cb9327bf8461ebfc92e41b5823a83165f1aa",
+      "bytes": 1697
+    },
+    {
+      "path": "reports/jh004-implementation-20261013.md",
+      "sha256": "d75eb0f5f5e3ecb60df4b582fec21d9842dd5968076bc742b1b471fd019a5756",
+      "bytes": 2957
+    },
+    {
+      "path": "reports/jh004-offline-closure-20261014.md",
+      "sha256": "8840c78d5fce8ebddbd3a09b9312394d4bd4ba3139d0ba3423399b01e3fb5951",
+      "bytes": 2064
+    },
+    {
+      "path": "reports/jh004-r01-r04-fixes-20261013.md",
+      "sha256": "46555d3cba7eadc504a1c1782d0d6176885af2efddd23088bc513de3410eab27",
+      "bytes": 3516
+    },
+    {
+      "path": "reports/jh004-r02-followup-fixes-20261014.md",
+      "sha256": "ca4bf6fa257abe1592b785c823a3458101bfd1838de58f4f6bf12b2eb74a6159",
+      "bytes": 2286
+    },
+    {
+      "path": "reports/jh004-rereview-20261014.md",
+      "sha256": "08724786931d4e45dde07e472dbc964e9b9f3cf993bad7484f8d75d1032efdb7",
+      "bytes": 5657
+    },
+    {
+      "path": "reports/jh004-review-20261013.md",
+      "sha256": "6565f5cb0237d2a4380e8f25956bfee73d4d0d1f0ff0e082f88ae8a581a993f8",
+      "bytes": 6761
+    },
+    {
+      "path": "reports/jh005-acceptance-20261015.md",
+      "sha256": "84508effa704421f17afb449b591aa87749053b3c62247ab981476a12ce782fb",
+      "bytes": 3135
+    },
+    {
+      "path": "reports/jh005-followup-fixes-20261015.md",
+      "sha256": "c904153f653594566495ea0928799d54ef86d9869ffc4be6b5f3d3e994da2569",
+      "bytes": 2884
+    },
+    {
+      "path": "reports/jh005-review-20261015.md",
+      "sha256": "f969e257ad3c788f27624b1fb20691d0c8d8c73b099272bf4e50778a23d12293",
+      "bytes": 3768
+    },
+    {
+      "path": "reports/jh006-binding-review-20261016.md",
+      "sha256": "5b92c6a6e1dfda79e1be820c7dae3d71a5ee8a814fce036cc6c3f45f0488df4f",
+      "bytes": 6021
+    },
+    {
+      "path": "reports/jh006-binding-review-20261016/fixed-probes.json",
+      "sha256": "4a2eda62f1524e07a6c8879500ff7a4490a2213847dbaff9263c9f8ba46447ca",
+      "bytes": 424
+    },
+    {
+      "path": "reports/jh006-binding-review-20261016/verification.json",
+      "sha256": "36a1859da9f3636a7482e076292561b3aa02f1ddc0fab4f047ea692f5f55b1c3",
+      "bytes": 14748
+    },
+    {
+      "path": "reports/jh006-capture-binding-20261016.md",
+      "sha256": "9d16e007304fa058ad18957cbe443cde9b261d22fc9808b534398a9a7e38cb28",
+      "bytes": 6178
+    },
+    {
+      "path": "reports/jh006-host-capture-only-20261016.md",
+      "sha256": "281645d200a48e6164017eba8cc32ac1694e8bb7542d81b468d2762efe89e69b",
+      "bytes": 7626
+    },
+    {
+      "path": "reports/jh006-host-capture-review-20261016.md",
+      "sha256": "cb3fffca104cd1c26e0684231cb07863d3d57f8fc685a65556fcb8984a836a0e",
+      "bytes": 6001
+    },
+    {
+      "path": "reports/jh006-host-records-implementation-20261015.md",
+      "sha256": "53e42b64dc23cfd9646155a9c1c51c7a68ff2d348bedcd0b0a6a00f09e930053",
+      "bytes": 5069
+    },
+    {
+      "path": "reports/jh006-host-records-review-20261016.md",
+      "sha256": "6badb37e1d4040503d5eeb81fa34d05421ad2e09ecd8c8df0a259eb791add7eb",
+      "bytes": 5203
+    },
+    {
+      "path": "reports/jh006-host-review-20261016/submitted/src/host_records.py",
+      "sha256": "2ea3ec8ef7cb6b2fd7b9ef94e927b5a3f39ae8952389289ac67c5b7ffdfd58db",
+      "bytes": 10006
+    },
+    {
+      "path": "reports/jh006-host-review-20261016/submitted/src/orchestrator.py",
+      "sha256": "87920d21c3e24d35dedc09741f901d4260272382301a240c6a8c67495b758b5c",
+      "bytes": 100490
+    },
+    {
+      "path": "reports/jh006-offline-implementation-20261015.md",
+      "sha256": "4d1cd7b9be0c70a444c8838cc8e8365e8ee0da53777830a9cd2d4f3a8cd775f0",
+      "bytes": 3851
+    },
+    {
+      "path": "reports/jh006-offline-review-20261015.md",
+      "sha256": "d68a0eaf87ef59d55b02e954ade25b18ebe03aaa2811a04536aedcc0a8840650",
+      "bytes": 4576
+    },
+    {
+      "path": "reports/jh015-batch2-20261013.md",
+      "sha256": "ad13c07a84e8dea43b11b6d50fbfa22cfae9c6261a257693b41420703bc6daa4",
+      "bytes": 4308
+    },
+    {
+      "path": "reports/jh016-batch2-review-20261013.md",
+      "sha256": "d2372d6e3238a56c789f56d811398772e5be266c56fa936ff05542ce05ddc0b4",
+      "bytes": 7944
+    },
+    {
+      "path": "reports/jh016-parent-publish-review-20261013.md",
+      "sha256": "8acb2204c959116657e5339859082c61687072eeaa234c7d3a19d2bee87283a6",
+      "bytes": 4703
+    },
+    {
+      "path": "reports/jh016-review-20261012.md",
+      "sha256": "54b5df541ba3d892696637db11d62301aa17574f9bc436eed9ed3fcf13d687e9",
+      "bytes": 9357
+    },
+    {
+      "path": "reports/n1-acceptance-20261014.md",
+      "sha256": "c8773aac49fa53640b090dea08cc1ec40a51aeb1e173b6ad894c6e4f0493c246",
+      "bytes": 4459
+    },
+    {
+      "path": "reports/n1-architecture-review-20261012.md",
+      "sha256": "d9a24bd6dd0f4009e8f015236505f1370b22c30fb9002e5ec08b2d50316da581",
+      "bytes": 8596
+    },
+    {
+      "path": "reports/phase1-completion-report.md",
+      "sha256": "01e368287ae456980f01584d66edd1df3c01b499d14325238ecb13a53ea7cf42",
+      "bytes": 8181
+    },
+    {
+      "path": "reports/phase2-hardening-review.md",
+      "sha256": "1cd1b7bf3fd9e628ee26709039c1b07bc74bb76c36365e1551614e8268a739aa",
+      "bytes": 5619
+    },
+    {
+      "path": "reports/phase3-implementation-report.md",
+      "sha256": "3ead255963a904ab46260a5f6e7126f03f8a2ae107da34deeadd43bcac3a1a65",
+      "bytes": 18540
+    },
+    {
+      "path": "scripts/probe_host_capture.py",
+      "sha256": "17dca082f150c5ef0b05fb4a1e13055972f1dce67d6a877b8d80346ef2dfdb06",
+      "bytes": 12375
+    },
+    {
+      "path": "scripts/verify_anthropic_guards.py",
+      "sha256": "056f7b67009514961269ac172cf8beb418007109f65cb122f2b48b17b5eef0f4",
+      "bytes": 3857
+    },
+    {
+      "path": "scripts/verify_jh005_fixtures.py",
+      "sha256": "5d91fe60804a48b447c217fb68a57b78786758402813d972f66bd4585138a7fc",
+      "bytes": 18022
+    },
+    {
+      "path": "scripts/verify_jh005_mutations.py",
+      "sha256": "85bf6f938ca7c20c672e81424d187cac83ead3dd1dea3c7a8248f53584418c96",
+      "bytes": 8547
+    },
+    {
+      "path": "scripts/verify_jh006_capture_guards.py",
+      "sha256": "08ca0e06874d0f40ef02c93f9d68bad4beba750754232315e60cad9af222a895",
+      "bytes": 11512
+    },
+    {
+      "path": "scripts/verify_jh006_guards.py",
+      "sha256": "05aaaf3d9f7b22511f6003d3bb9a3bf29e91bc0b81fbfd54cfba64ee3d0f3f5c",
+      "bytes": 9199
+    },
+    {
+      "path": "scripts/verify_jh006_host_boundary.py",
+      "sha256": "8629dc20e367475ef35ebdc2c13d96bbbb7429daa63054be2a1d334cb3027128",
+      "bytes": 2858
+    },
+    {
+      "path": "scripts/verify_jh015_probes.py",
+      "sha256": "b98d87099491ce23247c21b3b8921b8530c40712bef1f0627f241fe90aadae21",
+      "bytes": 13826
+    },
+    {
+      "path": "scripts/verify_muse.py",
+      "sha256": "6c3c24524d32f77edbbf7593b976d89d0e1d7f9b9328b899a4e5928485c1f8e5",
+      "bytes": 4414
+    },
+    {
+      "path": "scripts/verify_phase2.py",
+      "sha256": "719302f026f4ae13a85f43a481795412ace8fa1b0be0d1efc0dad8d18e3e913a",
+      "bytes": 12137
+    },
+    {
+      "path": "scripts/verify_phase2_guards.py",
+      "sha256": "5196ffd78fd089fc8d6a8ee2b6e4c52d576b1d53707dfb27bcdd5b6123e74677",
+      "bytes": 4702
+    },
+    {
+      "path": "scripts/verify_phase2_hardening.py",
+      "sha256": "779177c4f31ffa5192725eb86300f073f7c30abf4b4edc8cfc22636aa88666b7",
+      "bytes": 8316
+    },
+    {
+      "path": "scripts/verify_phase3.py",
+      "sha256": "15f5a2c8e9d079ed32c239098c4b11781eb3e812a47c81519d7f242eca30a60e",
+      "bytes": 25529
+    },
+    {
+      "path": "scripts/verify_phase3_guards.py",
+      "sha256": "493fc08ccde49e85b1989279aa7608cd13bb683eafe3490a8498fbbca7d273f3",
+      "bytes": 6764
+    },
+    {
+      "path": "scripts/verify_phase3_repair.py",
+      "sha256": "9781f79a06ad4094be99d9047ab65046cce69541d7e0f28bc1d79733b7755a30",
+      "bytes": 12006
+    },
+    {
+      "path": "scripts/verify_phase4_file_loop.py",
+      "sha256": "740816f3a172d016b2b258fe1876787978c0157f3995dc1b990a5d00b288e7f9",
+      "bytes": 9503
+    },
+    {
+      "path": "scripts/verify_phase4_guards.py",
+      "sha256": "20cc4784128f873f930f2a46fcbc205cf605d6b8d5e92dbd48e3d1ac5dfc4d1b",
+      "bytes": 9136
+    },
+    {
+      "path": "scripts/verify_responses_guards.py",
+      "sha256": "5510169b807733638ddbb0edfb7ff30985c99dc2a4a9b75d7f66f3deea9ae7a7",
+      "bytes": 2908
+    },
+    {
+      "path": "src/acceptance.py",
+      "sha256": "9a64fa76340c7486956d926e257c13da48363a5c5f28d0af3b48a4cbbb3a0c10",
+      "bytes": 9682
+    },
+    {
+      "path": "src/adapters.py",
+      "sha256": "b2b8539dda836c4c6818f94250dc3ef4b2e6d8cf19a5cd4b85fc7502a4bd1bed",
+      "bytes": 20306
+    },
+    {
+      "path": "src/anthropic_adapter.py",
+      "sha256": "66fa57f11bacd2e8c96c62f417e4b905d7c0084079ed515fc902413446f288ea",
+      "bytes": 10110
+    },
+    {
+      "path": "src/artifacts.py",
+      "sha256": "4bf0034cb301b9295e6f0ba0349cd1af7ee9d088a8c1041fb3a790ab83a9946b",
+      "bytes": 3267
+    },
+    {
+      "path": "src/capture_binding.py",
+      "sha256": "7449b710c52938df319153fc0980abd6eef9ee253745113d0ec0ea9b0c3edff3",
+      "bytes": 30284
+    },
+    {
+      "path": "src/cli.py",
+      "sha256": "54d98422ce2a3eb377641851e4f6e408405d15a429daef1a346e2805402aaa2a",
+      "bytes": 37070
+    },
+    {
+      "path": "src/code_delivery.py",
+      "sha256": "00d06bb47fa5761ce5312191124c1cd41de2a902c707449b33c219dba3d834d0",
+      "bytes": 17525
+    },
+    {
+      "path": "src/codex_managed.py",
+      "sha256": "57ce2c11bb6201875a1b67e7fc8c01dbd668f4128291e377ded315796b2ffeb2",
+      "bytes": 12722
+    },
+    {
+      "path": "src/control_guards.py",
+      "sha256": "f44b2727ec48ebdbbf007ba44f3e90287f304c1c1a1716d443833a325ffb419c",
+      "bytes": 6793
+    },
+    {
+      "path": "src/file_tools.py",
+      "sha256": "98b1a85cc51eb569ee6d19acbf17863b87e399cec1c21b3cbaaa55f5f2be37cb",
+      "bytes": 28155
+    },
+    {
+      "path": "src/host_capture.py",
+      "sha256": "1ede2a21d08ac184d7352b5b2bd32fdb46c2a3d9b7a5b6d146ccae5d503de6ff",
+      "bytes": 25412
+    },
+    {
+      "path": "src/memory.py",
+      "sha256": "b8580cf86b573ac4d3ad61b0c67e152e4c3352aa8d2c9909bcb8741d80af0e35",
+      "bytes": 4036
+    },
+    {
+      "path": "src/mock_components.py",
+      "sha256": "94633a2d4a5c6540494d84648e25a68a7a0a75f63053c5782624571fc3e4abfc",
+      "bytes": 19748
+    },
+    {
+      "path": "src/model_config.py",
+      "sha256": "5b10f126b25fb811496d303fdc0c9a4669da41543bdf5c1e5af5a818523284e0",
+      "bytes": 3739
+    },
+    {
+      "path": "src/orchestrator.py",
+      "sha256": "d9ab540a7b0ef28e9f350756bce221fcaf17362abd7abf389340dea1e5ac7f80",
+      "bytes": 88571
+    },
+    {
+      "path": "src/production_executor.py",
+      "sha256": "0ef58d09c19f1f34241ecfc3733c13da2ecd65a6695e697abe2ca1f0a29c352c",
+      "bytes": 2193
+    },
+    {
+      "path": "src/responses_adapter.py",
+      "sha256": "8cdc1da464cb449cb6270ecec2f68d97dd22e330becc86a8d9e4ed00fa2514ae",
+      "bytes": 6627
+    },
+    {
+      "path": "src/router_policy.py",
+      "sha256": "343bac66ec457f0ddd13fc61ac987ada9bc3e78c962a2f38ea553d32ea0a5840",
+      "bytes": 18554
+    },
+    {
+      "path": "src/state_machine.py",
+      "sha256": "398cfbc842102dfb37bf5f2f4866378a47900b4b64a2cb00ecb7af77cca4828f",
+      "bytes": 5109
+    },
+    {
+      "path": "src/storage.py",
+      "sha256": "a68234d45bf756069a59a19943a22b168af53633500b60ae6f4377c5b858588e",
+      "bytes": 54408
+    },
+    {
+      "path": "tests/fixtures/n2/code_sortfix/check_widget.py",
+      "sha256": "0eb464de8eee5fb2f8f41cdc2a88353976df9dfaa9f57fe49469935548bb4aa3",
+      "bytes": 1733
+    },
+    {
+      "path": "tests/fixtures/n2/code_sortfix/checks.json",
+      "sha256": "a5fc91d50f562be48a6463d3e38e375bf93d4b0c69329121246d48aab22d1083",
+      "bytes": 1440
+    },
+    {
+      "path": "tests/fixtures/n2/code_sortfix/expected/widget.py",
+      "sha256": "418c088d5ed48f4d8198e9d3adaa10080350dfb3fe5de8b6dd2c165875859556",
+      "bytes": 471
+    },
+    {
+      "path": "tests/fixtures/n2/code_sortfix/manifest.json",
+      "sha256": "d8093842c635dfeada9c6e2a347106c43c9a5da74997492ea87c7a4847833708",
+      "bytes": 1643
+    },
+    {
+      "path": "tests/fixtures/n2/code_sortfix/scenarios.json",
+      "sha256": "6fb6859bc0f1b56877300002ee09c4f3798af7630158b01f774261e93085a1fb",
+      "bytes": 2845
+    },
+    {
+      "path": "tests/fixtures/n2/code_sortfix/target/widget.py",
+      "sha256": "e27d9e7dc341fe5fd2081daaecbebfa2e06f94bde29f121a2a8ecfed98f54e13",
+      "bytes": 485
+    },
+    {
+      "path": "tests/fixtures/n2/code_sortfix/task.json",
+      "sha256": "5715482d36cd44996a084082b352519c8f1e5d839fbd1d4e7ea20dd48de9af8d",
+      "bytes": 1763
+    },
+    {
+      "path": "tests/fixtures/n2/data_rollup/checks.json",
+      "sha256": "b9f0b8993da762d6c5453da886e99985ac66c3f15c0675668a95976eeb2bfe17",
+      "bytes": 464
+    },
+    {
+      "path": "tests/fixtures/n2/data_rollup/expected.json",
+      "sha256": "6960af9d80dfd3642d06565122fc4dff63d90006970c8203b3b383de3a58e3c2",
+      "bytes": 211
+    },
+    {
+      "path": "tests/fixtures/n2/data_rollup/input.json",
+      "sha256": "ddc1886847f866bb76dd6b11fa36488d0393bb86630bf9375f9266aa112cebc3",
+      "bytes": 211
+    },
+    {
+      "path": "tests/fixtures/n2/data_rollup/manifest.json",
+      "sha256": "c38ebe6eca4657213c8824c17891cdd978b7fc814293b69853bcbcd74d5987be",
+      "bytes": 1429
+    },
+    {
+      "path": "tests/fixtures/n2/data_rollup/scenarios.json",
+      "sha256": "6bd5b6ede161877323dc9c0fcac805c38a8d22c449404b87d821ecef26194797",
+      "bytes": 2668
+    },
+    {
+      "path": "tests/fixtures/n2/data_rollup/task.json",
+      "sha256": "285bf482f8f2ac14a3e12e877f5efea9e95b31c5caae15a11c10657a5ede6d4b",
+      "bytes": 1688
+    },
+    {
+      "path": "tests/run_minimal_verification.py",
+      "sha256": "cb99d0ac25f9209c1c314548598ef05f236444a6bcfc9b84516b9e08ca412b82",
+      "bytes": 13146
+    },
+    {
+      "path": "tests/test_adapters.py",
+      "sha256": "254cefc3c52383deaa57b5364fd4f2cc3b3c5e6c9ba6865e7e28387c9bf5924a",
+      "bytes": 3103
+    },
+    {
+      "path": "tests/test_anthropic_adapter.py",
+      "sha256": "bf3a53a1b0a606b6019d40c51dc5851c36c542f7d88ee769351a2c0f69a981bc",
+      "bytes": 8740
+    },
+    {
+      "path": "tests/test_cli_assembly.py",
+      "sha256": "19a958db779472a84722d62c4113054409a400e29a85c4c025309ead44dd4d67",
+      "bytes": 7427
+    },
+    {
+      "path": "tests/test_codex_managed.py",
+      "sha256": "5a29596968e6c1158d9659350093a4db2b65552c1837c38001ce278a8ed552f2",
+      "bytes": 16853
+    },
+    {
+      "path": "tests/test_jh004_artifact_entry.py",
+      "sha256": "7131211d15cd47226274edb4b6ed2e2c3bb35aeb80e3b04ec0a584f263272b69",
+      "bytes": 42560
+    },
+    {
+      "path": "tests/test_jh006_binding_audit.py",
+      "sha256": "c9a9f6a4137517b8d79544e0bb4e103d91c970664ccf15e445a0c96ed90ffbb1",
+      "bytes": 11808
+    },
+    {
+      "path": "tests/test_jh006_capture_binding.py",
+      "sha256": "585946fd18b5c8da3604a6e1d08c658eb926cce39f3b6a65acda02831c233ba0",
+      "bytes": 37788
+    },
+    {
+      "path": "tests/test_jh006_capture_boundaries.py",
+      "sha256": "1f8c5ca144705be9bd7f9088b38ff9500a65897fb846d7bd97a36d9ca4228013",
+      "bytes": 8064
+    },
+    {
+      "path": "tests/test_jh006_code_delivery.py",
+      "sha256": "5470b4eed019ae08734b487d51e3187b2c708b4bca29338803e3b1df871b9635",
+      "bytes": 45646
+    },
+    {
+      "path": "tests/test_jh006_host_boundary.py",
+      "sha256": "9dd36094387286d05d3f593450c3bb68262314ecb4a06339d12ea01230e83c6a",
+      "bytes": 7488
+    },
+    {
+      "path": "tests/test_jh006_host_capture.py",
+      "sha256": "42fad948d177a2d87c4afbb7d4bc56094753920f4d51bcfcc01d948428771c3c",
+      "bytes": 15288
+    },
+    {
+      "path": "tests/test_jh006_review_regressions.py",
+      "sha256": "71967f92eb69b8e866536b7bdafbb304b4b776284ac9ad8a06b7a2d602e930ad",
+      "bytes": 13973
+    },
+    {
+      "path": "tests/test_phase2_control_layer.py",
+      "sha256": "a48838b9f88ee6cd8911ba77f0256e75a2b3d1c50a61e67e319c36b4077f3719",
+      "bytes": 20760
+    },
+    {
+      "path": "tests/test_phase2_hardening.py",
+      "sha256": "0586a76cebad072473f6402b5486a8d6db2528825e8c17ebfa0c767c4f05ddd0",
+      "bytes": 27048
+    },
+    {
+      "path": "tests/test_phase3_loop.py",
+      "sha256": "ffe41bed0842abf600c7f2c8186671163e001f2da4b3e44931ed3e002447d45e",
+      "bytes": 24751
+    },
+    {
+      "path": "tests/test_phase4_file_tools.py",
+      "sha256": "8c72ba537361c3f389f9637252d9eb5a660d134e570fef4b565df0eb94954e96",
+      "bytes": 39764
+    },
+    {
+      "path": "tests/test_responses_adapter.py",
+      "sha256": "ec8d8acf83d3356a61ac102557b17c216be658ec572bdd1266978f980d4aafd1",
+      "bytes": 5285
+    },
+    {
+      "path": "tests/test_schemas.py",
+      "sha256": "39537a1d90f6a8571aa45101f2a12a65527a29e88ed263b05e35918cf5ffe4e5",
+      "bytes": 11087
+    },
+    {
+      "path": "tests/verification_results.json",
+      "sha256": "6e04ff9fac02224565d0ecf64c6ed5b9cf108ea5aa9b69b3bd6552fa93626dfa",
+      "bytes": 3281
+    }
+  ],
+  "credential_scan": {
+    "scope": "selected committed content",
+    "rules": [
+      "github-token",
+      "provider-token",
+      "google-api-key",
+      "aws-access-key",
+      "private-key"
+    ],
+    "matches": 0,
+    "limitation": "pattern scan, not a proof of absence"
+  },
+  "local_jsonschema_version": "4.26.0",
+  "history_dependent_checks": "old git-show baselines are not included; do not claim those were rerun",
+  "publish_prepared_date": "2026-10-17",
+  "repository_visibility_verified": "public",
+  "snapshot_policy": "retain reviewed 1f605c3 pilot baseline; later local development excluded"
+}

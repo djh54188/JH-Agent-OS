@@ -1,9 +1,0 @@
-{
-  "notice": "Phase 4 controlled file loop verification notice",
-  "generated_by": "worker",
-  "items": [
-    "stage_write",
-    "review",
-    "apply"
-  ]
-}

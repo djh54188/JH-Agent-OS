@@ -1,0 +1,98 @@
+{
+  "commands": {
+    "original_probes": {
+      "exit": 0,
+      "tail": "[\n  {\n    \"name\": \"target-changed-after-registration\",\n    \"synthetic\": true,\n    \"observed\": true\n  },\n  {\n    \"name\": \"review-revoked-after-registration\",\n    \"synthetic\": true,\n    \"observed\": true\n  },\n  {\n    \"name\": \"caller-reasserts-echo-as-check\",\n    \"synthetic\": true,\n    \"observed\": {\n      \"registered\": true,\n      \"current\": true\n    }\n  }\n]\n"
+    },
+    "fixed_probes": {
+      "exit": 0,
+      "tail": "[\n  {\n    \"name\": \"target-changed-after-registration\",\n    \"synthetic\": true,\n    \"observed\": false\n  },\n  {\n    \"name\": \"review-revoked-after-registration\",\n    \"synthetic\": true,\n    \"observed\": false\n  },\n  {\n    \"name\": \"caller-reasserts-echo-as-check\",\n    \"synthetic\": true,\n    \"observed\": {\n      \"refused\": \"invocation-unverified: caller pin differs from the control-owned fixed check\"\n    }\n  }\n]\n"
+    },
+    "compatibility": {
+      "exit": 0,
+      "tail": "{\"passed\": true, \"source_baseline\": \"ec103a0\", \"synthetic_data\": true, \"legacy_tables\": 9, \"legacy_rows_unchanged\": true, \"readonly_bytes_unchanged\": true, \"new_table_empty\": true, \"unique_indexes_present\": true, \"early_candidate_table_index_upgrade\": true}\n"
+    },
+    "tests": {
+      "exit": 0,
+      "tail": "{\"captured\": false, \"reason\": \"source-untrusted: require a file in the observed desktop session store: 'D:\\\\\\\\JH-Agent OS\\\\\\\\data\\\\\\\\worktrees\\\\\\\\n1-artifact-entry\\\\\\\\tests\\\\\\\\test_jh006_capture_boundaries.py' is not in the subpath of 'C:\\\\\\\\Users\\\\\\\\a\\\\\\\\.codex\\\\\\\\sessions'\"}\n.................................................................................................................................................................................................................................................................................s.....................................................................................\n----------------------------------------------------------------------\nRan 359 tests in 14.020s\n\nOK (skipped=1)\n"
+    },
+    "capture_guards": {
+      "exit": 0,
+      "tail": "\"tests_run\": 1,\n      \"assertion_failures\": 1,\n      \"errors\": 0,\n      \"skipped\": 0,\n      \"detected\": true,\n      \"detail\": \"assertion failure\",\n      \"redundant\": false\n    },\n    {\n      \"name\": \"binding-current-reload\",\n      \"tests_run\": 2,\n      \"assertion_failures\": 2,\n      \"errors\": 0,\n      \"skipped\": 0,\n      \"detected\": true,\n      \"detail\": \"assertion failure\",\n      \"redundant\": false\n    },\n    {\n      \"name\": \"binding-atomic-event\",\n      \"tests_run\": 1,\n      \"assertion_failures\": 1,\n      \"errors\": 0,\n      \"skipped\": 0,\n      \"detected\": true,\n      \"detail\": \"assertion failure\",\n      \"redundant\": false\n    },\n    {\n      \"name\": \"binding-unique-call\",\n      \"tests_run\": 1,\n      \"assertion_failures\": 1,\n      \"errors\": 0,\n      \"skipped\": 0,\n      \"detected\": true,\n      \"detail\": \"assertion failure\",\n      \"redundant\": false\n    },\n    {\n      \"name\": \"binding-unique-item\",\n      \"tests_run\": 1,\n      \"assertion_failures\": 1,\n      \"errors\": 0,\n      \"skipped\": 0,\n      \"detected\": true,\n      \"detail\": \"assertion failure\",\n      \"redundant\": false\n    }\n  ]\n}\n"
+    },
+    "jh005_fixtures": {
+      "exit": 0,
+      "tail": "{\n  \"status\": \"ok\",\n  \"fixtures\": [\n    \"code_sortfix\",\n    \"data_rollup\"\n  ]\n}\n"
+    },
+    "jh005_mutations": {
+      "exit": 0,
+      "tail": "      \"expected_check\": \"post-apply-binding\",\n      \"reported_checks\": [\n        \"post-apply-binding\"\n      ],\n      \"verdict\": \"detected_by_assertion\"\n    },\n    {\n      \"case\": \"post_apply_wrong_script\",\n      \"exit_code\": 1,\n      \"expected_check\": \"post-apply-binding\",\n      \"reported_checks\": [\n        \"post-apply-binding\"\n      ],\n      \"verdict\": \"detected_by_assertion\"\n    },\n    {\n      \"case\": \"post_apply_bool_exit\",\n      \"exit_code\": 1,\n      \"expected_check\": \"post-apply-binding\",\n      \"reported_checks\": [\n        \"post-apply-binding\"\n      ],\n      \"verdict\": \"detected_by_assertion\"\n    },\n    {\n      \"case\": \"code_wrong_authorization\",\n      \"exit_code\": 1,\n      \"expected_check\": \"target_files\",\n      \"reported_checks\": [\n        \"target_files\"\n      ],\n      \"verdict\": \"detected_by_assertion\"\n    },\n    {\n      \"case\": \"data_wrong_authorization\",\n      \"exit_code\": 1,\n      \"expected_check\": \"target_files\",\n      \"reported_checks\": [\n        \"target_files\"\n      ],\n      \"verdict\": \"detected_by_assertion\"\n    }\n  ],\n  \"fixtures_cleaned\": true,\n  \"verdict\": \"pass\"\n}\n"
+    },
+    "jh006_guards": {
+      "exit": 0,
+      "tail": "   \"failures\": 1,\n      \"errors\": 0\n    },\n    {\n      \"case\": \"prepare_transaction\",\n      \"detected\": true,\n      \"failures\": 1,\n      \"errors\": 0\n    },\n    {\n      \"case\": \"authorized_workspace_scope\",\n      \"detected\": true,\n      \"failures\": 1,\n      \"errors\": 0\n    },\n    {\n      \"case\": \"no_model_tools\",\n      \"detected\": true,\n      \"failures\": 1,\n      \"errors\": 0\n    },\n    {\n      \"case\": \"generation_baseline_context\",\n      \"detected\": true,\n      \"failures\": 1,\n      \"errors\": 0\n    },\n    {\n      \"case\": \"review_deferred_scope\",\n      \"detected\": true,\n      \"failures\": 1,\n      \"errors\": 0\n    },\n    {\n      \"case\": \"fresh_cancel_state\",\n      \"detected\": true,\n      \"failures\": 1,\n      \"errors\": 0\n    },\n    {\n      \"case\": \"prepared_version_field\",\n      \"detected\": true,\n      \"failures\": 1,\n      \"errors\": 0\n    },\n    {\n      \"case\": \"no_extra_model_turn\",\n      \"detected\": true,\n      \"failures\": 1,\n      \"errors\": 0\n    },\n    {\n      \"case\": \"final_deadline_gate\",\n      \"detected\": true,\n      \"failures\": 1,\n      \"errors\": 0\n    }\n  ],\n  \"verdict\": \"pass\"\n}\n"
+    },
+    "host_boundary": {
+      "exit": 0,
+      "tail": "{\n  \"scope\": \"containment_only_not_bridge_acceptance\",\n  \"api_calls\": 0,\n  \"route_regressions\": 1,\n  \"controls\": 5,\n  \"replays\": 5,\n  \"detected\": 5,\n  \"rows\": [\n    {\n      \"case\": \"test_self_consistent_claim_is_not_independent_host_evidence\",\n      \"detected\": true,\n      \"failures\": 1,\n      \"errors\": 0\n    },\n    {\n      \"case\": \"test_echoed_check_markers_cannot_complete\",\n      \"detected\": true,\n      \"failures\": 1,\n      \"errors\": 0\n    },\n    {\n      \"case\": \"test_other_workspace_in_command_cannot_complete\",\n      \"detected\": true,\n      \"failures\": 1,\n      \"errors\": 0\n    },\n    {\n      \"case\": \"test_rehashing_fabricated_output_does_not_create_authority\",\n      \"detected\": true,\n      \"failures\": 1,\n      \"errors\": 0\n    },\n    {\n      \"case\": \"test_cli_rejects_unregistered_host_claim\",\n      \"detected\": true,\n      \"failures\": 1,\n      \"errors\": 0\n    }\n  ],\n  \"passed\": true\n}\n"
+    },
+    "phase2_guards": {
+      "exit": 0,
+      "tail": "{\"mutations\": 5, \"passed\": true, \"results\": [{\"guard\": \"worker_completion_bypass_review\", \"module\": \"src/state_machine.py\", \"detected\": true}, {\"guard\": \"reviewer_failure_auto_pass\", \"module\": \"src/orchestrator.py\", \"detected\": true}, {\"guard\": \"level3_downgrade_to_allow\", \"module\": \"src/router_policy.py\", \"detected\": true}, {\"guard\": \"unknown_tokens_default_zero\", \"module\": \"src/storage.py\", \"detected\": true}, {\"guard\": \"restart_blind_auto_replay\", \"module\": \"src/storage.py\", \"detected\": true}]}\n"
+    },
+    "phase3_guards": {
+      "exit": 0,
+      "tail": "{\"mutations\": 8, \"passed\": true, \"results\": [{\"guard\": \"artifact_task_correlation_skipped\", \"module\": \"src/orchestrator.py\", \"detected\": true}, {\"guard\": \"acceptance_evidence_ref_tampered\", \"module\": \"src/orchestrator.py\", \"detected\": true}, {\"guard\": \"repair_context_downgraded_to_initial\", \"module\": \"src/orchestrator.py\", \"detected\": true}, {\"guard\": \"generalization_marked_verified\", \"module\": \"src/memory.py\", \"detected\": true}, {\"guard\": \"gate_status_check_relaxed\", \"module\": \"src/control_guards.py\", \"detected\": true}, {\"guard\": \"gate_artifact_linkage_relaxed\", \"module\": \"src/control_guards.py\", \"detected\": true}, {\"guard\": \"gate_acceptance_check_relaxed\", \"module\": \"src/control_guards.py\", \"detected\": true}, {\"guard\": \"gate_unknown_usage_relaxed\", \"module\": \"src/control_guards.py\", \"detected\": true}]}\n"
+    },
+    "phase4_guards": {
+      "exit": 0,
+      "tail": ", \"detected\": true}, {\"guard\": \"junction_ancestor_check_removed\", \"module\": \"src/file_tools.py\", \"detected\": true}, {\"guard\": \"apply_target_version_check_removed\", \"module\": \"src/file_tools.py\", \"detected\": true}, {\"guard\": \"apply_staged_hash_check_removed\", \"module\": \"src/file_tools.py\", \"detected\": true}, {\"guard\": \"apply_without_pass_verdict\", \"module\": \"src/orchestrator.py\", \"detected\": true}, {\"guard\": \"arch01_staging_dir_reparse_removed\", \"module\": \"src/file_tools.py\", \"detected\": true}, {\"guard\": \"arch03_locked_handle_version_check_removed\", \"module\": \"src/file_tools.py\", \"detected\": true}, {\"guard\": \"arch05_staged_snapshot_binding_removed\", \"module\": \"src/orchestrator.py\", \"detected\": true}, {\"guard\": \"workspace_ctor_reparse_removed\", \"module\": \"src/file_tools.py\", \"detected\": true}, {\"guard\": \"staged_unique_name_removed\", \"module\": \"src/file_tools.py\", \"detected\": true}, {\"guard\": \"recovered_applied_hash_check_removed\", \"module\": \"src/orchestrator.py\", \"detected\": true}, {\"guard\": \"acceptance_current_turn_judgment_removed\", \"module\": \"src/acceptance.py\", \"detected\": true}]}\n"
+    },
+    "responses_guards": {
+      "exit": 0,
+      "tail": "{\"mutations\": 8, \"passed\": true, \"results\": [{\"guard\": \"route\", \"detected\": true, \"unexpected_errors\": 0}, {\"guard\": \"status\", \"detected\": true, \"unexpected_errors\": 0}, {\"guard\": \"schema\", \"detected\": true, \"unexpected_errors\": 0}, {\"guard\": \"refusal\", \"detected\": true, \"unexpected_errors\": 0}, {\"guard\": \"empty_output\", \"detected\": true, \"unexpected_errors\": 0}, {\"guard\": \"usage\", \"detected\": true, \"unexpected_errors\": 0}, {\"guard\": \"budget\", \"detected\": true, \"unexpected_errors\": 0}, {\"guard\": \"redaction\", \"detected\": true, \"unexpected_errors\": 0}]}\n"
+    },
+    "anthropic_guards": {
+      "exit": 0,
+      "tail": "{\"mutations\": 10, \"passed\": true, \"results\": [{\"guard\": \"route\", \"detected\": true, \"unexpected_errors\": 0}, {\"guard\": \"system_mapping\", \"detected\": true, \"unexpected_errors\": 0}, {\"guard\": \"truncation\", \"detected\": true, \"unexpected_errors\": 0}, {\"guard\": \"refusal\", \"detected\": true, \"unexpected_errors\": 0}, {\"guard\": \"schema\", \"detected\": true, \"unexpected_errors\": 0}, {\"guard\": \"empty_output\", \"detected\": true, \"unexpected_errors\": 0}, {\"guard\": \"budget\", \"detected\": true, \"unexpected_errors\": 0}, {\"guard\": \"redaction\", \"detected\": true, \"unexpected_errors\": 0}, {\"guard\": \"usage_valid_gate\", \"detected\": true, \"unexpected_errors\": 0}, {\"guard\": \"fallback_total_salvage\", \"detected\": true, \"unexpected_errors\": 0}]}\n"
+    },
+    "phase2_hardening": {
+      "exit": 0,
+      "tail": "{\"captured\": false, \"reason\": \"source-untrusted: require a file in the observed desktop session store: 'D:\\\\\\\\JH-Agent OS\\\\\\\\data\\\\\\\\worktrees\\\\\\\\n1-artifact-entry\\\\\\\\tests\\\\\\\\test_jh006_capture_boundaries.py' is not in the subpath of 'C:\\\\\\\\Users\\\\\\\\a\\\\\\\\.codex\\\\\\\\sessions'\"}\n{\"passed\": true, \"cases\": {\"passed\": 29, \"failed\": 0, \"not_applicable_phase2\": 1}, \"mutations_detected\": 14, \"report\": \"D:\\\\JH-Agent OS\\\\data\\\\worktrees\\\\n1-artifact-entry\\\\reports\\\\phase2-hardening-verification.json\"}\n.................................................................................................................................................................................................................................................................................s.....................................................................................\n----------------------------------------------------------------------\nRan 359 tests in 13.222s\n\nOK (skipped=1)\n"
+    }
+  },
+  "independent_ast_count": 359,
+  "reported_test_count": 359,
+  "runtime_unchanged": {
+    "src/cli.py": true,
+    "src/orchestrator.py": true,
+    "src/acceptance.py": true,
+    "src/code_delivery.py": true,
+    "src/host_capture.py": true
+  },
+  "preserved_bytes": {
+    "tests/fixtures/n2/code_sortfix/checks.json": true,
+    "tests/fixtures/n2/code_sortfix/check_widget.py": true,
+    "tests/fixtures/n2/code_sortfix/manifest.json": true,
+    "tests/fixtures/n2/code_sortfix/scenarios.json": true,
+    "tests/fixtures/n2/code_sortfix/task.json": true,
+    "tests/fixtures/n2/data_rollup/checks.json": true,
+    "tests/fixtures/n2/data_rollup/expected.json": true,
+    "tests/fixtures/n2/data_rollup/input.json": true,
+    "tests/fixtures/n2/data_rollup/manifest.json": true,
+    "tests/fixtures/n2/data_rollup/scenarios.json": true,
+    "tests/fixtures/n2/data_rollup/task.json": true,
+    "tests/fixtures/n2/code_sortfix/expected/widget.py": true,
+    "tests/fixtures/n2/code_sortfix/target/widget.py": true,
+    "reports/jh006-host-review-20261016/submitted/reports/jh006-host-records-implementation-20261015.md": true,
+    "reports/jh006-host-review-20261016/submitted/src/cli.py": true,
+    "reports/jh006-host-review-20261016/submitted/src/host_records.py": true,
+    "reports/jh006-host-review-20261016/submitted/src/orchestrator.py": true,
+    "reports/jh006-host-review-20261016/submitted/tests/test_jh006_host_records.py": true,
+    "reports/jh006-host-review-20261016/submitted/.agents/skills/jh-task/SKILL.md": true
+  },
+  "storage_additive": true,
+  "real_capture_archive_readback": true,
+  "scope": "offline persistent binding only, no production completion, no provider calls",
+  "passed": true
+}

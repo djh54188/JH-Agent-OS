@@ -1,0 +1,55 @@
+{
+  "fixture": "n2-code-sortfix/v1",
+  "status": "not_run",
+  "scenarios": [
+    {
+      "id": "normal-delivery",
+      "kind": "success",
+      "setup": "Submit task.json (workspace filled at submit); run generate→review→host-apply→post-apply-checks.",
+      "expected": "Independent review pass; post-apply check_widget.py exit 0 on the applied file; only target/widget.py differs from baseline; applied bytes hash equals expected_after from the reviewed patch; succeeded with full evidence.",
+      "evidence": ["review binding (attempt/version/SHA-256)", "host apply record per delivery contract", "post-apply check log"]
+    },
+    {
+      "id": "repair-injected-defect",
+      "kind": "repair",
+      "setup": "First model patch fixes ordering but renames the function (injected deviation, recorded with before/after hashes at run time).",
+      "expected": "Reviewer revises with evidence; bounded repair restores the name; re-review passes; v1/v2 artifacts and both bindings retained; succeeded.",
+      "evidence": ["v1 and v2 artifact contents+hashes", "revise issues citing the rename", "pass binding on v2"]
+    },
+    {
+      "id": "budget-exhausted",
+      "kind": "fault",
+      "setup": "Submit with max_turns=1 and a reviewer that always revises.",
+      "expected": "Terminal failed with a budget reason code; never succeeded; partial artifacts retained and queryable.",
+      "evidence": ["final status", "reason code", "usage totals vs budget"]
+    },
+    {
+      "id": "provider-unavailable",
+      "kind": "fault",
+      "setup": "Worker adapter unavailable (fault injection offline; real outage if observed).",
+      "expected": "Controlled stop without success; error names the unavailable role; no invented artifact.",
+      "evidence": ["final status", "error_info", "attempt record without completion"]
+    },
+    {
+      "id": "illegal-output",
+      "kind": "fault",
+      "setup": "Worker returns a patch that is not parseable / violates the envelope schema.",
+      "expected": "Schema validation fails closed (needs_attention/failed); never treated as a valid patch.",
+      "evidence": ["validation error", "no review binding on the bad payload"]
+    },
+    {
+      "id": "user-cancel",
+      "kind": "fault",
+      "setup": "Cancel a non-terminal task via CLI.",
+      "expected": "Status cancelled with reason; later queries show the terminal state.",
+      "evidence": ["cancel receipt", "status/summary output"]
+    },
+    {
+      "id": "uncertain-side-effect",
+      "kind": "fault",
+      "setup": "Host apply reports an unconfirmed write (simulated apply receipt marked uncertain).",
+      "expected": "Success gate blocks; needs_attention with explicit reconciliation steps; no silent success.",
+      "evidence": ["uncertain receipt", "blocked success gate", "needs_attention reason"]
+    }
+  ]
+}

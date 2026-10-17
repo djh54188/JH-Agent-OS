@@ -1,0 +1,131 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://jh-agent-os.local/schemas/review_result.v1.json",
+  "title": "ReviewResultSchemaV1",
+  "description": "JH-Agent OS Review Result contract for independent quality review, evidence citation, and four-tier verdict.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "review_id",
+    "task_id",
+    "target_artifact_type",
+    "target_artifact_path",
+    "verdict",
+    "overall_score",
+    "issues",
+    "summary",
+    "reviewer_role",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": ["1.0.0"]
+    },
+    "review_id": {
+      "type": "string",
+      "pattern": "^rev_[a-zA-Z0-9_-]{8,64}$"
+    },
+    "task_id": {
+      "type": "string",
+      "pattern": "^task_[a-zA-Z0-9_-]{8,64}$"
+    },
+    "target_artifact_type": {
+      "type": "string",
+      "enum": ["code", "plan", "patch", "documentation", "test_report"]
+    },
+    "target_artifact_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "verdict": {
+      "type": "string",
+      "enum": ["pass", "revise", "reject", "needs_human"],
+      "description": "pass=succeeded, revise=repairing loop, reject=terminal failure, needs_human=needs_attention"
+    },
+    "overall_score": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 100.0
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "issue_id",
+          "severity",
+          "category",
+          "description",
+          "evidence",
+          "recommendation"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "issue_id": {
+            "type": "string",
+            "pattern": "^iss_[a-zA-Z0-9_-]{2,32}$"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "p0_blocker",
+              "p1_critical",
+              "p2_major",
+              "p3_minor",
+              "p4_nit"
+            ]
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "correctness",
+              "security",
+              "performance",
+              "maintainability",
+              "boundary_violation",
+              "policy_violation"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Concrete code snippet, error log, or reproducer evidence"
+          },
+          "file_path": {
+            "type": ["string", "null"]
+          },
+          "line_start": {
+            "type": ["integer", "null"],
+            "minimum": 1
+          },
+          "line_end": {
+            "type": ["integer", "null"],
+            "minimum": 1
+          },
+          "recommendation": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reviewer_role": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false
+}

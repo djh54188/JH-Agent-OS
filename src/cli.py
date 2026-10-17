@@ -1,10 +1,14 @@
 """
-JH-Agent OS Phase 2-4 / N1 Structured CLI Entrypoint v1.2.0 (ADR-0003)
+JH-Agent OS N1 Structured CLI Entrypoint v1.3.0 (ADR-0003/ADR-0004, JH-004)
 Supports subcommands:
   - Read-only (never creates directories/DB, never migrates, never invokes models):
       status, events, artifact, summary
   - Bounded state-changing operations (under trusted local assembly):
       submit, resume, approve, cancel, recover
+
+JH-004 production path: explicit NoToolExecutor (no model tools), one fixed
+records-transform template, trusted source/template binding, owner and
+uncertainty resume gates. Real file-write mode stays closed.
 """
 
 import argparse
@@ -14,18 +18,34 @@ from pathlib import Path
 import sys
 from typing import Any, Callable, Dict, List, Optional
 
-from src.acceptance import file_write_acceptance_evaluator, transform_acceptance_evaluator
-from src.adapters import AdapterError, CredentialMissingError, SchemaValidationError
+from src.acceptance import code_deferred_acceptance_evaluator, file_write_acceptance_evaluator, transform_acceptance_evaluator
+from src.adapters import AdapterError, CredentialMissingError, MockModelAdapter, SchemaValidationError
+from src.code_delivery import CODE_FIXTURE_ID, CODE_TEMPLATE_ID, CODE_TEMPLATES, CodeDeliveryRefused
 from src.file_tools import FileToolExecutor
 from src.mock_components import MockToolExecutor, ScriptedReviewerAdapter, ScriptedWorkerAdapter
 from src.model_config import has_credential, load_model_adapter
 from src.orchestrator import Orchestrator
+from src.production_executor import NoToolExecutor
 from src.state_machine import TERMINAL_STATES, InvalidStateTransitionError
 from src.storage import TaskStorage
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DB_PATH = PROJECT_ROOT / "data" / "jh_agent_os.sqlite3"
 READ_ONLY_COMMANDS = frozenset({"status", "events", "artifact", "summary"})
+
+# JH-004 fixed template: records transform with a trusted sort rule and exactly
+# two required conditions. The id is stamped into the trusted binding at submit.
+RECORDS_TRANSFORM_TEMPLATE_ID = "records_transform_v1"
+# The two standard conditions, in order. The template evaluator judges exactly
+# these checks positionally, so anything else (non-template text, misordered or
+# extra conditions) is refused before models run rather than echoed as passed.
+RECORDS_TRANSFORM_CRITERIA = (
+    "Trusted input records were provided",
+    "Artifact content equals the expected sorted records",
+)
+# Metadata key for the CLI-stamped provenance block. Overwritten (never merged)
+# at submit; models and payloads cannot set it.
+TRUSTED_STAMP_KEY = "_trusted"
 
 
 class TrustedAssemblyError(Exception):
@@ -46,6 +66,16 @@ def build_task_summary(storage: TaskStorage, task_id: str) -> Dict[str, Any]:
     bindings = storage.list_review_bindings(task_id)
     latest_binding = bindings[-1] if bindings else None
     pending_approval = json.loads(control["pending_json"]) if control.get("pending_json") else None
+
+    delivery = (task.get("metadata") or {}).get("_delivery")
+    delivery = delivery if isinstance(delivery, dict) else {}
+    delivery_state = delivery.get("state")
+    if delivery_state == "applied":
+        delivery_note = "Code delivery applied and verified by the control layer (JH-006)"
+    elif delivery_state == "waiting_host":
+        delivery_note = "Code delivery prepared; waiting on host apply (not succeeded)"
+    else:
+        delivery_note = "JH-004 delivers generated artifacts only; no target files are applied"
 
     blockers: List[str] = []
     if task["status"] == "awaiting_approval":
@@ -83,6 +113,15 @@ def build_task_summary(storage: TaskStorage, task_id: str) -> Dict[str, Any]:
             "artifact_refs": task.get("artifact_refs", []),
             "latest_review": latest_binding["review"] if latest_binding else None,
             "acceptance_results": latest_binding["acceptance"] if latest_binding else [],
+            "source_binding": (task.get("metadata") or {}).get(TRUSTED_STAMP_KEY),
+            "delivery_scope": {
+                "generated_artifact": latest_artifact is not None,
+                "delivery_state": delivery_state,
+                "delivery_id": delivery.get("delivery_id"),
+                "target_applied": delivery_state == "applied" and task["status"] == "succeeded",
+                "evidence_kind": "offline_fixture" if delivery and ((task.get("metadata") or {}).get(TRUSTED_STAMP_KEY) or {}).get("source") == "fixture" else None,
+                "note": delivery_note,
+            },
             "pending_approval": pending_approval,
             "blockers": blockers,
             "updated_at": task.get("updated_at"),
@@ -99,10 +138,34 @@ def resolve_trusted_evaluator(
 
     Task payloads and models can NEVER inject custom evaluator code or bypass
     acceptance. Real file-write tasks stay gated off in the CLI until JH-015
-    passes independent review.
+    passes independent review. The generate path accepts exactly one fixed
+    template (records_transform_v1); anything else is refused before models run.
     """
     meta = task_payload.get("metadata") or {}
     exec_mode = meta.get("execution_mode", "generate")
+    if exec_mode not in ("generate", "file_tools"):
+        raise TrustedAssemblyError(
+            f"Unknown execution_mode '{exec_mode}'; supported: 'generate' (gated 'file_tools' only)"
+        )
+    code_tpl = CODE_TEMPLATES.get(meta.get("fixture_id") or "")
+    if code_tpl is not None:
+        if exec_mode != "generate":
+            raise TrustedAssemblyError(
+                "Template code_sortfix_v1 requires execution_mode 'generate' (no model tools)"
+            )
+        if list(task_payload.get("acceptance_criteria") or []) != list(code_tpl["criteria"]):
+            raise TrustedAssemblyError(
+                "Template code_sortfix_v1 requires exactly the three fixed criteria in order"
+            )
+        if list(((task_payload.get("context") or {}).get("target_files") or [])) != [code_tpl["authorized_target"]]:
+            raise TrustedAssemblyError(
+                "Template code_sortfix_v1 requires exactly the single authorized target_files entry"
+            )
+        if "input_data" in meta:
+            raise TrustedAssemblyError(
+                "Template code_sortfix_v1 takes no input_data; the baseline binds to the sealed fixture"
+            )
+        return code_deferred_acceptance_evaluator()
     if exec_mode == "file_tools":
         if not allow_file_write_gate:
             raise TrustedAssemblyError(
@@ -122,18 +185,34 @@ def resolve_trusted_evaluator(
         raise TrustedAssemblyError(
             "Trusted CLI assembly requires metadata.input_data dict for deterministic control acceptance"
         )
-    if "records" in input_data and isinstance(input_data["records"], list):
-        sort_key = input_data.get("sort_by", "region")
-        expected = sorted(
-            input_data["records"],
-            key=lambda item: (item.get(sort_key, ""), item.get("sales", 0)) if isinstance(item, dict) else str(item),
+    if set(input_data) != {"records"}:
+        raise TrustedAssemblyError(
+            "Template records_transform_v1 accepts only input_data.records; "
+            "sort_by/expected_output/custom shapes are unsupported"
         )
-        return transform_acceptance_evaluator(expected)
-    if "expected_output" in input_data:
-        return transform_acceptance_evaluator(input_data["expected_output"])
-    raise TrustedAssemblyError(
-        "Unsupported task input_data shape for trusted acceptance evaluator (expected 'records' or 'expected_output')"
-    )
+    records = input_data["records"]
+    if (
+        not isinstance(records, list)
+        or not records
+        or any(
+            not isinstance(item, dict)
+            or not isinstance(item.get("region"), str)
+            or not isinstance(item.get("sales"), (int, float))
+            or isinstance(item.get("sales"), bool)
+            for item in records
+        )
+    ):
+        raise TrustedAssemblyError(
+            "Template records_transform_v1 requires records: non-empty list of {region: str, sales: number}"
+        )
+    criteria = task_payload.get("acceptance_criteria") or []
+    if list(criteria) != list(RECORDS_TRANSFORM_CRITERIA):
+        raise TrustedAssemblyError(
+            "Template records_transform_v1 requires exactly the two standard "
+            "criteria in order; non-template, misordered, or extra conditions refused"
+        )
+    expected = sorted(records, key=lambda item: (item.get("region", ""), item.get("sales", 0)))
+    return transform_acceptance_evaluator(expected)
 
 
 def enforce_trusted_task_payload(
@@ -165,6 +244,126 @@ def enforce_trusted_task_payload(
             raise TrustedAssemblyError("Task payload cannot enable mock mode in production CLI")
 
 
+def stamp_trusted_binding(task_payload: Dict[str, Any], *, test_fixture_mode: bool) -> None:
+    """Overwrite (never merge) the trusted provenance block from CLI flags.
+
+    Runs after resolve_trusted_evaluator accepted the payload shape and before
+    any adapter load or model call. Payload-supplied _trusted content is
+    discarded; the persisted block is authoritative on later resume/approve.
+    """
+    meta = task_payload.get("metadata")
+    if not isinstance(meta, dict):
+        raise TrustedAssemblyError("Task payload metadata must be an object for trusted binding")
+    exec_mode = meta.get("execution_mode", "generate")
+    if exec_mode == "file_tools":
+        template_id = "file_write_v1"
+    elif meta.get("fixture_id") == CODE_FIXTURE_ID:
+        template_id = CODE_TEMPLATE_ID
+    else:
+        template_id = RECORDS_TRANSFORM_TEMPLATE_ID
+    if "_delivery" in meta:
+        raise TrustedAssemblyError("Task payload cannot supply control-owned _delivery metadata")
+    meta[TRUSTED_STAMP_KEY] = {
+        "source": "fixture" if test_fixture_mode else "production",
+        "template_id": template_id,
+        "execution_mode": exec_mode,
+    }
+
+
+def check_source_binding(
+    existing_task: Dict[str, Any],
+    *,
+    test_fixture_mode: bool,
+    expected_template_id: str,
+) -> None:
+    """Refuse fixture/production swaps and template drift on resume/approve."""
+    want = "fixture" if test_fixture_mode else "production"
+    stamped = ((existing_task.get("metadata") or {}).get(TRUSTED_STAMP_KEY) or {})
+    got = stamped.get("source")
+    if got is None:
+        raise TrustedAssemblyError(
+            "Task predates trusted source binding; re-submit is required (refusing blind resume/approve)"
+        )
+    if got != want:
+        raise TrustedAssemblyError(
+            f"Source mismatch: task is '{got}' but CLI runs '{want}'; fixture/production swap refused"
+        )
+    if stamped.get("template_id") != expected_template_id:
+        raise TrustedAssemblyError(
+            "Template binding mismatch: persisted template does not match the resolved evaluator"
+        )
+
+
+def _production_taint_blocker(ro_storage: TaskStorage, task_id: str) -> Optional[str]:
+    """Refusal reason when completed production calls lack proven sources.
+
+    Baselines on persisted model_attempts, never on the mere absence of bad
+    events: every COMPLETED call needs a source record for this task, this
+    attempt_id, and the matching actor role, with is_mock strictly False.
+    Missing, mis-associated, contradictory, or unconfirmable coverage refuses
+    before assembly or new calls. A task with no completed calls stays resumable;
+    unconfirmable history must be re-submitted or reconciled, never backfilled.
+    """
+    completed = [a for a in ro_storage.list_model_attempts(task_id)
+                 if a.get("status") == "completed"]
+    if not completed:
+        return None
+    sources = [e.get("details") or {}
+               for e in ro_storage.list_events(task_id)
+               if e.get("event_type") == "model_response_source"]
+    for attempt in completed:
+        aid = attempt.get("attempt_id")
+        role = attempt.get("actor_role")
+        matching = [d for d in sources
+                    if d.get("attempt_id") == aid and d.get("role") == role]
+        if not matching:
+            return (
+                f"completed {role} call has no trusted source record "
+                f"(attempt {aid}); re-submit or reconcile manually"
+            )
+        if any(d.get("is_mock") is not False for d in matching):
+            return (
+                f"recorded {role} call has mock/unconfirmed "
+                f"source (attempt {aid})"
+            )
+    return None
+
+
+def resume_blockers(ro_storage: TaskStorage, existing_task: Dict[str, Any]) -> List[str]:
+    """Owner/uncertainty gates that ordinary resume must not cross."""
+    task_id = existing_task["task_id"]
+    runtime = existing_task.get("_runtime") or {}
+    blockers: List[str] = []
+    if (ro_storage.get_control(task_id) or {}).get("owner_id"):
+        blockers.append("owner_held_by_active_execution")
+    if any(a.get("status") == "in_flight" for a in ro_storage.list_model_attempts(task_id)):
+        blockers.append("unconfirmed_model_attempts")
+    if any(t.get("status") == "in_flight" for t in ro_storage.list_tool_executions(task_id)):
+        blockers.append("unconfirmed_tool_executions")
+    if runtime.get("has_unconfirmed_side_effect"):
+        blockers.append("unconfirmed_side_effect")
+    if runtime.get("tokens_unknown_count", 0) > 0:
+        blockers.append("unknown_token_usage")
+    return blockers
+
+
+def _is_known_mock_adapter(adapter: Any) -> bool:
+    """True when the adapter object is a known mock/test double.
+
+    Catches both directly injected doubles and adapters loaded from a mock
+    config (a mock config still produces a mock adapter object). Real
+    provider adapters never match: their classes and model ids carry no
+    mock marker.
+    """
+    if adapter is None:
+        return False
+    if isinstance(adapter, (MockModelAdapter, ScriptedWorkerAdapter, ScriptedReviewerAdapter)):
+        return True
+    name = type(adapter).__name__.lower()
+    model_id = str(getattr(adapter, "model_id", "") or "").lower()
+    return "mock" in name or "mock" in model_id
+
+
 def create_orchestrator(
     db_path: str | Path = DEFAULT_DB_PATH,
     *,
@@ -183,6 +382,7 @@ def create_orchestrator(
     if test_fixture_mode:
         worker = kwargs.pop("worker_adapter", None) or ScriptedWorkerAdapter(tool_requests_by_turn=[[]])
         reviewer = kwargs.pop("reviewer_adapter", None) or ScriptedReviewerAdapter(mode="pass")
+        # Fixture branch only: an explicit mock executor for offline tests.
         tool_exec = kwargs.pop("tool_executor", None) or (
             FileToolExecutor(ws) if allow_file_write_gate else MockToolExecutor()
         )
@@ -195,8 +395,17 @@ def create_orchestrator(
             raise CredentialMissingError("Missing environment variable 'MUSE_API_KEY' in production CLI mode")
         worker = kwargs.pop("worker_adapter", None) or load_model_adapter("worker")
         reviewer = kwargs.pop("reviewer_adapter", None) or load_model_adapter("reviewer")
+        for role, adapter in (("worker", worker), ("reviewer", reviewer)):
+            if _is_known_mock_adapter(adapter):
+                storage.close()
+                raise TrustedAssemblyError(
+                    f"Production assembly refused known mock {role} adapter "
+                    f"'{type(adapter).__name__}' (model_id '{getattr(adapter, 'model_id', None)}')"
+                )
+        # Production branch: explicit NoTool executor. Mock successes must never
+        # appear here; every model-proposed tool request is denied instead.
         tool_exec = kwargs.pop("tool_executor", None) or (
-            FileToolExecutor(ws) if allow_file_write_gate else MockToolExecutor()
+            FileToolExecutor(ws) if allow_file_write_gate else NoToolExecutor()
         )
 
     return Orchestrator(
@@ -207,8 +416,64 @@ def create_orchestrator(
         tool_executor=tool_exec,
         acceptance_evaluator=acceptance_evaluator,
         enforce_target_files_scope=True,
+        require_real_responses=not test_fixture_mode,
         **kwargs,
     )
+
+
+def _expected_template_id(task_payload: Dict[str, Any]) -> str:
+    meta = task_payload.get("metadata") or {}
+    if meta.get("execution_mode", "generate") == "file_tools":
+        return "file_write_v1"
+    if meta.get("fixture_id") == CODE_FIXTURE_ID:
+        return CODE_TEMPLATE_ID
+    return RECORDS_TRANSFORM_TEMPLATE_ID
+
+
+def _delivery_state(task: Dict[str, Any]) -> Optional[str]:
+    delivery = (task.get("metadata") or {}).get("_delivery")
+    return delivery.get("state") if isinstance(delivery, dict) else None
+
+
+def _create_delivery_controller(args, trusted_ws, evaluator):
+    # No adapter load, credentials, or model invocation for control-only commands.
+    return Orchestrator(
+        storage=TaskStorage(args.db), workspace_root=trusted_ws,
+        tool_executor=NoToolExecutor(), acceptance_evaluator=evaluator,
+        enforce_target_files_scope=True, require_real_responses=not args.test_fixture_mode)
+
+
+def _existing_task_for_control(args, trusted_ws: Path):
+    """Trusted-assembly prelude shared by the code-delivery commands.
+
+    Loads the persisted task, enforces the workspace boundary and the
+    fixture/production source binding, and collects the owner/uncertainty
+    gates. Returns (existing, evaluator, blockers). Existing resume/approve
+    paths keep their own inline prelude untouched.
+    """
+    ro = open_readonly_storage(args.db)
+    try:
+        existing = ro.get_task(args.task_id)
+    finally:
+        ro.close()
+    enforce_trusted_task_payload(
+        existing, trusted_workspace=trusted_ws, test_fixture_mode=args.test_fixture_mode
+    )
+    evaluator = resolve_trusted_evaluator(existing, allow_file_write_gate=False)
+    check_source_binding(
+        existing, test_fixture_mode=args.test_fixture_mode,
+        expected_template_id=_expected_template_id(existing),
+    )
+    ro2 = open_readonly_storage(args.db)
+    try:
+        blockers = resume_blockers(ro2, existing)
+        if not args.test_fixture_mode:
+            taint = _production_taint_blocker(ro2, args.task_id)
+            if taint:
+                blockers.append("tainted_production_history: " + taint)
+    finally:
+        ro2.close()
+    return existing, evaluator, blockers
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -254,6 +519,20 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     subparsers.add_parser("recover", help="Reconcile interrupted tasks after restart without blind replay")
 
+    sub_prepare = subparsers.add_parser(
+        "prepare-code-delivery",
+        help="Prepare a reviewed code patch for host apply (no models, no file writes)",
+    )
+    sub_prepare.add_argument("task_id", help="Task ID")
+    sub_prepare.add_argument("artifact_version", type=int, help="Current artifact version to prepare")
+
+    sub_complete = subparsers.add_parser(
+        "complete-code-delivery",
+        help="Verify a host apply receipt and finalize the code delivery",
+    )
+    sub_complete.add_argument("task_id", help="Task ID")
+    sub_complete.add_argument("receipt_file", help="Path to apply receipt JSON assembled by the trusted host")
+
     args = parser.parse_args(argv)
     trusted_ws = Path(args.workspace).resolve()
 
@@ -271,6 +550,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             elif args.command == "summary":
                 print(json.dumps(build_task_summary(ro_storage, args.task_id), ensure_ascii=False, indent=2))
             elif args.command == "events":
+                ro_storage.get_task(args.task_id)  # fail closed on missing task, like other queries
                 print(json.dumps(ro_storage.list_events(args.task_id), ensure_ascii=False, indent=2))
             elif args.command == "artifact":
                 summary = build_task_summary(ro_storage, args.task_id)
@@ -299,6 +579,7 @@ def main(argv: Optional[List[str]] = None) -> int:
                 payload, trusted_workspace=trusted_ws, test_fixture_mode=args.test_fixture_mode
             )
             evaluator = resolve_trusted_evaluator(payload, allow_file_write_gate=False)
+            stamp_trusted_binding(payload, test_fixture_mode=args.test_fixture_mode)
             orch = create_orchestrator(
                 args.db,
                 workspace_root=trusted_ws,
@@ -312,7 +593,8 @@ def main(argv: Optional[List[str]] = None) -> int:
             out["read_only"] = False
             out["test_fixture_mode"] = bool(args.test_fixture_mode)
             print(json.dumps(out, ensure_ascii=False, indent=2))
-            return 0 if task["status"] in {"created", "succeeded", "awaiting_approval"} else 1
+            return 0 if (task["status"] in {"created", "succeeded", "awaiting_approval"}
+                             or _delivery_state(task) == "waiting_host") else 1
 
         if args.command == "resume":
             ro = open_readonly_storage(args.db)
@@ -330,6 +612,35 @@ def main(argv: Optional[List[str]] = None) -> int:
                 existing, trusted_workspace=trusted_ws, test_fixture_mode=args.test_fixture_mode
             )
             evaluator = resolve_trusted_evaluator(existing, allow_file_write_gate=False)
+            check_source_binding(
+                existing, test_fixture_mode=args.test_fixture_mode,
+                expected_template_id=_expected_template_id(existing),
+            )
+            ro2 = open_readonly_storage(args.db)
+            try:
+                blockers = resume_blockers(ro2, existing)
+                if not args.test_fixture_mode:
+                    taint = _production_taint_blocker(ro2, args.task_id)
+                    if taint:
+                        blockers.append("tainted_production_history: " + taint)
+            finally:
+                ro2.close()
+            if blockers:
+                print(json.dumps({
+                    "command_ok": False,
+                    "error": "resume blocked: " + ", ".join(blockers),
+                    "blockers": blockers,
+                }, ensure_ascii=False, indent=2))
+                return 1
+            if _delivery_state(existing) == "waiting_host":
+                ro = open_readonly_storage(args.db)
+                try:
+                    out = build_task_summary(ro, args.task_id)
+                finally:
+                    ro.close()
+                out["test_fixture_mode"] = bool(args.test_fixture_mode)
+                print(json.dumps(out, ensure_ascii=False, indent=2))
+                return 0
             orch = create_orchestrator(
                 args.db,
                 workspace_root=trusted_ws,
@@ -337,11 +648,23 @@ def main(argv: Optional[List[str]] = None) -> int:
                 test_fixture_mode=args.test_fixture_mode,
             )
             task = orch.run_task(args.task_id)
+            ro3 = open_readonly_storage(args.db)
+            try:
+                raced_owner = (ro3.get_control(args.task_id) or {}).get("owner_id")
+            finally:
+                ro3.close()
+            if raced_owner:
+                print(json.dumps({
+                    "command_ok": False,
+                    "error": "resume raced with another active owner; result not driven by this call",
+                }, ensure_ascii=False, indent=2))
+                return 1
             out = build_task_summary(orch.storage, args.task_id)
             out["read_only"] = False
             out["test_fixture_mode"] = bool(args.test_fixture_mode)
             print(json.dumps(out, ensure_ascii=False, indent=2))
-            return 0 if task["status"] in {"succeeded", "awaiting_approval"} else 1
+            return 0 if (task["status"] in {"succeeded", "awaiting_approval"}
+                             or _delivery_state(task) == "waiting_host") else 1
 
         if args.command == "approve":
             ro = open_readonly_storage(args.db)
@@ -350,6 +673,10 @@ def main(argv: Optional[List[str]] = None) -> int:
             finally:
                 ro.close()
             evaluator = resolve_trusted_evaluator(existing, allow_file_write_gate=False)
+            check_source_binding(
+                existing, test_fixture_mode=args.test_fixture_mode,
+                expected_template_id=_expected_template_id(existing),
+            )
             orch = create_orchestrator(
                 args.db,
                 workspace_root=trusted_ws,
@@ -360,7 +687,50 @@ def main(argv: Optional[List[str]] = None) -> int:
             out = build_task_summary(orch.storage, args.task_id)
             out["read_only"] = False
             print(json.dumps(out, ensure_ascii=False, indent=2))
-            return 0 if task["status"] in {"succeeded", "awaiting_approval"} else 1
+            return 0 if (task["status"] in {"succeeded", "awaiting_approval"}
+                             or _delivery_state(task) == "waiting_host") else 1
+
+        if args.command == "prepare-code-delivery":
+            _, evaluator, blockers = _existing_task_for_control(args, trusted_ws)
+            if blockers:
+                print(json.dumps({
+                    "command_ok": False,
+                    "error": "prepare blocked: " + ", ".join(blockers),
+                    "blockers": blockers,
+                }, ensure_ascii=False, indent=2))
+                return 1
+            orch = _create_delivery_controller(args, trusted_ws, evaluator)
+            task = orch.prepare_code_delivery(args.task_id, args.artifact_version)
+            out = build_task_summary(orch.storage, args.task_id)
+            out["read_only"] = False
+            out["test_fixture_mode"] = bool(args.test_fixture_mode)
+            print(json.dumps(out, ensure_ascii=False, indent=2))
+            return 0 if _delivery_state(task) == "waiting_host" else 1
+
+        if args.command == "complete-code-delivery":
+            try:
+                receipt = json.loads(Path(args.receipt_file).read_text(encoding="utf-8"))
+            except (OSError, ValueError) as exc:
+                print(json.dumps({
+                    "command_ok": False,
+                    "error": f"Cannot read receipt file: {exc}",
+                }, ensure_ascii=False, indent=2))
+                return 1
+            _, evaluator, blockers = _existing_task_for_control(args, trusted_ws)
+            if blockers:
+                print(json.dumps({
+                    "command_ok": False,
+                    "error": "complete blocked: " + ", ".join(blockers),
+                    "blockers": blockers,
+                }, ensure_ascii=False, indent=2))
+                return 1
+            orch = _create_delivery_controller(args, trusted_ws, evaluator)
+            task = orch.complete_code_delivery(args.task_id, receipt)
+            out = build_task_summary(orch.storage, args.task_id)
+            out["read_only"] = False
+            out["test_fixture_mode"] = bool(args.test_fixture_mode)
+            print(json.dumps(out, ensure_ascii=False, indent=2))
+            return 0 if task["status"] == "succeeded" else 1
 
         if args.command == "cancel":
             storage = TaskStorage(args.db, read_only=False)
@@ -391,6 +761,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         AdapterError,
         SchemaValidationError,
         InvalidStateTransitionError,
+        CodeDeliveryRefused,
         FileNotFoundError,
         KeyError,
     ) as exc:

@@ -1,9 +1,0 @@
-0000000000000000000000000000000000000000 88cab8fd134410ca2bf05923a196dfd747198826 大进化 <16621745049@163.com> 1791725693 +0800	branch: Created from HEAD
-88cab8fd134410ca2bf05923a196dfd747198826 50a39de352f81a883fa673420e96e8e28f926dac 大进化 <16621745049@163.com> 1791729326 +0800	commit: feat(phase4): real file tools with path boundary, staged writes, post-review apply and recovery
-50a39de352f81a883fa673420e96e8e28f926dac 4cee0351a009c222691a76dbe25731258e9cea52 大进化 <16621745049@163.com> 1791730189 +0800	commit: feat(phase4): wire real Gemini+Muse+file-tool loop with semantic acceptance and evidence
-4cee0351a009c222691a76dbe25731258e9cea52 50a39de352f81a883fa673420e96e8e28f926dac 大进化 <16621745049@163.com> 1791730213 +0800	reset: moving to HEAD~1
-50a39de352f81a883fa673420e96e8e28f926dac 6956300d20573afd1d108b7f8eea884a3997e2c5 大进化 <16621745049@163.com> 1791730253 +0800	commit: feat(phase4): wire real Gemini+Muse+file-tool loop with semantic acceptance and evidence
-6956300d20573afd1d108b7f8eea884a3997e2c5 db86bd66654d163a843ad9bcab785c2e324ef234 大进化 <16621745049@163.com> 1791730374 +0800	commit: chore(phase4): refresh hardening verification hashes after source changes
-db86bd66654d163a843ad9bcab785c2e324ef234 ec11584116c60ee31177357b7901abbba76f30c0 大进化 <16621745049@163.com> 1791803656 +0800	commit: docs(n1): align JH-002 review handoff and JH-003 capability ownership under N1-N8 roadmap
-ec11584116c60ee31177357b7901abbba76f30c0 921fec1d0a356c7e3398f775c4f728b780231493 大进化 <16621745049@163.com> 1791805719 +0800	commit: docs(n1): record architect review, ADR-0003, probes and handoff baseline
-921fec1d0a356c7e3398f775c4f728b780231493 80979f3884e605e75ff5c0c876f5bb0bf5684e99 大进化 <16621745049@163.com> 1791811780 +0800	commit: feat(jh015): close ARCH-01..05 file boundary, concurrency and review-binding defects

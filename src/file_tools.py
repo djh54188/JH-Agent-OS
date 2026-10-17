@@ -4,25 +4,12 @@ Implements the controlled file tool executor contract:
 - read_file / stage_write executed ONLY inside a declared workspace root;
 - staged writes never touch the final target until a post-review APPLY that
   re-confirms content hash, target version, path ownership and authorization;
-- parent-pinned publish (B2-01/02/03, see docs/file-tools-apply-mechanism.md):
-  the candidate is fully written to an isolated exclusive temp file with
-  short-write looping, hash-verified and fsynced BEFORE any target mutation.
-  The final target is never modified in place. A share-READ handle on the
-  target PARENT directory (_DirGuard) pins entries from temp verification
-  through publish: entry create/rename/delete races fail loudly instead of
-  slipping through, and the parent itself cannot be renamed away mid-publish.
-  The target FILE guard (_TargetGuard, share READ without delete-share)
-  proves version/identity and blocks new writer opens, then is released
-  adjacent to the publish syscall (a held file guard is proven incompatible
-  with our own replace on this host); a retained old-object reader detects
-  final-adjacency drift, which reports uncertain instead of succeeding.
-  New files publish with os.rename (atomic, fails when the destination
-  appeared concurrently); existing targets publish with os.replace (a new
-  directory entry, so hardlink aliases keep the old bytes). Any failure
-  before publish leaves the old target byte-identical; rename/replace
-  failure leaves it untouched. Multi-link targets are refused before
-  publish; non-Windows and non-NTFS volumes are refused outright.
-  Residuals are documented in the mechanism note, not claimed away.
+- handle-pinned atomic apply: every ancestor and staging directory is verified
+  against reparse points before creation/open; opens never pass O_TRUNC before
+  containment and identity are proven; temporary/backup files use unique names
+  with O_CREAT|O_EXCL; final commit locks the target descriptor, re-verifies
+  realpath containment and pre-review content hash on the open handle, and only
+  then writes/truncates.
 """
 
 from datetime import datetime, timezone
@@ -62,61 +49,7 @@ def _is_reparse_point(path: Path) -> bool:
     return bool(getattr(st, "st_file_attributes", 0) & 0x400) or os.path.islink(path)
 
 
-def _write_all(fd: int, data: bytes) -> None:
-    """Write every byte, looping over short writes (JH016-01).
-
-    A short count is retried from the current offset; zero progress with
-    bytes remaining is an I/O error, never silently accepted. Callers must
-    fsync afterwards and hash-verify the file object.
-    """
-    done = 0
-    total = len(data)
-    while done < total:
-        written = os.write(fd, data[done:])
-        if written == 0:
-            raise OSError("short write made no progress while staging candidate")
-        done += written
-
-
-def _volume_fs_name(path: Path) -> str:
-    """Filesystem name (e.g. 'NTFS') of the volume holding path, Windows only."""
-    import ctypes
-    k32 = ctypes.windll.kernel32
-    k32.GetVolumePathNameW.argtypes = [ctypes.c_wchar_p, ctypes.c_wchar_p, ctypes.c_ulong]
-    k32.GetVolumePathNameW.restype = ctypes.c_bool
-    k32.GetVolumeInformationW.argtypes = [
-        ctypes.c_wchar_p, ctypes.c_wchar_p, ctypes.c_ulong,
-        ctypes.POINTER(ctypes.c_ulong), ctypes.POINTER(ctypes.c_ulong),
-        ctypes.POINTER(ctypes.c_ulong), ctypes.c_wchar_p, ctypes.c_ulong]
-    k32.GetVolumeInformationW.restype = ctypes.c_bool
-    anchor = ctypes.create_unicode_buffer(260)
-    if not k32.GetVolumePathNameW(str(path), anchor, 260):
-        raise PathBoundaryError(f"apply refused: cannot locate publish volume for '{path}'")
-    fs_name = ctypes.create_unicode_buffer(32)
-    if not k32.GetVolumeInformationW(anchor.value, None, 0, None, None, None, fs_name, 32):
-        raise PathBoundaryError(f"apply refused: cannot identify publish filesystem for '{path}'")
-    return fs_name.value
-
-
-def _require_publish_volume(path: Path) -> None:
-    """Gate the publish mechanism to its proven support scope (R4).
-
-    Only Windows NTFS is accepted: the share-mode guards and the atomic
-    same-volume rename/replace premises were proven there (see the share
-    matrix report). Anything else is refused BEFORE any side effect.
-    """
-    if os.name != "nt":
-        raise PathBoundaryError(
-            f"apply refused: atomic guarded publish requires Windows (host is '{os.name}')")
-    fs_name = _volume_fs_name(path)
-    if fs_name.upper() != "NTFS":
-        raise PathBoundaryError(
-            f"apply refused: guarded publish is proven only on NTFS (volume holds '{fs_name}')")
-
-
 def _lock_fd(fd: int) -> None:
-    # Legacy single-byte helper retained for import compatibility only; the
-    # JH016 commit path uses _TargetGuard (share-mode guard), never this lock.
     if os.name == "nt":
         import msvcrt
         os.lseek(fd, 0, os.SEEK_SET)
@@ -136,425 +69,8 @@ def _unlock_fd(fd: int) -> None:
             pass
 
 
-class _TargetGuard:
-    """Share-mode guard over the on-disk target (Windows) for JH016-03/B2-02.
-
-    Holds a GENERIC_READ handle with dwShareMode=FILE_SHARE_READ only (no
-    delete-share), from the final version/identity verification until just
-    before the publish syscall. While held, any NEW writer open
-    (GENERIC_WRITE / O_RDWR / O_WRONLY) and any rename-away/delete open of
-    the same file object fails with a sharing violation: concurrent edits
-    fail loudly instead of being silently overwritten. Plain reads through
-    other handles still succeed.
-
-    The guard is released adjacent to the publish syscall because a held
-    file guard is proven incompatible with our own os.replace on this host
-    (B2-01, WinError 5); entry races during and after release stay blocked
-    by the parent _DirGuard, and a detached old-object reader (see
-    detached_reader) detects final-adjacency drift afterwards.
-
-    R1 correction: a pre-opened ordinary O_RDWR handle makes guard
-    ACQUISITION fail (sharing compatibility is bidirectional). That failure
-    is fail-closed and protective: we refuse instead of proceeding
-    unguarded. Other handle/mapping kinds (memory-mapped sections, backup
-    handles, filter drivers) were not exhaustively tested and stay marked
-    unverified in the mechanism note.
-
-    Identity is read through the GUARD HANDLE (never by path string) via
-    GetFileInformationByHandleEx: FileIdInfo (class 18) gives the stable
-    (volume, 128-bit file id); FileStandardInfo (class 1) gives link count
-    and end-of-file size. Content sha is read through a duplicated handle.
-    """
-
-    def __init__(self, target: Path, expected_pre_sha256: Optional[str]):
-        if os.name != "nt":
-            raise PathBoundaryError("target guard requires Windows share-mode semantics")
-        import ctypes
-        k32 = ctypes.windll.kernel32
-        k32.GetFileInformationByHandleEx.argtypes = [
-            ctypes.c_void_p, ctypes.c_int, ctypes.c_void_p, ctypes.c_ulong]
-        k32.GetFileInformationByHandleEx.restype = ctypes.c_bool
-        k32.CreateFileW.argtypes = [
-            ctypes.c_wchar_p, ctypes.c_ulong, ctypes.c_ulong,
-            ctypes.c_void_p, ctypes.c_ulong, ctypes.c_ulong, ctypes.c_void_p]
-        k32.CreateFileW.restype = ctypes.c_void_p
-        k32.CloseHandle.argtypes = [ctypes.c_void_p]
-        k32.CloseHandle.restype = ctypes.c_bool
-        k32.DuplicateHandle.argtypes = [
-            ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p,
-            ctypes.POINTER(ctypes.c_void_p), ctypes.c_ulong, ctypes.c_bool, ctypes.c_ulong]
-        k32.DuplicateHandle.restype = ctypes.c_bool
-        GENERIC_READ = 0x80000000
-        OPEN_EXISTING = 3
-        FILE_SHARE_READ_ONLY = 0x00000001
-        FILE_ATTRIBUTE_NORMAL = 0x80
-        INVALID_HANDLE = ctypes.c_void_p(-1).value
-        handle = k32.CreateFileW(str(target), GENERIC_READ, FILE_SHARE_READ_ONLY,
-                                 None, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, None)
-        if handle == INVALID_HANDLE or handle is None:
-            raise PathBoundaryError(
-                f"apply refused: cannot guard target (open/share denied, likely changed concurrently): '{target}'")
-
-        self._k32 = k32
-        self._handle = handle
-        self.target = target
-        try:
-            file_id, nlink, size = self._handle_identity()
-        except OSError as exc:
-            k32.CloseHandle(handle)
-            self._handle = None
-            raise PathBoundaryError(
-                f"apply refused: cannot identify guarded target object: '{target}': {exc}") from None
-        self.file_id = file_id
-        self.nlink = nlink
-        self.size = size
-        # Read content through the guard handle (duplicated CRT fd; the
-        # guard handle itself stays open).
-        import msvcrt
-        try:
-            content = self._read_through_handle(msvcrt)
-        except OSError as exc:
-            self.close()
-            raise PathBoundaryError(
-                f"apply refused: cannot read guarded target: '{target}': {exc}") from None
-        self.content_sha = hashlib.sha256(content).hexdigest()
-        if expected_pre_sha256 is not None and self.content_sha != expected_pre_sha256:
-            self.close()
-            raise PathBoundaryError(
-                f"apply refused: target changed since review "
-                f"(current={self.content_sha}, expected={expected_pre_sha256})")
-        # The guard was opened BY PATH: prove the live path still names the
-        # same object before trusting any path-based publish step.
-        try:
-            self.assert_path_still_names_guarded(target)
-        except PathBoundaryError:
-            self.close()
-            raise
-
-    def _handle_identity(self):
-        """(file_id, nlink, size) read through the guard handle via Ex API."""
-        import ctypes
-        import struct
-        id_buf = ctypes.create_string_buffer(24)  # FileIdInfo: vol u64 + id 16 bytes
-        if not self._k32.GetFileInformationByHandleEx(self._handle, 18, id_buf, 24):
-            raise OSError("FileIdInfo query failed")
-        std_buf = ctypes.create_string_buffer(24)  # FileStandardInfo: alloc 8 + eof 8 + links u32 + flags
-        if not self._k32.GetFileInformationByHandleEx(self._handle, 1, std_buf, 24):
-            raise OSError("FileStandardInfo query failed")
-        volume = struct.unpack_from("<Q", bytes(id_buf), 0)[0]
-        file_id = (volume, bytes(id_buf)[8:24])
-        size = struct.unpack_from("<q", bytes(std_buf), 8)[0]
-        nlink = struct.unpack_from("<I", bytes(std_buf), 16)[0]
-        return file_id, nlink, size
-
-    def _read_through_handle(self, msvcrt) -> bytes:
-        # Duplicate the guard handle first: closing a CRT fd releases its
-        # underlying handle, which must NOT release the guard itself.
-        import ctypes
-        dup = ctypes.c_void_p()
-        current = self._k32.GetCurrentProcess()
-        if not self._k32.DuplicateHandle(current, self._handle, current,
-                                         ctypes.byref(dup), 0, False, 0x00000002):  # DUPLICATE_SAME_ACCESS
-            raise PathBoundaryError(f"apply refused: cannot duplicate guard handle: '{self.target}'")
-        fd = msvcrt.open_osfhandle(dup.value, 0)
-        try:
-            os.lseek(fd, 0, os.SEEK_SET)
-            chunks = []
-            while True:
-                chunk = os.read(fd, 65536)
-                if not chunk:
-                    break
-                chunks.append(chunk)
-            return b"".join(chunks)
-        finally:
-            # Closes the duplicate only; the guard handle stays open.
-            try:
-                os.close(fd)
-            except OSError:
-                pass
-
-    def reverify(self, expected_pre_sha256: Optional[str]) -> None:
-        """Re-prove identity + version through the GUARD HANDLE (not by path).
-
-        Raises PathBoundaryError on any drift: different object (volume/file
-        id changed), size/link-count drift, or content sha drift.
-        """
-        try:
-            file_id, nlink, size = self._handle_identity()
-        except OSError:
-            raise PathBoundaryError(f"apply refused: target guard handle lost: '{self.target}'")
-        if file_id != self.file_id:
-            raise PathBoundaryError(f"apply refused: guarded target object changed: '{self.target}'")
-        if nlink != self.nlink or size != self.size:
-            raise PathBoundaryError(
-                f"apply refused: target changed under guard (link count or size drift): '{self.target}'")
-        # Content re-read through the guard handle via a duplicated CRT fd.
-        # Any read failure fails closed.
-        import hashlib as _hl
-        import msvcrt
-        try:
-            live_sha = _hl.sha256(self._read_through_handle(msvcrt)).hexdigest()
-        except OSError as exc:
-            raise PathBoundaryError(f"apply refused: cannot re-read guarded target: '{self.target}'") from None
-        if expected_pre_sha256 is not None and live_sha != expected_pre_sha256:
-            raise PathBoundaryError(
-                f"apply refused: target changed since review "
-                f"(current={live_sha}, expected={expected_pre_sha256})")
-
-    def assert_single_link(self) -> None:
-        # Fresh identity on every call: a hard link created after the guard
-        # opened must also refuse (JH016-02).
-        try:
-            file_id, nlink, size = self._handle_identity()
-        except OSError:
-            raise PathBoundaryError(f"apply refused: target guard handle lost: '{self.target}'")
-        if file_id != self.file_id:
-            raise PathBoundaryError(f"apply refused: guarded target object changed: '{self.target}'")
-        self.nlink = nlink
-        self.size = size
-        if nlink != 1:
-            raise PathBoundaryError(
-                f"apply refused: target has {nlink} hard links; publishing could orphan or share bytes "
-                f"with unapproved aliases: '{self.target}'")
-
-    def assert_path_still_names_guarded(self, path: Path) -> None:
-        """Prove the live path still names the guarded object (parent-swap tripwire).
-
-        Opens a second read-only handle BY PATH and compares its FileIdInfo
-        against the guard's handle identity. Any failure or mismatch fails
-        closed. The second open requests only GENERIC_READ, so the guard's
-        own share mode never blocks it.
-        """
-        import ctypes
-        import struct
-        GENERIC_READ = 0x80000000
-        OPEN_EXISTING = 3
-        FILE_SHARE_ALL = 0x00000007
-        FILE_ATTRIBUTE_NORMAL = 0x80
-        INVALID_HANDLE = ctypes.c_void_p(-1).value
-        handle = self._k32.CreateFileW(str(path), GENERIC_READ, FILE_SHARE_ALL,
-                                       None, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, None)
-        if handle == INVALID_HANDLE or handle is None:
-            raise PathBoundaryError(
-                f"apply refused: cannot re-open target path before publish: '{path}'")
-        try:
-            id_buf = ctypes.create_string_buffer(24)
-            if not self._k32.GetFileInformationByHandleEx(handle, 18, id_buf, 24):
-                raise PathBoundaryError(
-                    f"apply refused: cannot identify pre-publish target object: '{path}'")
-            volume = struct.unpack_from("<Q", bytes(id_buf), 0)[0]
-            file_id = (volume, bytes(id_buf)[8:24])
-        finally:
-            try:
-                self._k32.CloseHandle(handle)
-            except OSError:
-                pass
-        if file_id != self.file_id:
-            raise PathBoundaryError(
-                f"apply refused: target path no longer names the guarded object: '{path}'")
-
-    def detached_reader(self) -> int:
-        """Duplicate raw handle to the guarded object for post-publish drift reads.
-
-        The duplicate refers to the SAME object even after the path entry is
-        replaced, and survives close() of the guard. Ownership transfers to
-        the caller: read it with read_detached (which closes it on every path)
-        or close it with close_raw on failure paths. Never closed twice.
-        """
-        import ctypes
-        dup = ctypes.c_void_p()
-        current = self._k32.GetCurrentProcess()
-        if not self._k32.DuplicateHandle(current, self._handle, current,
-                                         ctypes.byref(dup), 0, False, 0x00000002):
-            raise PathBoundaryError(f"apply refused: cannot duplicate guard handle: '{self.target}'")
-        return dup.value
-
-    def close_raw(self, handle: int) -> None:
-        """Close a raw handle duplicated from this guard (prototyped API)."""
-        try:
-            self._k32.CloseHandle(handle)
-        except OSError:
-            pass
-
-    def read_detached(self, raw_handle: int) -> bytes:
-        """Read all bytes through a detached duplicate, closing it exactly once.
-
-        The duplicate refers to the pre-publish object even after the path
-        entry is replaced. Closes the duplicate on every path (success or
-        failure) with the prototyped handle API. Any I/O failure fails closed
-        as PublishWindowDriftError: without the old bytes we cannot prove
-        that no concurrent write was destroyed.
-        """
-        import msvcrt
-        try:
-            fd = msvcrt.open_osfhandle(raw_handle, 0)
-        except OSError as exc:
-            self.close_raw(raw_handle)
-            raise PublishWindowDriftError(
-                f"apply uncertain: old target object unreadable after publish: '{self.target}'") from None
-        try:
-            os.lseek(fd, 0, os.SEEK_SET)
-            chunks = []
-            while True:
-                chunk = os.read(fd, 65536)
-                if not chunk:
-                    break
-                chunks.append(chunk)
-            return b"".join(chunks)
-        except OSError as exc:
-            raise PublishWindowDriftError(
-                f"apply uncertain: old target object unreadable after publish: '{self.target}'") from None
-        finally:
-            try:
-                os.close(fd)
-            except OSError:
-                pass
-
-    def close(self) -> None:
-        if getattr(self, "_handle", None):
-            try:
-                self._k32.CloseHandle(self._handle)
-            except OSError:
-                pass
-            self._handle = None
-
-    def __enter__(self) -> "_TargetGuard":
-        return self
-
-    def __exit__(self, *exc_info) -> None:
-        self.close()
-        return None
-
-
-class _DirGuard:
-    """Share-READ handle on the target PARENT directory, held across publish.
-
-    While held, entry create/rename/delete inside the directory and renames
-    of the directory itself fail with sharing violations, so the exact
-    B2-02 (rename-away + recreate) and B2-03 (parent swap + junction) races
-    fail loudly at the attacker's syscall instead of slipping through. Plain
-    reads still succeed. Our own path-based rename/replace compatibility with
-    this guard was proven per-host by the share matrix report (premise P-A);
-    any incompatibility fails LOUD here or at publish time. Guards are never
-    silently skipped: acquisition failure refuses BEFORE any side effect.
-    """
-
-    def __init__(self, directory: Path):
-        if os.name != "nt":
-            raise PathBoundaryError("directory guard requires Windows share-mode semantics")
-        import ctypes
-        k32 = ctypes.windll.kernel32
-        k32.CreateFileW.argtypes = [
-            ctypes.c_wchar_p, ctypes.c_ulong, ctypes.c_ulong,
-            ctypes.c_void_p, ctypes.c_ulong, ctypes.c_ulong, ctypes.c_void_p]
-        k32.CreateFileW.restype = ctypes.c_void_p
-        k32.CloseHandle.argtypes = [ctypes.c_void_p]
-        k32.CloseHandle.restype = ctypes.c_bool
-        k32.GetFileInformationByHandleEx.argtypes = [
-            ctypes.c_void_p, ctypes.c_int, ctypes.c_void_p, ctypes.c_ulong]
-        k32.GetFileInformationByHandleEx.restype = ctypes.c_bool
-        GENERIC_READ = 0x80000000
-        OPEN_EXISTING = 3
-        FILE_SHARE_READ = 0x00000001
-        FILE_FLAG_BACKUP_SEMANTICS = 0x02000000
-        INVALID_HANDLE = ctypes.c_void_p(-1).value
-        handle = k32.CreateFileW(str(directory), GENERIC_READ, FILE_SHARE_READ,
-                                 None, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, None)
-        if handle == INVALID_HANDLE or handle is None:
-            raise PathBoundaryError(
-                f"apply refused: cannot guard parent directory (likely changed concurrently): '{directory}'")
-        self._k32 = k32
-        self._handle = handle
-        self.directory = directory
-        try:
-            self.file_id = self._handle_file_id()
-        except OSError as exc:
-            k32.CloseHandle(handle)
-            self._handle = None
-            raise PathBoundaryError(
-                f"apply refused: cannot identify guarded directory: '{directory}': {exc}") from None
-
-    def _handle_file_id(self):
-        """(volume, 128-bit file id) of the guarded directory via its handle."""
-        import ctypes
-        import struct
-        id_buf = ctypes.create_string_buffer(24)
-        if not self._k32.GetFileInformationByHandleEx(self._handle, 18, id_buf, 24):
-            raise OSError("directory FileIdInfo query failed")
-        volume = struct.unpack_from("<Q", bytes(id_buf), 0)[0]
-        return (volume, bytes(id_buf)[8:24])
-
-    def reverify_identity(self) -> None:
-        """The guarded handle must still name the same directory object."""
-        try:
-            file_id = self._handle_file_id()
-        except OSError:
-            raise PathBoundaryError(f"apply refused: parent guard handle lost: '{self.directory}'")
-        if file_id != self.file_id:
-            raise PathBoundaryError(f"apply refused: guarded parent directory changed: '{self.directory}'")
-
-    def assert_path_still_names_guarded(self, path: Path) -> None:
-        """Prove the live parent path still names the guarded directory object.
-
-        Opens a second read-only handle BY PATH (with backup semantics, full
-        share so our own guard never blocks it) and compares FileIdInfo.
-        Any failure or mismatch fails closed. Callers must ALSO check path
-        containment (junction to a same-filesystem location still resolves
-        inside only if realpath says so).
-        """
-        import ctypes
-        import struct
-        GENERIC_READ = 0x80000000
-        OPEN_EXISTING = 3
-        FILE_SHARE_ALL = 0x00000007
-        FILE_FLAG_BACKUP_SEMANTICS = 0x02000000
-        INVALID_HANDLE = ctypes.c_void_p(-1).value
-        handle = self._k32.CreateFileW(str(path), GENERIC_READ, FILE_SHARE_ALL,
-                                       None, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, None)
-        if handle == INVALID_HANDLE or handle is None:
-            raise PathBoundaryError(
-                f"apply refused: cannot re-open parent path before publish: '{path}'")
-        try:
-            id_buf = ctypes.create_string_buffer(24)
-            if not self._k32.GetFileInformationByHandleEx(handle, 18, id_buf, 24):
-                raise PathBoundaryError(
-                    f"apply refused: cannot identify pre-publish parent: '{path}'")
-            volume = struct.unpack_from("<Q", bytes(id_buf), 0)[0]
-            file_id = (volume, bytes(id_buf)[8:24])
-        finally:
-            try:
-                self._k32.CloseHandle(handle)
-            except OSError:
-                pass
-        if file_id != self.file_id:
-            raise PathBoundaryError(
-                f"apply refused: parent path no longer names the guarded directory: '{path}'")
-
-    def close(self) -> None:
-        if getattr(self, "_handle", None):
-            try:
-                self._k32.CloseHandle(self._handle)
-            except OSError:
-                pass
-            self._handle = None
-
-    def __enter__(self) -> "_DirGuard":
-        return self
-
-    def __exit__(self, *exc_info) -> None:
-        self.close()
-        return None
-
-
 class PathBoundaryError(Exception):
     """Raised when a path cannot be PROVEN to stay inside the workspace."""
-
-
-class PublishWindowDriftError(Exception):
-    """Post-publish drift evidence: the old object changed across the final
-    publish adjacency, so a concurrent write may have been destroyed. The new
-    bytes are the reviewed ones, but the outcome must NOT be reported as a
-    clean success: needs_attention, no blind replay, no recovery-as-applied."""
 
 
 class FileToolExecutor:
@@ -850,14 +366,14 @@ class FileToolExecutor:
         return contents
 
     # ------------------------------------------------------------------
-    # Post-review apply (atomic publish, version-guarded, collision-free)
+    # Post-review apply (handle-pinned, version-reconfirmed, collision-free)
     # ------------------------------------------------------------------
 
     def apply_staged(self, task_id: str, *, target_path: str, staged_path: str,
                      content_sha256: str, target_pre_sha256: Optional[str],
                      authorized_files: Optional[set] = None) -> Dict[str, Any]:
         """Apply a reviewed staged write to the final target."""
-        # 1. Re-validate Final target path and staged path.
+        # 1. Re-validate FINAL target path and staged path.
         target = self.resolve_workspace_path(target_path)
         if authorized_files is not None and len(authorized_files) > 0:
             norm = os.path.normcase(str(target)).replace("\\", "/")
@@ -917,116 +433,72 @@ class FileToolExecutor:
         if self.fault_injector:
             self.fault_injector("backed_up")
 
-        # 4. Isolated, uniquely named exclusive temp file inside staging (ARCH-02:
-        # never touches neighbor files). The candidate is FULLY written here with
-        # short-write looping, fsync and hash verification BEFORE any target
-        # mutation (JH016-01); the target is never written in place.
+        # 4. Isolated, uniquely named exclusive temp file inside staging (ARCH-02: never touches neighbor files).
         temp_path = staging_dir / f".tmp_{uuid.uuid4().hex}_{target.name}"
         tfd = self._open_verified(temp_path, mode="create_exclusive")
         try:
-            try:
-                _write_all(tfd, candidate_bytes)
-                os.fsync(tfd)
-            finally:
-                os.close(tfd)
-            if _sha256_file(temp_path) != content_sha256:
-                raise PathBoundaryError("apply refused: temp file hash mismatch after write")
+            with os.fdopen(tfd, "wb") as thandle:
+                thandle.write(candidate_bytes)
+                thandle.flush()
+                os.fsync(thandle.fileno())
             self._record(kind="temp_written", temp_path=str(temp_path))
             if self.fault_injector:
                 self.fault_injector("temp_written")
 
-            # 5. Parent-pinned controlled publish (B2-01/02/03). The support
-            # scope (Windows NTFS) is gated first; then the target parent is
-            # pinned with a share-READ directory guard held through publish,
-            # so entry create/rename/delete races fail loudly at the
-            # attacker's syscall. Re-resolve immediately before commit to
-            # catch any parent junction swap (ARCH-04).
+            # 5. Handle-pinned, version-reconfirmed commit (ARCH-03 & ARCH-04).
+            # Re-resolve target path immediately before opening handle to catch any parent junction swap.
             target_now = self.resolve_workspace_path(target_path)
-            self._assert_realpath_inside_workspace(target_now.parent, "commit_parent")
-            _require_publish_volume(target_now)
             if _sha256_file(temp_path) != content_sha256:
-                raise PathBoundaryError("apply refused: temp file changed before commit")
+                raise PathBoundaryError("apply refused: temp file hash mismatch before commit")
 
             if target_pre_sha256 is None:
-                # New file: the target must not exist. Publish with os.rename,
-                # which atomically fails when the destination appeared
-                # concurrently (controlled refusal, never a clobber or an
-                # empty shell). Same-volume rename is atomic.
+                # Target must not exist prior to commit: open with O_CREAT|O_EXCL.
                 if os.path.lexists(str(target_now)):
                     raise PathBoundaryError(
                         f"apply refused: target changed since review (file appeared concurrently: '{target_now}')")
-                self._assert_realpath_inside_workspace(target_now.parent, "commit_new_target_parent")
-                with _DirGuard(target_now.parent) as dir_guard:
-                    dir_guard.assert_path_still_names_guarded(target_now.parent)
-                    self._record(kind="commit_parent_guarded", target_path=str(target_now))
-                    if self.fault_injector:
-                        self.fault_injector("guarded")
-                    fresh_target = self.resolve_workspace_path(target_path)
-                    self._assert_realpath_inside_workspace(fresh_target.parent, "commit_guarded_parent")
-                    if self.fault_injector:
-                        self.fault_injector("pre_publish")
-                    dir_guard.reverify_identity()
-                    dir_guard.assert_path_still_names_guarded(fresh_target.parent)
+                cfd = self._open_verified(target_now, mode="create_exclusive")
+                try:
+                    _lock_fd(cfd)
                     try:
-                        os.rename(str(temp_path), str(fresh_target))
-                    except FileExistsError:
-                        raise PathBoundaryError(
-                            f"apply refused: target changed since review (file appeared concurrently: '{fresh_target}')") from None
-                    except OSError:
-                        # Rename is atomic: on failure the target is untouched
-                        # (still nonexistent or still a concurrent file we did not modify).
-                        raise
+                        self._assert_realpath_inside_workspace(target_now, "commit_new_target")
+                        os.lseek(cfd, 0, os.SEEK_SET)
+                        os.write(cfd, candidate_bytes)
+                        os.ftruncate(cfd, len(candidate_bytes))
+                        os.fsync(cfd)
+                    finally:
+                        _unlock_fd(cfd)
+                finally:
+                    os.close(cfd)
             else:
-                # Existing file: version-prove under the file guard, pin
-                # entries with the parent guard, then release the file guard
-                # ADJACENT to the publish syscall (a held file guard is proven
-                # incompatible with our own replace: B2-01, WinError 5).
-                # os.replace only swaps the directory entry, so hardlink
-                # aliases keep the old bytes (JH016-02); multi-link targets
-                # are additionally refused outright. A retained old-object
-                # reader detects final-adjacency drift afterwards.
+                # Target must exist and still match target_pre_sha256 on the locked handle.
                 if not target_now.is_file():
                     raise PathBoundaryError(
                         f"apply refused: target changed since review (target removed concurrently: '{target_now}')")
-                with _TargetGuard(target_now, target_pre_sha256) as guard:
-                    guard.assert_single_link()
-                    self._record(kind="commit_guarded", target_path=str(target_now),
-                                 link_count=guard.nlink, guarded_size=guard.size)
-                    if self.fault_injector:
-                        self.fault_injector("guarded")
-                    with _DirGuard(target_now.parent) as dir_guard:
-                        dir_guard.assert_path_still_names_guarded(target_now.parent)
-                        self._record(kind="commit_parent_guarded", target_path=str(target_now))
-                        if self.fault_injector:
-                            self.fault_injector("pre_publish")
-                        # Final re-proof immediately before publish: same guarded
-                        # objects (handle identities), same version bytes
-                        # (handle re-read), and both paths still name those
-                        # objects (fresh resolve + containment + file-id
-                        # cross-checks).
-                        fresh_target = self.resolve_workspace_path(target_path)
-                        self._assert_realpath_inside_workspace(fresh_target.parent, "commit_guarded_parent")
-                        guard.reverify(target_pre_sha256)
-                        guard.assert_single_link()
-                        guard.assert_path_still_names_guarded(fresh_target)
-                        dir_guard.reverify_identity()
-                        dir_guard.assert_path_still_names_guarded(fresh_target.parent)
-                        old_reader = guard.detached_reader()
-                        guard.close()
-                        try:
-                            os.replace(str(temp_path), str(fresh_target))
-                        except OSError:
-                            # Replace is atomic at the directory-entry level: on
-                            # failure the old target keeps its old bytes. The
-                            # retained duplicate is closed before propagating.
-                            guard.close_raw(old_reader)
-                            raise
-                        old_bytes = guard.read_detached(old_reader)
-                        if hashlib.sha256(old_bytes).hexdigest() != target_pre_sha256:
-                            self._record(kind="publish_window_drift", target_path=str(fresh_target))
-                            raise PublishWindowDriftError(
-                                "apply uncertain: target object changed across final publish "
-                                "(concurrent bytes may have been replaced); needs_attention")
+                cfd = self._open_verified(target_now, mode="read_write_existing")
+                try:
+                    _lock_fd(cfd)
+                    try:
+                        self._assert_realpath_inside_workspace(target_now, "commit_existing_target")
+                        os.lseek(cfd, 0, os.SEEK_SET)
+                        live_chunks = []
+                        while True:
+                            chunk = os.read(cfd, 65536)
+                            if not chunk:
+                                break
+                            live_chunks.append(chunk)
+                        live_sha = hashlib.sha256(b"".join(live_chunks)).hexdigest()
+                        if live_sha != target_pre_sha256:
+                            raise PathBoundaryError(
+                                f"apply refused: target changed since review "
+                                f"(current={live_sha}, expected={target_pre_sha256})")
+                        os.lseek(cfd, 0, os.SEEK_SET)
+                        os.write(cfd, candidate_bytes)
+                        os.ftruncate(cfd, len(candidate_bytes))
+                        os.fsync(cfd)
+                    finally:
+                        _unlock_fd(cfd)
+                finally:
+                    os.close(cfd)
         finally:
             try:
                 if os.path.lexists(str(temp_path)) and not _is_reparse_point(temp_path):

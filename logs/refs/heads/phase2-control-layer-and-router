@@ -1,3 +1,0 @@
-0000000000000000000000000000000000000000 08aae16c6de0ae8748f43178efd4bc5ac2d46371 大进化 <16621745049@163.com> 1791640124 +0800	branch: Created from HEAD
-08aae16c6de0ae8748f43178efd4bc5ac2d46371 1de0a71ac6bada25a000edfbad94733da9fb6f30 大进化 <16621745049@163.com> 1791690053 +0800	commit: chore(phase2): checkpoint existing control layer before hardening
-1de0a71ac6bada25a000edfbad94733da9fb6f30 28b1f4611a2c4f1eda57e92cf87a95ca626dcba2 大进化 <16621745049@163.com> 1791691059 +0800	commit: fix(phase2): bind success to evidence and harden durable execution

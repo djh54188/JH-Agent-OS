@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://jh-agent-os.local/schemas/artifact.v1.json",
+  "title": "ArtifactSchemaV1",
+  "description": "JH-Agent OS Artifact contract. The model declares identity and content; the control layer validates task correlation and computes the authoritative version and SHA-256 (model-declared hashes are never trusted).",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_id",
+    "task_id",
+    "artifact_type",
+    "content",
+    "summary"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": ["1.0.0"]
+    },
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^art_[a-zA-Z0-9_-]{8,64}$"
+    },
+    "task_id": {
+      "type": "string",
+      "pattern": "^task_[a-zA-Z0-9_-]{8,64}$"
+    },
+    "artifact_type": {
+      "type": "string",
+      "enum": [
+        "text_transformation",
+        "data_conversion",
+        "patch_text",
+        "structured_document"
+      ],
+      "description": "Phase 3 scope only: no external side effects. patch_text means generated patch text; applying patches is Phase 4."
+    },
+    "content": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Full artifact content. Stored in memory/SQLite for Phase 3; never written to the filesystem by the model path."
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "additionalProperties": false
+}

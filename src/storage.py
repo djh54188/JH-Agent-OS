@@ -187,6 +187,30 @@ class TaskStorage:
                     record_json TEXT NOT NULL,
                     created_at TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS capture_bindings (
+                    binding_id TEXT PRIMARY KEY,
+                    task_id TEXT NOT NULL REFERENCES tasks(task_id),
+                    delivery_id TEXT NOT NULL,
+                    thread_id TEXT NOT NULL,
+                    item_id TEXT NOT NULL,
+                    call_id TEXT NOT NULL,
+                    protocol TEXT NOT NULL,
+                    snapshot_json TEXT NOT NULL,
+                    capture_json TEXT NOT NULL,
+                    manifest_json TEXT NOT NULL,
+                    archive_dir TEXT NOT NULL,
+                    event_digest TEXT NOT NULL,
+                    manifest_digest TEXT NOT NULL,
+                    apply_attempt_id TEXT NOT NULL,
+                    review_items_json TEXT NOT NULL,
+                    recorded_at TEXT NOT NULL,
+                    UNIQUE(task_id, delivery_id),
+                    UNIQUE(thread_id, item_id, call_id)
+                );
+                CREATE UNIQUE INDEX IF NOT EXISTS capture_binding_call_unique
+                    ON capture_bindings(thread_id, call_id);
+                CREATE UNIQUE INDEX IF NOT EXISTS capture_binding_item_unique
+                    ON capture_bindings(thread_id, item_id);
                 INSERT OR IGNORE INTO task_control(task_id) SELECT task_id FROM tasks;
                 """
             )
@@ -935,6 +959,80 @@ class TaskStorage:
         return self.get_task(task_id)
 
     # ------------------------------------------------------------------
+    @atomic
+    def save_code_delivery(self, task_id: str, delivery: Dict[str, Any]) -> Dict[str, Any]:
+        """Persist the control-owned code delivery record (waiting/applied state).
+
+        Stored under task metadata `_delivery`, written only by the control
+        layer (prepare/complete). Never merged from payloads or model output.
+        """
+        task = self.get_task(task_id)
+        task_dict = {k: v for k, v in task.items() if k != "_runtime"}
+        meta = dict(task_dict.get("metadata") or {})
+        meta["_delivery"] = delivery
+        task_dict["metadata"] = meta
+        task_dict["updated_at"] = _utc_now_iso()
+        self.validate_task_dict(task_dict)
+        self._conn.execute(
+            "UPDATE tasks SET task_json = ?, updated_at = ? WHERE task_id = ?",
+            (json.dumps(task_dict, ensure_ascii=False), task_dict["updated_at"], task_id),
+        )
+        return self.get_task(task_id)
+
+    # ------------------------------------------------------------------
+    # Capture bindings (JH-006 offline binding; additive table, no migration)
+    # ------------------------------------------------------------------
+    @atomic
+    def save_capture_binding(self, binding: Dict[str, Any]) -> Dict[str, Any]:
+        """Insert one capture binding row. Raises ValueError on conflict."""
+        try:
+            self._conn.execute(
+                """
+                INSERT INTO capture_bindings (
+                    binding_id, task_id, delivery_id, thread_id, item_id,
+                    call_id, protocol, snapshot_json, capture_json,
+                    manifest_json, archive_dir, event_digest, manifest_digest,
+                    apply_attempt_id, review_items_json, recorded_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    binding["binding_id"],
+                    binding["task_id"],
+                    binding["delivery_id"],
+                    binding["thread_id"],
+                    binding["item_id"],
+                    binding["call_id"],
+                    binding["protocol"],
+                    binding["snapshot_json"],
+                    binding["capture_json"],
+                    binding["manifest_json"],
+                    binding["archive_dir"],
+                    binding["event_digest"],
+                    binding["manifest_digest"],
+                    binding["apply_attempt_id"],
+                    binding["review_items_json"],
+                    binding["recorded_at"],
+                ),
+            )
+        except sqlite3.IntegrityError as exc:
+            raise ValueError(f"capture binding conflicts: {exc}") from None
+        return self.get_capture_binding(binding["task_id"], binding["delivery_id"])
+
+    def get_capture_binding(self, task_id: str, delivery_id: str) -> Optional[Dict[str, Any]]:
+        row = self._conn.execute(
+            "SELECT * FROM capture_bindings WHERE task_id = ? AND delivery_id = ?",
+            (task_id, delivery_id),
+        ).fetchone()
+        return dict(row) if row else None
+
+    def get_capture_binding_by_call(self, thread_id: str, item_id: str,
+                                    call_id: str) -> Optional[Dict[str, Any]]:
+        row = self._conn.execute(
+            "SELECT * FROM capture_bindings WHERE thread_id = ? AND item_id = ? AND call_id = ?",
+            (thread_id, item_id, call_id),
+        ).fetchone()
+        return dict(row) if row else None
+
     # Memory records (Phase 3 minimal logging per memory_record.v1.json)
     # ------------------------------------------------------------------
 
@@ -1006,6 +1104,35 @@ class TaskStorage:
         for row in rows:
             task_id = row["task_id"]
             status = row["status"]
+            try:
+                waiting = (json.loads(row["task_json"]).get("metadata") or {}).get("_delivery", {})
+                waiting = isinstance(waiting, dict) and waiting.get("state") == "waiting_host"
+            except ValueError:
+                waiting = False
+            if waiting:
+                # A task waiting on host delivery rests here deliberately: leave
+                # owner and state untouched (no preemption, no auto-replay).
+                recovery_summary.append({
+                    "task_id": task_id,
+                    "previous_state": status,
+                    "recovered_state": status,
+                    "auto_replay_allowed": False,
+                    "reason": "skipped_waiting_host",
+                })
+                continue
+            held = self._conn.execute("SELECT owner_id FROM task_control WHERE task_id = ?", (task_id,)).fetchone()
+            if held and held["owner_id"]:
+                # An owner-held task may be live in another process. Recover must
+                # not preempt it: leave owner and state untouched for explicit
+                # operator resolution (stale-owner reclamation is N7 scope).
+                recovery_summary.append({
+                    "task_id": task_id,
+                    "previous_state": status,
+                    "recovered_state": status,
+                    "auto_replay_allowed": False,
+                    "reason": "skipped_owner_held",
+                })
+                continue
             has_unconfirmed = bool(row["has_unconfirmed_side_effect"])
 
             # Check in-flight tool executions

@@ -1,7 +1,0 @@
-{
-  "status": "ok",
-  "fixtures": [
-    "code_sortfix",
-    "data_rollup"
-  ]
-}

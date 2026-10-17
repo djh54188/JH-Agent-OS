@@ -1,0 +1,39 @@
+{
+  "fixture": "n2-data-rollup/v1",
+  "sealed": true,
+  "seal_note": "sha256 values are filled by the verifying session after reviewing file bytes, then the consistency check is re-run. Until sealed, verify_jh005_fixtures.py reports UNSEALED with computed values and exits nonzero.",
+  "files": [
+    {
+      "path": "task.json",
+      "sha256": "285bf482f8f2ac14a3e12e877f5efea9e95b31c5caae15a11c10657a5ede6d4b",
+      "purpose": "task definition template"
+    },
+    {
+      "path": "input.json",
+      "sha256": "ddc1886847f866bb76dd6b11fa36488d0393bb86630bf9375f9266aa112cebc3",
+      "purpose": "input records"
+    },
+    {
+      "path": "expected.json",
+      "sha256": "6960af9d80dfd3642d06565122fc4dff63d90006970c8203b3b383de3a58e3c2",
+      "purpose": "trusted sorted output"
+    },
+    {
+      "path": "checks.json",
+      "sha256": "b9f0b8993da762d6c5453da886e99985ac66c3f15c0675668a95976eeb2bfe17",
+      "purpose": "check commands and expectations"
+    },
+    {
+      "path": "scenarios.json",
+      "sha256": "6bd5b6ede161877323dc9c0fcac805c38a8d22c449404b87d821ecef26194797",
+      "purpose": "repair and fault scenarios"
+    },
+    {
+      "path": "manifest.json",
+      "sha256": null,
+      "purpose": "this manifest (self-hash excluded from seal)"
+    }
+  ],
+  "sealed_at": "2026-10-15",
+  "sealed_by": "architect review session; independent byte/content verification"
+}

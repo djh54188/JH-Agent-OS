@@ -1,0 +1,2 @@
+# Version used for this local snapshot verification
+jsonschema==4.26.0

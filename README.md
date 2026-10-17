@@ -1,3 +1,11 @@
+# GitHub / Hark 实战副本
+
+先读 [CLOUD_START_HERE.md](CLOUD_START_HERE.md)，再按 [HARK_FIRST_TASK.md](HARK_FIRST_TASK.md) 做首轮离线复核。
+
+这是本地已审查提交 `1f605c3` 的筛选副本；未提交的宿主入口接线修改未包含。N2/P1 未完成，生产完成和自动文件应用保持关闭。下方是上游原 README，其中 D 盘路径仅描述原 Windows 环境。
+
+---
+
 # JH-Agent OS
 
 基于 Codex 的个人 AI Agent 增强系统。用户在 Codex 中提出目标，JH 补充跨模型协作、任务控制、独立审核和长期项目管理能力。

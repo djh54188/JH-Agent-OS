@@ -1,9 +1,0 @@
-{
-  "commit": "c4ac80ea055771c313ddddf3ce50dc17f4c4e9e0",
-  "tests_total": 185,
-  "passed": 184,
-  "skipped": 1,
-  "binding_counterexamples_reproduced": 6,
-  "checkpoint_accepted": false,
-  "worktree": "clean"
-}

@@ -9,6 +9,8 @@ import json
 import os
 from typing import Any, Callable, Dict, List, Optional
 
+from src.adapters import SchemaValidationError
+
 
 def _artifact_content(artifact_store, task_id: str) -> Optional[str]:
     latest = artifact_store.get_latest(task_id) if artifact_store else None
@@ -73,6 +75,21 @@ def transform_acceptance_evaluator(expected_output: Any, *, input_label: str = "
         for criterion in task["acceptance_criteria"][2:]:
             results.append({"criterion": criterion, "passed": False, "evidence": []})
         return results
+
+    return evaluate
+
+
+def code_deferred_acceptance_evaluator() -> Callable:
+    """Placeholder for code tasks: real judgment happens at complete_code_delivery.
+
+    Attached so the run assembles a control-owned evaluator, but never invoked
+    in the designed flow (code tasks branch to prepare before acceptance).
+    Raises if ever called so a missing branch fails closed instead of
+    mis-judging post-apply criteria before the host applies anything.
+    """
+
+    def evaluate(task: Dict[str, Any], tool_executions: List[Dict[str, Any]], artifact_store=None) -> List[Dict[str, Any]]:
+        raise SchemaValidationError("Code acceptance is judged at complete_code_delivery, never pre-apply")
 
     return evaluate
 
