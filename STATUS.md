@@ -1,15 +1,25 @@
 # 当前方向与续接 · 2026-10-17
 
-**用户已确认：模块化统一 GUI + 可替换 Agent 协作中间站。** 当前仅更新方向文档，暂不向执行 AI 派发新实施任务。
+**用户已确认：模块化统一 GUI + 可替换 Agent 协作中间站。** 方向文档已更新；除 JH-018 已按明确指令单独派发外，暂不向执行 AI 派发其他新实施任务。
 权威方向：[产品需求 v1.1](docs/product-requirements-v1.1.md)、[模块化架构](docs/modular-architecture.md)、[ADR-0005](docs/adr/ADR-0005-modular-gui-agent-hub.md)、[路线 v3.0](ROADMAP.md)。
 
-- GUI 为目标用户入口，Codex 保留默认主控/架构审查；Agent 应用、会话、模型、角色分离，支持跨应用和同应用不同会话的设计方向。ZCode 为首个候选，接口尚未验证。
-- 新 GUI、统一应用接口、通用 AgentSessionAdapter 和自动审查流转尚未实现/验收；既有 API 与 Skill/CLI 不能代替。
-- 已验收 N1、JH-005 和 JH-006 原成果保留。架构师已批准 c6c0af57 host-entry 接线批；本次核对到最新 HEAD d650bd3 仅新增真实输入盘点，工作树在文档更新前干净。
-- 原运行证据：389 项 388 过/1 既有跳过，33 变异 32 检出/1 冗余/0 异常，来自已有提交前后日志；本次文档工作未重新运行产品测试，不冒充新结果。
+- GUI 为目标用户入口，Codex 保留默认主控/架构审查；Agent 应用、会话、模型、角色分离，支持跨应用和同应用不同会话的设计方向。ZCode 为首个候选，**其会话接口已于 JH-018 实测**（见下）。
+- 新 GUI、统一应用接口、产品级 AgentSessionAdapter 与自动审查流转尚未实现/验收；既有 API 与 Skill/CLI 不能代替。
+- 已验收 N1、JH-005 和 JH-006 原成果保留。架构师已批准 c6c0af57 host-entry 接线批；d650bd3 仅补真实输入盘点；JH-018 于 d9cf37de 基线完成接口探测与契约设计。
+- 原运行证据：389 项 388 过/1 既有跳过，33 变异 32 检出/1 冗余/0 异常，来自既有提交前后日志。JH-018 之后全量 **398 项 397 过/1 既有跳过**。
 - 真实来源登记缺口仍在；N2/P1 未完成。production complete、FileToolExecutor 关闭，原树 80979f3 失败 WIP/STOP 和旧否决候选保留。
 - 实现工作树仍是 D:/JH-Agent OS/data/worktrees/n1-artifact-entry，分支 n1-artifact-entry。原树仅保留 WIP 和方向跳转，不用于新验收。
-- 下一动作是架构讨论和明确后续范围；TODO 中新事项仅登记，未派发。当前不启动 GUI 实现、外部接口探测、真实模型取证或新会话。
+- 除 JH-018 外，TODO 中新事项仅登记，未派发。当前不启动 GUI 实现、真实模型取证或新会话。
+
+---
+
+## 2026-10-17 · JH-018 应用/会话能力探测与适配契约（接口层完成，产品未实现）
+
+按明确指令派发并完成：实测 ZCode 0.16.9 与 Codex CLI 0.160.1 的会话接口。**ZCode**：`zcode app-server --stdio`（ZCode Protocol，换行 JSON、双向）+ 本地 CLI，实测 `session/create|send|read|messages|usage|events|setModel|stop`，派发-收集-取消跑通；限制是默认模型已弃用须显式 `setModel`（含 reasoningLevel），且客户端必须应答服务端反向请求（如 `session/requestRuntimePreferences`）。**Codex**：JSON-RPC app-server（187 方法，随包可生成 schema）+ `codex exec`/`exec resume`，实测对指定 thread `thread/resume`→`turn/start` 完成一轮并收到 `turn/completed` 与用量。
+
+产出：契约 `src/agent_session.py`（六能力、运行态无 `succeeded`、不支持显式抛错、无原生差异、无生产模块导入）；一致性夹具 `tests/test_jh018_agent_session_contract.py`（9 项）；探测脚本 `scripts/probe_zcode_capabilities.py`、`scripts/probe_codex_sessions.py`；报告 [JH-018](reports/jh018-agent-session-probe-20261017.md)。
+
+**仅接口能力层**：未实现 GUI、统一应用接口或产品闭环；`codex queue`、`review/start`、`turn/interrupt` 未实跑（daemon 未起或未调用）；未向用户在用会话写入；mock 适配器不算第二个应用接入。`production complete`、`FileToolExecutor` 继续关闭；N2/P1 未完成。
 
 ---
 

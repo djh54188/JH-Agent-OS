@@ -1,3 +1,12 @@
+# 2026-10-17 · JH-018 应用/会话能力探测与适配契约（接口层）
+
+- 实测 ZCode 0.16.9：本地 CLI 与 `zcode app-server --stdio`（ZCode Protocol 双向 JSON-RPC 式换行协议）；`session/create|send|read|messages|usage|events|setModel|stop` 全部实际调用通过，派发-运行-收集-取消跑通。限制：默认模型已弃用须显式 `setModel`（含 `reasoningLevel`）；客户端必须应答服务端反向请求，否则 `session/create` 超时。
+- 实测 Codex CLI 0.160.1：`codex exec` / `exec resume <threadId>` 与 JSON-RPC app-server；对指定 thread `thread/resume`→`turn/start` 完成一轮并收到 `turn/completed` 用量；随包可生成 187 方法权威 schema。`review/start`、`turn/interrupt`、`codex queue` 未实跑，已列明。
+- 新增契约 `src/agent_session.py`（capabilities/submit/status/collect/continue/cancel；运行态无 `succeeded`；不支持显式抛错；无原生差异；无生产模块导入），一致性夹具 9 项；新增探测脚本 2 个与[报告](reports/jh018-agent-session-probe-20261017.md)。全量 398 项 397 过/1 既有跳过。
+- 仅接口能力层：不改生产流程、Schema、门禁、权限与夹具；不发真实模型取证、不向用户在用会话写入、不建新会话；production complete、FileToolExecutor 继续关闭；mock 适配器不算第二应用接入。原树 WIP/STOP 保留。
+
+---
+
 # 2026-10-17 · 方向文档统一为模块化 GUI 与 Agent 协作中间站
 
 - 用户批准统一 GUI 作为入口，跨 Agent/同应用不同会话协作；系统六模块与 GUI 三层解耦，应用/会话/模型/角色分开配置。
