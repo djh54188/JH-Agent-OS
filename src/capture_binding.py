@@ -164,6 +164,12 @@ def register_capture_binding(storage, task_id: str, *, delivery_id: str,
     archive_path = Path(archive_dir) if isinstance(archive_dir, (str, Path)) else None
     if archive_path is None or not archive_path.is_dir():
         raise BindingRefused(f"archive-missing: archive directory unavailable: {archive_dir!r}")
+    # Anchor the archive before reading or persisting it. Later read-only
+    # queries may run from another working directory or another process.
+    try:
+        archive_path = archive_path.resolve(strict=True)
+    except OSError:
+        raise BindingRefused(f"archive-missing: archive directory unavailable: {archive_dir!r}") from None
     storage.get_task(task_id)
     owner_id = uuid.uuid4().hex
     if not storage.claim_task(task_id, owner_id):

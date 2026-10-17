@@ -88,13 +88,14 @@ def main():
         orch, tid, delivery = c._prepared_production()
         c._fixture_apply()
         plan = c._plan_for(tid, delivery)
+        posix_workdir = "/tmp/hark-pilot-posix/ws"
         fake_exec = {"thread_id": "t", "item_id": "i", "turn_id": "u", "source": "s",
-                     "argv": plan["argv"], "cwd_uri": "file:///" + c.ws.as_posix().lstrip("/"),
+                     "argv": plan["argv"], "cwd_uri": "file://" + posix_workdir,
                      "exit_code": 0, "output": "PASS"}
         fake_call = {"execution_key": ("t", "i"), "turn_id": "u", "source": "s",
                      "input": plan["call_input"]}
         why = refusal(lambda: verify_desktop_binding(
-            fake_exec, fake_call, expected_argv=plan["argv"], expected_workdir=str(c.ws),
+            fake_exec, fake_call, expected_argv=plan["argv"], expected_workdir=posix_workdir,
             expected_exit=0, expected_marker="PASS", expected_call_input=plan["call_input"]))
         record("P1-posix-workdir-refused", "non-Windows workdir refused, not bound",
                why, why is not None and "expectation-malformed" in why)
@@ -102,7 +103,8 @@ def main():
         # P2 currentness: post-apply snapshot ok; target drift refused.
         snap = cb._control_snapshot(orch.storage, tid, delivery["delivery_id"])
         record("P2a-snapshot-after-apply", "snapshot succeeds once target == expected_after",
-               {"observed_target_sha256": snap["observed_target_sha256"][:16]}, True)
+               {"observed_target_sha256": snap["observed_target_sha256"][:16]},
+               snap["observed_target_sha256"] == tcd._sha(tcd._reference_bytes()))
         (c.ws / TARGET).write_bytes(tcd._baseline_bytes())
         why = refusal(lambda: cb._control_snapshot(orch.storage, tid, delivery["delivery_id"]))
         record("P2b-target-revert-refused", "target reverted to baseline -> refused",
@@ -239,7 +241,9 @@ def main():
            "probes": len([r for r in RESULTS if r["kind"] == "probe"]),
            "failed": len(failed), "results": RESULTS,
            "platform_blocked": ["desktop register/current/archive verification need a Windows drive "
-                                "workdir and the measured pwsh desktop wrapper; not exercised here"],
+                                "workdir and the measured pwsh desktop wrapper; not exercised here"]
+                               if os.name != "nt" else [],
+           "not_exercised": ["full desktop register/current/archive verification is outside this probe script"],
            "verdict": "pass" if not failed else "fail"}
     print(json.dumps(out, ensure_ascii=False, indent=2, default=str))
     return 0 if not failed else 1

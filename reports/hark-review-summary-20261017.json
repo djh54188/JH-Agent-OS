@@ -1,0 +1,113 @@
+{
+  "date": "2026-10-17",
+  "base_sha": "bc3e0f286d4a8a2863ab15daf223a2900f0dd44a",
+  "hark_sha": "ddf453220a490a99044d1afc109b65650360b565",
+  "branches": {
+    "original_delivery": "hark-pilot-20261016",
+    "review_candidate": "hark-review-20261017"
+  },
+  "verdict": "environment-blocked Linux evidence accepted; Windows baseline verified; fixes remain isolated candidates",
+  "linux_supplied": {
+    "unittest.log": {
+      "ran": 359,
+      "failures": 11,
+      "errors": 55,
+      "skipped": 1,
+      "blocker_set_matches": true,
+      "passed": 292
+    },
+    "unittest-py314.log": {
+      "ran": 359,
+      "failures": 11,
+      "errors": 55,
+      "skipped": 1,
+      "blocker_set_matches": true,
+      "passed": 292
+    }
+  },
+  "windows_original": {
+    "ran": 359,
+    "passed": 358,
+    "skipped": 1,
+    "failures": 0,
+    "errors": 0
+  },
+  "windows_candidate_precommit": {
+    "ran": 362,
+    "passed": 361,
+    "skipped": 1,
+    "failures": 0,
+    "errors": 0
+  },
+  "independent_ast_count": 362,
+  "blockers": {
+    "windows-drive-workdir": 48,
+    "measured-pwsh-desktop-wrapper": 2,
+    "windows-junction-api": 5,
+    "windows-cmd-mklink": 1,
+    "codex-cli-absent": 1,
+    "windows-absolute-path-model": 7,
+    "windows-case-insensitive-fs": 1,
+    "windows-backslash-separator": 1
+  },
+  "corrected_classification": {
+    "Windows_semantics_or_tools": 65,
+    "Codex_CLI_unavailable": 1
+  },
+  "new_mutations": {
+    "controls": 3,
+    "mutations": 2,
+    "detected": 2,
+    "errors": 0
+  },
+  "existing_capture_mutations": {
+    "mutations": 30,
+    "detected": 29,
+    "redundant": 1,
+    "errors": 0
+  },
+  "corrected_hark_probe": {
+    "probes": 17,
+    "failed": 0,
+    "full_desktop_binding_exercised": false
+  },
+  "archive_relative_path": {
+    "reproduced": true,
+    "candidate_fixed": true,
+    "old_persisted_relative_rows_migrated": false
+  },
+  "review_items_branch": "reachable on a nonempty persisted field; retained",
+  "posix_escape_claim": "not established; foreign drive path is lexically workspace-local on POSIX",
+  "patch_and_bundle_same_tree": "b89376a51ea5708aac345749cfa8bdc310e38492",
+  "main_modified": false,
+  "active_development_worktree_modified": false,
+  "production_complete": "closed",
+  "automatic_file_application": "closed",
+  "api_calls": 0,
+  "linux_after_fix": "not rerun; supplied evidence describes original ddf4532 only",
+  "scope": "all new runtime controls and source records in tests are synthetic",
+  "original_artifact_hashes": {
+    "0001-hark-pilot-20261016-independent-offline-review-repor.patch": "0792634508baf8b73a1e5224347ede9cf4e927c58ba583be535bce5dc908e7e1",
+    "blockers-66.json": "3ad44086a7840b9f0bfcce89f23c88b08586e0cd20b7869c87eedb9de74b4919",
+    "blockers-66.md": "320426afcbb2f6965d37b223367f8be55fde6e92fece7636bbf2b2ec404fed33",
+    "exits.txt": "7483df2b29ffd55bfe59fd76c50fed39174774a818c3a38bedb33ed13ad29dbf",
+    "hark-pilot-20261016.bundle": "2c7aeabef3e3d7207c5137be670faf780fe5ce670855b9f3e9b6e3f0da342bf9",
+    "hark-pilot-20261016.md": "a229aaa0809c74d3d524f3ff716a197fafb4ca41f9a0823d0a1e4a4a51e4cbda",
+    "hark_pilot_probe.py": "42e397704658020ff9959ceaad393e2b3d168cc13164011e0ace7bd7836226c6",
+    "probe.log": "b12edc6a71861115b97228f1d175b86caf10f01be051cea6ffbd78f1e1bed042",
+    "README.md": "f82c2d15d73bbd3aa967ed13319e7cec2abe31c089bce31fa5c91f439ee8a385",
+    "SUMMARY.json": "fa46d4758443f3ee81485f5d52f36fec64f5c7e7345c6ead3369b16ccef618f9",
+    "unittest-py314.log": "96705bd736f06745221822d8a86439408d4b3edc8b349d21645742fa812e62ac",
+    "unittest.log": "9e7892605bc7b514187b7195ff7c532df0345faba5d652c7cca883599d4af173",
+    "verify_jh005_fixtures.log": "9dd8ddef7166ddc520c2a1cc40d63f842035f1d26ed9bd03dc64e8ddd3ad76f7",
+    "verify_jh005_mutations.log": "11a736c9ce2b799bbc2ad1ae8a1ea0f6022107de3b22b14792c0da7434eba745",
+    "verify_jh006_capture_guards.log": "008c20647e42e26725d66ce03070dde2bb21e3fd91fcb089b131975463925ded",
+    "verify_jh006_host_boundary.log": "dede8a42d461577c278e9d165113f57f6e6f5d9136cf42173b9d84f780598ffc"
+  },
+  "candidate_source_sha256": {
+    "src/capture_binding.py": "4b18d5af2693ecc8e20c9ce7543070709feb9860e7188f171b8eff74286b7379",
+    "scripts/hark_pilot_probe.py": "892be7aff29d2faf4a5ab794448fa02107ebcc14818b2b8f4fa3bc34952c16de",
+    "scripts/verify_hark_review_guards.py": "6aebe4a799864d89bd372dfe7271dc22440c35a5fd44006c90d094580e3628f8",
+    "tests/test_hark_archive_location.py": "7f8ce7161e58b6306df4b82d55ecb83bde1206b9b87c0615326cd1db09a8ece7"
+  }
+}
