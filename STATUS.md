@@ -1,3 +1,20 @@
+# 当前方向与续接 · 2026-10-17
+
+**用户已确认：模块化统一 GUI + 可替换 Agent 协作中间站。** 当前仅更新方向文档，暂不向执行 AI 派发新实施任务。
+权威方向：[产品需求 v1.1](docs/product-requirements-v1.1.md)、[模块化架构](docs/modular-architecture.md)、[ADR-0005](docs/adr/ADR-0005-modular-gui-agent-hub.md)、[路线 v3.0](ROADMAP.md)。
+
+- GUI 为目标用户入口，Codex 保留默认主控/架构审查；Agent 应用、会话、模型、角色分离，支持跨应用和同应用不同会话的设计方向。ZCode 为首个候选，接口尚未验证。
+- 新 GUI、统一应用接口、通用 AgentSessionAdapter 和自动审查流转尚未实现/验收；既有 API 与 Skill/CLI 不能代替。
+- 已验收 N1、JH-005 和 JH-006 原成果保留。架构师已批准 c6c0af57 host-entry 接线批；本次核对到最新 HEAD d650bd3 仅新增真实输入盘点，工作树在文档更新前干净。
+- 原运行证据：389 项 388 过/1 既有跳过，33 变异 32 检出/1 冗余/0 异常，来自已有提交前后日志；本次文档工作未重新运行产品测试，不冒充新结果。
+- 真实来源登记缺口仍在；N2/P1 未完成。production complete、FileToolExecutor 关闭，原树 80979f3 失败 WIP/STOP 和旧否决候选保留。
+- 实现工作树仍是 D:/JH-Agent OS/data/worktrees/n1-artifact-entry，分支 n1-artifact-entry。原树仅保留 WIP 和方向跳转，不用于新验收。
+- 下一动作是架构讨论和明确后续范围；TODO 中新事项仅登记，未派发。当前不启动 GUI 实现、外部接口探测、真实模型取证或新会话。
+
+---
+
+以下是按时间保留的历史快照。其中“当前/下一批/待审查”以各记录日期为准，不覆盖上面的现行状态。
+
 # STATUS · JH-Agent OS · 会话续接卡
 
 更新：2026-10-17。本文记录当前项目快照；恢复工作时同时核对 Git 工作树与最新交付。

@@ -1,3 +1,5 @@
+> **2026-10-17 方向基线更新**：本目录是当前生产 Schema；新会话/消息信封仅是设计要求，须按版本兼容策略单独实施，本次不修改 JSON Schema。 现行方向见 [最新基线](../modular-architecture.md)。本次仅文档对齐，不派发新任务。
+
 # JH-Agent OS 核心通信协议 Schema（v1.0.0）
 
 本目录包含 JH-Agent OS 核心控制层与多智能体（Worker, Reviewer, Meta Planner, Orchestrator）交互所依赖的 6 个标准 JSON Schema。

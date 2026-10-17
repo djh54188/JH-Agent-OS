@@ -1,3 +1,5 @@
+> **2026-10-17 方向基线更新 / 历史交接适用限制**：当前需求为 [v1.1](../product-requirements-v1.1.md)，架构见 [模块化设计](../modular-architecture.md)，状态见 [STATUS](../../STATUS.md)。用户当前只更新文档、暂不派发新任务。本文件正文保留原批次背景，不按其中“当前/下一批”自动执行，不固定未来执行应用/模型，不据此重做已验收批次；独立审查与生产门禁继续有效。
+
 # 发给 Muse：JH-006 当前交付与独立采集绑定（离线批）
 
 你是执行负责人。先读 STATUS.md、TODO.md、reports/jh006-host-capture-review-20261016.md，核对 n1-artifact-entry 的最新 HEAD 与工作区。目录为 D:/JH-Agent OS/data/worktrees/n1-artifact-entry。不要改原树 STOP WIP，也不要恢复 82d3d09 候选生产完成路由。77150eb 只是原交付检查点；以架构师最终补强提交为起点。

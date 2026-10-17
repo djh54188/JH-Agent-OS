@@ -3,6 +3,9 @@ name: jh-task
 description: Run a JH-Agent OS task end to end. Use when the user wants to submit, check, resume, collect results, run offline code-delivery prepare/complete, or plan/register/query host-capture bindings for a JH task through the project's structured CLI.
 ---
 
+> 2026-10-17 product direction: the target user entry is a modular JH GUI with replaceable Agent applications and sessions. See [requirements v1.1](../../../docs/product-requirements-v1.1.md) and [architecture](../../../docs/modular-architecture.md), both relative to the repository root as resolved below. This Skill only exposes the existing verified CLI capability; GUI/external-Agent automation is not implemented. The current user request is documentation alignment only: do not dispatch implementation tasks, start new sessions or enable production completion/file application from this notice.
+
+
 # JH Task Entry (Codex-hosted)
 
 Drive JH-Agent OS tasks through the project's structured CLI only. JH owns

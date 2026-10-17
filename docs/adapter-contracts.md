@@ -1,3 +1,5 @@
+> **2026-10-17 方向基线更新**：正文定义现有 ModelAdapter 的 API 契约；外部 AgentSessionAdapter 是独立待设计模块，不等同于模型调用。现有通道与 Schema 不变。 现行方向见 [最新基线](modular-architecture.md)。本次仅文档对齐，不派发新任务。
+
 # 模型适配器统一契约与配置规范
 
 - **版本**：v1.1.0

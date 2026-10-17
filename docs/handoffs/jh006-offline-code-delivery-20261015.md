@@ -1,3 +1,5 @@
+> **2026-10-17 方向基线更新 / 历史交接适用限制**：当前需求为 [v1.1](../product-requirements-v1.1.md)，架构见 [模块化设计](../modular-architecture.md)，状态见 [STATUS](../../STATUS.md)。用户当前只更新文档、暂不派发新任务。本文件正文保留原批次背景，不按其中“当前/下一批”自动执行，不固定未来执行应用/模型，不据此重做已验收批次；独立审查与生产门禁继续有效。
+
 # 发给 Muse：JH-006 首批，两步代码交付的最小离线实现
 
 日期：2026-10-15。JH-005 的规格与正式夹具已通过，N2/P1 尚未完成；不是宿主应用能力已经验证。当前已接受需求见 docs/n2-acceptance-spec.md 与 docs/host-delivery-contract.md，证据见 reports/jh005-acceptance-20261015.md。

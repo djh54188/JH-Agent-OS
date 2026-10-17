@@ -1,3 +1,5 @@
+> **2026-10-17 方向基线更新 / 历史交接适用限制**：当前需求为 [v1.1](../product-requirements-v1.1.md)，架构见 [模块化设计](../modular-architecture.md)，状态见 [STATUS](../../STATUS.md)。用户当前只更新文档、暂不派发新任务。本文件正文保留原批次背景，不按其中“当前/下一批”自动执行，不固定未来执行应用/模型，不据此重做已验收批次；独立审查与生产门禁继续有效。
+
 # 发给 Muse：JH-006 先证明独立宿主记录采集 · 2026-10-16
 
 工作树D:/JH-Agent OS/data/worktrees/n1-artifact-entry，分支n1-artifact-entry。先核对最新HEAD/状态，读取STATUS、TODO与reports/jh006-host-records-review-20261016.md。82d3d09是未准入候选检查点，e390867是已验收首批基线；不得把82d3d09候选生产完成代码重新接回运行时。
