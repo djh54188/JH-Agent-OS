@@ -17,9 +17,11 @@
 
 按明确指令派发并完成：实测 ZCode 0.16.9 与 Codex CLI 0.160.1 的会话接口。**ZCode**：`zcode app-server --stdio`（ZCode Protocol，换行 JSON、双向）+ 本地 CLI，实测 `session/create|send|read|messages|usage|events|setModel|stop`，派发-收集-取消跑通；限制是默认模型已弃用须显式 `setModel`（含 reasoningLevel），且客户端必须应答服务端反向请求（如 `session/requestRuntimePreferences`）。**Codex**：JSON-RPC app-server（187 方法，随包可生成 schema）+ `codex exec`/`exec resume`，实测对指定 thread `thread/resume`→`turn/start` 完成一轮并收到 `turn/completed` 与用量。
 
-产出：契约 `src/agent_session.py`（六能力、运行态无 `succeeded`、不支持显式抛错、无原生差异、无生产模块导入）；一致性夹具 `tests/test_jh018_agent_session_contract.py`（9 项）；探测脚本 `scripts/probe_zcode_capabilities.py`、`scripts/probe_codex_sessions.py`；报告 [JH-018](reports/jh018-agent-session-probe-20261017.md)。
+产出：契约 `src/agent_session.py`（六能力、运行态无 `succeeded`、不支持显式抛错、无原生差异、无生产模块导入）；一致性夹具 `tests/test_jh018_agent_session_contract.py`；探测脚本 `scripts/probe_zcode_capabilities.py`、`scripts/probe_codex_sessions.py`；报告 [JH-018](reports/jh018-agent-session-probe-20261017.md)。
 
-**仅接口能力层**：未实现 GUI、统一应用接口或产品闭环；`codex queue`、`review/start`、`turn/interrupt` 未实跑（daemon 未起或未调用）；未向用户在用会话写入；mock 适配器不算第二个应用接入。`production complete`、`FileToolExecutor` 继续关闭；N2/P1 未完成。
+**整改 R1—R4（2026-10-17，待审）**：R1 两个探测脚本收紧判据——必需步骤出现协议错误/超时/未接受/错会话/错轮次/失败终态即失败并退出非零，Codex 完成通知须匹配本 thread 与本 turn 且检查最终 status/error，ZCode 不以"有 result 或 idle"判完成，枚举模式与往返判据分开，并各加离线假传输正反控（ZCode 15 例、Codex 13 例，含"归属不明即拒发"）；未知服务端请求改回错误并计失败，不再默认成功应答；Codex 探测发送前做实验会话归属检查（`cwd` + preview 标记，仅传 thread ID 或覆盖 cwd 不算）。R2 契约幂等索引与 run_id 索引分开、跨地址查询抛 `AddressMismatch`、同幂等键配不同请求抛 `IdempotencyConflict`，绑定应用实例/会话/任务/轮次。R3 未确认取消只表 `CANCEL_REQUESTED`，`CANCELLED` 需原生确认；区分逻辑任务与原生轮次，整改保留历史/累计预算/授权范围；用两个**不同类** mock 适配器验证同一调用点。R4 文档区分"已结束会话恢复／活跃轮次接续／实际审查／完整闭环"，无证据项改写为"未发现/未知"，保留并解释 `exec1.exit=1` 与成功回复并存的原始事实。
+
+**仅接口能力层（整改待审）**：未实现 GUI、统一应用接口或产品闭环；`codex queue`、`review/start`、`turn/interrupt`、`turn/steer` 未实跑（daemon 未起或未调用）；未向用户在用会话写入；mock 适配器不算第二个应用接入。`production complete`、`FileToolExecutor` 继续关闭；N2/P1 未完成。
 
 ---
 

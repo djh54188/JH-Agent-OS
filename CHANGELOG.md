@@ -1,3 +1,12 @@
+# 2026-10-17 · JH-018 整改 R1—R4（待审）
+
+- R1 探测脚本收紧：必需步骤出现协议错误/超时/未接受/错会话/错轮次/失败终态即失败并退出非零；Codex 完成通知须匹配本 thread 与本 turn 并检查最终 status/error；ZCode 不以"有 result 或 idle"判完成；枚举模式与往返判据分开；未知服务端请求改回错误并计失败；各加离线假传输正反控（ZCode 15 例、Codex 13 例）。Codex 探测发送前做实验会话归属检查（`cwd` + preview 标记），归属不明即拒发（退出码 3，不发送）。
+- R2/R3 契约修正：幂等索引与 run_id 索引分开；跨地址查询抛 `AddressMismatch`（不再静默 `unknown`），同幂等键配不同请求抛 `IdempotencyConflict`；绑定应用实例/会话/任务/轮次；未确认取消只报 `CANCEL_REQUESTED`，`CANCELLED` 需原生确认；区分逻辑任务与原生轮次，整改保留历史/累计预算/授权范围；夹具改为行为测试并用两个不同类 mock 验证同一调用点（23 项）。
+- R4 口径修正：区分"已结束会话恢复／活跃轮次接续／实际审查／完整闭环"；无充分证据的"不支持"改写为"未发现/未知"；原始探测文件只读归档到 `data/jh018-probes-20261017/raw/` 并查明保留 `exec1.exit=1` 与成功回复并存的原因（两次尝试共用文件名，退出码未回写），不覆盖旧文件。
+- 全量 **412 项 411 通过 / 1 既有跳过**；ZCode/Codex selftest 全通过。仅接口能力层与设计，不改生产流程/Schema/门禁/权限/夹具，不发真实模型取证、不向用户在用会话写入。`production complete`、`FileToolExecutor` 继续关闭。本批状态：**整改待审**。
+
+---
+
 # 2026-10-17 · JH-018 应用/会话能力探测与适配契约（接口层）
 
 - 实测 ZCode 0.16.9：本地 CLI 与 `zcode app-server --stdio`（ZCode Protocol 双向 JSON-RPC 式换行协议）；`session/create|send|read|messages|usage|events|setModel|stop` 全部实际调用通过，派发-运行-收集-取消跑通。限制：默认模型已弃用须显式 `setModel`（含 `reasoningLevel`）；客户端必须应答服务端反向请求，否则 `session/create` 超时。
