@@ -229,10 +229,10 @@ JH.views = (function () {
     });
   }
 
-  /* Agent / 会话：全部为静态登记，必须显式显示未连接。 */
+  /* Agent / 会话：静态登记（模拟）+ 真实会话运行记录（历史，只读）。 */
   function sessions() {
     const gen = beginRender();
-    render([heading("Agent / 会话", "静态登记视图：未接入适配器，不存在真实连接"),
+    render([heading("Agent / 会话", "静态登记为模拟；运行记录为历史，不代表实时在线"),
             C().loadingState("正在读取会话登记…")], gen);
     JH.api.listSessions().then(function (envelope) {
       if (!isCurrent(gen)) { return; }
@@ -250,9 +250,139 @@ JH.views = (function () {
           card.appendChild(C().evidenceList(session.evidence));
           panel.appendChild(card);
         });
-        render([heading("Agent / 会话", "静态登记视图：未接入适配器，不存在真实连接"), panel], gen);
+        render([heading("Agent / 会话", "静态登记为模拟；运行记录为历史，不代表实时在线"),
+                panel, runHistoryPanel(gen)], gen);
       });
     });
+  }
+
+  /* 运行记录面板：来源状态、历史列表、以及按需展开的详情（不触发任何执行）。 */
+  function runHistoryPanel(panelGeneration) {
+    const panel = C().el("section", "panel");
+    panel.appendChild(C().el("h3", null, "运行记录（历史，只读）"));
+    panel.appendChild(C().note("登记来源由服务端配置；本界面只读，不派发、不收集、"
+      + "不启动 app-server、不发送任何会话消息。历史记录不代表实时在线，"
+      + "declared_complete 不代表任务验收成功。"));
+    const list = C().el("div", "run-list");
+    const detail = C().el("div", "run-detail");
+    panel.appendChild(list);
+    panel.appendChild(detail);
+
+    function renderRunCard(run) {
+      const card = C().el("div", "card");
+      card.appendChild(C().el("div", "card-title", run.app_kind + " · " + run.run_id));
+      card.appendChild(C().field("instance_id", run.instance_id));
+      card.appendChild(C().field("role", run.role));
+      card.appendChild(C().field("requested_model", run.requested_model));
+      card.appendChild(C().field("native_model", run.native_model));
+      const row = C().el("div", "row");
+      row.appendChild(C().statusBadge(run.record_state));
+      row.appendChild(C().el("span", "muted", "native_state="
+        + (run.native_state === null || run.native_state === undefined ? "—" : run.native_state)));
+      card.appendChild(row);
+      card.appendChild(C().field("native_session_id", run.native_session_id));
+      card.appendChild(C().field("native_turns", (run.native_turns || []).join(", ")));
+      card.appendChild(C().field("last_recorded_at", run.last_recorded_at));
+      const usage = run.usage || {};
+      const turn = (usage.turn || {}).totalTokens;
+      const total = (usage.thread_total || {}).totalTokens;
+      card.appendChild(C().field("本轮用量(turn)", turn === undefined ? "—" : turn));
+      card.appendChild(C().field("线程累计(thread_total)", total === undefined ? "—" : total));
+      card.appendChild(C().evidenceNotice(run.evidence || {}));
+      card.appendChild(C().el("div", "muted", "declared_status="
+        + (run.declared_status === null ? "—" : run.declared_status)
+        + "（执行方声明，非任务验收成功）"));
+      const button = C().el("button", "run-action", "查看记录详情");
+      button.dataset.runId = run.run_id;
+      card.appendChild(button);
+      return card;
+    }
+
+    function refresh() {
+      if (panelGeneration !== renderGeneration) { return; }
+      list.textContent = "";
+      detail.textContent = "";
+      JH.api.listAgentRuns().then(function (envelope) {
+        if (panelGeneration !== renderGeneration) { return; }
+        list.textContent = "";
+        if (!envelope || envelope.ok !== true) {
+          list.appendChild(C().errorState((envelope && envelope.error) || {}));
+          return;
+        }
+        list.appendChild(C().runSourceNotice(envelope));
+        if (envelope.state !== "ok") {
+          list.appendChild(C().emptyState(envelope.message || "没有可显示的运行记录"));
+          return;
+        }
+        envelope.runs.forEach(function (run) { list.appendChild(renderRunCard(run)); });
+      });
+    }
+
+    /* Selecting a run uses an explicit button carrying the run id, not scraped
+     * card text — the id is looked up in the history server-side. */
+    function loadDetail(runId) {
+      if (panelGeneration !== renderGeneration) { return; }
+      detail.textContent = "";
+      detail.appendChild(C().loadingState("正在读取运行记录…"));
+      JH.api.agentRunDetail(runId).then(function (envelope) {
+        if (panelGeneration !== renderGeneration) { return; }
+        detail.textContent = "";
+        if (!envelope || envelope.ok !== true) {
+          detail.appendChild(C().errorState((envelope && envelope.error) || {}));
+          return;
+        }
+        if (!envelope.run) {
+          detail.appendChild(C().emptyState(envelope.message || "该运行记录不可用"));
+          return;
+        }
+        detail.appendChild(renderRunDetail(envelope.run));
+      });
+    }
+
+    list.addEventListener("click", function (event) {
+      const button = event.target.closest ? event.target.closest("button.run-action") : null;
+      if (!button) { return; }
+      loadDetail(button.dataset.runId);
+    });
+
+    refresh();
+    return panel;
+  }
+
+  function renderRunDetail(run) {
+    const box = C().el("div", "subpanel");
+    box.appendChild(C().el("h4", null, "运行详情：" + run.run_id));
+    ["app_kind", "instance_id", "session_id", "role", "requested_model", "native_model",
+     "logical_task_id", "attempt", "request_fingerprint", "idempotency_key",
+     "native_session_id", "native_state", "first_recorded_at", "last_recorded_at",
+     "record_state", "declared_status"].forEach(function (key) {
+      box.appendChild(C().field(key, run[key]));
+    });
+    box.appendChild(C().field("native_turns", (run.native_turns || []).join(", ")));
+    box.appendChild(C().field("events", (run.events || []).join(" → ")));
+
+    const usage = run.usage || {};
+    const usageBox = C().el("div", "subpanel");
+    usageBox.appendChild(C().el("h4", null, "用量（本轮 / 线程累计）"));
+    usageBox.appendChild(C().field("turn", JSON.stringify(usage.turn)));
+    usageBox.appendChild(C().field("thread_total", JSON.stringify(usage.thread_total)));
+    usageBox.appendChild(C().field("model_context_window", usage.model_context_window));
+    usageBox.appendChild(C().field("source", JSON.stringify(usage.source)));
+    box.appendChild(usageBox);
+
+    box.appendChild(C().el("h4", null, "证据"));
+    box.appendChild(C().evidenceNotice(run.evidence || {}));
+    box.appendChild(C().bulletList("未验证事项", run.unverified));
+    if (run.dispatch_uncertain_reason) {
+      box.appendChild(C().bulletList("派发不确定原因", [run.dispatch_uncertain_reason]));
+    }
+    const link = run.link || {};
+    box.appendChild(C().el("h4", null, "关联任务"));
+    box.appendChild(C().field("linked", link.linked));
+    box.appendChild(C().el("div", "muted", link.note || "未提供关联说明"));
+    box.appendChild(C().el("div", "muted",
+      "历史记录不代表实时在线；declared_complete 不代表任务验收成功。"));
+    return box;
   }
 
   /* 审查与交付。 */

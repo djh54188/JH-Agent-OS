@@ -1,3 +1,18 @@
+# 2026-10-18 · JH-020 真实会话运行记录的统一查询与 GUI 只读展示（本切片完成，待独立复核）
+
+**复用**已验收代码：`read_registry_text` / `parse_registry_text`（逐字段校验，不跳过坏行）/ `raw_evidence_state`（读磁盘字节核对摘要）；`TaskStorage.get_task` 只读核对关联。未复制状态机或审核规则。
+
+- **统一应用接口**（`src/app_api.py`）：新增 `agent_run_history` 能力与 `list_agent_runs()` / `agent_run_detail(run_id)`。**登记来源由服务端配置**（`--runs`），接口无路径参数，`source.browser_supplied=false`；浏览器只能列历史或按已存在的 run id 查详情。
+- **状态四态分明且不改写原文件**：`absent` / `empty` / `ok` / `unreadable` / `corrupt`（任一行非法即整历史不可用）；不跳过、不修复、不迁移、不截断。
+- **证据四态**：`verified` / `missing` / `mismatch` / `unverifiable`——实际读磁盘字节核对 sha256 与帧数；`run_id` 绝不当路径。
+- **展示**：应用、实例、模型（请求/原生）、角色、run、原生 thread/turn、最后记录时间、记录状态、**本轮/线程累计用量**、证据、未验证事项、事件序列、关联任务。显式标注 `live=false`（历史非实时在线）、`declared_complete` 是执行方声明**非任务验收成功**；未关联任务时明示“未关联（不创建任务记录）”，不创建任务。
+- **GUI 三层保持**：仅 `data_access.js` 持有 `fetch`（新增两个方法）；`components.js` 新增纯渲染组件；`views.js` 在 Agent/会话 视图新增“运行记录（历史，只读）”面板与详情，选择用按钮 `dataset.runId`。未新增 GUI 文件。
+- **验证**：新增 API 17 项、HTTP 7 项、前端行为 7 场景、守卫变异 **4/4 检出**；JH-019 前端四场景在扩展 API 桩后仍全绿；全量 **618 项 617 过/1 既有跳过**（AST 独立计数 618）；**实机浏览器验证**渲染真实运行记录（`codex-run-1-1779aa1b`、`gpt-6.1-sol`、用量 18393、`证据核验：verified`、`linked=false`）。
+- **边界**：不接 GUI 派发、不执行 collect、不实现 continue/cancel、不发送指定审查会话、不建架构师、不改成功门、不启用 `production complete`/`FileToolExecutor`、不改 Hark 验证器、不推送/不合并 PR。查询不启动 app-server、不调用模型、不发送会话消息（测试锁定）。
+- 承接：`1288d8a`、`4c94d8d` 已按各自范围验收；旧 12/12、19/19 不恢复。**JH-020 整体、N2/P1、指定审查与 GUI 执行仍未完成。** 见[报告](reports/jh020-run-history-gui-20261018.md)。
+
+---
+
 # 2026-10-18 · Hark 验证器补丁的 Windows 本地移植与验证（独立批，待独立复核）
 
 来源提交 `fe0476d5807d6d562a1c290fe1b14623e53d1a46`；本地候选 `data/hark-v1v2-r4-review-20261018/candidate/`。**仅精准移植三个文件**，未整分支合并、未覆盖旧 main 快照、未搬入其他云端改动。

@@ -272,20 +272,33 @@ def parse_registry_text(text: str) -> List[Dict[str, Any]]:
     return records
 
 
-def verify_raw_evidence(raw_evidence: Optional[Dict[str, Any]]) -> Tuple[bool, str]:
-    """Check a recorded digest and frame count against the file's actual bytes."""
+def raw_evidence_state(raw_evidence: Any) -> Tuple[str, str]:
+    """Classify a recorded evidence reference against the file actually on disk.
+
+    Four distinct outcomes, none of which is silently folded into another:
+      * "verified"     -- the byte digest and frame count match the file;
+      * "missing"      -- the record carries no locatable reference at all;
+      * "mismatch"     -- the file is readable but does not match the record;
+      * "unverifiable" -- the file cannot be read, so nothing is proven.
+    """
     if not isinstance(raw_evidence, dict) or not raw_evidence.get("path"):
-        return False, "raw evidence has no locatable path"
+        return "missing", "raw evidence has no locatable path"
     try:
         data = Path(raw_evidence["path"]).read_bytes()
     except OSError as exc:
-        return False, f"raw evidence file unreadable: {exc}"
+        return "unverifiable", f"raw evidence file unreadable: {exc}"
     if hashlib.sha256(data).hexdigest() != raw_evidence.get("sha256"):
-        return False, "raw evidence digest does not match the file's bytes"
+        return "mismatch", "raw evidence digest does not match the file's bytes"
     frames = len([line for line in data.decode("utf-8").splitlines() if line.strip()])
     if frames != raw_evidence.get("frames"):
-        return False, f"raw evidence frame count {frames} != recorded {raw_evidence.get('frames')}"
-    return True, "digest and frame count match the file bytes"
+        return "mismatch", f"raw evidence frame count {frames} != recorded {raw_evidence.get('frames')}"
+    return "verified", "digest and frame count match the file bytes"
+
+
+def verify_raw_evidence(raw_evidence: Optional[Dict[str, Any]]) -> Tuple[bool, str]:
+    """(ok, detail) over raw_evidence_state; kept for the existing callers."""
+    state, detail = raw_evidence_state(raw_evidence)
+    return state == "verified", detail
 
 
 def _sha256_text(text: str) -> str:

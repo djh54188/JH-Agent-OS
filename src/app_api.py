@@ -32,6 +32,12 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from src.cli import build_task_summary, open_readonly_storage
+from src.agent_session_codex import (
+    RegistryUnavailable,
+    parse_registry_text,
+    raw_evidence_state,
+    read_registry_text,
+)
 
 # Capabilities the interface surface is designed to expose. Anything the
 # collaboration core can do but that is NOT wired in this batch is listed with
@@ -43,6 +49,8 @@ CAPABILITY_SURFACE: Dict[str, Dict[str, Any]] = {
     "agents_sessions": {"supported": True, "note": "会话登记视图（静态登记，未接入适配器）"},
     "review_delivery": {"supported": True, "note": "审查与交付视图（只读，复用既有审核绑定）"},
     "goal_draft": {"supported": True, "note": "目标输入保存为显式标记的草案"},
+    "agent_run_history": {"supported": True,
+                          "note": "真实会话运行记录（服务端配置的登记文件；只读，不派发/不收集）"},
     "dispatch": {"supported": False, "reason": "JH-020：真实派发未接入"},
     "collect": {"supported": False, "reason": "JH-020：交付收集未接入"},
     "review_trigger": {"supported": False, "reason": "JH-020：自动触发独立审查未接入"},
@@ -101,6 +109,38 @@ REQUIRED_DRAFT_KEYS = ("kind", "draft_id", "draft", "execution", "title", "goal"
 REPLACE_ATTEMPTS = 5
 REPLACE_BACKOFF_SECONDS = 0.02
 DEFAULT_DRAFTS_PATH = Path(__file__).resolve().parents[1] / "data" / "gui" / "goal-drafts.json"
+# The run registry is a SERVER-side setting: the browser never supplies a path,
+# it can only ask for the list or for one run id that must exist in the history.
+DEFAULT_RUNS_PATH = Path(__file__).resolve().parents[1] / "data" / "gui" / "agent-runs.jsonl"
+
+# Registry states, each reported as its own shape. None of them is folded into
+# another and none of them triggers a repair of the file on disk.
+RUNS_ABSENT = "absent"
+RUNS_EMPTY = "empty"
+RUNS_OK = "ok"
+RUNS_UNREADABLE = "unreadable"
+RUNS_CORRUPT = "corrupt"
+
+
+def _binding_from_snapshot(snapshot: Optional[str]) -> Dict[str, Any]:
+    """Read the requested address back out of the recorded canonical snapshot.
+
+    The snapshot is the immutable record of the dispatch request, so the role
+    and requested model come from what was actually registered rather than from
+    a guess. A snapshot that cannot be parsed is reported, not invented.
+    """
+    if not isinstance(snapshot, str) or not snapshot:
+        return {"parsed": False, "reason": "没有规范化请求快照"}
+    try:
+        data = json.loads(snapshot)
+    except ValueError:
+        return {"parsed": False, "reason": "请求快照无法解析"}
+    if not isinstance(data, dict):
+        return {"parsed": False, "reason": "请求快照不是对象"}
+    return {"parsed": True, "role": data.get("role"), "requested_model": data.get("model_id"),
+            "workspace": data.get("workspace"), "schema": data.get("schema"),
+            "budget_tokens": data.get("budget_tokens"),
+            "allowed_scope": data.get("allowed_scope")}
 
 
 class ApiError(Exception):
@@ -157,10 +197,12 @@ class AppInterface:
     """Unified application interface over the existing read-only capabilities."""
 
     def __init__(self, db_path: str | Path | None = None,
-                 drafts_path: str | Path | None = None):
+                 drafts_path: str | Path | None = None,
+                 runs_path: str | Path | None = None):
         root = Path(__file__).resolve().parents[1]
         self.db_path = Path(db_path) if db_path else root / "data" / "jh_agent_os.sqlite3"
         self.drafts_path = Path(drafts_path) if drafts_path else DEFAULT_DRAFTS_PATH
+        self.runs_path = Path(runs_path) if runs_path else DEFAULT_RUNS_PATH
 
     # -- storage -----------------------------------------------------------
     def _open(self):
@@ -260,6 +302,141 @@ class AppInterface:
                     "note": "审查通过与否来自既有审核绑定；交付是否完成来自 delivery_scope"}
         finally:
             storage.close()
+
+    # -- agent run history (read-only; server-configured source) -----------
+    def _read_runs(self):
+        """(state, runs, message). Reads the configured registry; never writes it.
+
+        Reuses the accepted validator: every record is checked for the fields
+        the recovery/binding/idempotency rebuild needs. A bad line is never
+        skipped and the file is never repaired, migrated or truncated.
+        """
+        try:
+            text = read_registry_text(self.runs_path)
+        except RegistryUnavailable as exc:
+            return RUNS_UNREADABLE, [], str(exc)
+        if text is None:
+            return RUNS_ABSENT, [], f"登记文件不存在：{self.runs_path}（尚无运行记录）"
+        try:
+            records = parse_registry_text(text)
+        except RegistryUnavailable as exc:
+            return RUNS_CORRUPT, [], str(exc)
+        if not records:
+            return RUNS_EMPTY, [], f"登记文件存在但没有任何记录：{self.runs_path}"
+        grouped: Dict[str, Dict[str, Any]] = {}
+        order: List[str] = []
+        for record in records:
+            run_id = record["run_id"]
+            if run_id not in grouped:
+                grouped[run_id] = {"run_id": run_id, "events": [], "records": []}
+                order.append(run_id)
+            grouped[run_id]["events"].append(record["event"])
+            grouped[run_id]["records"].append(record)
+        return RUNS_OK, [grouped[run_id] for run_id in order], ""
+
+    def _task_link(self, task_id: Optional[str]) -> Dict[str, Any]:
+        """Whether the run's logical task exists in the task database.
+
+        Only reads; a missing database or task is reported as not linked and
+        never turns into a created task record.
+        """
+        if not task_id:
+            return {"checked": False, "linked": False,
+                    "note": "本次派发没有逻辑任务 id；未关联任何任务记录（不创建任务）"}
+        if not self.db_path.is_file():
+            return {"checked": False, "linked": False,
+                    "note": "任务数据库不存在，无法核对关联；未创建任务记录"}
+        storage = self._open()
+        try:
+            try:
+                storage.get_task(task_id)
+            except KeyError:
+                return {"checked": True, "linked": False,
+                        "note": "任务库中没有该 id 的任务；未关联（不创建任务记录）"}
+            return {"checked": True, "linked": True, "note": "任务库中存在该任务记录"}
+        finally:
+            storage.close()
+
+    def _run_view(self, entry: Dict[str, Any]) -> Dict[str, Any]:
+        """One run as recorded, with the display fields the UI needs."""
+        records = entry["records"]
+        first, last = records[0], records[-1]
+        collected = next((r for r in reversed(records) if r["event"] == "collected"), None)
+        uncertain = next((r for r in records if r["event"] == "dispatch_uncertain"), None)
+        raw = (collected or {}).get("raw") or None
+        evidence_state, evidence_detail = raw_evidence_state(raw)
+        usage = (collected or {}).get("usage") or {}
+        binding = _binding_from_snapshot(first.get("request_snapshot"))
+        return {
+            "run_id": entry["run_id"],
+            "events": list(entry["events"]),
+            "app_kind": first.get("app_kind"),
+            "instance_id": first.get("instance_id"),
+            "session_id": first.get("session_id"),
+            "role": binding.get("role") if binding.get("parsed") else None,
+            "requested_model": binding.get("requested_model") if binding.get("parsed") else None,
+            "native_model": last.get("native_model") or (collected or {}).get("native_model"),
+            "logical_task_id": first.get("task_id"),
+            "attempt": first.get("attempt"),
+            "request_fingerprint": first.get("request_fingerprint"),
+            "idempotency_key": first.get("idempotency_key"),
+            "native_session_id": last.get("native_session_id"),
+            "native_turns": list(last.get("native_turns") or []),
+            "record_state": last.get("state"),
+            "native_state": last.get("native_state"),
+            "last_recorded_at": last.get("at"),
+            "first_recorded_at": first.get("at"),
+            "usage": {"turn": usage.get("turn"), "thread_total": usage.get("thread_total"),
+                      "model_context_window": usage.get("model_context_window"),
+                      "source": usage.get("source")},
+            "evidence": {"state": evidence_state, "detail": evidence_detail,
+                         "path": (raw or {}).get("path"), "sha256": (raw or {}).get("sha256"),
+                         "frames": (raw or {}).get("frames"), "bytes": (raw or {}).get("bytes")},
+            "unverified": list((collected or {}).get("unverified") or []),
+            "declared_status": (collected or {}).get("declared_status"),
+            "dispatch_uncertain_reason": (uncertain or {}).get("reason"),
+            "snapshot": binding,
+        }
+
+    def list_agent_runs(self) -> Dict[str, Any]:
+        """History of real agent-session runs, from the configured registry only."""
+        state, entries, message = self._read_runs()
+        payload: Dict[str, Any] = {
+            "ok": True, "read_only": True,
+            "source": {"configured": True, "path": str(self.runs_path),
+                       "browser_supplied": False,
+                       "note": "登记来源由服务端配置；浏览器不能传任意磁盘路径"},
+            "state": state,
+            "runs": [self._run_view(entry) for entry in entries] if state == RUNS_OK else [],
+            "count": len(entries) if state == RUNS_OK else 0,
+            "message": message,
+            "live": False,
+            "note": ("历史记录，不代表实时在线；declared_complete 是执行方声明，"
+                     "不代表任务验收成功。查询不启动 app-server、不调用模型、不发送会话消息。"),
+        }
+        if state in (RUNS_CORRUPT, RUNS_UNREADABLE):
+            payload["error"] = {"code": f"runs_{state}", "message": message}
+        return payload
+
+    def agent_run_detail(self, run_id: str) -> Dict[str, Any]:
+        """One run by id. The id is looked up in the history, never used as a path."""
+        state, entries, message = self._read_runs()
+        if state != RUNS_OK:
+            payload = self.list_agent_runs()
+            payload["run"] = None
+            return payload
+        entry = next((item for item in entries if item["run_id"] == run_id), None)
+        if entry is None:
+            raise ApiError("run_not_found", f"登记中没有该 run：{run_id}", 404)
+        view = self._run_view(entry)
+        view["link"] = self._task_link(view.get("logical_task_id"))
+        return {"ok": True, "read_only": True,
+                "source": {"configured": True, "path": str(self.runs_path),
+                           "browser_supplied": False},
+                "state": RUNS_OK, "run": view, "records": entry["records"],
+                "live": False,
+                "note": ("历史记录，不代表实时在线；declared_complete 不代表任务验收成功；"
+                         "证据状态来自磁盘字节核对（verified/missing/mismatch/unverifiable）")}
 
     # -- goal drafts (this batch does NOT execute) -------------------------
     def save_goal_draft(self, payload: Dict[str, Any]) -> Dict[str, Any]:

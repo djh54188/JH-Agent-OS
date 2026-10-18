@@ -92,6 +92,11 @@ class GuiHandler(BaseHTTPRequestHandler):
                 self._json(200, self.api.task_detail(path[len("/api/tasks/"):]))
             elif path == "/api/sessions":
                 self._json(200, self.api.list_sessions())
+            elif path.startswith("/api/agent-runs/"):
+                run_id = path[len("/api/agent-runs/"):]
+                self._json(200, self.api.agent_run_detail(run_id))
+            elif path == "/api/agent-runs":
+                self._json(200, self.api.list_agent_runs())
             elif path == "/api/drafts":
                 self._json(200, self.api.list_drafts())
             else:
@@ -146,10 +151,12 @@ def validate_host(host: str) -> str:
 
 def make_server(host: str = "127.0.0.1", port: int = 8765,
                 db_path: str | None = None, drafts_path: str | None = None,
+                runs_path: str | None = None,
                 gui_dir: Path | None = None) -> ThreadingHTTPServer:
     host = validate_host(host)                      # refuse before binding
     handler = type("BoundGuiHandler", (GuiHandler,), {})
-    handler.api = AppInterface(db_path=db_path, drafts_path=drafts_path)
+    handler.api = AppInterface(db_path=db_path, drafts_path=drafts_path,
+                               runs_path=runs_path)
     handler.gui_dir = Path(gui_dir) if gui_dir else GUI_DIR
     return ThreadingHTTPServer((host, int(port)), handler)
 
@@ -160,9 +167,11 @@ def main(argv=None) -> int:
     ap.add_argument("--port", type=int, default=8765)
     ap.add_argument("--db", default=None, help="任务数据库（只读打开）")
     ap.add_argument("--drafts", default=None, help="草案 JSON 路径")
+    ap.add_argument("--runs", default=None,
+                    help="运行登记 JSONL 路径（服务端配置；浏览器不能指定）")
     args = ap.parse_args(argv)
 
-    httpd = make_server(args.host, args.port, args.db, args.drafts)
+    httpd = make_server(args.host, args.port, args.db, args.drafts, args.runs)
     host, port = httpd.server_address[0], httpd.server_address[1]
     print(f"JH-Agent OS GUI: http://{host}:{port}/  (只读 + 草案；不触发执行)")
     try:

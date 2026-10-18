@@ -45,6 +45,10 @@ JH.api = (function () {
       return request("GET", "/api/tasks/" + encodeURIComponent(taskId) + "/delivery");
     },
     listSessions: function () { return request("GET", "/api/sessions"); },
+    listAgentRuns: function () { return request("GET", "/api/agent-runs"); },
+    agentRunDetail: function (runId) {
+      return request("GET", "/api/agent-runs/" + encodeURIComponent(runId));
+    },
     listDrafts: function () { return request("GET", "/api/drafts"); },
     saveGoalDraft: function (draft) { return request("POST", "/api/drafts", draft); }
   };

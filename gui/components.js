@@ -79,8 +79,51 @@ JH.components = (function () {
     return el("p", "note", text);
   }
 
+  /* 运行记录来源状态：历史/缺失/空/损坏/不可读各自显式显示，不互相冒充。 */
+  function runSourceNotice(envelope) {
+    const state = (envelope && envelope.state) || "unknown";
+    const kind = state === "ok" ? "notice-ok"
+      : (state === "absent" || state === "empty") ? "notice"
+      : "notice-warn";
+    const box = el("div", "notice " + kind);
+    box.appendChild(el("strong", null, "登记状态：" + state));
+    box.appendChild(el("div", "muted", "live=" + String(!!(envelope && envelope.live))
+      + " · source=" + ((envelope && envelope.source && envelope.source.path) || "—")
+      + " · browser_supplied=" + String(!!(envelope && envelope.source && envelope.source.browser_supplied))));
+    if (envelope && envelope.message) box.appendChild(el("div", "muted", envelope.message));
+    return box;
+  }
+
+  /* 证据核验状态：verified / missing / mismatch / unverifiable 四态分明。 */
+  function evidenceNotice(evidence) {
+    const state = (evidence && evidence.state) || "unknown";
+    const kind = state === "verified" ? "notice-ok"
+      : state === "mismatch" ? "notice-warn" : "notice";
+    const box = el("div", "notice " + kind);
+    box.appendChild(el("strong", null, "证据核验：" + state));
+    box.appendChild(el("div", "muted", (evidence && evidence.detail) || "—"));
+    if (evidence && evidence.sha256) {
+      box.appendChild(el("div", "muted", "sha256=" + evidence.sha256));
+      box.appendChild(el("div", "muted", "frames=" + evidence.frames + " · bytes=" + evidence.bytes));
+    }
+    return box;
+  }
+
+  function bulletList(title, items) {
+    const box = el("div", "subpanel");
+    box.appendChild(el("h4", null, title));
+    if (!items || !items.length) {
+      box.appendChild(el("div", "muted", "—"));
+      return box;
+    }
+    items.forEach(function (item) { box.appendChild(el("div", "muted", String(item))); });
+    return box;
+  }
+
   return { el: el, field: field, statusBadge: statusBadge,
            connectionNotice: connectionNotice, evidenceList: evidenceList,
+           runSourceNotice: runSourceNotice, evidenceNotice: evidenceNotice,
+           bulletList: bulletList,
            emptyState: emptyState, errorState: errorState,
            loadingState: loadingState, note: note };
 })();

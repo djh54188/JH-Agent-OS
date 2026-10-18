@@ -17,6 +17,7 @@ asserted as field presence:
 
 Nothing here runs a real external session: no model calls, no processes.
 """
+import ast
 import unittest
 from pathlib import Path
 
@@ -522,12 +523,29 @@ class TestCoreHoldsNoConcreteAdapter(unittest.TestCase):
     # consumer must actually subclass AgentSessionAdapter (checked below).
     CONTRACT_CONSUMERS = frozenset({"agent_session_codex.py"})
 
+    @staticmethod
+    def _imports_the_contract(path):
+        """True only when the module imports the DESIGN contract itself.
+
+        A precise import check, not a filename substring: a module that merely
+        uses an adapter (whose name starts with 'agent_session_') is not
+        importing the contract module.
+        """
+        tree = ast.parse(path.read_text(encoding="utf-8-sig"))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ImportFrom) and node.module == "src.agent_session":
+                return True
+            if isinstance(node, ast.Import):
+                if any(alias.name == "src.agent_session" for alias in node.names):
+                    return True
+        return False
+
     def test_production_modules_do_not_import_this_contract(self):
         offenders = []
         for path in sorted((ROOT / "src").glob("*.py")):
             if path.name == "agent_session.py" or path.name in self.CONTRACT_CONSUMERS:
                 continue
-            if "agent_session" in path.read_text(encoding="utf-8-sig"):
+            if self._imports_the_contract(path):
                 offenders.append(path.name)
         self.assertEqual(offenders, [], "unexpected production import of the contract")
 
@@ -536,6 +554,19 @@ class TestCoreHoldsNoConcreteAdapter(unittest.TestCase):
         # allowlisted module must expose an AgentSessionAdapter subclass.
         from src.agent_session_codex import CodexAgentSessionAdapter
         self.assertTrue(issubclass(CodexAgentSessionAdapter, AgentSessionAdapter))
+
+    def test_the_import_check_still_catches_a_real_contract_import(self):
+        """Negative control: the precise check must still flag the contract."""
+        sample = ROOT / "src" / "agent_session_codex.py"
+        self.assertTrue(self._imports_the_contract(sample))
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            fake = Path(tmp) / "core.py"
+            fake.write_text("from src.agent_session import AgentSessionAdapter\n", encoding="utf-8")
+            self.assertTrue(self._imports_the_contract(fake))
+            fake.write_text("from src.agent_session_codex import CodexAgentSessionAdapter\n",
+                            encoding="utf-8")
+            self.assertFalse(self._imports_the_contract(fake))
 
     def test_contract_module_has_no_native_app_imports(self):
         text = (ROOT / "src" / "agent_session.py").read_text(encoding="utf-8-sig")

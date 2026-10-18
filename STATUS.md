@@ -100,6 +100,15 @@
 - **R2-B**：证据摘要改为**绑定实际写入字节**（二进制写入 + 对同一负载计算），新增 `verify_raw_evidence` 并让往返脚本**实际核对引用文件的字节哈希与帧数**。旧证据摘要语义为换行规范化文本（declared `48b186db…` ≠ disk `2281a545…`），**原样保留、不改写**；新证据写入新隔离目录。
 - **验证**：全量 **569 项 568 过/1 既有跳过**；定向变异 **15/15 检出**；整改后真实只读往返（新目录）字节哈希与帧数自检通过。见[整改报告](reports/jh020-r2-rectification-20261018.md)。**仍为候选/待独立验收**，未宣布协作闭环通过。
 
+## 2026-10-18 · JH-020 真实会话运行记录的统一查询与 GUI 只读展示（本切片完成，**待独立复核**）
+
+- **复用**已验收代码（登记读取/字段校验/证据字节核对/只读任务查询），未复制状态机。
+- **接口**：`list_agent_runs()` / `agent_run_detail(run_id)`；**登记来源由服务端配置**（`--runs`），浏览器不能传路径（`browser_supplied=false`）。
+- **状态**：`absent`/`empty`/`ok`/`unreadable`/`corrupt` 四态分明，**不跳过坏行、不修复、不改写原文件**；**证据** `verified`/`missing`/`mismatch`/`unverifiable`（实读磁盘字节）；`run_id` 绝不当路径。
+- **展示**：应用/实例/模型/角色/run/原生 thread+turns/最后记录时间/记录状态/**本轮与线程累计用量**/证据/未验证事项/事件/关联任务；**`live=false`**、**`declared_complete` 非任务验收成功**、未关联时“不创建任务记录”。
+- **验证**：API 17、HTTP 7、前端行为 7 场景、守卫变异 4/4；JH-019 前端四场景仍全绿；全量 **618 项 617 过/1 既有跳过**（AST 独立计数 618）；**实机浏览器**渲染真实运行记录通过。见[报告](reports/jh020-run-history-gui-20261018.md)。
+- **边界**：不接 GUI 派发/collect/continue/cancel、不发送指定审查会话、不改成功门、不启用 `production complete`/`FileToolExecutor`、不改 Hark 验证器、不推送/不合并 PR；**JH-020 整体、N2/P1 仍未完成**。
+
 ## 2026-10-18 · Hark 验证器补丁的 Windows 本地移植与验证（独立批，**待独立复核**）
 
 来源 `fe0476d5807d6d562a1c290fe1b14623e53d1a46`。**仅精准移植** `scripts/verify_phase4_guards.py`、`scripts/verify_jh006_guards.py`、`tests/test_verifier_mutation_harness.py`（sha256 与候选逐字节一致）；**未**整分支合并、**未**覆盖旧 main 快照。

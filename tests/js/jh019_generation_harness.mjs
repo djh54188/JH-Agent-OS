@@ -93,7 +93,7 @@ function newWorld() {
     const code = fs.readFileSync(path.join(GUI, file), "utf8");
     vm.runInContext(code, context, { filename: file });
   }
-  const pending = { capabilities: [], listTasks: [], listSessions: [], listDrafts: [], taskDetail: [], reviewDelivery: [], saveGoalDraft: [] };
+  const pending = { capabilities: [], listTasks: [], listSessions: [], listDrafts: [], taskDetail: [], reviewDelivery: [], saveGoalDraft: [], listAgentRuns: [], agentRunDetail: [] };
   const api = {};
   for (const method of Object.keys(pending)) {
     api[method] = (...args) => {
@@ -130,6 +130,12 @@ const sessionsPayload = (ok = true) => ({
   count: ok ? 1 : 0, note: "全部为静态登记",
 });
 
+const agentRunsPayload = (state = "absent", runs = []) => ({
+  ok: true, read_only: true, state, runs, count: runs.length, live: false,
+  source: { configured: true, path: "server-configured", browser_supplied: false },
+  message: state === "absent" ? "登记文件不存在" : "", note: "历史记录",
+});
+
 const tasksPayload = (tasks) => ({ ok: true, read_only: true, database_present: true, tasks, count: tasks.length });
 const taskRow = (id) => ({ task_id: id, title: "任务 " + id, status: "created", review_verdict: null, updated_at: "2026-10-17T00:00:00Z" });
 
@@ -145,6 +151,8 @@ async function scenarioWorkbenchThenSessions() {
   clickTab(world, "sessions");
   await world.tick();
   world.pending.listSessions.shift().resolve(sessionsPayload());
+  await world.tick();
+  for (const d of world.pending.listAgentRuns.splice(0)) d.resolve(agentRunsPayload());
   await world.tick();
   const afterSessions = world.root.textContent;
   if (!afterSessions.includes("Agent / 会话")) throw new Error("sessions view did not render");
@@ -257,6 +265,8 @@ async function scenarioSaveAcrossViewSwitch() {
   clickTab(world, "sessions");
   await world.tick();
   world.pending.listSessions.shift().resolve(sessionsPayload());
+  await world.tick();
+  for (const d of world.pending.listAgentRuns.splice(0)) d.resolve(agentRunsPayload());
   await world.tick();
   if (!world.root.textContent.includes("Agent / 会话")) throw new Error("sessions view did not render");
 
