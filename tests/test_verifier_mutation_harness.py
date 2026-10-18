@@ -176,6 +176,17 @@ class TestWording(unittest.TestCase):
         good = consumer.run(11).endswith("over limit")
         self.assertTrue(good)
 
+    def test_bool_on_self_attribute(self):
+        self.good = consumer.run(11).endswith("over limit")
+        self.assertTrue(self.good)
+
+    def test_bool_in_self_dict(self):
+        self.box = {"flag": consumer.run(11).endswith("over limit")}
+        self.assertTrue(self.box["flag"])
+
+    def test_bool_wrapped_text_check(self):
+        self.assertTrue(bool(consumer.run(11).endswith("over limit")))
+
     def test_bool_in_test_built_dict(self):
         checks = {"ok": consumer.run(11).endswith("over limit")}
         self.assertTrue(checks["ok"])
@@ -261,6 +272,9 @@ WORDING_CASES = [
     _case("bool_local_chain", MSG, MSG_CHANGED, W + "test_bool_local_chain"),
     _case("bool_in_test_built_dict", MSG, MSG_CHANGED, W + "test_bool_in_test_built_dict"),
     _case("bool_rebound_local", MSG, MSG_CHANGED, W + "test_bool_rebound_local"),
+    _case("bool_on_self_attribute", MSG, MSG_CHANGED, W + "test_bool_on_self_attribute"),
+    _case("bool_in_self_dict", MSG, MSG_CHANGED, W + "test_bool_in_self_dict"),
+    _case("bool_wrapped_text_check", MSG, MSG_CHANGED, W + "test_bool_wrapped_text_check"),
     _case("bare_assert", MSG, MSG_CHANGED, W + "test_bare_assert"),
 ]
 WORDING_EXPECTED = {
@@ -278,6 +292,9 @@ WORDING_EXPECTED = {
     "bool_local_chain": "not_detected_undetermined_failure",
     "bool_in_test_built_dict": "not_detected_undetermined_failure",
     "bool_rebound_local": "not_detected_undetermined_failure",
+    "bool_on_self_attribute": "not_detected_undetermined_failure",
+    "bool_in_self_dict": "not_detected_undetermined_failure",
+    "bool_wrapped_text_check": "not_detected_undetermined_failure",
     "bare_assert": "not_detected_undetermined_failure",
 }
 # R2: red baselines.

@@ -223,9 +223,11 @@ def text_derived(expr):
 # under test, not from test-side computation; anything unproven is undetermined.
 # This is a deliberately small, local check, not a data-flow analyser:
 #   - non-str constants;
-#   - attribute/subscript reads (constant or name keys) whose base is ``self``,
-#     a with-as name, or a name bound once by a simple assignment from a proven
-#     call / object construction / another read; test-built literals are not;
+#   - attribute/subscript reads (constant or name keys) whose base is a with-as
+#     name, or a name bound once by a simple assignment from a proven call /
+#     object construction / another read; test-built literals are not, and
+#     neither is anything read off ``self`` (the test may have stored text
+#     work there);
 #   - calls whose callee (a pure name/attribute chain, resolved in the frame) is
 #     defined under <root>/src, a class constructor, or one of the pathlib
 #     predicates exists/is_file/is_dir/is_symlink on a Path;
@@ -348,7 +350,9 @@ def _proven_base(expr, frame, func, line, depth):
     """Base of an attribute/subscript read: an object, not a test-built value."""
     if isinstance(expr, ast.Name):
         if expr.id == "self":
-            return True, "self"
+            # R4: an attribute of self holds whatever the test stored there
+            # (self.good = text.endswith(...)); nothing proves its source.
+            return False, "attribute of self: source not proven"
         if func is None:
             return False, "enclosing function not located"
         binds = _bindings(func, expr.id)

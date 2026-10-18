@@ -1,0 +1,553 @@
+{
+  "scope": "offline_isolated_copy",
+  "api_calls": 0,
+  "python": "3.14.8",
+  "platform": "linux",
+  "tmp_root": "/tmp",
+  "mutations": 19,
+  "detected": 18,
+  "counts": {
+    "detected": 18,
+    "not_detected_undetermined_failure": 1
+  },
+  "verdict": "fail",
+  "exit_code": 1,
+  "rows": [
+    {
+      "guard": "payload_delivery_marker",
+      "module": "src/orchestrator.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_input_cannot_claim_applied_or_waiting_delivery",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "behavioral_failure"
+      },
+      "verdict": "detected",
+      "mutant_evidence": [
+        {
+          "method": "assertRaises",
+          "verdict": "behavioral",
+          "reason": "expected exception was not raised",
+          "operands": [
+            "<class 'src.adapters.SchemaValidationError'>",
+            "None"
+          ],
+          "call": null
+        }
+      ],
+      "provenance": {
+        "baseline": true,
+        "identity": true,
+        "mutant": true
+      }
+    },
+    {
+      "guard": "cli_delivery_marker",
+      "module": "src/cli.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_cli_rejects_delivery_marker_before_assembly",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "behavioral_failure"
+      },
+      "verdict": "detected",
+      "mutant_evidence": [
+        {
+          "method": "assertFalse",
+          "verdict": "behavioral",
+          "reason": "non-text operands from proven sources",
+          "operands": [
+            "True"
+          ],
+          "call": "self.assertFalse(self.db.exists())"
+        }
+      ],
+      "provenance": {
+        "baseline": true,
+        "identity": true,
+        "mutant": true
+      }
+    },
+    {
+      "guard": "unregistered_host_record",
+      "module": "src/orchestrator.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_unregistered_receipt_cannot_succeed",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "behavioral_failure"
+      },
+      "verdict": "detected",
+      "mutant_evidence": [
+        {
+          "method": "assertEqual",
+          "verdict": "behavioral",
+          "reason": "values still differ with text made opaque",
+          "operands": [
+            "'succeeded'",
+            "'needs_attention'"
+          ],
+          "call": "self.assertEqual(result['status'], 'needs_attention')"
+        }
+      ],
+      "provenance": {
+        "baseline": true,
+        "identity": true,
+        "mutant": true
+      }
+    },
+    {
+      "guard": "raw_output_digest",
+      "module": "src/code_delivery.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_host_output_digest_must_match_persisted_raw_output",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "behavioral_failure"
+      },
+      "verdict": "detected",
+      "mutant_evidence": [
+        {
+          "method": "assertEqual",
+          "verdict": "behavioral",
+          "reason": "values still differ with text made opaque",
+          "operands": [
+            "'succeeded'",
+            "'needs_attention'"
+          ],
+          "call": "self.assertEqual(result['status'], 'needs_attention')"
+        }
+      ],
+      "provenance": {
+        "baseline": true,
+        "identity": true,
+        "mutant": true
+      }
+    },
+    {
+      "guard": "strict_uncertainty_bool",
+      "module": "src/code_delivery.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_uncertainty_requires_bool_not_zero_or_one",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "behavioral_failure"
+      },
+      "verdict": "detected",
+      "mutant_evidence": [
+        {
+          "method": "assertRaises",
+          "verdict": "behavioral",
+          "reason": "expected exception was not raised",
+          "operands": [
+            "<class 'src.code_delivery.CodeDeliveryRefused'>",
+            "None"
+          ],
+          "call": null
+        }
+      ],
+      "provenance": {
+        "baseline": true,
+        "identity": true,
+        "mutant": true
+      }
+    },
+    {
+      "guard": "fixed_check_script",
+      "module": "src/orchestrator.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_wrong_script_path_is_not_a_verified_check",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "behavioral_failure"
+      },
+      "verdict": "detected",
+      "mutant_evidence": [
+        {
+          "method": "assertRaises",
+          "verdict": "behavioral",
+          "reason": "expected exception was not raised",
+          "operands": [
+            "<class 'src.code_delivery.CodeDeliveryRefused'>",
+            "None"
+          ],
+          "call": null
+        }
+      ],
+      "provenance": {
+        "baseline": true,
+        "identity": true,
+        "mutant": true
+      }
+    },
+    {
+      "guard": "sealed_check_command",
+      "module": "src/code_delivery.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_unsealed_check_command_is_refused",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "behavioral_failure"
+      },
+      "verdict": "detected",
+      "mutant_evidence": [
+        {
+          "method": "assertRaises",
+          "verdict": "behavioral",
+          "reason": "expected exception was not raised",
+          "operands": [
+            "<class 'src.code_delivery.CodeDeliveryRefused'>",
+            "None"
+          ],
+          "call": null
+        }
+      ],
+      "provenance": {
+        "baseline": true,
+        "identity": true,
+        "mutant": true
+      }
+    },
+    {
+      "guard": "prepare_owner",
+      "module": "src/orchestrator.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_prepare_respects_existing_owner",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "behavioral_failure"
+      },
+      "verdict": "detected",
+      "mutant_evidence": [
+        {
+          "method": "assertRaises",
+          "verdict": "behavioral",
+          "reason": "expected exception was not raised",
+          "operands": [
+            "<class 'src.code_delivery.CodeDeliveryRefused'>",
+            "None"
+          ],
+          "call": null
+        }
+      ],
+      "provenance": {
+        "baseline": true,
+        "identity": true,
+        "mutant": true
+      }
+    },
+    {
+      "guard": "pending_approval",
+      "module": "src/orchestrator.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_prepare_rechecks_pending_approval",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "behavioral_failure"
+      },
+      "verdict": "detected",
+      "mutant_evidence": [
+        {
+          "method": "assertRaises",
+          "verdict": "behavioral",
+          "reason": "expected exception was not raised",
+          "operands": [
+            "<class 'src.code_delivery.CodeDeliveryRefused'>",
+            "None"
+          ],
+          "call": null
+        }
+      ],
+      "provenance": {
+        "baseline": true,
+        "identity": true,
+        "mutant": true
+      }
+    },
+    {
+      "guard": "interrupted_tool",
+      "module": "src/orchestrator.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_prepare_rechecks_interrupted_tool",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "behavioral_failure"
+      },
+      "verdict": "detected",
+      "mutant_evidence": [
+        {
+          "method": "assertRaises",
+          "verdict": "behavioral",
+          "reason": "expected exception was not raised",
+          "operands": [
+            "<class 'src.code_delivery.CodeDeliveryRefused'>",
+            "None"
+          ],
+          "call": null
+        }
+      ],
+      "provenance": {
+        "baseline": true,
+        "identity": true,
+        "mutant": true
+      }
+    },
+    {
+      "guard": "prepare_transaction",
+      "module": "src/orchestrator.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_prepare_and_event_rollback_together",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "behavioral_failure"
+      },
+      "verdict": "detected",
+      "mutant_evidence": [
+        {
+          "method": "assertNotIn",
+          "verdict": "behavioral",
+          "reason": "non-text operands from proven sources",
+          "operands": [
+            "'_delivery'",
+            "{'fixture_id': 'n2-code-sortfix/v1', 'review_target_artifact_type': 'patch', '_trusted': {'source': 'fixture', 'template_id': 'code_sortfix_v1', 'execution_mode': 'generate'}, '_delivery': {'delivery_id': 'dlv_task_jh006case0001_v1', 'state': 'waiting_host', 'artifact': {'version': 1, 'artifact_id':"
+          ],
+          "call": "self.assertNotIn('_delivery', orch.storage.get_task(tid)['metadata'])"
+        }
+      ],
+      "provenance": {
+        "baseline": true,
+        "identity": true,
+        "mutant": true
+      }
+    },
+    {
+      "guard": "authorized_workspace_scope",
+      "module": "src/orchestrator.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_extra_file_change_never_satisfies_authorized_scope",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "behavioral_failure"
+      },
+      "verdict": "detected",
+      "mutant_evidence": [
+        {
+          "method": "assertEqual",
+          "verdict": "behavioral",
+          "reason": "values still differ with text made opaque",
+          "operands": [
+            "'succeeded'",
+            "'needs_attention'"
+          ],
+          "call": "self.assertEqual(result['status'], 'needs_attention')"
+        }
+      ],
+      "provenance": {
+        "baseline": true,
+        "identity": true,
+        "mutant": true
+      }
+    },
+    {
+      "guard": "no_model_tools",
+      "module": "src/orchestrator.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_fixture_model_tools_never_execute",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "behavioral_failure"
+      },
+      "verdict": "detected",
+      "mutant_evidence": [
+        {
+          "method": "assertEqual",
+          "verdict": "behavioral",
+          "reason": "values still differ with text made opaque",
+          "operands": [
+            "[{'request_id': 'treq_forbidden0001', 'task_id': 'task_jh006case0001', 'step_id': 'step_probe', 'tool_name': 'read_file', 'risk_level': 'read_only', 'has_side_effect': False, 'status': 'success', 'request': {'schema_version': '1.0.0', 'request_id': 'treq_forbidden0001', 'task_id': 'task_jh006case000",
+            "[]"
+          ],
+          "call": "self.assertEqual(orch.storage.list_tool_executions(payload['task_id']), [])"
+        }
+      ],
+      "provenance": {
+        "baseline": true,
+        "identity": true,
+        "mutant": true
+      }
+    },
+    {
+      "guard": "generation_baseline_context",
+      "module": "src/orchestrator.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_generation_receives_template_and_sealed_baseline",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "behavioral_failure"
+      },
+      "verdict": "detected",
+      "mutant_evidence": [
+        {
+          "method": "assertIn",
+          "verdict": "behavioral",
+          "reason": "member absent with text made opaque",
+          "operands": [
+            "'code_template'",
+            "{'task_id': 'task_jh006case0001', 'title': 'jh006 offline code delivery probe', 'description': 'jh006 offline code delivery probe', 'acceptance_criteria': ['Independent review of the patch passes with no unresolved blocking issues', 'Post-apply widget checks pass in the host workspace', 'Only author"
+          ],
+          "call": "self.assertIn('code_template', context)"
+        }
+      ],
+      "provenance": {
+        "baseline": true,
+        "identity": true,
+        "mutant": true
+      }
+    },
+    {
+      "guard": "review_deferred_scope",
+      "module": "src/orchestrator.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_review_scope_defers_unexecuted_host_checks",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "behavioral_failure"
+      },
+      "verdict": "detected",
+      "mutant_evidence": [
+        {
+          "method": "assertIn",
+          "verdict": "behavioral",
+          "reason": "member absent with text made opaque",
+          "operands": [
+            "'code_review_scope'",
+            "{'metadata': {'schema_version': '1.0.0', 'review_id': 'rev_c91ff628ce22', 'task_id': 'task_jh006case0001', 'target_artifact_type': 'patch', 'target_artifact_path': 'mem://task_jh006case0001/art_73793e69e9fb', 'reviewer_role': 'mock-muse-reviewer', 'created_at': '2026-10-18T11:40:18Z'}, 'task_id': 't"
+          ],
+          "call": "self.assertIn('code_review_scope', context)"
+        }
+      ],
+      "provenance": {
+        "baseline": true,
+        "identity": true,
+        "mutant": true
+      }
+    },
+    {
+      "guard": "fresh_cancel_state",
+      "module": "src/orchestrator.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_complete_reloads_cancel_after_owner_acquisition",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "behavioral_failure"
+      },
+      "verdict": "detected",
+      "mutant_evidence": [
+        {
+          "method": "assertRaises",
+          "verdict": "behavioral",
+          "reason": "expected exception was not raised",
+          "operands": [
+            "<class 'src.code_delivery.CodeDeliveryRefused'>",
+            "None"
+          ],
+          "call": null
+        }
+      ],
+      "provenance": {
+        "baseline": true,
+        "identity": true,
+        "mutant": true
+      }
+    },
+    {
+      "guard": "prepared_version_field",
+      "module": "src/orchestrator.py",
+      "test": "test_jh006_code_delivery.TestCliDeliveryCommands.test_cli_prepare_and_complete_roundtrip",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "undetermined_failure"
+      },
+      "verdict": "not_detected_undetermined_failure",
+      "mutant_evidence": [
+        {
+          "method": "assertEqual",
+          "verdict": "undetermined",
+          "reason": "scalar operand source not proven: local name not bound once by a simple assignment: code",
+          "operands": [
+            "1",
+            "0"
+          ],
+          "call": "self.assertEqual(code, 0)"
+        }
+      ],
+      "provenance": {
+        "baseline": true,
+        "identity": true,
+        "mutant": true
+      },
+      "raw": {
+        "baseline": "",
+        "identity": "",
+        "mutant": "Traceback (most recent call last):\n  File \"/tmp/jh-mutation-sde3vjs9/mutant-16/tests/test_jh006_code_delivery.py\", line 754, in test_cli_prepare_and_complete_roundtrip\n    self.assertEqual(code, 0)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^\n  File \"<string>\", line 436, in wrapper\n    return original(self, *args, **kwargs)\nAssertionError: 1 != 0\n"
+      }
+    },
+    {
+      "guard": "no_extra_model_turn",
+      "module": "src/orchestrator.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_control_completion_does_not_reserve_an_extra_model_turn",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "behavioral_failure"
+      },
+      "verdict": "detected",
+      "mutant_evidence": [
+        {
+          "method": "assertEqual",
+          "verdict": "behavioral",
+          "reason": "values still differ with text made opaque",
+          "operands": [
+            "'failed'",
+            "'succeeded'"
+          ],
+          "call": "self.assertEqual(result['status'], 'succeeded')"
+        }
+      ],
+      "provenance": {
+        "baseline": true,
+        "identity": true,
+        "mutant": true
+      }
+    },
+    {
+      "guard": "final_deadline_gate",
+      "module": "src/orchestrator.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_deadline_is_rechecked_after_verification_reads",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "behavioral_failure"
+      },
+      "verdict": "detected",
+      "mutant_evidence": [
+        {
+          "method": "assertEqual",
+          "verdict": "behavioral",
+          "reason": "values still differ with text made opaque",
+          "operands": [
+            "'succeeded'",
+            "'failed'"
+          ],
+          "call": "self.assertEqual(result['status'], 'failed')"
+        }
+      ],
+      "provenance": {
+        "baseline": true,
+        "identity": true,
+        "mutant": true
+      }
+    }
+  ]
+}
