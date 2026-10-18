@@ -209,6 +209,201 @@ def text_derived(expr):
     return False
 
 
+# Source proof for scalar operands (R3). A bool/int/float/None operand carries no
+# text of its own, so the opaque replay cannot see a wording-only difference that
+# the TEST computed away (good = msg.endswith(...); self.assertTrue(good)). Such
+# an operand counts only when its expression is PROVEN to come from the system
+# under test, not from test-side computation; anything unproven is undetermined.
+# This is a deliberately small, local check, not a data-flow analyser:
+#   - non-str constants;
+#   - attribute/subscript reads (constant or name keys) whose base is ``self``,
+#     a with-as name, or a name bound once by a simple assignment from a proven
+#     call / object construction / another read; test-built literals are not;
+#   - calls whose callee (a pure name/attribute chain, resolved in the frame) is
+#     defined under <root>/src, a class constructor, or one of the pathlib
+#     predicates exists/is_file/is_dir/is_symlink on a Path;
+#   - not / and / or / comparisons / arithmetic over proven parts with no str;
+#   - a bare local name bound exactly once by a simple assignment of a proven
+#     expression earlier in the same function; a module-level int/float/None.
+# Test helpers (functions under <root>/tests), str methods, builtins such as
+# len/bool/any, re.*, tuple-unpacking, loop targets and parameters are unproven.
+_SRC_DIR = os.path.normcase(os.path.join(os.path.abspath(root), "src")) + os.sep
+_PATH_PREDICATES = {"exists", "is_file", "is_dir", "is_symlink"}
+
+
+def contains_scalar(value, depth=0):
+    if value is None or isinstance(value, (bool, int, float)):
+        return True
+    if depth > 40:
+        return True
+    if isinstance(value, dict):
+        return any(contains_scalar(v, depth + 1) for v in value.values())
+    if isinstance(value, (list, tuple, set, frozenset)):
+        return any(contains_scalar(v, depth + 1) for v in value)
+    return False
+
+
+def _function_node(frame):
+    code = frame.f_code
+    tree = _SOURCE.get(code.co_filename)
+    if tree is None:
+        return None
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name == code.co_name:
+            first = node.decorator_list[0].lineno if node.decorator_list else node.lineno
+            if code.co_firstlineno in (first, node.lineno):
+                return node
+    return None
+
+
+def _bindings(func, name):
+    """('assign', value_node, lineno) / ('with', None, lineno) / ('other', ...)."""
+    found = []
+    args = func.args
+    for a in args.posonlyargs + args.args + args.kwonlyargs + [args.vararg, args.kwarg]:
+        if a is not None and a.arg == name:
+            found.append(("self" if name == "self" and a is (args.posonlyargs + args.args)[0] else "other",
+                          None, func.lineno))
+    for node in ast.walk(func):
+        if node is not func and isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda, ast.ClassDef)):
+            if getattr(node, "name", None) == name:
+                found.append(("other", None, node.lineno))
+        if isinstance(node, ast.Assign):
+            for t in node.targets:
+                if isinstance(t, ast.Name) and t.id == name:
+                    found.append(("assign", node.value, node.lineno))
+                elif any(isinstance(n, ast.Name) and n.id == name for n in ast.walk(t)):
+                    found.append(("other", None, node.lineno))
+        elif isinstance(node, (ast.AugAssign, ast.AnnAssign, ast.NamedExpr)):
+            if isinstance(node.target, ast.Name) and node.target.id == name:
+                found.append(("other", None, node.lineno))
+        elif isinstance(node, (ast.For, ast.AsyncFor, ast.comprehension)):
+            if any(isinstance(n, ast.Name) and n.id == name for n in ast.walk(node.target)):
+                found.append(("other", None, getattr(node, "lineno", 0)))
+        elif isinstance(node, (ast.With, ast.AsyncWith)):
+            for item in node.items:
+                v = item.optional_vars
+                if isinstance(v, ast.Name) and v.id == name:
+                    found.append(("with", None, node.lineno))
+                elif v is not None and any(isinstance(n, ast.Name) and n.id == name for n in ast.walk(v)):
+                    found.append(("other", None, node.lineno))
+        elif isinstance(node, ast.ExceptHandler) and node.name == name:
+            found.append(("other", None, node.lineno))
+    return found
+
+
+def _resolve_chain(expr, frame):
+    """Evaluate a pure Name/Attribute chain in the frame; (ok, object)."""
+    parts = []
+    while isinstance(expr, ast.Attribute):
+        parts.append(expr.attr)
+        expr = expr.value
+    if not isinstance(expr, ast.Name):
+        return False, None
+    scope = [frame.f_locals, frame.f_globals, frame.f_builtins]
+    for ns in scope:
+        if expr.id in ns:
+            obj = ns[expr.id]
+            break
+    else:
+        return False, None
+    try:
+        for attr in reversed(parts):
+            obj = getattr(obj, attr)
+    except Exception:
+        return False, None
+    return True, obj
+
+
+def _proven_call(node, frame):
+    ok, fn = _resolve_chain(node.func, frame)
+    if not ok:
+        return False, "callee is not a plain name chain: " + ast.unparse(node.func)[:120]
+    if isinstance(fn, type):
+        return True, "constructor"
+    receiver = getattr(fn, "__self__", None)
+    name = getattr(fn, "__name__", "")
+    if name in _PATH_PREDICATES and receiver is not None:
+        import pathlib
+        if isinstance(receiver, pathlib.PurePath):
+            return True, "pathlib predicate"
+    target = getattr(fn, "__func__", fn)
+    code = getattr(target, "__code__", None)
+    if code is None:
+        return False, "callee has no source: " + ast.unparse(node.func)[:120]
+    path = os.path.normcase(os.path.abspath(code.co_filename))
+    if path.startswith(_SRC_DIR):
+        return True, "system call"
+    return False, "callee outside src: " + ast.unparse(node.func)[:120]
+
+
+def _proven_base(expr, frame, func, line, depth):
+    """Base of an attribute/subscript read: an object, not a test-built value."""
+    if isinstance(expr, ast.Name):
+        if expr.id == "self":
+            return True, "self"
+        if func is None:
+            return False, "enclosing function not located"
+        binds = _bindings(func, expr.id)
+        if not binds:
+            return False, "name not bound in the test function: " + expr.id
+        if len(binds) == 1 and binds[0][0] == "with":
+            return True, "with-as object"
+        if len(binds) == 1 and binds[0][0] == "assign" and binds[0][2] < line:
+            return _proven_base(binds[0][1], frame, func, binds[0][2], depth + 1)
+        return False, "name not bound once by a simple assignment: " + expr.id
+    if depth > 6:
+        return False, "too deep"
+    if isinstance(expr, (ast.Attribute, ast.Subscript)):
+        return proven(expr, frame, func, line, depth + 1)
+    if isinstance(expr, ast.Call):
+        return _proven_call(expr, frame)
+    return False, "unproven base: " + type(expr).__name__
+
+
+def proven(expr, frame, func, line, depth=0):
+    """(ok, reason): expression value provably comes from the system, not test text work."""
+    if depth > 6:
+        return False, "too deep"
+    if isinstance(expr, ast.Constant):
+        return (not isinstance(expr.value, (str, bytes))), "constant"
+    if isinstance(expr, (ast.Attribute, ast.Subscript)):
+        node = expr
+        while isinstance(node, (ast.Attribute, ast.Subscript)):
+            if isinstance(node, ast.Subscript) and not isinstance(node.slice, (ast.Constant, ast.Name)):
+                return False, "computed subscript"
+            node = node.value
+        if isinstance(node, ast.Call):
+            return _proven_call(node, frame)
+        return _proven_base(node, frame, func, line, depth)
+    if isinstance(expr, ast.Call):
+        return _proven_call(expr, frame)
+    if isinstance(expr, ast.Name):
+        if func is None:
+            return False, "enclosing function not located"
+        binds = _bindings(func, expr.id)
+        if not binds:
+            value = frame.f_globals.get(expr.id, frame)
+            if value is None or (isinstance(value, (int, float)) and not isinstance(value, bool)):
+                return True, "module constant"
+            return False, "name not bound in the test function: " + expr.id
+        if len(binds) == 1 and binds[0][0] == "assign" and binds[0][2] < line:
+            return proven(binds[0][1], frame, func, binds[0][2], depth + 1)
+        return False, "local name not bound once by a simple assignment: " + expr.id
+    if isinstance(expr, ast.UnaryOp):
+        return proven(expr.operand, frame, func, line, depth + 1)
+    if isinstance(expr, (ast.BoolOp, ast.Compare, ast.BinOp)):
+        parts = (expr.values if isinstance(expr, ast.BoolOp)
+                 else [expr.left] + list(expr.comparators) if isinstance(expr, ast.Compare)
+                 else [expr.left, expr.right])
+        for part in parts:
+            ok, why = proven(part, frame, func, line, depth + 1)
+            if not ok:
+                return False, why
+        return True, "combination of proven parts"
+    return False, "unproven expression: " + type(expr).__name__
+
+
 EQUAL = {"assertEqual", "assertEquals", "assertDictEqual", "assertListEqual", "assertTupleEqual",
          "assertSetEqual", "assertSequenceEqual", "assertMultiLineEqual", "assertCountEqual"}
 NEGATIVE = {"assertNotEqual", "assertNotEquals", "assertIs", "assertIsNot", "assertNotIn"}
@@ -229,7 +424,7 @@ def _short(value):
     return text[:300]
 
 
-def judge(method, args, call):
+def judge(method, args, call, frame=None):
     """(verdict, reason) for one failed assertion, from its live operands."""
     unary = {"assertTrue", "assertFalse", "assertIsNone", "assertIsNotNone"}
     operands = list(args[:1]) if method in unary else list(args[:2])
@@ -242,11 +437,17 @@ def judge(method, args, call):
         if has_text(value):
             continue
         if exprs is None:
-            if method in SCALAR or method in NEGATIVE:
+            if method in SCALAR or method in NEGATIVE or contains_scalar(value):
                 return "undetermined", "assertion call not located in source"
             continue
         if i < len(exprs) and text_derived(exprs[i]):
             return "undetermined", "operand derived from text: " + ast.unparse(exprs[i])[:200]
+        if contains_scalar(value):
+            if i >= len(exprs) or frame is None:
+                return "undetermined", "scalar operand without a located expression"
+            ok, why = proven(exprs[i], frame, _function_node(frame), call.lineno)
+            if not ok:
+                return "undetermined", "scalar operand source not proven: " + why
     if method in EQUAL:
         try:
             _ORIG[method](_state.case, blind(args[0]), blind(args[1]))
@@ -273,7 +474,7 @@ def judge(method, args, call):
     if method in NEGATIVE or method in SCALAR:
         if any(has_text(v) for v in operands):
             return "undetermined", "operand is text"
-        return "behavioral", "non-text operands"
+        return "behavioral", "non-text operands from proven sources"
     return "undetermined", "unhandled assertion " + method
 
 
@@ -289,10 +490,11 @@ def _wrap(method):
         except self.failureException as exc:
             if depth == 0 and not hasattr(exc, "_jh_evidence"):
                 _state.case = self
-                call = _call_node(sys._getframe(1))
+                frame = sys._getframe(1)
+                call = _call_node(frame)
                 _state.depth = 1  # replay must not record
                 try:
-                    verdict, reason = judge(method, args, call)
+                    verdict, reason = judge(method, args, call, frame)
                 except Exception as err:
                     verdict, reason = "undetermined", "judge raised " + type(err).__name__
                 exc._jh_evidence = {"method": method, "verdict": verdict, "reason": reason,

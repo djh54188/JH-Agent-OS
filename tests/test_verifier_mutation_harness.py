@@ -74,12 +74,24 @@ def result(value):
     except Refused as exc:
         return {"status": "blocked", "error": str(exc)}
     return {"status": "allowed", "error": None}
+
+
+def allowed(value):
+    return run(value) == "allowed"
 '''
 TESTS = '''\
 import time
 import unittest
 from unittest.mock import patch
 from src import consumer, guard
+
+
+def _mentions_limit(text):
+    return text.endswith("over limit")
+
+
+def _limit_hits(text):
+    return text.count("over limit")
 
 
 class TestGuard(unittest.TestCase):
@@ -99,6 +111,13 @@ class TestGuard(unittest.TestCase):
 
     def test_flaky(self):
         self.assertEqual(guard.flaky(1), 1)
+
+    def test_system_bool(self):
+        self.assertFalse(consumer.allowed(11))
+
+    def test_system_bool_local(self):
+        ok = consumer.allowed(11)
+        self.assertFalse(ok)
 
 
 class TestWording(unittest.TestCase):
@@ -128,7 +147,38 @@ class TestWording(unittest.TestCase):
 
     def test_bool_from_text(self):
         result = {"error_info": consumer.run(11)}
+        good = result["error_info"].endswith("over limit")
+        self.assertTrue(good)
+
+    def test_bool_inline_from_text(self):
+        result = {"error_info": consumer.run(11)}
         self.assertTrue(result["error_info"].endswith("over limit"))
+
+    def test_bool_from_helper(self):
+        self.assertTrue(_mentions_limit(consumer.run(11)))
+
+    def test_bool_local_from_helper(self):
+        flag = _mentions_limit(consumer.run(11))
+        self.assertTrue(flag)
+
+    def test_int_local_from_helper(self):
+        hits = _limit_hits(consumer.run(11))
+        self.assertEqual(hits, 1)
+
+    def test_bool_local_chain(self):
+        text = consumer.run(11)
+        good = text.endswith("over limit")
+        verdict = good and True
+        self.assertTrue(verdict)
+
+    def test_bool_rebound_local(self):
+        good = consumer.allowed(1)
+        good = consumer.run(11).endswith("over limit")
+        self.assertTrue(good)
+
+    def test_bool_in_test_built_dict(self):
+        checks = {"ok": consumer.run(11).endswith("over limit")}
+        self.assertTrue(checks["ok"])
 
     def test_bare_assert(self):
         assert consumer.run(11) == "blocked: value over limit"
@@ -142,13 +192,17 @@ class TestBaselines(unittest.TestCase):
     def test_vague_skip(self):
         pass
 
+    # On Windows these run and exercise the guard (11 > limit), so removing the
+    # guard is observable there. Not executed on Windows by this harness author.
     @unittest.skipUnless(__import__("sys").platform == "win32", "requires Windows junctions")
     def test_windows_skip(self):
-        self.assertEqual(guard.check(1), 1)
+        with self.assertRaises(guard.Refused):
+            guard.check(11)
 
     def test_windows_module(self):
         import _winapi  # noqa: F401
-        self.assertEqual(guard.check(1), 1)
+        with self.assertRaises(guard.Refused):
+            guard.check(11)
 
     def test_slow(self):
         time.sleep(30)
@@ -172,6 +226,8 @@ CASES = [
     _case("raise_removed", CHECK, GUARD_REMOVED, T + "test_raises"),
     _case("identity_only", CHECK, CHECK, T + "test_over_limit_blocked"),
     _case("patch_target_shared", CHECK, GUARD_REMOVED, T + "test_patched_limit_reaches_guard"),
+    _case("system_bool", CHECK, GUARD_REMOVED, T + "test_system_bool"),
+    _case("system_bool_local", CHECK, GUARD_REMOVED, T + "test_system_bool_local"),
     _case("error_not_detection", "def flaky(value):\n    return value\n",
           "def flaky(value):\n    return value.missing\n", T + "test_flaky"),
     _case("ambiguous_anchor", "    return value", "    return 0", T + "test_flaky"),
@@ -183,6 +239,8 @@ EXPECTED = {
     "raise_removed": "detected",
     "identity_only": "survived",
     "patch_target_shared": "detected",
+    "system_bool": "detected",
+    "system_bool_local": "detected",
     "error_not_detection": "not_detected_error",
     "ambiguous_anchor": "harness_error",
     "missing_anchor": "harness_error",
@@ -195,7 +253,14 @@ WORDING_CASES = [
     _case("assert_in_multiline", MSG, MSG_CHANGED, W + "test_multiline_assert_in"),
     _case("equal_token_message", '"over_limit"', '"too_high"', W + "test_equal_token_message"),
     _case("raises_regex", MSG, MSG_CHANGED, W + "test_raises_regex"),
-    _case("bool_from_text", MSG, MSG_CHANGED, W + "test_bool_from_text"),
+    _case("bool_local_from_text", MSG, MSG_CHANGED, W + "test_bool_from_text"),
+    _case("bool_inline_from_text", MSG, MSG_CHANGED, W + "test_bool_inline_from_text"),
+    _case("bool_from_helper", MSG, MSG_CHANGED, W + "test_bool_from_helper"),
+    _case("bool_local_from_helper", MSG, MSG_CHANGED, W + "test_bool_local_from_helper"),
+    _case("int_local_from_helper", MSG, MSG_CHANGED, W + "test_int_local_from_helper"),
+    _case("bool_local_chain", MSG, MSG_CHANGED, W + "test_bool_local_chain"),
+    _case("bool_in_test_built_dict", MSG, MSG_CHANGED, W + "test_bool_in_test_built_dict"),
+    _case("bool_rebound_local", MSG, MSG_CHANGED, W + "test_bool_rebound_local"),
     _case("bare_assert", MSG, MSG_CHANGED, W + "test_bare_assert"),
 ]
 WORDING_EXPECTED = {
@@ -205,7 +270,14 @@ WORDING_EXPECTED = {
     "assert_in_multiline": "not_detected_message_only_failure",
     "equal_token_message": "not_detected_message_only_failure",
     "raises_regex": "not_detected_message_only_failure",
-    "bool_from_text": "not_detected_undetermined_failure",
+    "bool_local_from_text": "not_detected_undetermined_failure",
+    "bool_inline_from_text": "not_detected_undetermined_failure",
+    "bool_from_helper": "not_detected_undetermined_failure",
+    "bool_local_from_helper": "not_detected_undetermined_failure",
+    "int_local_from_helper": "not_detected_undetermined_failure",
+    "bool_local_chain": "not_detected_undetermined_failure",
+    "bool_in_test_built_dict": "not_detected_undetermined_failure",
+    "bool_rebound_local": "not_detected_undetermined_failure",
     "bare_assert": "not_detected_undetermined_failure",
 }
 # R2: red baselines.
@@ -220,7 +292,8 @@ BASELINE_EXPECTED = {
     "red_baseline": "baseline_not_green",
     "vague_skip": "baseline_not_green",
     "load_error": "baseline_not_green",
-    # On Windows these tests run and the guard is real, so they detect.
+    # On Windows these tests run, call check(11) and so exercise the removed
+    # guard: the expected verdict there is "detected". NOT MEASURED ON WINDOWS.
     "windows_skip": "detected" if ON_WINDOWS else "platform_blocked",
     "windows_module": "detected" if ON_WINDOWS else "platform_blocked",
 }
@@ -250,7 +323,7 @@ class TestHarnessOnSyntheticRepo(SyntheticRepoMixin, unittest.TestCase):
                 before = {p: p.read_bytes() for p in repo.rglob("*") if p.is_file()}
                 report = module.evaluate_mutations(repo, CASES)
                 self.assertEqual(self.verdicts(report), EXPECTED)
-                self.assertEqual(report["detected"], 4)
+                self.assertEqual(report["detected"], 6)
                 self.assertEqual((report["verdict"], report["exit_code"]), ("fail", 1))
                 after = {p: p.read_bytes() for p in repo.rglob("*") if p.is_file()}
                 self.assertEqual(before, after, "harness must never touch the source checkout")
@@ -258,7 +331,7 @@ class TestHarnessOnSyntheticRepo(SyntheticRepoMixin, unittest.TestCase):
     def test_detections_carry_behavioural_evidence(self):
         for script, module in VERIFIERS.items():
             with self.subTest(script=script):
-                report = module.evaluate_mutations(self.make_repo(), CASES[:3])
+                report = module.evaluate_mutations(self.make_repo(), CASES[:3] + CASES[5:7])
                 for row in report["rows"]:
                     self.assertEqual(row["verdict"], "detected", row)
                     self.assertEqual([ev["verdict"] for ev in row["mutant_evidence"]], ["behavioral"], row)
@@ -307,7 +380,7 @@ class TestRedBaselines(SyntheticRepoMixin, unittest.TestCase):
         for script, module in VERIFIERS.items():
             with self.subTest(script=script):
                 repo = self.make_repo()
-                ok = module.evaluate_mutations(repo, [CASES[0], CASES[4]])
+                ok = module.evaluate_mutations(repo, [CASES[0], CASES[4], CASES[5], CASES[6]])
                 self.assertEqual((ok["verdict"], ok["exit_code"]), ("pass", 0))
                 red = module.evaluate_mutations(repo, [CASES[0], BASELINE_CASES[0]])
                 self.assertEqual((red["verdict"], red["exit_code"]), ("fail", 1))
