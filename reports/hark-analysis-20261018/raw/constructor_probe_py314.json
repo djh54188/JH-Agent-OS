@@ -1,0 +1,1704 @@
+{
+  "baseline_commit": "fe0476d5807d6d562a1c290fe1b14623e53d1a46",
+  "python": "3.14.8",
+  "platform": "linux",
+  "mutation": {
+    "path": "src/guard.py",
+    "original": "        raise Refused(\"value over limit\")",
+    "replacement": "        raise Refused(\"value beyond limit\")"
+  },
+  "runs": {
+    "verify_phase4_guards:on": {
+      "synthetic_repo_unchanged": true,
+      "false_positives_in_sample": 6,
+      "false_positive_cases": [
+        "bool_helper",
+        "bool_local",
+        "int_helper",
+        "int_local",
+        "float_helper",
+        "float_local"
+      ],
+      "verdicts": {
+        "bool_direct": "not_detected_undetermined_failure",
+        "bool_helper": "detected",
+        "bool_local": "detected",
+        "int_direct": "not_detected_undetermined_failure",
+        "int_helper": "detected",
+        "int_local": "detected",
+        "float_direct": "not_detected_undetermined_failure",
+        "float_helper": "detected",
+        "float_local": "detected",
+        "str_direct": "not_detected_undetermined_failure",
+        "str_helper": "not_detected_undetermined_failure",
+        "str_local": "not_detected_undetermined_failure",
+        "control_still_refused": "survived",
+        "control_status_still_blocked": "survived"
+      },
+      "rows": [
+        {
+          "guard": "bool_direct",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_bool_direct",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "undetermined_failure"
+          },
+          "verdict": "not_detected_undetermined_failure",
+          "mutant_evidence": [
+            {
+              "method": "assertTrue",
+              "verdict": "undetermined",
+              "reason": "operand derived from text: bool(consumer.run(11).endswith('over limit'))",
+              "operands": [
+                "False"
+              ],
+              "call": "self.assertTrue(bool(consumer.run(11).endswith('over limit')))"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          },
+          "raw": {
+            "baseline": "",
+            "identity": "",
+            "mutant": "Traceback (most recent call last):\n  File \"/tmp/jh-mutation-zbebnpff/mutant-0/tests/test_probe.py\", line 16, in test_bool_direct\n    self.assertTrue(bool(consumer.run(11).endswith(\"over limit\")))\n    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<string>\", line 436, in wrapper\n    return original(self, *args, **kwargs)\nAssertionError: False is not true\n"
+          }
+        },
+        {
+          "guard": "bool_helper",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_bool_helper",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertTrue",
+              "verdict": "behavioral",
+              "reason": "non-text operands from proven sources",
+              "operands": [
+                "False"
+              ],
+              "call": "self.assertTrue(bool(_ends(consumer.run(11))))"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "bool_local",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_bool_local",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertTrue",
+              "verdict": "behavioral",
+              "reason": "non-text operands from proven sources",
+              "operands": [
+                "False"
+              ],
+              "call": "self.assertTrue(bool(hit))"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "int_direct",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_int_direct",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "undetermined_failure"
+          },
+          "verdict": "not_detected_undetermined_failure",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "undetermined",
+              "reason": "operand derived from text: int(consumer.run(11).count('over limit'))",
+              "operands": [
+                "0",
+                "1"
+              ],
+              "call": "self.assertEqual(int(consumer.run(11).count('over limit')), 1)"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          },
+          "raw": {
+            "baseline": "",
+            "identity": "",
+            "mutant": "Traceback (most recent call last):\n  File \"/tmp/jh-mutation-zbebnpff/mutant-3/tests/test_probe.py\", line 27, in test_int_direct\n    self.assertEqual(int(consumer.run(11).count(\"over limit\")), 1)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<string>\", line 436, in wrapper\n    return original(self, *args, **kwargs)\nAssertionError: 0 != 1\n"
+          }
+        },
+        {
+          "guard": "int_helper",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_int_helper",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "behavioral",
+              "reason": "values still differ with text made opaque",
+              "operands": [
+                "0",
+                "1"
+              ],
+              "call": "self.assertEqual(int(_hits(consumer.run(11))), 1)"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "int_local",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_int_local",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "behavioral",
+              "reason": "values still differ with text made opaque",
+              "operands": [
+                "0",
+                "1"
+              ],
+              "call": "self.assertEqual(int(hits), 1)"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "float_direct",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_float_direct",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "undetermined_failure"
+          },
+          "verdict": "not_detected_undetermined_failure",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "undetermined",
+              "reason": "operand derived from text: float(consumer.run(11).count('over limit'))",
+              "operands": [
+                "0.0",
+                "1.0"
+              ],
+              "call": "self.assertEqual(float(consumer.run(11).count('over limit')), 1.0)"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          },
+          "raw": {
+            "baseline": "",
+            "identity": "",
+            "mutant": "Traceback (most recent call last):\n  File \"/tmp/jh-mutation-zbebnpff/mutant-6/tests/test_probe.py\", line 38, in test_float_direct\n    self.assertEqual(float(consumer.run(11).count(\"over limit\")), 1.0)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<string>\", line 436, in wrapper\n    return original(self, *args, **kwargs)\nAssertionError: 0.0 != 1.0\n"
+          }
+        },
+        {
+          "guard": "float_helper",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_float_helper",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "behavioral",
+              "reason": "values still differ with text made opaque",
+              "operands": [
+                "0.0",
+                "1.0"
+              ],
+              "call": "self.assertEqual(float(_hits(consumer.run(11))), 1.0)"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "float_local",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_float_local",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "behavioral",
+              "reason": "values still differ with text made opaque",
+              "operands": [
+                "0.0",
+                "1.0"
+              ],
+              "call": "self.assertEqual(float(hits), 1.0)"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "str_direct",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_str_direct",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "undetermined_failure"
+          },
+          "verdict": "not_detected_undetermined_failure",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "undetermined",
+              "reason": "operand derived from text: str(consumer.run(11).endswith('over limit'))",
+              "operands": [
+                "'False'",
+                "'True'"
+              ],
+              "call": "self.assertEqual(str(consumer.run(11).endswith('over limit')), 'True')"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          },
+          "raw": {
+            "baseline": "",
+            "identity": "",
+            "mutant": "Traceback (most recent call last):\n  File \"/tmp/jh-mutation-zbebnpff/mutant-9/tests/test_probe.py\", line 49, in test_str_direct\n    self.assertEqual(str(consumer.run(11).endswith(\"over limit\")), \"True\")\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<string>\", line 436, in wrapper\n    return original(self, *args, **kwargs)\nAssertionError: 'False' != 'True'\n- False\n+ True\n\n"
+          }
+        },
+        {
+          "guard": "str_helper",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_str_helper",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "undetermined_failure"
+          },
+          "verdict": "not_detected_undetermined_failure",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "undetermined",
+              "reason": "operand derived from text: str(_ends(consumer.run(11)))",
+              "operands": [
+                "'False'",
+                "'True'"
+              ],
+              "call": "self.assertEqual(str(_ends(consumer.run(11))), 'True')"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          },
+          "raw": {
+            "baseline": "",
+            "identity": "",
+            "mutant": "Traceback (most recent call last):\n  File \"/tmp/jh-mutation-zbebnpff/mutant-10/tests/test_probe.py\", line 52, in test_str_helper\n    self.assertEqual(str(_ends(consumer.run(11))), \"True\")\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<string>\", line 436, in wrapper\n    return original(self, *args, **kwargs)\nAssertionError: 'False' != 'True'\n- False\n+ True\n\n"
+          }
+        },
+        {
+          "guard": "str_local",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_str_local",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "undetermined_failure"
+          },
+          "verdict": "not_detected_undetermined_failure",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "undetermined",
+              "reason": "operand derived from text: str(hit)",
+              "operands": [
+                "'False'",
+                "'True'"
+              ],
+              "call": "self.assertEqual(str(hit), 'True')"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          },
+          "raw": {
+            "baseline": "",
+            "identity": "",
+            "mutant": "Traceback (most recent call last):\n  File \"/tmp/jh-mutation-zbebnpff/mutant-11/tests/test_probe.py\", line 56, in test_str_local\n    self.assertEqual(str(hit), \"True\")\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^\n  File \"<string>\", line 436, in wrapper\n    return original(self, *args, **kwargs)\nAssertionError: 'False' != 'True'\n- False\n+ True\n\n"
+          }
+        },
+        {
+          "guard": "control_still_refused",
+          "module": "src/guard.py",
+          "test": "test_probe.TestBusinessControl.test_still_refused",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "pass"
+          },
+          "verdict": "survived",
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          },
+          "raw": {
+            "baseline": "",
+            "identity": "",
+            "mutant": ""
+          }
+        },
+        {
+          "guard": "control_status_still_blocked",
+          "module": "src/guard.py",
+          "test": "test_probe.TestBusinessControl.test_status_still_blocked",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "pass"
+          },
+          "verdict": "survived",
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          },
+          "raw": {
+            "baseline": "",
+            "identity": "",
+            "mutant": ""
+          }
+        }
+      ]
+    },
+    "verify_phase4_guards:off": {
+      "synthetic_repo_unchanged": true,
+      "false_positives_in_sample": 12,
+      "false_positive_cases": [
+        "bool_direct",
+        "bool_helper",
+        "bool_local",
+        "int_direct",
+        "int_helper",
+        "int_local",
+        "float_direct",
+        "float_helper",
+        "float_local",
+        "str_direct",
+        "str_helper",
+        "str_local"
+      ],
+      "verdicts": {
+        "bool_direct": "detected",
+        "bool_helper": "detected",
+        "bool_local": "detected",
+        "int_direct": "detected",
+        "int_helper": "detected",
+        "int_local": "detected",
+        "float_direct": "detected",
+        "float_helper": "detected",
+        "float_local": "detected",
+        "str_direct": "detected",
+        "str_helper": "detected",
+        "str_local": "detected",
+        "control_still_refused": "survived",
+        "control_status_still_blocked": "survived"
+      },
+      "rows": [
+        {
+          "guard": "bool_direct",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_bool_direct",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertTrue",
+              "verdict": "behavioral",
+              "reason": "non-text operands from proven sources",
+              "operands": [
+                "False"
+              ],
+              "call": "self.assertTrue(bool(consumer.run(11).endswith('over limit')))"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "bool_helper",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_bool_helper",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertTrue",
+              "verdict": "behavioral",
+              "reason": "non-text operands from proven sources",
+              "operands": [
+                "False"
+              ],
+              "call": "self.assertTrue(bool(_ends(consumer.run(11))))"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "bool_local",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_bool_local",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertTrue",
+              "verdict": "behavioral",
+              "reason": "non-text operands from proven sources",
+              "operands": [
+                "False"
+              ],
+              "call": "self.assertTrue(bool(hit))"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "int_direct",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_int_direct",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "behavioral",
+              "reason": "values still differ with text made opaque",
+              "operands": [
+                "0",
+                "1"
+              ],
+              "call": "self.assertEqual(int(consumer.run(11).count('over limit')), 1)"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "int_helper",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_int_helper",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "behavioral",
+              "reason": "values still differ with text made opaque",
+              "operands": [
+                "0",
+                "1"
+              ],
+              "call": "self.assertEqual(int(_hits(consumer.run(11))), 1)"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "int_local",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_int_local",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "behavioral",
+              "reason": "values still differ with text made opaque",
+              "operands": [
+                "0",
+                "1"
+              ],
+              "call": "self.assertEqual(int(hits), 1)"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "float_direct",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_float_direct",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "behavioral",
+              "reason": "values still differ with text made opaque",
+              "operands": [
+                "0.0",
+                "1.0"
+              ],
+              "call": "self.assertEqual(float(consumer.run(11).count('over limit')), 1.0)"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "float_helper",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_float_helper",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "behavioral",
+              "reason": "values still differ with text made opaque",
+              "operands": [
+                "0.0",
+                "1.0"
+              ],
+              "call": "self.assertEqual(float(_hits(consumer.run(11))), 1.0)"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "float_local",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_float_local",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "behavioral",
+              "reason": "values still differ with text made opaque",
+              "operands": [
+                "0.0",
+                "1.0"
+              ],
+              "call": "self.assertEqual(float(hits), 1.0)"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "str_direct",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_str_direct",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "behavioral",
+              "reason": "values still differ with text made opaque",
+              "operands": [
+                "'False'",
+                "'True'"
+              ],
+              "call": "self.assertEqual(str(consumer.run(11).endswith('over limit')), 'True')"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "str_helper",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_str_helper",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "behavioral",
+              "reason": "values still differ with text made opaque",
+              "operands": [
+                "'False'",
+                "'True'"
+              ],
+              "call": "self.assertEqual(str(_ends(consumer.run(11))), 'True')"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "str_local",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_str_local",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "behavioral",
+              "reason": "values still differ with text made opaque",
+              "operands": [
+                "'False'",
+                "'True'"
+              ],
+              "call": "self.assertEqual(str(hit), 'True')"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "control_still_refused",
+          "module": "src/guard.py",
+          "test": "test_probe.TestBusinessControl.test_still_refused",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "pass"
+          },
+          "verdict": "survived",
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          },
+          "raw": {
+            "baseline": "",
+            "identity": "",
+            "mutant": ""
+          }
+        },
+        {
+          "guard": "control_status_still_blocked",
+          "module": "src/guard.py",
+          "test": "test_probe.TestBusinessControl.test_status_still_blocked",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "pass"
+          },
+          "verdict": "survived",
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          },
+          "raw": {
+            "baseline": "",
+            "identity": "",
+            "mutant": ""
+          }
+        }
+      ]
+    },
+    "verify_jh006_guards:on": {
+      "synthetic_repo_unchanged": true,
+      "false_positives_in_sample": 6,
+      "false_positive_cases": [
+        "bool_helper",
+        "bool_local",
+        "int_helper",
+        "int_local",
+        "float_helper",
+        "float_local"
+      ],
+      "verdicts": {
+        "bool_direct": "not_detected_undetermined_failure",
+        "bool_helper": "detected",
+        "bool_local": "detected",
+        "int_direct": "not_detected_undetermined_failure",
+        "int_helper": "detected",
+        "int_local": "detected",
+        "float_direct": "not_detected_undetermined_failure",
+        "float_helper": "detected",
+        "float_local": "detected",
+        "str_direct": "not_detected_undetermined_failure",
+        "str_helper": "not_detected_undetermined_failure",
+        "str_local": "not_detected_undetermined_failure",
+        "control_still_refused": "survived",
+        "control_status_still_blocked": "survived"
+      },
+      "rows": [
+        {
+          "guard": "bool_direct",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_bool_direct",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "undetermined_failure"
+          },
+          "verdict": "not_detected_undetermined_failure",
+          "mutant_evidence": [
+            {
+              "method": "assertTrue",
+              "verdict": "undetermined",
+              "reason": "operand derived from text: bool(consumer.run(11).endswith('over limit'))",
+              "operands": [
+                "False"
+              ],
+              "call": "self.assertTrue(bool(consumer.run(11).endswith('over limit')))"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          },
+          "raw": {
+            "baseline": "",
+            "identity": "",
+            "mutant": "Traceback (most recent call last):\n  File \"/tmp/jh-mutation-8dlqhy34/mutant-0/tests/test_probe.py\", line 16, in test_bool_direct\n    self.assertTrue(bool(consumer.run(11).endswith(\"over limit\")))\n    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<string>\", line 436, in wrapper\n    return original(self, *args, **kwargs)\nAssertionError: False is not true\n"
+          }
+        },
+        {
+          "guard": "bool_helper",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_bool_helper",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertTrue",
+              "verdict": "behavioral",
+              "reason": "non-text operands from proven sources",
+              "operands": [
+                "False"
+              ],
+              "call": "self.assertTrue(bool(_ends(consumer.run(11))))"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "bool_local",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_bool_local",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertTrue",
+              "verdict": "behavioral",
+              "reason": "non-text operands from proven sources",
+              "operands": [
+                "False"
+              ],
+              "call": "self.assertTrue(bool(hit))"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "int_direct",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_int_direct",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "undetermined_failure"
+          },
+          "verdict": "not_detected_undetermined_failure",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "undetermined",
+              "reason": "operand derived from text: int(consumer.run(11).count('over limit'))",
+              "operands": [
+                "0",
+                "1"
+              ],
+              "call": "self.assertEqual(int(consumer.run(11).count('over limit')), 1)"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          },
+          "raw": {
+            "baseline": "",
+            "identity": "",
+            "mutant": "Traceback (most recent call last):\n  File \"/tmp/jh-mutation-8dlqhy34/mutant-3/tests/test_probe.py\", line 27, in test_int_direct\n    self.assertEqual(int(consumer.run(11).count(\"over limit\")), 1)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<string>\", line 436, in wrapper\n    return original(self, *args, **kwargs)\nAssertionError: 0 != 1\n"
+          }
+        },
+        {
+          "guard": "int_helper",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_int_helper",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "behavioral",
+              "reason": "values still differ with text made opaque",
+              "operands": [
+                "0",
+                "1"
+              ],
+              "call": "self.assertEqual(int(_hits(consumer.run(11))), 1)"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "int_local",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_int_local",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "behavioral",
+              "reason": "values still differ with text made opaque",
+              "operands": [
+                "0",
+                "1"
+              ],
+              "call": "self.assertEqual(int(hits), 1)"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "float_direct",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_float_direct",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "undetermined_failure"
+          },
+          "verdict": "not_detected_undetermined_failure",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "undetermined",
+              "reason": "operand derived from text: float(consumer.run(11).count('over limit'))",
+              "operands": [
+                "0.0",
+                "1.0"
+              ],
+              "call": "self.assertEqual(float(consumer.run(11).count('over limit')), 1.0)"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          },
+          "raw": {
+            "baseline": "",
+            "identity": "",
+            "mutant": "Traceback (most recent call last):\n  File \"/tmp/jh-mutation-8dlqhy34/mutant-6/tests/test_probe.py\", line 38, in test_float_direct\n    self.assertEqual(float(consumer.run(11).count(\"over limit\")), 1.0)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<string>\", line 436, in wrapper\n    return original(self, *args, **kwargs)\nAssertionError: 0.0 != 1.0\n"
+          }
+        },
+        {
+          "guard": "float_helper",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_float_helper",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "behavioral",
+              "reason": "values still differ with text made opaque",
+              "operands": [
+                "0.0",
+                "1.0"
+              ],
+              "call": "self.assertEqual(float(_hits(consumer.run(11))), 1.0)"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "float_local",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_float_local",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "behavioral",
+              "reason": "values still differ with text made opaque",
+              "operands": [
+                "0.0",
+                "1.0"
+              ],
+              "call": "self.assertEqual(float(hits), 1.0)"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "str_direct",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_str_direct",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "undetermined_failure"
+          },
+          "verdict": "not_detected_undetermined_failure",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "undetermined",
+              "reason": "operand derived from text: str(consumer.run(11).endswith('over limit'))",
+              "operands": [
+                "'False'",
+                "'True'"
+              ],
+              "call": "self.assertEqual(str(consumer.run(11).endswith('over limit')), 'True')"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          },
+          "raw": {
+            "baseline": "",
+            "identity": "",
+            "mutant": "Traceback (most recent call last):\n  File \"/tmp/jh-mutation-8dlqhy34/mutant-9/tests/test_probe.py\", line 49, in test_str_direct\n    self.assertEqual(str(consumer.run(11).endswith(\"over limit\")), \"True\")\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<string>\", line 436, in wrapper\n    return original(self, *args, **kwargs)\nAssertionError: 'False' != 'True'\n- False\n+ True\n\n"
+          }
+        },
+        {
+          "guard": "str_helper",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_str_helper",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "undetermined_failure"
+          },
+          "verdict": "not_detected_undetermined_failure",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "undetermined",
+              "reason": "operand derived from text: str(_ends(consumer.run(11)))",
+              "operands": [
+                "'False'",
+                "'True'"
+              ],
+              "call": "self.assertEqual(str(_ends(consumer.run(11))), 'True')"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          },
+          "raw": {
+            "baseline": "",
+            "identity": "",
+            "mutant": "Traceback (most recent call last):\n  File \"/tmp/jh-mutation-8dlqhy34/mutant-10/tests/test_probe.py\", line 52, in test_str_helper\n    self.assertEqual(str(_ends(consumer.run(11))), \"True\")\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<string>\", line 436, in wrapper\n    return original(self, *args, **kwargs)\nAssertionError: 'False' != 'True'\n- False\n+ True\n\n"
+          }
+        },
+        {
+          "guard": "str_local",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_str_local",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "undetermined_failure"
+          },
+          "verdict": "not_detected_undetermined_failure",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "undetermined",
+              "reason": "operand derived from text: str(hit)",
+              "operands": [
+                "'False'",
+                "'True'"
+              ],
+              "call": "self.assertEqual(str(hit), 'True')"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          },
+          "raw": {
+            "baseline": "",
+            "identity": "",
+            "mutant": "Traceback (most recent call last):\n  File \"/tmp/jh-mutation-8dlqhy34/mutant-11/tests/test_probe.py\", line 56, in test_str_local\n    self.assertEqual(str(hit), \"True\")\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^\n  File \"<string>\", line 436, in wrapper\n    return original(self, *args, **kwargs)\nAssertionError: 'False' != 'True'\n- False\n+ True\n\n"
+          }
+        },
+        {
+          "guard": "control_still_refused",
+          "module": "src/guard.py",
+          "test": "test_probe.TestBusinessControl.test_still_refused",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "pass"
+          },
+          "verdict": "survived",
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          },
+          "raw": {
+            "baseline": "",
+            "identity": "",
+            "mutant": ""
+          }
+        },
+        {
+          "guard": "control_status_still_blocked",
+          "module": "src/guard.py",
+          "test": "test_probe.TestBusinessControl.test_status_still_blocked",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "pass"
+          },
+          "verdict": "survived",
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          },
+          "raw": {
+            "baseline": "",
+            "identity": "",
+            "mutant": ""
+          }
+        }
+      ]
+    },
+    "verify_jh006_guards:off": {
+      "synthetic_repo_unchanged": true,
+      "false_positives_in_sample": 12,
+      "false_positive_cases": [
+        "bool_direct",
+        "bool_helper",
+        "bool_local",
+        "int_direct",
+        "int_helper",
+        "int_local",
+        "float_direct",
+        "float_helper",
+        "float_local",
+        "str_direct",
+        "str_helper",
+        "str_local"
+      ],
+      "verdicts": {
+        "bool_direct": "detected",
+        "bool_helper": "detected",
+        "bool_local": "detected",
+        "int_direct": "detected",
+        "int_helper": "detected",
+        "int_local": "detected",
+        "float_direct": "detected",
+        "float_helper": "detected",
+        "float_local": "detected",
+        "str_direct": "detected",
+        "str_helper": "detected",
+        "str_local": "detected",
+        "control_still_refused": "survived",
+        "control_status_still_blocked": "survived"
+      },
+      "rows": [
+        {
+          "guard": "bool_direct",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_bool_direct",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertTrue",
+              "verdict": "behavioral",
+              "reason": "non-text operands from proven sources",
+              "operands": [
+                "False"
+              ],
+              "call": "self.assertTrue(bool(consumer.run(11).endswith('over limit')))"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "bool_helper",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_bool_helper",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertTrue",
+              "verdict": "behavioral",
+              "reason": "non-text operands from proven sources",
+              "operands": [
+                "False"
+              ],
+              "call": "self.assertTrue(bool(_ends(consumer.run(11))))"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "bool_local",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_bool_local",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertTrue",
+              "verdict": "behavioral",
+              "reason": "non-text operands from proven sources",
+              "operands": [
+                "False"
+              ],
+              "call": "self.assertTrue(bool(hit))"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "int_direct",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_int_direct",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "behavioral",
+              "reason": "values still differ with text made opaque",
+              "operands": [
+                "0",
+                "1"
+              ],
+              "call": "self.assertEqual(int(consumer.run(11).count('over limit')), 1)"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "int_helper",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_int_helper",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "behavioral",
+              "reason": "values still differ with text made opaque",
+              "operands": [
+                "0",
+                "1"
+              ],
+              "call": "self.assertEqual(int(_hits(consumer.run(11))), 1)"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "int_local",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_int_local",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "behavioral",
+              "reason": "values still differ with text made opaque",
+              "operands": [
+                "0",
+                "1"
+              ],
+              "call": "self.assertEqual(int(hits), 1)"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "float_direct",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_float_direct",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "behavioral",
+              "reason": "values still differ with text made opaque",
+              "operands": [
+                "0.0",
+                "1.0"
+              ],
+              "call": "self.assertEqual(float(consumer.run(11).count('over limit')), 1.0)"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "float_helper",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_float_helper",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "behavioral",
+              "reason": "values still differ with text made opaque",
+              "operands": [
+                "0.0",
+                "1.0"
+              ],
+              "call": "self.assertEqual(float(_hits(consumer.run(11))), 1.0)"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "float_local",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_float_local",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "behavioral",
+              "reason": "values still differ with text made opaque",
+              "operands": [
+                "0.0",
+                "1.0"
+              ],
+              "call": "self.assertEqual(float(hits), 1.0)"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "str_direct",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_str_direct",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "behavioral",
+              "reason": "values still differ with text made opaque",
+              "operands": [
+                "'False'",
+                "'True'"
+              ],
+              "call": "self.assertEqual(str(consumer.run(11).endswith('over limit')), 'True')"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "str_helper",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_str_helper",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "behavioral",
+              "reason": "values still differ with text made opaque",
+              "operands": [
+                "'False'",
+                "'True'"
+              ],
+              "call": "self.assertEqual(str(_ends(consumer.run(11))), 'True')"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "str_local",
+          "module": "src/guard.py",
+          "test": "test_probe.TestCtor.test_str_local",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "behavioral_failure"
+          },
+          "verdict": "detected",
+          "mutant_evidence": [
+            {
+              "method": "assertEqual",
+              "verdict": "behavioral",
+              "reason": "values still differ with text made opaque",
+              "operands": [
+                "'False'",
+                "'True'"
+              ],
+              "call": "self.assertEqual(str(hit), 'True')"
+            }
+          ],
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          }
+        },
+        {
+          "guard": "control_still_refused",
+          "module": "src/guard.py",
+          "test": "test_probe.TestBusinessControl.test_still_refused",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "pass"
+          },
+          "verdict": "survived",
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          },
+          "raw": {
+            "baseline": "",
+            "identity": "",
+            "mutant": ""
+          }
+        },
+        {
+          "guard": "control_status_still_blocked",
+          "module": "src/guard.py",
+          "test": "test_probe.TestBusinessControl.test_status_still_blocked",
+          "outcomes": {
+            "baseline": "pass",
+            "identity": "pass",
+            "mutant": "pass"
+          },
+          "verdict": "survived",
+          "provenance": {
+            "baseline": true,
+            "identity": true,
+            "mutant": true
+          },
+          "raw": {
+            "baseline": "",
+            "identity": "",
+            "mutant": ""
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "python": "3.12.15",
+  "option": "A (copy only)",
+  "rows": [
+    {
+      "guard": "prepared_version_field",
+      "module": "src/orchestrator.py",
+      "test": "test_jh006_code_delivery.TestCliDeliveryCommands.test_cli_prepare_and_complete_roundtrip",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "behavioral_failure"
+      },
+      "verdict": "detected",
+      "mutant_evidence": [
+        {
+          "method": "assertEqual",
+          "verdict": "behavioral",
+          "reason": "values still differ with text made opaque",
+          "operands": [
+            "1",
+            "0"
+          ],
+          "call": "self.assertEqual(prepare_code, 0)"
+        }
+      ],
+      "provenance": {
+        "baseline": true,
+        "identity": true,
+        "mutant": true
+      }
+    }
+  ],
+  "verdict": "pass"
+}
