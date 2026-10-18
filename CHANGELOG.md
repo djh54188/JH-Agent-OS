@@ -1,3 +1,17 @@
+# 2026-10-18 · Hark 验证器补丁的 Windows 本地移植与验证（独立批，待独立复核）
+
+来源提交 `fe0476d5807d6d562a1c290fe1b14623e53d1a46`；本地候选 `data/hark-v1v2-r4-review-20261018/candidate/`。**仅精准移植三个文件**，未整分支合并、未覆盖旧 main 快照、未搬入其他云端改动。
+
+- **移植**：`scripts/verify_phase4_guards.py`、`scripts/verify_jh006_guards.py`（覆盖为候选版）、`tests/test_verifier_mutation_harness.py`（新增）；三者 sha256 与候选逐字节一致。
+- **MUTATIONS AST 核对**：移植前本地 / 候选 / 移植后本地**三者一致**（phase4 `3cc35fe6…`、jh006 `f6a6ab4c…`）；**未删改任何变异**；锚点对本地当前源码全部唯一（phase4 12 条、jh006 19 条）。
+- **Windows 验证**（win32 / Python 3.14.7；受控短临时根 `D:\JH-Agent OS\data\h4tmp`，最坏路径约 105 字符，未用 ACL 技巧）：新回归测试 **13 项通过**；`verify_phase4_guards` 12 条 → **5 detected / 3 survived / 3 message_only / 1 undetermined，exit 1**；`verify_jh006_guards` 19 条 → **18 detected / 1 undetermined（`prepared_version_field`），exit 1**；两者**基线/恒等全绿、无 harness 错误、无平台阻塞**。
+- **元变异**：恢复旧的无条件 self 规则、关闭 `text_derived` 过滤两个定向反事实（仅内存注入），**6/6 用例由未检出变为 detected**——证明这两条规则在本机确实承担行为权重（去掉即误报回归）。
+- **口径**：`exit 1` 是验证器对 `survived/message_only/undetermined` 缺口的**诊断结论**，非运行失败；**未改任何判定规则凑全绿**；**不恢复旧 19/19、12/12 验收结论**，**不宣称多层防护通过**。
+- **套件**：全量 **590 项 589 过/1 既有跳过**；**AST 独立计数 590**（naive grep 618 含字符串常量里的 28 个伪 `def test_`，以 AST 为准）。
+- 未改业务源码/业务测试/封存夹具/权限/生产门；未调用真实模型、未发送指定审查会话、未接 GUI、未实现 continue/cancel、未推送云端、未合并 PR #1。见[报告](reports/hark-verifier-port-20261018.md)。状态：**独立批，待架构师独立复核**。
+
+---
+
 # 2026-10-18 · JH-020 R2-A 登记记录字段校验（候选，待独立验收）
 
 按独立审查 `data/jh020-r2-final-review-20261018/` 仅补**字段校验**（R1/R3/R2-B 已关闭；读取失败与坏 JSON 原反例已关闭，未重做）：
