@@ -67,7 +67,7 @@
 
 ## 三、TODO 单行修正草稿
 
-- 确认：`bc3e0f2:TODO.md` 中 pm-dispatch 三列表（`关联任务 | 候选借鉴点 | 评估重点`）第一行是四列的 JH-004 任务行，与上方真正任务表第 21 行逐字相同（全文出现 2 次）。
+- 确认：`bc3e0f2:TODO.md` 中 pm-dispatch 三列表（`关联任务 | 候选借鉴点 | 评估重点`）第一行是四列的 JH-004 任务行，与上方真正任务表第 24 行逐字相同（全文出现 2 次）。
 - 历史依据：该行在 `c7d7421`（2026-10-14）及更早版本为 `| JH-004 | 自包含任务卡 | 背景、输入事实与版本、依赖、授权路径、产物要求和验收方式完整；必要上下文实际传给 Worker，引用材料可获取 |`；`61389eb`（2026-10-14，docs(n1): accept verified Codex skill and real model entry）把任务表与此表中的两行 JH-004 同时替换成新文本，导致误贴。两提交位于远端分支 `n1-artifact-entry`。
 - 补丁：`reports/hark-analysis-20261018/todo_pm_dispatch_row.patch`，只替换 pm-dispatch 表这一行，恢复为上述历史原文；不新增借鉴点或验收状态；任务表 JH-004 行与“状态：候选，尚未采纳”保持不变。补丁保留 `main` 的 CRLF 字节，已在 `bc3e0f2` 的 TODO.md 上 `git apply --check` 通过。未应用到 `main` 或本地。
 
