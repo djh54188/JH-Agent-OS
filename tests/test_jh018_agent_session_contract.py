@@ -517,14 +517,25 @@ class TestCombinedSequenceConsistency(unittest.TestCase):
 
 
 class TestCoreHoldsNoConcreteAdapter(unittest.TestCase):
+    # Real adapters implement the contract; everything else is core/orchestration
+    # and must stay decoupled from it. Allowlisting a name is not enough — the
+    # consumer must actually subclass AgentSessionAdapter (checked below).
+    CONTRACT_CONSUMERS = frozenset({"agent_session_codex.py"})
+
     def test_production_modules_do_not_import_this_contract(self):
         offenders = []
         for path in sorted((ROOT / "src").glob("*.py")):
-            if path.name == "agent_session.py":
+            if path.name == "agent_session.py" or path.name in self.CONTRACT_CONSUMERS:
                 continue
             if "agent_session" in path.read_text(encoding="utf-8-sig"):
                 offenders.append(path.name)
         self.assertEqual(offenders, [], "unexpected production import of the contract")
+
+    def test_contract_consumers_are_real_adapters(self):
+        # The allowlist cannot be abused to smuggle a core import: every
+        # allowlisted module must expose an AgentSessionAdapter subclass.
+        from src.agent_session_codex import CodexAgentSessionAdapter
+        self.assertTrue(issubclass(CodexAgentSessionAdapter, AgentSessionAdapter))
 
     def test_contract_module_has_no_native_app_imports(self):
         text = (ROOT / "src" / "agent_session.py").read_text(encoding="utf-8-sig")

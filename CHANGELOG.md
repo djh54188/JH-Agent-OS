@@ -1,3 +1,14 @@
+# 2026-10-18 · JH-020 真实会话接入切片：首个真实 AgentSessionAdapter + 一次真实往返（待独立验收）
+
+- **真实适配器**：新增 `src/agent_session_codex.py`，实现契约 `src/agent_session.py`。Codex app-server（JSON-RPC over stdio）：`submit`=`thread/start`（隔离 cwd、`sandbox="read-only"`、approvals never）+`turn/start`（`sandboxPolicy={readOnly,无网络}`）；`status`/`collect` 走本地登记表；`collect` 有界等待匹配本 thread+turn 的 `turn/completed`，**不自动重试**。登记 `RunBinding`、请求快照、**SHA-256 指纹**、原生 thread/turn；幂等索引与 run 索引分开；`registry_path` 追加式 JSONL 保存指纹/会话/原生轮次/原始结果。**无 `succeeded`**，不确认项进 `unverified`。
+- **能力诚实**：`capabilities/submit/status/collect` 支持；`continue`/`cancel` **声明不支持**（`turn/steer`/`turn/interrupt` 未实测），抛 `UnsupportedCapability`，不模拟。
+- **真实往返（一次，隔离/只读/固定标识）**：`scripts/verify_jh020_codex_session.py`；随机 token 回显成功，原生 thread/turn 关联、`turn/completed`（status completed、error null）与收集结果一致，工作区**无文件写入**，未实现服务端请求 `[]`。证据 `data/jh020-codex-session-20261018/`。
+- **指定审查会话**：仅**只读**核查（归属一致；`notLoaded` 不足以证明空闲，且核查前约 52 分钟仍有活动、末条 `turn_aborted`）⇒ **未发送**；未新建替代会话、未以 CLI 会话冒充。
+- **守卫**：新增 `tests/test_jh020_codex_agent_session.py`（19）与 `scripts/verify_jh020_session_guards.py`（**5/5 检出**）。JH-018 守卫最小调整：核心仍禁止引用契约，真实适配器可引用，并新增“白名单必须实际继承 `AgentSessionAdapter`”校验——不修改契约模块、强度不降。
+- 全量 **540 项 539 过/1 既有跳过**；未合入 Hark 候选、未动原树 WIP/归档/Hark 验证器。`production complete`、`FileToolExecutor` 关闭；**交付 ≠ 验收成功，真实协作闭环未完成**。状态：**待独立验收**。
+
+---
+
 # 2026-10-18 · JH-020 首批 5f604fba 限定整改 R1–R3（待独立验收）
 
 - **R1 对账入口收缩为“仅记录观察”**：`reconcile_host_effect` 只读目标字节并**追加**一条观察记录（`_delivery.reconciled` = 最新，`observations` = 追加式历史），记 `host_effect_observed`（`marker_released:false`）；**不再清除** `has_unconfirmed_side_effect`，删除上一批的 `set_unconfirmed_side_effect`（避免死代码）。`unreadable/diverged/matches_*` 一律保持未解决、**允许再次观察**；入口**不抢 owner、不覆盖其他 in_flight 副作用**。更正“`diverged` 也清标记”“二次对账被拒”等错误预期与对应变异。真正解除标记留待明确、绑定来源的处置条件，不扩建宿主 Runtime。
