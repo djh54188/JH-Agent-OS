@@ -1,0 +1,42 @@
+{
+  "verify_phase4_guards": {
+    "R1_wording_only": {
+      "verdicts": {
+        "equal_whole_message": "detected",
+        "equal_dict_message": "detected",
+        "equal_exception_text_multiline": "detected",
+        "assert_in_multiline": "detected"
+      },
+      "verdict": "pass",
+      "exit_code": 0
+    },
+    "R2_red_assert_baseline": {
+      "verdicts": {
+        "real_guard_removed": "detected",
+        "red_baseline": "baseline_not_green"
+      },
+      "verdict": "platform_blocked",
+      "exit_code": 2
+    }
+  },
+  "verify_jh006_guards": {
+    "R1_wording_only": {
+      "verdicts": {
+        "equal_whole_message": "detected",
+        "equal_dict_message": "detected",
+        "equal_exception_text_multiline": "detected",
+        "assert_in_multiline": "detected"
+      },
+      "verdict": "pass",
+      "exit_code": 0
+    },
+    "R2_red_assert_baseline": {
+      "verdicts": {
+        "real_guard_removed": "detected",
+        "red_baseline": "baseline_not_green"
+      },
+      "verdict": "platform_blocked",
+      "exit_code": 2
+    }
+  }
+}

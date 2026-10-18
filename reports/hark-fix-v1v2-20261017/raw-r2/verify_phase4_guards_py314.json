@@ -1,0 +1,346 @@
+{
+  "scope": "offline_isolated_copy",
+  "api_calls": 0,
+  "python": "3.14.8",
+  "platform": "linux",
+  "tmp_root": "/tmp",
+  "mutations": 12,
+  "detected": 5,
+  "counts": {
+    "baseline_not_green": 1,
+    "platform_blocked": 3,
+    "survived": 1,
+    "not_detected_message_only_failure": 2,
+    "detected": 5
+  },
+  "verdict": "fail",
+  "exit_code": 1,
+  "rows": [
+    {
+      "guard": "workspace_containment_removed",
+      "module": "src/file_tools.py",
+      "test": "test_phase4_file_tools.TestFileToolExecutor.test_out_of_bounds_paths_refused",
+      "outcomes": {
+        "baseline": "behavioral_failure",
+        "identity": "behavioral_failure",
+        "mutant": "behavioral_failure"
+      },
+      "verdict": "baseline_not_green",
+      "mutant_evidence": [
+        {
+          "method": "assertEqual",
+          "verdict": "behavioral",
+          "reason": "values still differ with text made opaque",
+          "operands": [
+            "'success'",
+            "'denied_by_policy'"
+          ],
+          "call": "self.assertEqual(result['status'], 'denied_by_policy', bad)"
+        }
+      ],
+      "provenance": {
+        "baseline": true,
+        "identity": true,
+        "mutant": true
+      },
+      "raw": {
+        "baseline": "Traceback (most recent call last):\n  File \"/tmp/jh-mutation-fqo9ltlo/baseline/tests/test_phase4_file_tools.py\", line 166, in test_out_of_bounds_paths_refused\n    self.assertEqual(result[\"status\"], \"denied_by_policy\", bad)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<string>\", line 231, in wrapper\n    return original(self, *args, **kwargs)\nAssertionError: 'success' != 'denied_by_policy'\n- success\n+ denied_by_policy\n : ..\\evil.txt\n",
+        "identity": "Traceback (most recent call last):\n  File \"/tmp/jh-mutation-fqo9ltlo/identity-0/tests/test_phase4_file_tools.py\", line 166, in test_out_of_bounds_paths_refused\n    self.assertEqual(result[\"status\"], \"denied_by_policy\", bad)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<string>\", line 231, in wrapper\n    return original(self, *args, **kwargs)\nAssertionError: 'success' != 'denied_by_policy'\n- success\n+ denied_by_policy\n : ..\\evil.txt\n",
+        "mutant": "Traceback (most recent call last):\n  File \"/tmp/jh-mutation-fqo9ltlo/mutant-0/tests/test_phase4_file_tools.py\", line 166, in test_out_of_bounds_paths_refused\n    self.assertEqual(result[\"status\"], \"denied_by_policy\", bad)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<string>\", line 231, in wrapper\n    return original(self, *args, **kwargs)\nAssertionError: 'success' != 'denied_by_policy'\n- success\n+ denied_by_policy\n : ..\\evil.txt\n"
+      }
+    },
+    {
+      "guard": "junction_ancestor_check_removed",
+      "module": "src/file_tools.py",
+      "test": "test_phase4_file_tools.TestFileToolExecutor.test_real_junction_escape_refused",
+      "outcomes": {
+        "baseline": "error",
+        "identity": "error",
+        "mutant": "error"
+      },
+      "verdict": "platform_blocked",
+      "platform_evidence": "FileNotFoundError: [Errno 2] No such file or directory: 'cmd'",
+      "provenance": {
+        "baseline": true,
+        "identity": true,
+        "mutant": true
+      },
+      "raw": {
+        "baseline": "tion_escape_refused\n    r = subprocess.run([\"cmd\", \"/c\", \"mklink\", \"/J\", str(link), str(outside)],\n                       capture_output=True)\n  File \"/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py\", line 555, in run\n    with Popen(*popenargs, **kwargs) as process:\n         ~~~~~^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py\", line 1039, in __init__\n    self._execute_child(args, executable, preexec_fn, close_fds,\n    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n                        pass_fds, cwd, env,\n                        ^^^^^^^^^^^^^^^^^^^\n    ...<5 lines>...\n                        gid, gids, uid, umask,\n                        ^^^^^^^^^^^^^^^^^^^^^^\n                        start_new_session, process_group)\n                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py\", line 1990, in _execute_child\n    raise child_exception_type(errno_num, err_msg, err_filename)\nFileNotFoundError: [Errno 2] No such file or directory: 'cmd'\n",
+        "identity": "tion_escape_refused\n    r = subprocess.run([\"cmd\", \"/c\", \"mklink\", \"/J\", str(link), str(outside)],\n                       capture_output=True)\n  File \"/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py\", line 555, in run\n    with Popen(*popenargs, **kwargs) as process:\n         ~~~~~^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py\", line 1039, in __init__\n    self._execute_child(args, executable, preexec_fn, close_fds,\n    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n                        pass_fds, cwd, env,\n                        ^^^^^^^^^^^^^^^^^^^\n    ...<5 lines>...\n                        gid, gids, uid, umask,\n                        ^^^^^^^^^^^^^^^^^^^^^^\n                        start_new_session, process_group)\n                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py\", line 1990, in _execute_child\n    raise child_exception_type(errno_num, err_msg, err_filename)\nFileNotFoundError: [Errno 2] No such file or directory: 'cmd'\n",
+        "mutant": "tion_escape_refused\n    r = subprocess.run([\"cmd\", \"/c\", \"mklink\", \"/J\", str(link), str(outside)],\n                       capture_output=True)\n  File \"/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py\", line 555, in run\n    with Popen(*popenargs, **kwargs) as process:\n         ~~~~~^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py\", line 1039, in __init__\n    self._execute_child(args, executable, preexec_fn, close_fds,\n    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n                        pass_fds, cwd, env,\n                        ^^^^^^^^^^^^^^^^^^^\n    ...<5 lines>...\n                        gid, gids, uid, umask,\n                        ^^^^^^^^^^^^^^^^^^^^^^\n                        start_new_session, process_group)\n                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py\", line 1990, in _execute_child\n    raise child_exception_type(errno_num, err_msg, err_filename)\nFileNotFoundError: [Errno 2] No such file or directory: 'cmd'\n"
+      }
+    },
+    {
+      "guard": "apply_target_version_check_removed",
+      "module": "src/file_tools.py",
+      "test": "test_phase4_file_tools.TestPhase4FileLoop.test_target_changed_between_review_and_apply",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "pass"
+      },
+      "verdict": "survived",
+      "provenance": {
+        "baseline": true,
+        "identity": true,
+        "mutant": true
+      },
+      "raw": {
+        "baseline": "",
+        "identity": "",
+        "mutant": ""
+      }
+    },
+    {
+      "guard": "apply_staged_hash_check_removed",
+      "module": "src/file_tools.py",
+      "test": "test_phase4_file_tools.TestPhase4FileLoop.test_apply_refuses_tampered_staged_content",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "message_only_failure"
+      },
+      "verdict": "not_detected_message_only_failure",
+      "mutant_evidence": [
+        {
+          "method": "assertIn",
+          "verdict": "message_only",
+          "reason": "text containment check",
+          "operands": [
+            "'staged content sha'",
+            "'Staged write apply blocked: apply refused: apply refused: staged content does not match reviewed hash'"
+          ],
+          "call": "self.assertIn('staged content sha', result['error_info'])"
+        }
+      ],
+      "provenance": {
+        "baseline": true,
+        "identity": true,
+        "mutant": true
+      },
+      "raw": {
+        "baseline": "",
+        "identity": "",
+        "mutant": "Traceback (most recent call last):\n  File \"/tmp/jh-mutation-fqo9ltlo/mutant-3/tests/test_phase4_file_tools.py\", line 345, in test_apply_refuses_tampered_staged_content\n    self.assertIn(\"staged content sha\", result[\"error_info\"])\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<string>\", line 231, in wrapper\n    return original(self, *args, **kwargs)\nAssertionError: 'staged content sha' not found in 'Staged write apply blocked: apply refused: apply refused: staged content does not match reviewed hash'\n"
+      }
+    },
+    {
+      "guard": "apply_without_pass_verdict",
+      "module": "src/orchestrator.py",
+      "test": "test_phase4_file_tools.TestPhase4FileLoop.test_review_rejection_blocks_apply",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "behavioral_failure"
+      },
+      "verdict": "detected",
+      "mutant_evidence": [
+        {
+          "method": "assertEqual",
+          "verdict": "behavioral",
+          "reason": "values still differ with text made opaque",
+          "operands": [
+            "'needs_attention'",
+            "'succeeded'"
+          ],
+          "call": "self.assertEqual(result['status'], 'succeeded')"
+        }
+      ],
+      "provenance": {
+        "baseline": true,
+        "identity": true,
+        "mutant": true
+      }
+    },
+    {
+      "guard": "arch01_staging_dir_reparse_removed",
+      "module": "src/file_tools.py",
+      "test": "test_phase4_file_tools.TestPhase4FileLoop.test_arch01_staging_junction_does_not_truncate_outside_file",
+      "outcomes": {
+        "baseline": "error",
+        "identity": "error",
+        "mutant": "error"
+      },
+      "verdict": "platform_blocked",
+      "platform_evidence": "ModuleNotFoundError: No module named '_winapi'",
+      "provenance": {
+        "baseline": true,
+        "identity": true,
+        "mutant": true
+      },
+      "raw": {
+        "baseline": "Traceback (most recent call last):\n  File \"/tmp/jh-mutation-fqo9ltlo/baseline/tests/test_phase4_file_tools.py\", line 487, in test_arch01_staging_junction_does_not_truncate_outside_file\n    import _winapi\nModuleNotFoundError: No module named '_winapi'\n",
+        "identity": "Traceback (most recent call last):\n  File \"/tmp/jh-mutation-fqo9ltlo/identity-5/tests/test_phase4_file_tools.py\", line 487, in test_arch01_staging_junction_does_not_truncate_outside_file\n    import _winapi\nModuleNotFoundError: No module named '_winapi'\n",
+        "mutant": "Traceback (most recent call last):\n  File \"/tmp/jh-mutation-fqo9ltlo/mutant-5/tests/test_phase4_file_tools.py\", line 487, in test_arch01_staging_junction_does_not_truncate_outside_file\n    import _winapi\nModuleNotFoundError: No module named '_winapi'\n"
+      }
+    },
+    {
+      "guard": "arch03_locked_handle_version_check_removed",
+      "module": "src/file_tools.py",
+      "test": "test_phase4_file_tools.TestPhase4FileLoop.test_arch03_concurrent_target_edit_during_backed_up_preserved",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "behavioral_failure"
+      },
+      "verdict": "detected",
+      "mutant_evidence": [
+        {
+          "method": "assertRaises",
+          "verdict": "behavioral",
+          "reason": "expected exception was not raised",
+          "operands": [
+            "<class 'src.file_tools.PathBoundaryError'>",
+            "None"
+          ],
+          "call": null
+        }
+      ],
+      "provenance": {
+        "baseline": true,
+        "identity": true,
+        "mutant": true
+      }
+    },
+    {
+      "guard": "arch05_staged_snapshot_binding_removed",
+      "module": "src/orchestrator.py",
+      "test": "test_phase4_file_tools.TestPhase4FileLoop.test_arch05_reviewed_content_mismatch_blocked_at_snapshot_and_apply",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "behavioral_failure"
+      },
+      "verdict": "detected",
+      "mutant_evidence": [
+        {
+          "method": "assertEqual",
+          "verdict": "behavioral",
+          "reason": "values still differ with text made opaque",
+          "operands": [
+            "1",
+            "0"
+          ],
+          "call": "self.assertEqual(reviewer.call_count, 0)"
+        }
+      ],
+      "provenance": {
+        "baseline": true,
+        "identity": true,
+        "mutant": true
+      }
+    },
+    {
+      "guard": "workspace_ctor_reparse_removed",
+      "module": "src/file_tools.py",
+      "test": "test_phase4_file_tools.TestPhase4FileLoop.test_junction_workspace_root_rejected",
+      "outcomes": {
+        "baseline": "error",
+        "identity": "error",
+        "mutant": "error"
+      },
+      "verdict": "platform_blocked",
+      "platform_evidence": "ModuleNotFoundError: No module named '_winapi'",
+      "provenance": {
+        "baseline": true,
+        "identity": true,
+        "mutant": true
+      },
+      "raw": {
+        "baseline": "Traceback (most recent call last):\n  File \"/tmp/jh-mutation-fqo9ltlo/baseline/tests/test_phase4_file_tools.py\", line 589, in test_junction_workspace_root_rejected\n    import _winapi\nModuleNotFoundError: No module named '_winapi'\n",
+        "identity": "Traceback (most recent call last):\n  File \"/tmp/jh-mutation-fqo9ltlo/identity-8/tests/test_phase4_file_tools.py\", line 589, in test_junction_workspace_root_rejected\n    import _winapi\nModuleNotFoundError: No module named '_winapi'\n",
+        "mutant": "Traceback (most recent call last):\n  File \"/tmp/jh-mutation-fqo9ltlo/mutant-8/tests/test_phase4_file_tools.py\", line 589, in test_junction_workspace_root_rejected\n    import _winapi\nModuleNotFoundError: No module named '_winapi'\n"
+      }
+    },
+    {
+      "guard": "staged_unique_name_removed",
+      "module": "src/file_tools.py",
+      "test": "test_phase4_file_tools.TestPhase4FileLoop.test_same_basename_targets_get_distinct_staged_files",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "behavioral_failure"
+      },
+      "verdict": "detected",
+      "mutant_evidence": [
+        {
+          "method": "assertNotEqual",
+          "verdict": "behavioral",
+          "reason": "non-text operands",
+          "operands": [
+            "'/tmp/jh-mutation-fqo9ltlo/mutant-9/data/test-workspaces/loop-2e836fcb/_staging/task_h1dup0001/dup.txt'",
+            "'/tmp/jh-mutation-fqo9ltlo/mutant-9/data/test-workspaces/loop-2e836fcb/_staging/task_h1dup0001/dup.txt'"
+          ],
+          "call": "self.assertNotEqual(first['staged_path'], second['staged_path'])"
+        }
+      ],
+      "provenance": {
+        "baseline": true,
+        "identity": true,
+        "mutant": true
+      }
+    },
+    {
+      "guard": "recovered_applied_hash_check_removed",
+      "module": "src/orchestrator.py",
+      "test": "test_phase4_file_tools.TestPhase4FileLoop.test_recovered_applied_hash_must_match_reviewed_snapshot",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "message_only_failure"
+      },
+      "verdict": "not_detected_message_only_failure",
+      "mutant_evidence": [
+        {
+          "method": "assertIn",
+          "verdict": "message_only",
+          "reason": "text containment check",
+          "operands": [
+            "'hash mismatch'",
+            "'success gate blocked: applied target hash does not match the current reviewed artifact hash'"
+          ],
+          "call": "self.assertIn('hash mismatch', (result['error_info'] or '').lower())"
+        }
+      ],
+      "provenance": {
+        "baseline": true,
+        "identity": true,
+        "mutant": true
+      },
+      "raw": {
+        "baseline": "",
+        "identity": "",
+        "mutant": "Traceback (most recent call last):\n  File \"/tmp/jh-mutation-fqo9ltlo/mutant-10/tests/test_phase4_file_tools.py\", line 676, in test_recovered_applied_hash_must_match_reviewed_snapshot\n    self.assertIn(\"hash mismatch\", (result[\"error_info\"] or \"\").lower())\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<string>\", line 231, in wrapper\n    return original(self, *args, **kwargs)\nAssertionError: 'hash mismatch' not found in 'success gate blocked: applied target hash does not match the current reviewed artifact hash'\n"
+      }
+    },
+    {
+      "guard": "acceptance_current_turn_judgment_removed",
+      "module": "src/acceptance.py",
+      "test": "test_phase4_file_tools.TestPhase4FileLoop.test_stale_turn_staged_write_does_not_block_current_apply",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "behavioral_failure"
+      },
+      "verdict": "detected",
+      "mutant_evidence": [
+        {
+          "method": "assertEqual",
+          "verdict": "behavioral",
+          "reason": "values still differ with text made opaque",
+          "operands": [
+            "'needs_attention'",
+            "'succeeded'"
+          ],
+          "call": "self.assertEqual(result['status'], 'succeeded')"
+        }
+      ],
+      "provenance": {
+        "baseline": true,
+        "identity": true,
+        "mutant": true
+      }
+    }
+  ]
+}
