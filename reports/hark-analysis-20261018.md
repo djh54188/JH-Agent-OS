@@ -73,18 +73,41 @@
 
 ## 复现
 
+两个目录分开：
+- `ANA`：分析分支 `hark-analysis-20261018` 的检出，只用来提供分析脚本和补丁，不作为被测代码。
+- `BASE`：固定在完整提交 `fe0476d5807d6d562a1c290fe1b14623e53d1a46` 的基线目录，提供被测验证器（`scripts/`）、`src/` 和 `tests/`。该提交里没有分析脚本。
+
+脚本按 `ANA` 下的明确路径执行，`BASE` 作为唯一参数传入；脚本只读 `BASE`，所有运行都在各自的临时目录里完成。
+
 ```bash
-git checkout fe0476d5807d6d562a1c290fe1b14623e53d1a46
-# 一：构造器探针（只用合成仓库，不需 jsonschema）
-python3.12 reports/hark-analysis-20261018/probe_constructor.py . > constructor_probe_py312.json
-python3.14 reports/hark-analysis-20261018/probe_constructor.py . > constructor_probe_py314.json
-# 二：方案 A 隔离验证（需 requirements-cloud.txt 依赖，如 jsonschema）
-python reports/hark-analysis-20261018/check_option_a.py . > option_a_isolated.json
-# 三：TODO 补丁检查
-git show bc3e0f286d4a8a2863ab15daf223a2900f0dd44a:TODO.md > /tmp/t/TODO.md
-cd /tmp/t && git init -q && git apply --check <repo>/reports/hark-analysis-20261018/todo_pm_dispatch_row.patch
+# 0. 准备两个目录
+git clone https://github.com/djh54188/JH-Agent-OS.git jh-ana
+git -C jh-ana checkout hark-analysis-20261018
+ANA="$(cd jh-ana && pwd)"                       # 分析脚本所在目录
+git -C "$ANA" worktree add --detach ../jh-base fe0476d5807d6d562a1c290fe1b14623e53d1a46
+BASE="$(cd jh-base && pwd)"                     # 基线目录（完整 fe0476d）
+git -C "$BASE" rev-parse HEAD                   # 应输出 fe0476d5807d6d562a1c290fe1b14623e53d1a46
+OUT="$(mktemp -d)"                              # 复现输出目录，不写入 ANA 或 BASE
+
+# 一、构造器探针：读取 $BASE/scripts/verify_*.py，只在临时合成仓库运行，不需要 jsonschema
+python3.12 "$ANA/reports/hark-analysis-20261018/probe_constructor.py" "$BASE" > "$OUT/constructor_probe_py312.json"
+python3.14 "$ANA/reports/hark-analysis-20261018/probe_constructor.py" "$BASE" > "$OUT/constructor_probe_py314.json"
+
+# 二、方案 A 隔离验证：把 $BASE 复制到临时目录后只改副本中的测试；
+#    解释器须已安装 $BASE/requirements-cloud.txt 中的依赖（如 jsonschema）
+python3.12 "$ANA/reports/hark-analysis-20261018/check_option_a.py" "$BASE" > "$OUT/option_a_isolated_py312.json"
+python3.14 "$ANA/reports/hark-analysis-20261018/check_option_a.py" "$BASE" > "$OUT/option_a_isolated_py314.json"
+
+# 三、TODO 补丁检查：对 main bc3e0f2 的 TODO.md 原始字节做 apply --check，不应用到任何检出
+T="$(mktemp -d)"
+git -C "$ANA" show bc3e0f286d4a8a2863ab15daf223a2900f0dd44a:TODO.md > "$T/TODO.md"
+git -C "$T" init -q
+git -C "$T" apply --check "$ANA/reports/hark-analysis-20261018/todo_pm_dispatch_row.patch" && echo APPLY_OK
 ```
-探针脚本在内存副本里关闭 text_derived，并在 `tempfile.mkdtemp` 临时目录运行，结束后删除；JSON 中 `synthetic_repo_unchanged: true` 记录合成仓库运行前后字节一致。
+
+预期与本报告 `raw/` 中的原始结果对照：构造器探针在开启时 6/12、关闭时 12/12 判 `detected`，对照两行为 `survived`；方案 A 那一行判 `detected`；补丁输出 `APPLY_OK`。上表计数和结论以已提交的 `raw/` 原始日志为准。本次更正只改命令，没有重跑探针。
+
+探针脚本在内存副本里关闭 text_derived，并在 `tempfile.mkdtemp` 临时目录运行，结束后删除；JSON 中 `synthetic_repo_unchanged: true` 记录合成仓库运行前后字节一致。Windows 未执行。
 
 ## 文件清单
 
