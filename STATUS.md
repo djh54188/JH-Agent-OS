@@ -6,7 +6,7 @@
 - GUI 为目标用户入口，Codex 保留默认主控/架构审查；Agent 应用、会话、模型、角色分离，支持跨应用和同应用不同会话的设计方向。ZCode 为首个候选，**其会话接口已于 JH-018 实测**（见下）。
 - GUI 与统一应用接口已按「最小模块化 GUI＋只读查询＋草案」范围验收（JH-019）；产品级 AgentSessionAdapter 与自动审查流转仍未实现/验收，既有 API 与 Skill/CLI 不能代替。
 - 已验收 N1、JH-005 和 JH-006 原成果保留。架构师已批准 c6c0af57 host-entry 接线批；d650bd3 仅补真实输入盘点；JH-018 于 d9cf37de 基线完成接口探测与契约设计，JH-019 于 6052cf31 基线验收。
-- 原运行证据：389 项 388 过/1 既有跳过，33 变异 32 检出/1 冗余/0 异常，来自既有提交前后日志。JH-019 之后全量 **511 项 510 过/1 既有跳过**（含 JH-020 首批 C-2/C-3 新增 19 项）。
+- 原运行证据：389 项 388 过/1 既有跳过，33 变异 32 检出/1 冗余/0 异常，来自既有提交前后日志。JH-020 首批整改后全量 **520 项 519 过/1 既有跳过**（C-2/C-3 及整改共 28 项）。旧 JH-006/Phase4/采集验证器成绩为**运行记录**，有效性待 Hark 修复与独立复核。
 - 真实来源登记缺口仍在；N2/P1 未完成。production complete、FileToolExecutor 关闭，原树 80979f3 失败 WIP/STOP 和旧否决候选保留。
 - 实现工作树仍是 D:/JH-Agent OS/data/worktrees/n1-artifact-entry，分支 n1-artifact-entry。原树仅保留 WIP 和方向跳转，不用于新验收。
 - TODO 中其余新事项仅登记；JH-020 首批的真实派发与指定会话审查**未做**（本批闭环未通过），不启动真实模型取证或新会话。
@@ -49,11 +49,22 @@
 按明确指令派发本批的一个真实工具任务，并在并行分工下承担其中两项控制层加固（`V-1/V-2 验证器修复`交 Hark，本批**未改验证器**）：
 
 - **C-3**：`complete` 现从**同一份封存 `checks.json`** 取出 `expect_stdout_contains`，校验**已登记原始输出**是否满足该封存断言；不满足即 `needs_attention`。修复前只比对回执自述摘要，`case 0: FAIL` 的输出也能 `succeeded`（Hark R2 探针实测）。控制层**不重跑宿主命令**。
-- **C-2**：任务带 `waiting_host` 交付而因取消/超时/不确定离开 `reviewing` 时，在同一事务内**持久**写入 `has_unconfirmed_side_effect` 与交付字段，并记 `host_effect_unconfirmed` 事件；新增 `reconcile-delivery` 对账入口，**只读目标字节**比对 `baseline`/`expected_after`，记 `matches_expected_after|matches_baseline|diverged` 并清标记，**不授予成功、不改任务状态**。
+- **C-2**：任务带 `waiting_host` 交付而因取消/超时/不确定离开 `reviewing` 时，在同一事务内**持久**写入 `has_unconfirmed_side_effect` 与交付字段，并记 `host_effect_unconfirmed` 事件。~~新增 `reconcile-delivery` 对账入口……并清标记~~ → **2026-10-18 整改（见下）**：入口收缩为**仅记录观察**，**不清除**标记。
 
-改动仅**加法**（复用既有列、无 Schema 迁移）；新增 19 项正反控、1 个定向变异验证器（5/5 检出）；全量 **511 项 510 过/1 既有跳过**；既有 JH-006/采集/Phase4/JH-005 变异与夹具验证器、JH-018 契约、JH-019 前端全部保持通过。见[报告](reports/jh020-first-batch-20261017.md)。
+改动仅**加法**（复用既有列、无 Schema 迁移）；新增 19 项正反控、1 个定向变异验证器（5/5 检出）；全量 **511 项 510 过/1 既有跳过**。见[报告](reports/jh020-first-batch-20261017.md)。
 
 **真实路径未通过**：指定 Codex 架构师会话 `01a14a25-…` 经**只读**核对（存在、`cwd=D:\JH-Agent OS`、末条 `task_complete`），**未发送任何内容**；真实派发与指定会话审查不在本切片内 ⇒ **本批 JH-020 闭环未通过**，交当前 Codex 架构师独立验收。不以 Mock/人工复制/另建会话补成成功。`production complete`、`FileToolExecutor` 保持关闭。
+
+## 2026-10-18 · JH-020 首批 5f604fba 限定整改 R1–R3（离线验证通过，**待独立验收**）
+
+按独立反例 `data/jh020-review-20261018/` 对 `5f604fba` 做**限定整改**，**未重做已通过的 C-3**，**未改 Hark 负责的脚本**：
+
+- **R1**：`reconcile-delivery` 收缩为**仅记录观察**（`host_effect_observed`、`_delivery.reconciled` + 追加式 `observations`），**不再清除**未确认标记；`unreadable/diverged` 保持未解决且**允许再次观察**；**不抢 owner、不覆盖其他 in_flight 副作用**。真正解除标记留待明确、绑定来源的处置条件，不扩建宿主 Runtime。已删除上一批的 `set_unconfirmed_side_effect`（避免死代码），并更正“`diverged` 也清标记”等错误预期与对应变异。
+- **R2**：新增**只读** `list_unresolved_host_effects()` 与 CLI `pending-reconciliation`；`recover` 追加终态未解决任务的**只读**行（`reason=host_side_effect_unresolved`、`auto_replay_allowed=false`、保持原终态）；补关闭重开数据库后的**可发现性**测试；枚举**不清标记、不抢 owner、不改状态**。
+- **R3**：采集守卫按原始日志更正为 **33 项 / 32 检出 / 1 冗余 / 0 异常**；旧 JH-006/Phase4/采集验证器成绩**一律标注为“运行记录”**，有效性待 Hark 修复与独立复核。
+
+全量 **520 项 519 过/1 既有跳过**；本批定向变异 **7/7 检出**；独立反例副本复跑五例均保持未解决且可发现、owner 与在途副作用未被改动。见[整改报告](reports/jh020-rectification-20261018.md)、证据 `data/jh020-rectify-20261018/`。
+**真实协作闭环仍未完成**（本切片不含真实派发与指定会话审查）。`production complete`、`FileToolExecutor` 保持关闭。
 
 ---
 

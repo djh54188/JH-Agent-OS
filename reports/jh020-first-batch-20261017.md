@@ -1,5 +1,10 @@
 # JH-020 首批（C-2/C-3）实施与验证记录 · 2026-10-17（待独立验收）
 
+> **本文件部分结论已被 2026-10-18 整改更正。** 见 [jh020-rectification-20261018.md](jh020-rectification-20261018.md)：
+> ① `reconcile-delivery` 已收缩为**仅记录观察**，**不再清除**未确认副作用标记（本文件 §1.2/§4 的“清除标记”“二次对账被拒”已过时）；
+> ② 采集守卫计数应为 **33 项 / 32 检出 / 1 冗余 / 0 异常**（本文件 §5 的旧计数作废）；
+> ③ 旧 JH-006/Phase4/采集验证器成绩标注为**运行记录**，其有效性仍待 Hark 修复与独立复核。
+
 **结论先行**：本批完成架构师此前限定的 **C-2、C-3** 两项控制层加固，**离线验证通过**；
 **真实路径未通过**（本切片不含真实派发与指定会话审查），故 **JH-020 本批闭环未通过**，
 交当前 Codex 架构师独立验收。`production complete` 与 `FileToolExecutor` 保持关闭。
@@ -35,12 +40,14 @@
    在 `_delivery` 上记 `unconfirmed_host_effect/unconfirmed_reason`，并追加一条 `host_effect_unconfirmed` 审计事件。
    集中在此处后，CLI `cancel`、预算超时 `failed`、`_complete_uncertain` 三条路径**自动覆盖**，无需重写状态机。
 2. **对账入口**（`src/code_delivery.py::reconcile_host_effect`、`host_effect_observation`；CLI `reconcile-delivery`）：
-   只**读目标字节**并与 `baseline`/`expected_after` 比对，得出 `matches_expected_after|matches_baseline|diverged|unreadable`，
-   记 `host_effect_reconciled` 事件、写回 `reconciled`、清除持久标记。**不授予成功、不改任务状态**；
-   已对账或无未确认副作用时拒绝（幂等）。
+   ~~只**读目标字节**并与 `baseline`/`expected_after` 比对，得出 `matches_expected_after|matches_baseline|diverged|unreadable`，
+   记 `host_effect_reconciled` 事件、写回 `reconciled`、清除持久标记。~~ **⚠ 已被 2026-10-18 整改更正**：
+   现为**仅记录观察**——读目标字节得出 `matches_expected_after|matches_baseline|diverged|unreadable`，记 `host_effect_observed` 事件、
+   写回 `reconciled`（= 最新观察记录），**不清除持久标记**；`unreadable/diverged` 保持未解决且允许再次观察。
+   见 [整改报告](jh020-rectification-20261018.md)。
 3. `src/cli.py::build_task_summary` 的 `delivery_scope` 增加 `host_effect_unconfirmed/unconfirmed_reason/reconciled` 事实字段，供 GUI 展示。
 
-**兼容性**：仅**加法**——复用既有列 `has_unconfirmed_side_effect`（无 Schema 迁移），新增一个 storage 方法、两个 `_delivery` 字段、一个 CLI 子命令与一个审计事件类型；不改现有成功判定与状态机。
+**兼容性**：仅**加法**——复用既有列 `has_unconfirmed_side_effect`（无 Schema 迁移），新增 storage 只读枚举、`_delivery` 字段、CLI 子命令与审计事件类型；不改现有成功判定与状态机。
 
 ## 2. 改动清单
 
@@ -71,15 +78,21 @@ python data/jh020-c2c3-20261017/probe_c2c3.py                # 独立行为探�
 |---|---|---|---|
 | C-3 封存断言 | `complete` 拒绝不满足封存 stdout 断言的已登记输出 | 探针 `bad_stdout`→`needs_attention`；测试 5 项；变异 `sealed_output_assertion_disabled`/`sealed_marker_source_replaced` 检出 | 仅覆盖封存 `code_sortfix` 模板；**未**接入真实宿主 |
 | C-2 持久标记 | 离开 `reviewing` 时持久化未确认副作用 | 探针 `expired`/`cancelled` 标记为真；测试 4 项；变异 `unconfirmed_target_states_disabled` 检出 | 单进程写入边界；`waiting_host` 是判定前提 |
-| C-2 对账入口 | 读字节→比对→记事件→清标记，不授予成功 | 探针 `after_reconcile` 状态不变、二次对账被拒；测试 6 项；变异 `reconcile_*` 2 项检出 | `unreadable/diverged` 只如实记录，需人工判断 |
+| C-2 对账入口 | ~~读字节→比对→记事件→清标记~~ → **已更正**：读字节→比对→记观察，**不清标记、不抢 owner** | 探针 `after_reconcile` 状态不变；整改后反例见 [整改报告](jh020-rectification-20261018.md) | ~~`unreadable/diverged` 只如实记录~~ → 整改后保持未解决且可再次观察 |
 | 既有门禁 | 未回归 | `verify_jh006_guards` 19/19、`verify_jh006_capture_guards`、`verify_jh006_host_boundary`、`verify_phase4_guards` 12/12、`verify_jh005_fixtures`/`mutations`、JH-018 契约、JH-019 前端全量随套件通过 | — |
 | 真实路径 | **未做** | 指定会话仅只读核对 | **未派发、未取得真实审查输出——本批闭环未通过** |
 
 ## 5. 验证计数（以实际运行为准）
 
-- 全量 **511 项：510 通过 / 1 既有跳过**（`test_phase2_hardening.py:152` 平台跳过）；本批新增 19 项全部通过。
-- 本批定向变异 **5/5 检出**（`errors=0`，断言失败计数）；5 项对照基线全绿。
-- 既有变异验证器未改动且保持通过：JH-006 **19/19**、采集 **12/12 + 0 冗余**、Phase4 **12/12**。
+> **⚠ 本节计数与定性已被 2026-10-18 整改更正（R3）**：
+> ① 采集守卫应为 **33 项 / 32 检出 / 1 冗余 / 0 异常**（原写“12/12 + 0 冗余”有误）；
+> ② 旧 JH-006 / Phase4 / 采集验证器成绩一律标注为**运行记录**——它们是本机当时的运行输出，
+> **不等于验证有效**；其有效性仍待 **Hark 修复验证器缺陷**与**独立复核**。本批**未修改** Hark 负责的脚本。
+> ③ 修订后的口径见 [整改报告](jh020-rectification-20261018.md)。
+
+- 全量 **511 项：510 通过 / 1 既有跳过**（`test_phase2_hardening.py:152` 平台跳过）；本批当时新增 19 项全部通过。
+- 本批定向变异 **5/5 检出**（`errors=0`，断言失败计数）；5 项对照基线全绿。（整改后为 7 变异 / 7 检出。）
+- 旧变异验证器的**运行记录**（有效性待 Hark 修复与独立复核）：JH-006 19/19、采集 **33 项 32 检出 / 1 冗余 / 0 异常**、Phase4 12/12。
 - 独立探针同输入重跑两次，除时间戳外逐字段一致。
 - 提交前全量、提交后全量各一轮（见 `data/jh020-c2c3-20261017/`）。
 

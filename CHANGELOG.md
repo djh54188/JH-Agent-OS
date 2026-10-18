@@ -1,3 +1,13 @@
+# 2026-10-18 · JH-020 首批 5f604fba 限定整改 R1–R3（待独立验收）
+
+- **R1 对账入口收缩为“仅记录观察”**：`reconcile_host_effect` 只读目标字节并**追加**一条观察记录（`_delivery.reconciled` = 最新，`observations` = 追加式历史），记 `host_effect_observed`（`marker_released:false`）；**不再清除** `has_unconfirmed_side_effect`，删除上一批的 `set_unconfirmed_side_effect`（避免死代码）。`unreadable/diverged/matches_*` 一律保持未解决、**允许再次观察**；入口**不抢 owner、不覆盖其他 in_flight 副作用**。更正“`diverged` 也清标记”“二次对账被拒”等错误预期与对应变异。真正解除标记留待明确、绑定来源的处置条件，不扩建宿主 Runtime。
+- **R2 终态未解决副作用可发现**：新增**只读** `TaskStorage.list_unresolved_host_effects()`（含 `failed/cancelled`）与 CLI 只读命令 `pending-reconciliation`；`recover_interrupted_tasks()` 末尾追加终态未解决任务的**只读**行（`reason=host_side_effect_unresolved`、`auto_replay_allowed=false`、保持原终态）。补关闭重开数据库后的可发现性测试；枚举**不清标记、不抢 owner、不改状态**。
+- **R3 计数与定性更正**：采集守卫更正为 **33 项 / 32 检出 / 1 冗余 / 0 异常**；旧 JH-006/Phase4/采集验证器成绩一律标注为**运行记录**，有效性待 Hark 修复与独立复核。**未修改** Hark 负责的脚本。
+- **保留**：C-3 正常/FAIL/缺标记/摘要不匹配正反控；C-2 标记与审计事件**同事务**一致性（新增注入审计失败 → 一并回滚的反例）。
+- **验证**：`tests/test_jh020_delivery_reconcile.py` 重写为 28 项；`scripts/verify_jh020_delivery_guards.py` **7/7 检出**；全量 **520 项 519 过/1 既有跳过**；独立反例副本复跑五例均保持未解决且可发现。`production complete`、`FileToolExecutor` 关闭；本整改**不代表真实协作闭环完成**。状态：**待独立验收**。
+
+---
+
 # 2026-10-17 · JH-020 首批（C-2/C-3）控制层加固（待独立验收）
 
 - **C-3 封存断言校验**：`complete_code_delivery` 现从**同一份封存 `checks.json`** 取具名模板条目的 `expect_stdout_contains`，校验**已登记原始输出**是否含该断言（`sealed_post_apply_expectation` + `registered_host_raw_output` + `registered_output_satisfies_sealing`）；不满足即 `_complete_uncertain`（`needs_attention`）。修复前仅比对回执自述 `output_digest` 与已登记输出的摘要，**从不看输出文本**——一份 `case 0: FAIL\nFAIL` 的输出可让任务 `succeeded`（Hark R2 探针实测）。控制层**不重跑宿主命令**；既有 `fixture_host_evidence_matches` 原文未动，保持既有变异锚点。

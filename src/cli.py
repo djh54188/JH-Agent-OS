@@ -41,6 +41,8 @@ DEFAULT_DB_PATH = PROJECT_ROOT / "data" / "jh_agent_os.sqlite3"
 READ_ONLY_COMMANDS = frozenset({"status", "events", "artifact", "summary"})
 # Host-entry read surface; registration below writes bindings, never task success.
 READ_ONLY_COMMANDS |= frozenset({"plan-host-check", "capture-binding-status"})
+# Pending reconciliation enumeration: read-only, never clears a marker or claims an owner.
+READ_ONLY_COMMANDS |= frozenset({"pending-reconciliation"})
 # Canonical host-entry command names, checked by the skill pre-flight.
 HOST_ENTRY_COMMANDS = ("plan-host-check", "register-host-capture", "capture-binding-status")
 
@@ -134,6 +136,7 @@ def build_task_summary(storage: TaskStorage, task_id: str) -> Dict[str, Any]:
                 "host_effect_unconfirmed": bool(delivery.get("unconfirmed_host_effect")),
                 "unconfirmed_reason": delivery.get("unconfirmed_reason"),
                 "reconciled": delivery.get("reconciled"),
+                "observation_count": len(delivery.get("observations") or []),
                 "note": delivery_note,
             },
             "pending_approval": pending_approval,
@@ -535,9 +538,13 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     sub_reconcile = subparsers.add_parser(
         "reconcile-delivery",
-        help="Reconcile an unconfirmed host apply: read the target bytes, clear the marker, never grant success")
+        help="Observe an unconfirmed host apply: read the target bytes, never release the marker or grant success")
     sub_reconcile.add_argument("task_id", help="Task ID")
-    sub_reconcile.add_argument("--note", default="", help="Operator note recorded with the reconciliation")
+    sub_reconcile.add_argument("--note", default="", help="Operator note recorded with the observation")
+
+    subparsers.add_parser(
+        "pending-reconciliation",
+        help="Read-only: list tasks still carrying an unresolved host side effect (terminal included)")
 
     sub_prepare = subparsers.add_parser(
         "prepare-code-delivery",
@@ -634,6 +641,14 @@ def main(argv: Optional[List[str]] = None) -> int:
                     "current": verdict["current"],
                     "reasons": verdict["reasons"],
                     "binding": binding,
+                }, ensure_ascii=False, indent=2))
+            elif args.command == "pending-reconciliation":
+                print(json.dumps({
+                    "command_ok": True,
+                    "read_only": True,
+                    "pending": ro_storage.list_unresolved_host_effects(),
+                    "note": ("read-only enumeration; listing never clears a marker, "
+                             "claims an owner, or changes task state"),
                 }, ensure_ascii=False, indent=2))
             elif args.command == "artifact":
                 summary = build_task_summary(ro_storage, args.task_id)
@@ -882,9 +897,9 @@ def main(argv: Optional[List[str]] = None) -> int:
                 out = build_task_summary(storage, args.task_id)
                 out["read_only"] = False
                 out["test_fixture_mode"] = bool(args.test_fixture_mode)
-                out["reconciliation"] = ((record.get("metadata") or {}).get("_delivery") or {}).get("reconciled")
-                out["note"] = ("reconciliation records the observed target bytes; it never "
-                               "grants success and never changes the task state")
+                out["observation"] = ((record.get("metadata") or {}).get("_delivery") or {}).get("reconciled")
+                out["note"] = ("observation only: records the current target bytes and does NOT "
+                               "release the unconfirmed marker; it never grants success or changes state")
                 print(json.dumps(out, ensure_ascii=False, indent=2))
                 return 0
             finally:

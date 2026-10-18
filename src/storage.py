@@ -305,6 +305,33 @@ class TaskStorage:
         )
         return [dict(row) for row in cur.fetchall()]
 
+    def list_unresolved_host_effects(self) -> List[Dict[str, Any]]:
+        """Read-only enumeration of tasks still carrying an unresolved host side effect.
+
+        Covers terminal (failed/cancelled) and non-terminal tasks alike so a
+        host apply that was never confirmed stays discoverable after the task
+        ends. This is a plain SELECT: it never clears the marker, claims an
+        owner, or changes any task state.
+        """
+        cur = self._conn.execute(
+            "SELECT task_id, status, task_json, updated_at FROM tasks "
+            "WHERE has_unconfirmed_side_effect = 1 "
+            "ORDER BY datetime(updated_at) ASC, rowid ASC")
+        rows: List[Dict[str, Any]] = []
+        for row in cur.fetchall():
+            delivery = ((json.loads(row["task_json"]).get("metadata") or {}).get("_delivery") or {})
+            rows.append({
+                "task_id": row["task_id"],
+                "status": row["status"],
+                "is_terminal": is_terminal_state(row["status"]),
+                "delivery_id": delivery.get("delivery_id"),
+                "delivery_state": delivery.get("state"),
+                "unconfirmed_reason": delivery.get("unconfirmed_reason"),
+                "reconciled": delivery.get("reconciled"),
+                "updated_at": row["updated_at"],
+            })
+        return rows
+
     @atomic
     def transition_task_state(
         self,
@@ -1032,19 +1059,6 @@ class TaskStorage:
         )
         return self.get_task(task_id)
 
-    @atomic
-    def set_unconfirmed_side_effect(self, task_id: str, unconfirmed: bool) -> None:
-        """Set or clear the durable unconfirmed-side-effect marker for a task.
-
-        Used by the host-apply reconciliation entry to release a task whose
-        unconfirmed apply has been reconciled. It never grants success and never
-        touches task state; the success gate still rejects an unset marker.
-        """
-        self._conn.execute(
-            "UPDATE tasks SET has_unconfirmed_side_effect = ?, updated_at = ? WHERE task_id = ?",
-            (1 if unconfirmed else 0, _utc_now_iso(), task_id),
-        )
-
     # ------------------------------------------------------------------
     # Capture bindings (JH-006 offline binding; additive table, no migration)
     # ------------------------------------------------------------------
@@ -1264,5 +1278,20 @@ class TaskStorage:
                     "auto_replay_allowed": status in {"created", "classified", "planning"},
                     "reason": "no_side_effects_started",
                 })
+
+        # Terminal tasks can still carry an unresolved host side effect (a host
+        # apply that was never confirmed). Report them read-only so they stay
+        # discoverable after the task ends: never replayed, state unchanged.
+        for row in self.list_unresolved_host_effects():
+            if not row["is_terminal"]:
+                continue
+            recovery_summary.append({
+                "task_id": row["task_id"],
+                "previous_state": row["status"],
+                "recovered_state": row["status"],
+                "auto_replay_allowed": False,
+                "reason": "host_side_effect_unresolved",
+                "delivery_id": row["delivery_id"],
+            })
 
         return recovery_summary

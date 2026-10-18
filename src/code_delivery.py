@@ -369,7 +369,7 @@ def _utc_now_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-HOST_EFFECT_RECONCILED_EVENT = "host_effect_reconciled"
+HOST_EFFECT_OBSERVED_EVENT = "host_effect_observed"
 
 
 def host_effect_observation(workspace_root, authorized_target: str,
@@ -377,8 +377,8 @@ def host_effect_observation(workspace_root, authorized_target: str,
     """Read-only classification of the current target bytes against a delivery.
 
     Compares the target on disk with the prepared baseline and expected_after
-    hashes. Reads bytes only; it never runs the host check command, so it is a
-    reconciliation aid, not fresh evidence.
+    hashes. Reads bytes only; it never runs the host check command and never
+    decides anything, so it is an observation, not fresh evidence.
     """
     summary: Dict[str, Any] = {"path": authorized_target, "state": "unreadable", "sha256": None}
     try:
@@ -402,36 +402,42 @@ def host_effect_observation(workspace_root, authorized_target: str,
 
 def reconcile_host_effect(storage, task_id: str, *, note: str = "",
                           actor_role: str = "operator") -> Dict[str, Any]:
-    """Control-owned reconciliation entry for an unconfirmed host apply.
+    """Record the current observation for an unconfirmed host apply.
 
-    Reads the current target bytes (never re-runs the host check), records what
-    it observed alongside the delivery, clears the durable unconfirmed marker,
-    and writes one audit event. It never grants success and never changes the
-    task state: reconciliation records the observed reality, it does not
-    re-decide the outcome.
+    Narrowed entry: it reads the target bytes and APPENDS an observation to the
+    delivery record. It does NOT release the durable unconfirmed-side-effect
+    marker — a single byte read can never resolve it, so unreadable and diverged
+    targets stay unresolved and can be observed again. It never claims or
+    overwrites an owner, never touches other in-flight side effects, never
+    grants success, and never changes the task state. Releasing a marker is left
+    to an explicit, source-bound disposition (not implemented here).
     """
     with storage.transaction():
         task = storage.get_task(task_id)
         delivery = (task.get("metadata") or {}).get("_delivery")
-        if not isinstance(delivery, dict) or delivery.get("state") != "waiting_host":
-            raise CodeDeliveryRefused("no waiting-host delivery to reconcile")
+        if not isinstance(delivery, dict) or delivery.get("state") != WAITING_STATE:
+            raise CodeDeliveryRefused("no waiting-host delivery to observe")
         if not (task.get("_runtime") or {}).get("has_unconfirmed_side_effect"):
-            raise CodeDeliveryRefused("no unconfirmed host side effect to reconcile")
+            raise CodeDeliveryRefused("no unconfirmed host side effect to observe")
         tpl = template_for_task(task)
         workspace_root = (task.get("context") or {}).get("workspace_root")
         observation = host_effect_observation(workspace_root, tpl["authorized_target"], delivery)
+        entry = {"at": _utc_now_iso(), "observation": observation,
+                 "note": note, "actor_role": actor_role}
         done = dict(delivery)
-        done["unconfirmed_host_effect"] = False
-        done["reconciled"] = {"at": _utc_now_iso(), "observation": observation,
-                              "note": note, "actor_role": actor_role}
+        # `reconciled` is the latest recorded observation (kept for instrument
+        # compatibility); it never clears `unconfirmed_host_effect`. `observations`
+        # is the append-only history. Releasing the marker is left to an explicit,
+        # source-bound disposition and is not done here.
+        done["reconciled"] = entry
+        done["observations"] = list(done.get("observations") or []) + [entry]
         storage.save_code_delivery(task_id, done)
-        storage.set_unconfirmed_side_effect(task_id, False)
         status = storage.get_task(task_id)["status"]
-        storage.record_event(task_id=task_id, event_type=HOST_EFFECT_RECONCILED_EVENT,
+        storage.record_event(task_id=task_id, event_type=HOST_EFFECT_OBSERVED_EVENT,
                              from_state=status, to_state=status, actor_role=actor_role,
                              details={"delivery_id": delivery.get("delivery_id"),
                                       "observation": observation, "note": note,
-                                      "task_status": status})
+                                      "task_status": status, "marker_released": False})
     return storage.get_task(task_id)
 
 

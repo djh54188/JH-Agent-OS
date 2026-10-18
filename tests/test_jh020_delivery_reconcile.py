@@ -1,14 +1,18 @@
 """JH-020 C-2/C-3 regression tests: durable host unconfirmed-side-effect marker,
-its reconciliation entry, and the complete-time sealed-output assertion.
+the observation-only reconciliation entry, pending-reconciliation discovery, and
+the complete-time sealed-output assertion.
 
 Covers the fixed code_sortfix_v1 template only, in isolated workspaces, with the
 offline fixture host. No models run, no host command is executed here, and no
 production gate is opened. Assertions target external state (task status, DB
 records, delivery record, workspace bytes), never implementation return values.
 
-C-2: a host apply that was prepared but never confirmed must be persisted as an
-unconfirmed side effect when the task leaves 'reviewing', and reconciled
-explicitly afterwards (reads target bytes, never grants success).
+C-2: a host apply that was prepared but never confirmed is persisted as an
+unconfirmed side effect when the task leaves 'reviewing'. The reconciliation
+entry only RECORDS an observation: a single byte read never releases the marker,
+unreadable/diverged stay unresolved, repeat observation is allowed, and an owner
+or other in-flight side effects are never preempted or overwritten. Unresolved
+effects on terminal tasks stay discoverable.
 C-3: 'complete' must reject a registered raw host output that does not carry the
 sealed post-apply stdout assertion, instead of trusting a matching digest alone.
 """
@@ -16,6 +20,7 @@ import json
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -95,6 +100,15 @@ class TestSealedOutputAssertion(_ReconcileCase):
         self.assertFalse(scope["target_applied"])
         self.assertIn("sealed post-apply assertion", (result.get("error_info") or ""))
 
+    def test_digest_mismatch_with_passing_text_never_succeeds(self):
+        # Registered raw output differs from the receipt's declared output_digest.
+        orch, tid, delivery = self._waiting()
+        self._fixture_apply()
+        receipt = self._receipt(tid, delivery, tests={"output_digest": _sha(b"invented output")})
+        result = orch.complete_code_delivery(tid, receipt)
+        self.assertEqual(result["status"], "needs_attention")
+        self.assertEqual(orch.storage.list_review_bindings(tid), [])
+
     def test_passing_registered_output_still_succeeds(self):
         orch, tid, delivery = self._waiting()
         self._fixture_apply()
@@ -149,96 +163,217 @@ class TestUnconfirmedHostEffectPersistence(_ReconcileCase):
         self.assertFalse(task["_runtime"]["has_unconfirmed_side_effect"])
         self.assertEqual(self._events(orch, tid, "host_effect_unconfirmed"), [])
 
+    def test_marker_and_audit_event_are_atomic(self):
+        # The marker write and the host_effect_unconfirmed audit event commit as
+        # one unit: an injected audit failure must roll both back.
+        orch, tid, _ = self._waiting()
+        self._fixture_apply()
+        real = orch.storage.record_event
 
-class TestReconcileHostEffect(_ReconcileCase):
-    """C-2: the post-terminal reconciliation entry records reality, never success."""
+        def boom(**kw):
+            if kw.get("event_type") == "host_effect_unconfirmed":
+                raise RuntimeError("injected audit failure")
+            return real(**kw)
+
+        with patch.object(orch.storage, "record_event", boom):
+            with self.assertRaises(RuntimeError):
+                orch.cancel_task(tid, reason="jh020 atomicity probe")
+        task = orch.storage.get_task(tid)
+        self.assertEqual(task["status"], "reviewing")
+        self.assertFalse(task["_runtime"]["has_unconfirmed_side_effect"])
+        self.assertEqual(self._events(orch, tid, "host_effect_unconfirmed"), [])
+
+
+class TestReconcileHostEffectObservationOnly(_ReconcileCase):
+    """R1: reconciliation records the current observation and releases nothing."""
 
     def _cancelled_flagged(self):
         orch, tid, delivery = self._waiting()
         self._fixture_apply()
-        orch.cancel_task(tid, reason="jh020 reconcile probe")
+        orch.cancel_task(tid, reason="jh020 observation probe")
         return orch, tid, delivery
 
-    def test_reconcile_records_observation_clears_marker_stays_terminal(self):
+    def test_observation_records_state_and_keeps_marker(self):
         orch, tid, _ = self._cancelled_flagged()
-        self.assertTrue(orch.storage.get_task(tid)["_runtime"]["has_unconfirmed_side_effect"])
-        record = reconcile_host_effect(orch.storage, tid, note="jh020 reconcile")
-        self.assertEqual(record["status"], "cancelled")  # never reopened or made succeeded
-        self.assertFalse(record["_runtime"]["has_unconfirmed_side_effect"])
-        reconciled = record["metadata"]["_delivery"]["reconciled"]
-        self.assertEqual(reconciled["observation"]["state"], "matches_expected_after")
-        self.assertEqual(reconciled["note"], "jh020 reconcile")
-        events = self._events(orch, tid, "host_effect_reconciled")
+        record = reconcile_host_effect(orch.storage, tid, note="jh020 observation")
+        self.assertEqual(record["status"], "cancelled")            # state unchanged
+        self.assertTrue(record["_runtime"]["has_unconfirmed_side_effect"])  # marker NOT released
+        delivery = record["metadata"]["_delivery"]
+        self.assertEqual(delivery["reconciled"]["observation"]["state"], "matches_expected_after")
+        self.assertEqual(delivery["reconciled"]["note"], "jh020 observation")
+        self.assertEqual(len(delivery["observations"]), 1)
+        events = self._events(orch, tid, "host_effect_observed")
         self.assertEqual(len(events), 1)
-        self.assertEqual(events[0]["details"]["observation"]["state"], "matches_expected_after")
+        self.assertFalse(events[0]["details"]["marker_released"])
         scope = self._delivery_scope(orch, tid)
-        self.assertFalse(scope["host_effect_unconfirmed"])
-        self.assertEqual(scope["reconciled"]["observation"]["state"], "matches_expected_after")
+        self.assertTrue(scope["host_effect_unconfirmed"])         # still unresolved to callers
+        self.assertIn("unconfirmed_side_effect", build_task_summary(orch.storage, tid)["task_result"]["blockers"])
 
-    def test_reconcile_reports_baseline_left_intact(self):
+    def test_repeat_observation_is_allowed(self):
         orch, tid, _ = self._cancelled_flagged()
-        (self.ws / TARGET).write_bytes(_baseline_bytes())  # host never applied
-        record = reconcile_host_effect(orch.storage, tid, note="restored baseline")
-        state = record["metadata"]["_delivery"]["reconciled"]["observation"]["state"]
-        self.assertEqual(state, "matches_baseline")
+        reconcile_host_effect(orch.storage, tid, note="first")
+        record = reconcile_host_effect(orch.storage, tid, note="second")
+        self.assertEqual(len(record["metadata"]["_delivery"]["observations"]), 2)
+        self.assertTrue(record["_runtime"]["has_unconfirmed_side_effect"])
+        self.assertEqual(len(self._events(orch, tid, "host_effect_observed")), 2)
 
-    def test_reconcile_reports_diverged_target(self):
+    def test_unreadable_target_stays_unresolved_and_reobservable(self):
+        orch, tid, _ = self._cancelled_flagged()
+        (self.ws / TARGET).unlink()
+        first = reconcile_host_effect(orch.storage, tid, note="unreadable")
+        state = first["metadata"]["_delivery"]["reconciled"]["observation"]["state"]
+        self.assertEqual(state, "unreadable")
+        self.assertTrue(first["_runtime"]["has_unconfirmed_side_effect"])
+        second = reconcile_host_effect(orch.storage, tid, note="observed again")
+        self.assertEqual(len(second["metadata"]["_delivery"]["observations"]), 2)
+
+    def test_diverged_target_keeps_marker(self):
         orch, tid, _ = self._cancelled_flagged()
         (self.ws / TARGET).write_bytes(_reference_bytes() + b"\n# diverged\n")
-        record = reconcile_host_effect(orch.storage, tid)
+        record = reconcile_host_effect(orch.storage, tid, note="diverged")
         self.assertEqual(record["metadata"]["_delivery"]["reconciled"]["observation"]["state"], "diverged")
-        self.assertFalse(record["_runtime"]["has_unconfirmed_side_effect"])
+        self.assertTrue(record["_runtime"]["has_unconfirmed_side_effect"])
 
-    def test_reconcile_refused_without_unconfirmed_effect(self):
-        orch, tid, _ = self._waiting()
-        # Still in reviewing with a waiting delivery but nothing flagged yet.
-        with self.assertRaises(CodeDeliveryRefused):
-            reconcile_host_effect(orch.storage, tid)
-
-    def test_second_reconcile_refused(self):
+    def test_baseline_target_keeps_marker(self):
         orch, tid, _ = self._cancelled_flagged()
-        reconcile_host_effect(orch.storage, tid)
+        (self.ws / TARGET).write_bytes(_baseline_bytes())
+        record = reconcile_host_effect(orch.storage, tid, note="baseline")
+        self.assertEqual(record["metadata"]["_delivery"]["reconciled"]["observation"]["state"], "matches_baseline")
+        self.assertTrue(record["_runtime"]["has_unconfirmed_side_effect"])
+
+    def test_owner_held_task_is_observed_without_preemption(self):
+        orch, tid, _ = self._cancelled_flagged()
+        self.assertTrue(orch.storage.claim_task(tid, "independent_active_owner"))
+        record = reconcile_host_effect(orch.storage, tid, note="observe under foreign owner")
+        self.assertEqual(orch.storage.get_control(tid)["owner_id"], "independent_active_owner")
+        self.assertTrue(record["_runtime"]["has_unconfirmed_side_effect"])
+        self.assertEqual(record["metadata"]["_delivery"]["reconciled"]["note"], "observe under foreign owner")
+
+    def test_other_inflight_side_effect_is_not_touched(self):
+        orch, tid, _ = self._cancelled_flagged()
+        req = {"schema_version": "1.0.0", "request_id": "treq_obs_extra0001",
+               "task_id": tid, "step_id": "step_obs", "caller_role": "orchestrator",
+               "tool_name": "write_file", "parameters": {"path": "target/other.py"},
+               "timeout_ms": 1000, "risk_level": "workspace_write",
+               "requires_human_approval": False, "created_at": "2026-10-18T00:00:00Z"}
+        self.assertTrue(orch.storage.record_tool_start(req, has_side_effect=True, allowed_states=("cancelled",)))
+        record = reconcile_host_effect(orch.storage, tid, note="observing beside an in-flight tool")
+        self.assertTrue(record["_runtime"]["has_unconfirmed_side_effect"])
+        inflight = [r for r in orch.storage.list_tool_executions(tid)
+                    if r["status"] == "in_flight" and r["has_side_effect"]]
+        self.assertEqual([r["request_id"] for r in inflight], ["treq_obs_extra0001"])
+
+    def test_observation_refused_without_unconfirmed_effect(self):
+        orch, tid, _ = self._waiting()  # reviewing, waiting, nothing flagged
         with self.assertRaises(CodeDeliveryRefused):
             reconcile_host_effect(orch.storage, tid)
 
-    def test_reconcile_refused_for_applied_delivery(self):
+    def test_observation_refused_for_applied_delivery(self):
         orch, tid, delivery = self._waiting()
         self._fixture_apply()
         self.assertEqual(orch.complete_code_delivery(tid, self._receipt(tid, delivery))["status"], "succeeded")
         with self.assertRaises(CodeDeliveryRefused):
             reconcile_host_effect(orch.storage, tid)
 
-    def test_reconcile_does_not_reopen_success_gate(self):
+    def test_observation_does_not_reopen_success_gate(self):
         orch, tid, _ = self._cancelled_flagged()
         reconcile_host_effect(orch.storage, tid)
-        # Reconciliation clears the marker but the task is terminal; the success
-        # gate still refuses a cancelled task and never auto-approves it.
         from src.state_machine import InvalidStateTransitionError
         with self.assertRaises(InvalidStateTransitionError):
             orch.storage.transition_task_state(tid, "succeeded", review_verdict="pass")
 
 
-class TestReconcileCli(_ReconcileCase):
-    def test_cli_reconcile_delivery_roundtrip(self):
+class TestPendingReconciliationDiscovery(_ReconcileCase):
+    """R2: unresolved host effects stay discoverable; enumeration is read-only."""
+
+    def _terminal_flagged_file_db(self):
         orch, _, _ = self._orch(use_file_db=True)
         payload = self._payload()
         tid = payload["task_id"]
         self._run_to_waiting(orch, payload)
         self._fixture_apply()
-        orch.cancel_task(tid, reason="jh020 cli reconcile probe")
+        orch.cancel_task(tid, reason="jh020 discovery probe")
+        orch.storage.close()
+        return tid
+
+    def test_pending_list_survives_database_reopen(self):
+        tid = self._terminal_flagged_file_db()
+        reader = TaskStorage(str(self.db), read_only=True)
+        try:
+            rows = reader.list_unresolved_host_effects()
+        finally:
+            reader.close()
+        self.assertEqual([r["task_id"] for r in rows], [tid])
+        self.assertTrue(rows[0]["is_terminal"])
+        self.assertEqual(rows[0]["status"], "cancelled")
+        self.assertIsNotNone(rows[0]["delivery_id"])
+
+    def test_recover_reports_terminal_unresolved_without_state_change(self):
+        tid = self._terminal_flagged_file_db()
+        orch, _, _ = self._orch(use_file_db=True)
+        try:
+            summary = orch.recover_interrupted_tasks()
+            row = next(r for r in summary if r["task_id"] == tid)
+            self.assertEqual(row["reason"], "host_side_effect_unresolved")
+            self.assertEqual(row["recovered_state"], "cancelled")
+            self.assertFalse(row["auto_replay_allowed"])
+            after = orch.storage.get_task(tid)
+            self.assertEqual(after["status"], "cancelled")
+            self.assertTrue(after["_runtime"]["has_unconfirmed_side_effect"])
+        finally:
+            orch.storage.close()
+
+    def test_enumeration_does_not_clear_marker_or_claim_owner(self):
+        tid = self._terminal_flagged_file_db()
+        orch, _, _ = self._orch(use_file_db=True)
+        try:
+            before = orch.storage.get_task(tid)
+            orch.storage.list_unresolved_host_effects()
+            orch.recover_interrupted_tasks()
+            build_task_summary(orch.storage, tid)
+            after = orch.storage.get_task(tid)
+            self.assertEqual(after["status"], before["status"])
+            self.assertTrue(after["_runtime"]["has_unconfirmed_side_effect"])
+            self.assertIsNone(orch.storage.get_control(tid)["owner_id"])
+        finally:
+            orch.storage.close()
+
+    def test_cli_pending_reconciliation_is_read_only(self):
+        tid = self._terminal_flagged_file_db()
+        code, out, err = self._cli_subprocess("pending-reconciliation")
+        self.assertEqual(code, 0, err)
+        body = json.loads(out)
+        self.assertTrue(body["read_only"])
+        self.assertEqual([r["task_id"] for r in body["pending"]], [tid])
+        probe = TaskStorage(str(self.db), read_only=True)
+        try:
+            self.assertTrue(probe.get_task(tid)["_runtime"]["has_unconfirmed_side_effect"])
+        finally:
+            probe.close()
+
+
+class TestReconcileCli(_ReconcileCase):
+    def test_cli_reconcile_delivery_records_observation_only(self):
+        orch, _, _ = self._orch(use_file_db=True)
+        payload = self._payload()
+        tid = payload["task_id"]
+        self._run_to_waiting(orch, payload)
+        self._fixture_apply()
+        orch.cancel_task(tid, reason="jh020 cli observation probe")
         orch.storage.close()
         code, out, err = self._cli_subprocess("reconcile-delivery", tid, "--note", "cli probe")
         self.assertEqual(code, 0, err)
         body = json.loads(out)
         self.assertEqual(body["task_result"]["status"], "cancelled")
-        self.assertEqual(body["reconciliation"]["observation"]["state"], "matches_expected_after")
+        self.assertEqual(body["observation"]["observation"]["state"], "matches_expected_after")
+        self.assertTrue(body["task_result"]["runtime_usage"]["has_unconfirmed_side_effect"])
         probe = TaskStorage(str(self.db), read_only=True)
         try:
-            self.assertFalse(probe.get_task(tid)["_runtime"]["has_unconfirmed_side_effect"])
+            self.assertTrue(probe.get_task(tid)["_runtime"]["has_unconfirmed_side_effect"])
         finally:
             probe.close()
 
-    def test_cli_reconcile_refuses_when_nothing_to_reconcile(self):
+    def test_cli_reconcile_refuses_when_nothing_to_observe(self):
         orch, _, _ = self._orch(use_file_db=True)
         payload = self._payload()
         tid = payload["task_id"]

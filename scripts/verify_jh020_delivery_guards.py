@@ -1,18 +1,19 @@
 """JH-020 C-2/C-3 guard verification by targeted mutation (offline, in-memory).
 
-For each new guard we disable exactly that guard with a single targeted patch,
-re-run its regression test, and require the test to FAIL on an assertion (an
-error never counts). A baseline run of each test (unpatched) must pass first,
-so a green result cannot come from a broken harness.
+For each guard we disable exactly that guard with targeted patches, re-run its
+regression test, and require the test to FAIL on an assertion (an error never
+counts). A baseline run of each test (unpatched) must pass first, so a green
+result cannot come from a broken harness.
 
-Patches replace whole callables/attributes, not recompiled modules, so a
-mutant never fails merely because an in-memory copy changed class identity.
-No production source, sealed fixture bytes, or task state is modified.
+Patches replace whole callables/attributes, not recompiled modules, so a mutant
+never fails merely because an in-memory copy changed class identity. No
+production source, sealed fixture bytes, or task state is modified.
 """
 import io
 import json
 import sys
 import unittest
+from contextlib import ExitStack
 from pathlib import Path
 from unittest.mock import patch
 
@@ -35,11 +36,8 @@ def run_case(name):
     return result
 
 
-def _noop_set_unconfirmed(self, task_id, unconfirmed):
-    return None
-
-
 _real_get_task = storage_mod.TaskStorage.get_task
+_real_reconcile = code_delivery_mod.reconcile_host_effect
 
 
 def _get_task_flag_forced(self, task_id):
@@ -49,25 +47,65 @@ def _get_task_flag_forced(self, task_id):
     return task
 
 
-# name, patch-target builder, replacement, guard regression that must fail
+def _reconcile_that_preempts_owner(storage, task_id, *, note="", actor_role="operator"):
+    # Violates the invariant: the observation entry must never take the owner.
+    storage._conn.execute("UPDATE task_control SET owner_id = ? WHERE task_id = ?",
+                          ("mutant_owner", task_id))
+    return _real_reconcile(storage, task_id, note=note, actor_role=actor_role)
+
+
+def _reconcile_that_releases_marker(storage, task_id, *, note="", actor_role="operator"):
+    # Re-introduces the pre-rectification bug: a single read releases the marker.
+    out = _real_reconcile(storage, task_id, note=note, actor_role=actor_role)
+    storage._conn.execute("UPDATE tasks SET has_unconfirmed_side_effect = 0 WHERE task_id = ?", (task_id,))
+    return storage.get_task(task_id)
+
+
+def _empty_pending(self):
+    return []
+
+
+def _patches_for_reconcile_release():
+    return [
+        patch.object(code_delivery_mod, "reconcile_host_effect", new=_reconcile_that_releases_marker),
+        patch.object(cli_mod, "reconcile_host_effect", new=_reconcile_that_releases_marker),
+        patch.object(jh020_tests, "reconcile_host_effect", new=_reconcile_that_releases_marker),
+    ]
+
+
+def _patches_for_owner_preempt():
+    return [
+        patch.object(code_delivery_mod, "reconcile_host_effect", new=_reconcile_that_preempts_owner),
+        patch.object(cli_mod, "reconcile_host_effect", new=_reconcile_that_preempts_owner),
+        patch.object(jh020_tests, "reconcile_host_effect", new=_reconcile_that_preempts_owner),
+    ]
+
+
+# name, patchers (list), guard regression that must fail
 MUTATIONS = [
     ("sealed_output_assertion_disabled",
-     lambda: patch.object(orchestrator_mod, "registered_output_satisfies_sealing",
-                          new=lambda raw, expectation: True),
+     [patch.object(orchestrator_mod, "registered_output_satisfies_sealing",
+                   new=lambda raw, expectation: True)],
      TEST + "TestSealedOutputAssertion.test_matching_digest_with_failing_text_never_succeeds"),
     ("sealed_marker_source_replaced",
-     lambda: patch.object(orchestrator_mod, "sealed_post_apply_expectation",
-                          new=lambda template: {"expect_exit": 0, "expect_stdout_contains": "FAIL"}),
+     [patch.object(orchestrator_mod, "sealed_post_apply_expectation",
+                   new=lambda template: {"expect_exit": 0, "expect_stdout_contains": "FAIL"})],
      TEST + "TestSealedOutputAssertion.test_passing_registered_output_still_succeeds"),
     ("unconfirmed_target_states_disabled",
-     lambda: patch.object(storage_mod, "UNCONFIRMED_HOST_EFFECT_TARGETS", new=frozenset()),
+     [patch.object(storage_mod, "UNCONFIRMED_HOST_EFFECT_TARGETS", new=frozenset())],
      TEST + "TestUnconfirmedHostEffectPersistence.test_cancel_of_waiting_delivery_flags_unconfirmed"),
-    ("reconcile_clear_marker_disabled",
-     lambda: patch.object(storage_mod.TaskStorage, "set_unconfirmed_side_effect", new=_noop_set_unconfirmed),
-     TEST + "TestReconcileHostEffect.test_reconcile_records_observation_clears_marker_stays_terminal"),
+    ("reconcile_releases_marker_again",
+     _patches_for_reconcile_release(),
+     TEST + "TestReconcileHostEffectObservationOnly.test_observation_records_state_and_keeps_marker"),
     ("reconcile_flag_requirement_removed",
-     lambda: patch.object(storage_mod.TaskStorage, "get_task", new=_get_task_flag_forced),
-     TEST + "TestReconcileHostEffect.test_reconcile_refused_without_unconfirmed_effect"),
+     [patch.object(storage_mod.TaskStorage, "get_task", new=_get_task_flag_forced)],
+     TEST + "TestReconcileHostEffectObservationOnly.test_observation_refused_without_unconfirmed_effect"),
+    ("reconcile_owner_preempt_enabled",
+     _patches_for_owner_preempt(),
+     TEST + "TestReconcileHostEffectObservationOnly.test_owner_held_task_is_observed_without_preemption"),
+    ("pending_reconciliation_hidden",
+     [patch.object(storage_mod.TaskStorage, "list_unresolved_host_effects", new=_empty_pending)],
+     TEST + "TestPendingReconciliationDiscovery.test_pending_list_survives_database_reopen"),
 ]
 
 
@@ -78,8 +116,10 @@ def main():
         print(json.dumps({"verdict": "fail", "reason": "baseline control failed", "cases": failing}))
         return 1
     rows = []
-    for name, make_patch, test_name in MUTATIONS:
-        with make_patch():
+    for name, patchers, test_name in MUTATIONS:
+        with ExitStack() as stack:
+            for patcher in patchers:
+                stack.enter_context(patcher)
             result = run_case(test_name)
         detected = bool(result.failures) and not result.errors
         rows.append({"case": name, "detected": detected,
