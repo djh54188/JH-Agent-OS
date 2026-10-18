@@ -1,0 +1,300 @@
+{
+  "scope": "offline_isolated_copy",
+  "api_calls": 0,
+  "python": "3.12.15",
+  "platform": "linux",
+  "mutations": 19,
+  "detected": 19,
+  "counts": {
+    "detected": 19
+  },
+  "verdict": "pass",
+  "exit_code": 0,
+  "rows": [
+    {
+      "guard": "payload_delivery_marker",
+      "module": "src/orchestrator.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_input_cannot_claim_applied_or_waiting_delivery",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "assertion_failure"
+      },
+      "verdict": "detected",
+      "mutant_assertion": {
+        "source": "with self.assertRaises(SchemaValidationError):",
+        "message": "AssertionError: SchemaValidationError not raised"
+      }
+    },
+    {
+      "guard": "cli_delivery_marker",
+      "module": "src/cli.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_cli_rejects_delivery_marker_before_assembly",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "assertion_failure"
+      },
+      "verdict": "detected",
+      "mutant_assertion": {
+        "source": "self.assertFalse(self.db.exists())",
+        "message": "AssertionError: True is not false"
+      }
+    },
+    {
+      "guard": "unregistered_host_record",
+      "module": "src/orchestrator.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_unregistered_receipt_cannot_succeed",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "assertion_failure"
+      },
+      "verdict": "detected",
+      "mutant_assertion": {
+        "source": "self.assertEqual(result[\"status\"], \"needs_attention\")",
+        "message": "+ needs_attention"
+      }
+    },
+    {
+      "guard": "raw_output_digest",
+      "module": "src/code_delivery.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_host_output_digest_must_match_persisted_raw_output",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "assertion_failure"
+      },
+      "verdict": "detected",
+      "mutant_assertion": {
+        "source": "self.assertEqual(result[\"status\"], \"needs_attention\")",
+        "message": "+ needs_attention"
+      }
+    },
+    {
+      "guard": "strict_uncertainty_bool",
+      "module": "src/code_delivery.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_uncertainty_requires_bool_not_zero_or_one",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "assertion_failure"
+      },
+      "verdict": "detected",
+      "mutant_assertion": {
+        "source": "with self.assertRaises(CodeDeliveryRefused):",
+        "message": "AssertionError: CodeDeliveryRefused not raised"
+      }
+    },
+    {
+      "guard": "fixed_check_script",
+      "module": "src/orchestrator.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_wrong_script_path_is_not_a_verified_check",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "assertion_failure"
+      },
+      "verdict": "detected",
+      "mutant_assertion": {
+        "source": "with self.assertRaises(CodeDeliveryRefused):",
+        "message": "AssertionError: CodeDeliveryRefused not raised"
+      }
+    },
+    {
+      "guard": "sealed_check_command",
+      "module": "src/code_delivery.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_unsealed_check_command_is_refused",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "assertion_failure"
+      },
+      "verdict": "detected",
+      "mutant_assertion": {
+        "source": "with self.assertRaises(CodeDeliveryRefused):",
+        "message": "AssertionError: CodeDeliveryRefused not raised"
+      }
+    },
+    {
+      "guard": "prepare_owner",
+      "module": "src/orchestrator.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_prepare_respects_existing_owner",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "assertion_failure"
+      },
+      "verdict": "detected",
+      "mutant_assertion": {
+        "source": "with self.assertRaises(CodeDeliveryRefused):",
+        "message": "AssertionError: CodeDeliveryRefused not raised"
+      }
+    },
+    {
+      "guard": "pending_approval",
+      "module": "src/orchestrator.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_prepare_rechecks_pending_approval",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "assertion_failure"
+      },
+      "verdict": "detected",
+      "mutant_assertion": {
+        "source": "with self.assertRaises(CodeDeliveryRefused):",
+        "message": "AssertionError: CodeDeliveryRefused not raised"
+      }
+    },
+    {
+      "guard": "interrupted_tool",
+      "module": "src/orchestrator.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_prepare_rechecks_interrupted_tool",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "assertion_failure"
+      },
+      "verdict": "detected",
+      "mutant_assertion": {
+        "source": "with self.assertRaises(CodeDeliveryRefused):",
+        "message": "AssertionError: CodeDeliveryRefused not raised"
+      }
+    },
+    {
+      "guard": "prepare_transaction",
+      "module": "src/orchestrator.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_prepare_and_event_rollback_together",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "assertion_failure"
+      },
+      "verdict": "detected",
+      "mutant_assertion": {
+        "source": "self.assertNotIn(\"_delivery\", orch.storage.get_task(tid)[\"metadata\"])",
+        "message": "'418c088d5ed48f4d8198e9d3adaa10080350dfb3fe5de8b6dd2c165875859556'}, 'authorized_files': ['target/widget.py'], 'scope_before': {'target/widget.py': 'e27d9e7dc341fe5fd2081daaecbebfa2e06f94bde29f121a2a8ecfed98f54e13'}, 'apply_receipt': None, 'created_at': '2026-10-17T14:24:50Z', 'completed_at': None}}"
+      }
+    },
+    {
+      "guard": "authorized_workspace_scope",
+      "module": "src/orchestrator.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_extra_file_change_never_satisfies_authorized_scope",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "assertion_failure"
+      },
+      "verdict": "detected",
+      "mutant_assertion": {
+        "source": "self.assertEqual(result[\"status\"], \"needs_attention\")",
+        "message": "+ needs_attention"
+      }
+    },
+    {
+      "guard": "no_model_tools",
+      "module": "src/orchestrator.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_fixture_model_tools_never_execute",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "assertion_failure"
+      },
+      "verdict": "detected",
+      "mutant_assertion": {
+        "source": "self.assertEqual(orch.storage.list_tool_executions(payload[\"task_id\"]), [])",
+        "message": "Diff is 1379 characters long. Set self.maxDiff to None to see it."
+      }
+    },
+    {
+      "guard": "generation_baseline_context",
+      "module": "src/orchestrator.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_generation_receives_template_and_sealed_baseline",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "assertion_failure"
+      },
+      "verdict": "detected",
+      "mutant_assertion": {
+        "source": "self.assertIn(\"code_template\", context)",
+        "message": "onstraints': {'max_turns': 8, 'max_tokens': 60000, 'max_execution_time_seconds': 600, 'workspace_root': '/tmp/jh-mutation-2i_lvykk/mutant-13/data/test-workspaces/jh006-64d0ef0c/ws', 'target_files': ['target/widget.py'], 'risk_level': 'workspace_write'}, 'input_data': None, 'attempt_kind': 'initial'}"
+      }
+    },
+    {
+      "guard": "review_deferred_scope",
+      "module": "src/orchestrator.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_review_scope_defers_unexecuted_host_checks",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "assertion_failure"
+      },
+      "verdict": "detected",
+      "mutant_assertion": {
+        "source": "self.assertIn(\"code_review_scope\", context)",
+        "message": "sha256': '82d9c2f2e07f564c0b0f6fac280aedc3640df3b393e2255db8fe6352d3cddf34'}}, 'tool_execution_evidence': ['artifact:art_92d4ffe9f64f@v1:sha256=82d9c2f2e07f564c0b0f6fac280aedc3640df3b393e2255db8fe6352d3cddf34'], 'note': 'Independent review context; worker summary is excluded from primary evidence.'}"
+      }
+    },
+    {
+      "guard": "fresh_cancel_state",
+      "module": "src/orchestrator.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_complete_reloads_cancel_after_owner_acquisition",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "assertion_failure"
+      },
+      "verdict": "detected",
+      "mutant_assertion": {
+        "source": "with self.assertRaises(CodeDeliveryRefused):",
+        "message": "AssertionError: CodeDeliveryRefused not raised"
+      }
+    },
+    {
+      "guard": "prepared_version_field",
+      "module": "src/orchestrator.py",
+      "test": "test_jh006_code_delivery.TestCliDeliveryCommands.test_cli_prepare_and_complete_roundtrip",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "assertion_failure"
+      },
+      "verdict": "detected",
+      "mutant_assertion": {
+        "source": "self.assertEqual(code, 0)",
+        "message": "AssertionError: 1 != 0"
+      }
+    },
+    {
+      "guard": "no_extra_model_turn",
+      "module": "src/orchestrator.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_control_completion_does_not_reserve_an_extra_model_turn",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "assertion_failure"
+      },
+      "verdict": "detected",
+      "mutant_assertion": {
+        "source": "self.assertEqual(result[\"status\"], \"succeeded\")",
+        "message": "+ succeeded"
+      }
+    },
+    {
+      "guard": "final_deadline_gate",
+      "module": "src/orchestrator.py",
+      "test": "test_jh006_review_regressions.TestReviewedDeliveryBoundaries.test_deadline_is_rechecked_after_verification_reads",
+      "outcomes": {
+        "baseline": "pass",
+        "identity": "pass",
+        "mutant": "assertion_failure"
+      },
+      "verdict": "detected",
+      "mutant_assertion": {
+        "source": "self.assertEqual(result[\"status\"], \"failed\")",
+        "message": "+ failed"
+      }
+    }
+  ]
+}

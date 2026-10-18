@@ -1,0 +1,168 @@
+{
+  "verify_phase4_guards": {
+    "R3_wording_only": {
+      "verdicts": {
+        "bool_local_from_text": "detected",
+        "bool_from_helper": "detected",
+        "bool_local_from_helper": "detected",
+        "int_local_from_helper": "detected",
+        "bool_local_chain": "detected",
+        "bool_in_test_built_dict": "detected"
+      },
+      "evidence": {
+        "bool_local_from_text": [
+          {
+            "method": "assertTrue",
+            "verdict": "behavioral",
+            "reason": "non-text operands",
+            "operands": [
+              "False"
+            ],
+            "call": "self.assertTrue(good)"
+          }
+        ],
+        "bool_from_helper": [
+          {
+            "method": "assertTrue",
+            "verdict": "behavioral",
+            "reason": "non-text operands",
+            "operands": [
+              "False"
+            ],
+            "call": "self.assertTrue(_mentions_limit(consumer.run(11)))"
+          }
+        ],
+        "bool_local_from_helper": [
+          {
+            "method": "assertTrue",
+            "verdict": "behavioral",
+            "reason": "non-text operands",
+            "operands": [
+              "False"
+            ],
+            "call": "self.assertTrue(flag)"
+          }
+        ],
+        "int_local_from_helper": [
+          {
+            "method": "assertEqual",
+            "verdict": "behavioral",
+            "reason": "values still differ with text made opaque",
+            "operands": [
+              "0",
+              "1"
+            ],
+            "call": "self.assertEqual(hits, 1)"
+          }
+        ],
+        "bool_local_chain": [
+          {
+            "method": "assertTrue",
+            "verdict": "behavioral",
+            "reason": "non-text operands",
+            "operands": [
+              "False"
+            ],
+            "call": "self.assertTrue(verdict)"
+          }
+        ],
+        "bool_in_test_built_dict": [
+          {
+            "method": "assertTrue",
+            "verdict": "behavioral",
+            "reason": "non-text operands",
+            "operands": [
+              "False"
+            ],
+            "call": "self.assertTrue(checks['ok'])"
+          }
+        ]
+      },
+      "verdict": "pass",
+      "exit_code": 0
+    }
+  },
+  "verify_jh006_guards": {
+    "R3_wording_only": {
+      "verdicts": {
+        "bool_local_from_text": "detected",
+        "bool_from_helper": "detected",
+        "bool_local_from_helper": "detected",
+        "int_local_from_helper": "detected",
+        "bool_local_chain": "detected",
+        "bool_in_test_built_dict": "detected"
+      },
+      "evidence": {
+        "bool_local_from_text": [
+          {
+            "method": "assertTrue",
+            "verdict": "behavioral",
+            "reason": "non-text operands",
+            "operands": [
+              "False"
+            ],
+            "call": "self.assertTrue(good)"
+          }
+        ],
+        "bool_from_helper": [
+          {
+            "method": "assertTrue",
+            "verdict": "behavioral",
+            "reason": "non-text operands",
+            "operands": [
+              "False"
+            ],
+            "call": "self.assertTrue(_mentions_limit(consumer.run(11)))"
+          }
+        ],
+        "bool_local_from_helper": [
+          {
+            "method": "assertTrue",
+            "verdict": "behavioral",
+            "reason": "non-text operands",
+            "operands": [
+              "False"
+            ],
+            "call": "self.assertTrue(flag)"
+          }
+        ],
+        "int_local_from_helper": [
+          {
+            "method": "assertEqual",
+            "verdict": "behavioral",
+            "reason": "values still differ with text made opaque",
+            "operands": [
+              "0",
+              "1"
+            ],
+            "call": "self.assertEqual(hits, 1)"
+          }
+        ],
+        "bool_local_chain": [
+          {
+            "method": "assertTrue",
+            "verdict": "behavioral",
+            "reason": "non-text operands",
+            "operands": [
+              "False"
+            ],
+            "call": "self.assertTrue(verdict)"
+          }
+        ],
+        "bool_in_test_built_dict": [
+          {
+            "method": "assertTrue",
+            "verdict": "behavioral",
+            "reason": "non-text operands",
+            "operands": [
+              "False"
+            ],
+            "call": "self.assertTrue(checks['ok'])"
+          }
+        ]
+      },
+      "verdict": "pass",
+      "exit_code": 0
+    }
+  }
+}

@@ -1,0 +1,13 @@
+test_classify (tests.test_verifier_mutation_harness.TestClassification.test_classify) ... ok
+test_outcomes (tests.test_verifier_mutation_harness.TestClassification.test_outcomes) ... ok
+test_each_verifier_classifies_every_shape (tests.test_verifier_mutation_harness.TestHarnessOnSyntheticRepo.test_each_verifier_classifies_every_shape) ... ok
+test_exit_codes (tests.test_verifier_mutation_harness.TestHarnessOnSyntheticRepo.test_exit_codes) ... ok
+test_identity_runs_green_where_baseline_is_green (tests.test_verifier_mutation_harness.TestHarnessOnSyntheticRepo.test_identity_runs_green_where_baseline_is_green) ... ok
+test_anchors_unique_and_tests_resolve (tests.test_verifier_mutation_harness.TestRealCatalogues.test_anchors_unique_and_tests_resolve) ... ok
+test_no_in_memory_exec_or_live_patch_remains (tests.test_verifier_mutation_harness.TestRealCatalogues.test_no_in_memory_exec_or_live_patch_remains) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 16.057s
+
+OK
+exit=0

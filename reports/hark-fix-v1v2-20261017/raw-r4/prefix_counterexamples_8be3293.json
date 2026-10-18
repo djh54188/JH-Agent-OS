@@ -1,0 +1,94 @@
+{
+  "verify_phase4_guards": {
+    "R3_wording_only": {
+      "verdicts": {
+        "bool_on_self_attribute": "detected",
+        "bool_in_self_dict": "detected",
+        "bool_wrapped_text_check": "not_detected_undetermined_failure"
+      },
+      "evidence": {
+        "bool_on_self_attribute": [
+          {
+            "method": "assertTrue",
+            "verdict": "behavioral",
+            "reason": "non-text operands from proven sources",
+            "operands": [
+              "False"
+            ],
+            "call": "self.assertTrue(self.good)"
+          }
+        ],
+        "bool_in_self_dict": [
+          {
+            "method": "assertTrue",
+            "verdict": "behavioral",
+            "reason": "non-text operands from proven sources",
+            "operands": [
+              "False"
+            ],
+            "call": "self.assertTrue(self.box['flag'])"
+          }
+        ],
+        "bool_wrapped_text_check": [
+          {
+            "method": "assertTrue",
+            "verdict": "undetermined",
+            "reason": "operand derived from text: bool(consumer.run(11).endswith('over limit'))",
+            "operands": [
+              "False"
+            ],
+            "call": "self.assertTrue(bool(consumer.run(11).endswith('over limit')))"
+          }
+        ]
+      },
+      "verdict": "fail",
+      "exit_code": 1
+    }
+  },
+  "verify_jh006_guards": {
+    "R3_wording_only": {
+      "verdicts": {
+        "bool_on_self_attribute": "detected",
+        "bool_in_self_dict": "detected",
+        "bool_wrapped_text_check": "not_detected_undetermined_failure"
+      },
+      "evidence": {
+        "bool_on_self_attribute": [
+          {
+            "method": "assertTrue",
+            "verdict": "behavioral",
+            "reason": "non-text operands from proven sources",
+            "operands": [
+              "False"
+            ],
+            "call": "self.assertTrue(self.good)"
+          }
+        ],
+        "bool_in_self_dict": [
+          {
+            "method": "assertTrue",
+            "verdict": "behavioral",
+            "reason": "non-text operands from proven sources",
+            "operands": [
+              "False"
+            ],
+            "call": "self.assertTrue(self.box['flag'])"
+          }
+        ],
+        "bool_wrapped_text_check": [
+          {
+            "method": "assertTrue",
+            "verdict": "undetermined",
+            "reason": "operand derived from text: bool(consumer.run(11).endswith('over limit'))",
+            "operands": [
+              "False"
+            ],
+            "call": "self.assertTrue(bool(consumer.run(11).endswith('over limit')))"
+          }
+        ]
+      },
+      "verdict": "fail",
+      "exit_code": 1
+    }
+  }
+}

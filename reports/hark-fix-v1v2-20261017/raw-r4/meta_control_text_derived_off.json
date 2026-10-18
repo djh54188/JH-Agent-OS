@@ -1,0 +1,94 @@
+{
+  "verify_phase4_guards": {
+    "R3_wording_only": {
+      "verdicts": {
+        "bool_on_self_attribute": "not_detected_undetermined_failure",
+        "bool_in_self_dict": "not_detected_undetermined_failure",
+        "bool_wrapped_text_check": "detected"
+      },
+      "evidence": {
+        "bool_on_self_attribute": [
+          {
+            "method": "assertTrue",
+            "verdict": "undetermined",
+            "reason": "scalar operand source not proven: attribute of self: source not proven",
+            "operands": [
+              "False"
+            ],
+            "call": "self.assertTrue(self.good)"
+          }
+        ],
+        "bool_in_self_dict": [
+          {
+            "method": "assertTrue",
+            "verdict": "undetermined",
+            "reason": "scalar operand source not proven: attribute of self: source not proven",
+            "operands": [
+              "False"
+            ],
+            "call": "self.assertTrue(self.box['flag'])"
+          }
+        ],
+        "bool_wrapped_text_check": [
+          {
+            "method": "assertTrue",
+            "verdict": "behavioral",
+            "reason": "non-text operands from proven sources",
+            "operands": [
+              "False"
+            ],
+            "call": "self.assertTrue(bool(consumer.run(11).endswith('over limit')))"
+          }
+        ]
+      },
+      "verdict": "fail",
+      "exit_code": 1
+    }
+  },
+  "verify_jh006_guards": {
+    "R3_wording_only": {
+      "verdicts": {
+        "bool_on_self_attribute": "not_detected_undetermined_failure",
+        "bool_in_self_dict": "not_detected_undetermined_failure",
+        "bool_wrapped_text_check": "detected"
+      },
+      "evidence": {
+        "bool_on_self_attribute": [
+          {
+            "method": "assertTrue",
+            "verdict": "undetermined",
+            "reason": "scalar operand source not proven: attribute of self: source not proven",
+            "operands": [
+              "False"
+            ],
+            "call": "self.assertTrue(self.good)"
+          }
+        ],
+        "bool_in_self_dict": [
+          {
+            "method": "assertTrue",
+            "verdict": "undetermined",
+            "reason": "scalar operand source not proven: attribute of self: source not proven",
+            "operands": [
+              "False"
+            ],
+            "call": "self.assertTrue(self.box['flag'])"
+          }
+        ],
+        "bool_wrapped_text_check": [
+          {
+            "method": "assertTrue",
+            "verdict": "behavioral",
+            "reason": "non-text operands from proven sources",
+            "operands": [
+              "False"
+            ],
+            "call": "self.assertTrue(bool(consumer.run(11).endswith('over limit')))"
+          }
+        ]
+      },
+      "verdict": "fail",
+      "exit_code": 1
+    }
+  }
+}

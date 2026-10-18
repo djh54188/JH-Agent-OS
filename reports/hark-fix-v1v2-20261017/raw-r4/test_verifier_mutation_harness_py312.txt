@@ -1,0 +1,19 @@
+test_classify (tests.test_verifier_mutation_harness.TestClassification.test_classify) ... ok
+test_outcomes (tests.test_verifier_mutation_harness.TestClassification.test_outcomes) ... ok
+test_platform_evidence (tests.test_verifier_mutation_harness.TestClassification.test_platform_evidence) ... ok
+test_summarize (tests.test_verifier_mutation_harness.TestClassification.test_summarize) ... ok
+test_detections_carry_behavioural_evidence (tests.test_verifier_mutation_harness.TestHarnessOnSyntheticRepo.test_detections_carry_behavioural_evidence) ... ok
+test_each_verifier_classifies_every_shape (tests.test_verifier_mutation_harness.TestHarnessOnSyntheticRepo.test_each_verifier_classifies_every_shape) ... ok
+test_anchors_unique_and_tests_resolve (tests.test_verifier_mutation_harness.TestRealCatalogues.test_anchors_unique_and_tests_resolve) ... ok
+test_harness_blocks_identical_and_free_of_old_mechanisms (tests.test_verifier_mutation_harness.TestRealCatalogues.test_harness_blocks_identical_and_free_of_old_mechanisms) ... ok
+test_baseline_shapes (tests.test_verifier_mutation_harness.TestRedBaselines.test_baseline_shapes) ... ok
+test_exit_codes (tests.test_verifier_mutation_harness.TestRedBaselines.test_exit_codes) ... ok
+test_timeout_is_a_failure (tests.test_verifier_mutation_harness.TestRedBaselines.test_timeout_is_a_failure) ... ok
+test_wording_change_beside_a_real_detection_still_fails (tests.test_verifier_mutation_harness.TestWordingOnlyChangesNeverDetect.test_wording_change_beside_a_real_detection_still_fails) ... ok
+test_wording_only_mutations (tests.test_verifier_mutation_harness.TestWordingOnlyChangesNeverDetect.test_wording_only_mutations) ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 293.690s
+
+OK
+exit 0

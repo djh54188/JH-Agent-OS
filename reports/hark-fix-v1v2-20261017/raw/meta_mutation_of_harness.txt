@@ -1,0 +1,7 @@
+# Meta-mutation of the new harness (run in disposable copies; regression must turn red)
+verify_phase4_guards errors_counted       exit 1 FAILED (failures=1, errors=2)
+verify_phase4_guards baseline_ignored     exit 1 FAILED (failures=3)
+verify_phase4_guards message_only_ignored exit 1 FAILED (failures=2)
+verify_jh006_guards  errors_counted       exit 1 FAILED (failures=1, errors=2)
+verify_jh006_guards  baseline_ignored     exit 1 FAILED (failures=3)
+verify_jh006_guards  message_only_ignored exit 1 FAILED (failures=2)

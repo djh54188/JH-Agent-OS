@@ -1,0 +1,30 @@
+[
+  {
+    "guard": "apply_target_version_check_removed",
+    "test": "test_phase4_file_tools.TestPhase4FileLoop.test_target_changed_between_review_and_apply",
+    "A_single_mutant_text_assert_removed": "pass",
+    "B_both_layers_removed": "pass",
+    "C_three_layers_removed": "message_only_failure",
+    "C_failing_source": "self.assertIn(\"target changed since review\", result[\"error_info\"])",
+    "C_message": "AssertionError: 'target changed since review' not found in \"Staged write apply blocked: apply refused: exclusive create refused (file already exists): '/tmp/jh-layered-t_o4dm6y/c0/data/test-workspaces/loop-4553e5d6/out/report.json'\""
+  },
+  {
+    "guard": "apply_staged_hash_check_removed",
+    "test": "test_phase4_file_tools.TestPhase4FileLoop.test_apply_refuses_tampered_staged_content",
+    "A_single_mutant_text_assert_removed": "pass",
+    "B_both_layers_removed": "message_only_failure",
+    "B_failing_source": "self.assertIn(\"staged content sha\", result[\"error_info\"])",
+    "B_message": "AssertionError: 'staged content sha' not found in 'Staged write apply blocked: apply refused: apply refused: temp file hash mismatch before commit'",
+    "C_three_layers_removed": "message_only_failure",
+    "C_failing_source": "self.assertIn(\"staged content sha\", result[\"error_info\"])",
+    "C_message": "AssertionError: 'staged content sha' not found in 'Staged write apply blocked: apply outcome uncertain (target sha 5e642f18693d8b684b5c295a9dc1631cd54195eb9a69d8d12835c42201a329fc); needs_attention, no blind replay'"
+  },
+  {
+    "guard": "recovered_applied_hash_check_removed",
+    "test": "test_phase4_file_tools.TestPhase4FileLoop.test_recovered_applied_hash_must_match_reviewed_snapshot",
+    "A_single_mutant_text_assert_removed": "pass",
+    "B_both_layers_removed": "assertion_failure",
+    "B_failing_source": "self.assertEqual(result[\"status\"], \"needs_attention\")",
+    "B_message": "+ needs_attention"
+  }
+]
