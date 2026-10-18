@@ -1,3 +1,15 @@
+# 2026-10-18 · JH-020 真实会话切片限定整改 R1–R3（候选，待独立验收）
+
+按独立审查 `data/jh020-real-session-review-20261018/` 对 `14e42a0` 做**限定整改**，只改三项，未接 GUI/未实现 continue·cancel/未发送指定会话：
+
+- **R1 事实绑定 native thread＋turn**：新增 `notification_binding`/`bound_notifications`——`item/completed` 与 `thread/tokenUsage/updated` 必须 `params.threadId` **且** `params.turnId` 精确匹配本轮，否则**拒收**并记录（“ignored … not bound to this thread and turn”）；用量改 `{turn, thread_total, model_context_window, source}`，无绑定即 `usage={}` 且记 **“token usage for this turn not proven”**。**离线夹具改为携带真实字段**（`threadId`/`turnId`/`tokenUsage.total|last`）。反例对照：旧轮/无 thread/外来 thread 三例由“被采用”变为“拒收”。
+- **R2 派发前登记、不重复派发、原始证据**：任何外部调用前落 `reserved`（run/binding/幂等键/指纹/**规范化快照**），写盘走 `append_record`，**失败即 `RegistryUnavailable` 且不派发**；超时（已发出）保留 `state=UNKNOWN` 与已知原生 ID、落 `dispatch_uncertain` 并返回该 run；同键重放**绝不再次派发**，`_load_registry()` 使**重开登记文件**后仍阻止不确定键重发。原始通知流写 `raw/<run_id>.notifications.jsonl` 并登记**路径+sha256+帧数**（原始子集，不冒充完整原生证据）。
+- **R3 地址与显式约束**：`_validate_dispatch` 在任何调用前校验——`app_kind` 必须为 `codex`；实例须受支持；**只支持新建隔离会话**（`session_id` 为 `None/""/new/new:*`），既有/指定地址明确拒绝且不偷偷新建 thread；**显式模型随 `thread/start` 下发并与服务器回报核验**，不一致即拒绝；**有限预算 `budget_tokens` 非空即拒绝**（本切片无法执行）。反例两例由“接受并调用”变为 `UnsupportedAddress`、0 次调用。
+- **验证**：全量 **559 项 558 过/1 既有跳过**；定向变异 **11/11 检出**（新增 6 项覆盖 R1/R2/R3）；整改后真实只读往返通过（`explicit_model_honored`、thread/turn 关联、无文件写入），提交后以**新隔离证据目录**再复验一次并保留旧记录。
+- 保持范围：`production complete`、`FileToolExecutor`、现有成功门关闭；未改 Hark 验证器；**未宣布真实协作闭环通过**。状态：**候选/待独立验收**。
+
+---
+
 # 2026-10-18 · JH-020 真实会话接入切片：首个真实 AgentSessionAdapter + 一次真实往返（待独立验收）
 
 - **真实适配器**：新增 `src/agent_session_codex.py`，实现契约 `src/agent_session.py`。Codex app-server（JSON-RPC over stdio）：`submit`=`thread/start`（隔离 cwd、`sandbox="read-only"`、approvals never）+`turn/start`（`sandboxPolicy={readOnly,无网络}`）；`status`/`collect` 走本地登记表；`collect` 有界等待匹配本 thread+turn 的 `turn/completed`，**不自动重试**。登记 `RunBinding`、请求快照、**SHA-256 指纹**、原生 thread/turn；幂等索引与 run 索引分开；`registry_path` 追加式 JSONL 保存指纹/会话/原生轮次/原始结果。**无 `succeeded`**，不确认项进 `unverified`。

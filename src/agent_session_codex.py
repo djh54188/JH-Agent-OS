@@ -1,25 +1,34 @@
-"""Real Codex AgentSessionAdapter (JH-020, first real-session slice).
+"""Real Codex AgentSessionAdapter (JH-020 real-session slice, rectified).
 
 Implements the JH-018 contract (src/agent_session.py) against the Codex
-app-server (JSON-RPC 2.0 over stdio). Scope is deliberately minimal: a real
-dispatch/collect path for ONE application.
+app-server (JSON-RPC 2.0 over stdio). Scope stays minimal: a real dispatch /
+collect path for ONE application, creating a NEW isolated session only.
 
-  * submit  -> thread/start (isolated cwd) + turn/start (read-only sandbox)
-  * status  -> the adapter's run registry (binding, fingerprint, native turn)
-  * collect -> bounded wait for the matching `turn/completed` notification
+Corrections applied after the independent review of 14e42a0:
+
+* R1 — every collected fact is bound to the exact native thread AND turn. Item
+  and token-usage notifications carry `threadId` and `turnId`; anything that
+  cannot be tied to this run's turn is rejected and counted, and usage is split
+  into this turn's usage versus the thread's cumulative usage.
+* R2 — the request, run, idempotency key and fingerprint are registered BEFORE
+  any external call, and the registry is proven writable first. A dispatch that
+  times out keeps its unknown outcome and any known native ids, and an identical
+  replay never dispatches again — including after the registry is reopened.
+* R3 — the application/instance/session address is validated before dispatch.
+  Only a NEW isolated session of this application is supported; an explicit
+  model requirement must be honored and verified, and a finite budget this slice
+  cannot enforce is refused instead of ignored.
 
 Native differences live here, never in the contract. `continue_run` and `cancel`
-are declared UNSUPPORTED because `turn/steer` / `turn/interrupt` have not been
-observed on this transport in this project; bounded remediation is a later
-slice. There is no scheduler and no runtime here: one transport process plus a
-run registry, keyed by run id, with a separate idempotency index.
+remain UNSUPPORTED (`turn/steer` / `turn/interrupt` were never observed). There
+is no scheduler and no runtime: one transport plus a run registry.
 
-The adapter never marks anything succeeded — a `RunState.DECLARED_COMPLETE` is
-the executor's claim, and success stays with the control layer. `collect`
-reports what it observed and lists what it could not confirm in `unverified`.
+The adapter never marks anything succeeded — it reports what it observed and
+lists what it could not confirm in `unverified`.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import queue
@@ -68,6 +77,23 @@ READ_ONLY_SANDBOX = {"type": "readOnly", "networkAccess": False}
 DEFAULT_CODEX_JS = os.environ.get(
     "CODEX_JS", r"D:\npm-global\node_modules\@openai\codex\bin\codex.js")
 
+#: Application instances this adapter may dispatch to.
+DEFAULT_INSTANCE_IDS = frozenset({"codex-app-server/local"})
+#: A session address only means "create a NEW isolated session" this slice.
+NEW_SESSION_PREFIX = "new:"
+
+
+class UnsupportedAddress(RuntimeError):
+    """The requested application/instance/session address is not dispatchable."""
+
+
+class UnsupportedRequest(RuntimeError):
+    """An explicit request constraint this slice cannot honor is refused."""
+
+
+class RegistryUnavailable(RuntimeError):
+    """The durable dispatch record could not be established before dispatch."""
+
 
 def default_codex_argv() -> List[str]:
     node = os.environ.get("NODE_EXE") or shutil.which("node") or "node"
@@ -75,9 +101,25 @@ def default_codex_argv() -> List[str]:
     return [node, js, "app-server", "--stdio"]
 
 
-# --- association guards ---------------------------------------------------
-# Small, injectable predicates. Each one protects a distinct claim the adapter
+# --- guard predicates -----------------------------------------------------
+# Small, injectable predicates. Each protects a distinct claim the adapter
 # makes, so each can be disabled alone and its regression test must then fail.
+
+def is_new_session_request(session_id: Optional[str]) -> bool:
+    """True only for an address that asks for a NEW isolated session."""
+    if session_id is None:
+        return True
+    if not isinstance(session_id, str):
+        return False
+    value = session_id.strip().lower()
+    return value == "" or value == "new" or value.startswith(NEW_SESSION_PREFIX)
+
+
+def notification_binding(params: Dict[str, Any], thread_id: str,
+                         turn_id: str) -> Tuple[bool, bool]:
+    """(thread matches, turn matches) for a notification's params block."""
+    return (params.get("threadId") == thread_id, params.get("turnId") == turn_id)
+
 
 def completion_association(params: Dict[str, Any], thread_id: str,
                            turn_id: str) -> Tuple[bool, bool]:
@@ -99,6 +141,65 @@ def fingerprint_matches(stored: str, current: str) -> bool:
 def address_matches(run_binding: RunBinding, wanted: RunBinding) -> bool:
     """A run may only be read through the address it was bound to."""
     return run_binding == wanted
+
+
+def model_is_honored(requested: Optional[str], reported: Any) -> bool:
+    """An explicit model requirement must match what the server reports."""
+    if not requested:
+        return True
+    return isinstance(reported, str) and reported == requested
+
+
+def budget_is_dispatchable(budget_tokens: Optional[int]) -> bool:
+    """This slice cannot enforce a finite token budget, so it must refuse one."""
+    return budget_tokens is None
+
+
+def append_record(path: Optional[str], record: Dict[str, Any]) -> None:
+    """Append one registry record, raising on failure so dispatch can abort."""
+    if not path:
+        return
+    with open(path, "a", encoding="utf-8") as handle:
+        handle.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+
+def _sha256_text(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def bound_notifications(notifications: List[dict], thread_id: str, turn_id: str,
+                        method: str) -> Tuple[List[dict], int]:
+    """Notifications of `method` bound to EXACTLY this thread and turn.
+
+    Returns (accepted, ignored_count). Anything whose thread or turn cannot be
+    confirmed as this run's is ignored, never adopted.
+    """
+    accepted: List[dict] = []
+    ignored = 0
+    for note in notifications:
+        if note.get("method") != method:
+            continue
+        params = note.get("params") or {}
+        thread_ok, turn_ok = notification_binding(params, thread_id, turn_id)
+        if thread_ok and turn_ok:
+            accepted.append(note)
+        else:
+            ignored += 1
+    return accepted, ignored
+
+
+def _split_usage(token_usage: Dict[str, Any]) -> Dict[str, Any]:
+    """Separate the CURRENT turn's usage from the thread's cumulative usage."""
+    if not isinstance(token_usage, dict):
+        return {}
+    out: Dict[str, Any] = {}
+    if isinstance(token_usage.get("last"), dict):
+        out["turn"] = dict(token_usage["last"])
+    if isinstance(token_usage.get("total"), dict):
+        out["thread_total"] = dict(token_usage["total"])
+    if "modelContextWindow" in token_usage:
+        out["model_context_window"] = token_usage.get("modelContextWindow")
+    return out
 
 
 class CodexStdioTransport:
@@ -215,13 +316,17 @@ class _Run:
     binding: RunBinding
     request_snapshot: str
     request_fingerprint: str
-    native_session_id: str
+    native_session_id: str = ""
+    native_model: Optional[str] = None
+    idempotency_key: Optional[str] = None
     turns: List[NativeTurn] = field(default_factory=list)
-    state: str = RunState.ACCEPTED
+    state: str = RunState.QUEUED
     native_state: Optional[str] = None
     collected: Optional[CollectedResult] = None
     completion: Optional[Dict[str, Any]] = None
     unknown_server_requests: List[str] = field(default_factory=list)
+    raw_evidence: Optional[Dict[str, Any]] = None
+    recovered: bool = False
 
 
 class CodexAgentSessionAdapter(AgentSessionAdapter):
@@ -239,15 +344,19 @@ class CodexAgentSessionAdapter(AgentSessionAdapter):
     def __init__(self, *, cwd: Optional[str] = None,
                  transport_factory: Optional[Callable[[], Any]] = None,
                  registry_path: Optional[str] = None,
+                 instance_ids: Optional[Tuple[str, ...]] = None,
                  transport: Optional[Any] = None):
         self._cwd = cwd or os.getcwd()
         self._transport_factory = transport_factory
         self._transport = transport
         self._registry_path = registry_path
+        self._instance_ids = frozenset(instance_ids or DEFAULT_INSTANCE_IDS)
         self._runs: Dict[str, _Run] = {}
         self._idem: Dict[str, Tuple[str, str]] = {}
         self._counter = 0
         self._initialized = False
+        if registry_path:
+            self._load_registry()
 
     # --- transport lifecycle ------------------------------------------------
     def _get_transport(self):
@@ -274,11 +383,10 @@ class CodexAgentSessionAdapter(AgentSessionAdapter):
             self._transport = None
             self._initialized = False
 
-    # --- persistence --------------------------------------------------------
-    def _persist(self, event: str, run: _Run, extra: Optional[Dict[str, Any]] = None) -> None:
-        if not self._registry_path:
-            return
-        record = {
+    # --- registry -----------------------------------------------------------
+    def _persist(self, event: str, run: _Run, extra: Optional[Dict[str, Any]] = None) -> dict:
+        """Append one record. Raises OSError so a failed write aborts dispatch."""
+        record: Dict[str, Any] = {
             "event": event,
             "run_id": run.run_id,
             "app_kind": run.binding.app_kind,
@@ -287,16 +395,87 @@ class CodexAgentSessionAdapter(AgentSessionAdapter):
             "task_id": run.binding.task_id,
             "attempt": run.binding.attempt,
             "request_fingerprint": run.request_fingerprint,
-            "native_session_id": run.native_session_id,
+            "request_snapshot": run.request_snapshot,
+            "idempotency_key": run.idempotency_key,
+            "native_session_id": run.native_session_id or None,
             "native_turns": [t.native_turn_id for t in run.turns],
+            "native_model": run.native_model,
             "state": run.state,
             "native_state": run.native_state,
             "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         }
         if extra:
             record.update(extra)
-        with open(self._registry_path, "a", encoding="utf-8") as handle:
-            handle.write(json.dumps(record, ensure_ascii=False) + "\n")
+        append_record(self._registry_path, record)
+        return record
+
+    def _write_raw_evidence(self, run: _Run, notifications: List[dict]) -> Dict[str, Any]:
+        """Persist the raw notification stream we actually observed, with a hash.
+
+        This is a locatable, hashable subset of the native stream — not a claim
+        that it is the complete original rollout, which lives in the host store.
+        """
+        payload = "".join(json.dumps(n, ensure_ascii=False, sort_keys=True) + "\n" for n in notifications)
+        digest = _sha256_text(payload)
+        if not self._registry_path:
+            return {"framed": len(notifications), "sha256": digest, "path": None}
+        raw_dir = os.path.join(os.path.dirname(os.path.abspath(self._registry_path)), "raw")
+        os.makedirs(raw_dir, exist_ok=True)
+        path = os.path.join(raw_dir, f"{run.run_id}.notifications.jsonl")
+        with open(path, "w", encoding="utf-8") as handle:
+            handle.write(payload)
+        return {"path": path, "sha256": digest, "framed": len(notifications)}
+
+    def _load_registry(self) -> None:
+        """Rebuild the idempotency index so a reopened registry blocks redispatch."""
+        try:
+            with open(self._registry_path, "r", encoding="utf-8") as handle:
+                text = handle.read()
+        except OSError:
+            # Unreadable or absent: nothing to recover. A write at dispatch time
+            # still fails loudly, so an unusable registry cannot silently pass.
+            return
+        for line in text.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                record = json.loads(line)
+            except ValueError:
+                continue
+            run_id = record.get("run_id")
+            if not run_id:
+                continue
+            run = self._runs.get(run_id)
+            if run is None:
+                binding = RunBinding(record.get("app_kind") or self.app_kind,
+                                     record.get("instance_id"), record.get("session_id"),
+                                     record.get("task_id"), record.get("attempt"))
+                run = _Run(run_id=run_id, binding=binding,
+                           request_snapshot=record.get("request_snapshot") or "",
+                           request_fingerprint=record.get("request_fingerprint") or "",
+                           idempotency_key=record.get("idempotency_key"),
+                           recovered=True)
+                self._runs[run_id] = run
+                self._counter = max(self._counter, 1)
+            run.state = record.get("state") or run.state
+            run.native_state = record.get("native_state") or run.native_state
+            run.native_session_id = record.get("native_session_id") or run.native_session_id
+            run.native_model = record.get("native_model") or run.native_model
+            turns = record.get("native_turns") or []
+            if turns:
+                run.turns = [NativeTurn(native_turn_id=t, native_session_id=run.native_session_id)
+                             for t in turns]
+            if record.get("event") == "collected":
+                run.collected = CollectedResult(
+                    run_id=run_id, declared_status=record.get("declared_status") or "unreported",
+                    artifacts=record.get("artifacts") or [], usage=record.get("usage") or {},
+                    raw_refs=record.get("raw_refs") or [],
+                    unverified=(record.get("unverified") or []) + ["recovered registry record; no live transport"],
+                )
+            key = record.get("idempotency_key")
+            if key:
+                self._idem[key] = (run.request_fingerprint, run_id)
 
     # --- contract -----------------------------------------------------------
     def capabilities(self) -> Dict[str, Any]:
@@ -309,36 +488,94 @@ class CodexAgentSessionAdapter(AgentSessionAdapter):
                              "reason": self.UNSUPPORTED_REASONS.get(name, "not observed")}
         return out
 
+    def _validate_dispatch(self, request: SubmitRequest) -> None:
+        """Refuse anything this slice cannot dispatch to or honor — before any send."""
+        session = request.session
+        if session.app_kind != self.app_kind:
+            raise UnsupportedAddress(
+                f"adapter {self.app_kind!r} cannot dispatch to app_kind {session.app_kind!r}")
+        if session.instance_id not in self._instance_ids:
+            raise UnsupportedAddress(
+                f"unsupported application instance {session.instance_id!r}; supported: {sorted(self._instance_ids)}")
+        if not is_new_session_request(session.session_id):
+            raise UnsupportedAddress(
+                f"unsupported session address {session.session_id!r}; this slice only creates a NEW isolated session")
+        if not budget_is_dispatchable(request.budget_tokens):
+            raise UnsupportedRequest(
+                "a finite token budget cannot be enforced by this adapter; refusing rather than ignoring it")
+
     def submit(self, request: SubmitRequest) -> RunStatus:
         self._require("submit")
+        self._validate_dispatch(request)
         snapshot = request.snapshot()
         fingerprint = request.fingerprint()
-        if request.idempotency_key:
-            known = self._idem.get(request.idempotency_key)
+        key = request.idempotency_key
+        if key:
+            known = self._idem.get(key)
             if known is not None:
                 stored_fingerprint, run_id = known
                 if not fingerprint_matches(stored_fingerprint, fingerprint):
-                    raise IdempotencyConflict(request.idempotency_key)
+                    raise IdempotencyConflict(key)
                 run = self._runs[run_id]
                 first = run.turns[0] if run.turns else None
                 return RunStatus(run_id=run_id, state=run.state, binding=run.binding,
                                  native_turn=first, latest_turn=run.turns[-1] if run.turns else None,
                                  native_state=run.native_state,
-                                 note="idempotent replay of the same request")
+                                 note="idempotent replay; not re-dispatched")
+
+        # Register the request/run/key/fingerprint BEFORE any external call, and
+        # prove the registry is writable first (a failed write aborts dispatch).
+        self._counter += 1
+        run_id = f"codex-run-{self._counter}-{uuid.uuid4().hex[:8]}"
+        run = _Run(run_id=run_id, binding=RunBinding.of(request), request_snapshot=snapshot,
+                   request_fingerprint=fingerprint, idempotency_key=key,
+                   state=RunState.QUEUED, native_state="reserved")
+        self._runs[run_id] = run
+        if key:
+            self._idem[key] = (fingerprint, run_id)
+        try:
+            self._persist("reserved", run)
+        except OSError as exc:
+            raise RegistryUnavailable(f"registry not writable; refusing to dispatch: {exc}") from None
 
         self._handshake()
         transport = self._get_transport()
-        start = transport.call("thread/start", {
-            "cwd": request.workspace,
-            "approvalPolicy": "never",
-            "sandbox": READ_ONLY_SANDBOX_MODE,
-        }, timeout=90)
-        if start.get("timeout") or "result" not in start:
-            raise RuntimeError(f"thread/start failed: {start.get('error') or 'timeout'}")
+
+        start_params: Dict[str, Any] = {"cwd": request.workspace, "approvalPolicy": "never",
+                                        "sandbox": READ_ONLY_SANDBOX_MODE}
+        if request.session.model_id:
+            start_params["model"] = request.session.model_id
+        start = transport.call("thread/start", start_params, timeout=90)
+        if start.get("timeout"):
+            run.state = RunState.UNKNOWN
+            run.native_state = "dispatch-uncertain"
+            self._persist("dispatch_uncertain", run, {"stage": "thread/start"})
+            return RunStatus(run_id=run_id, state=run.state, binding=run.binding,
+                             native_state=run.native_state,
+                             note="thread/start timed out after send; outcome unknown, will not be re-dispatched")
+        if "result" not in start:
+            run.state = RunState.FAILED
+            run.native_state = "thread/start-refused"
+            self._persist("dispatch_failed", run, {"stage": "thread/start", "error": start.get("error")})
+            raise RuntimeError(f"thread/start failed: {start.get('error')}")
         result = start.get("result") or {}
         thread_id = ((result.get("thread") or {}).get("id"))
         if not thread_id:
+            run.state = RunState.FAILED
+            run.native_state = "thread/start-no-id"
+            self._persist("dispatch_failed", run, {"stage": "thread/start"})
             raise RuntimeError("thread/start returned no thread id")
+        reported_model = result.get("model")
+        if not model_is_honored(request.session.model_id, reported_model):
+            run.state = RunState.FAILED
+            run.native_state = "model-not-honored"
+            run.native_session_id = thread_id
+            self._persist("dispatch_failed", run, {"stage": "thread/start", "reported_model": reported_model})
+            raise UnsupportedRequest(
+                f"requested model {request.session.model_id!r} was not honored (server reports {reported_model!r})")
+
+        run.native_session_id = thread_id
+        run.native_model = reported_model
 
         turn = transport.call("turn/start", {
             "threadId": thread_id,
@@ -347,22 +584,31 @@ class CodexAgentSessionAdapter(AgentSessionAdapter):
             "approvalPolicy": "never",
             "sandboxPolicy": dict(READ_ONLY_SANDBOX),
         }, timeout=60)
-        if turn.get("timeout") or "result" not in turn:
-            raise RuntimeError(f"turn/start failed: {turn.get('error') or 'timeout'}")
+        if turn.get("timeout"):
+            run.state = RunState.UNKNOWN
+            run.native_state = "dispatch-uncertain"
+            self._persist("dispatch_uncertain", run, {"stage": "turn/start", "native_session_id": thread_id})
+            return RunStatus(run_id=run_id, state=run.state, binding=run.binding,
+                             native_state=run.native_state,
+                             note="turn/start timed out after send; native thread kept, outcome unknown, "
+                                  "will not be re-dispatched")
+        if "result" not in turn:
+            run.state = RunState.FAILED
+            run.native_state = "turn/start-refused"
+            self._persist("dispatch_failed", run, {"stage": "turn/start", "error": turn.get("error")})
+            raise RuntimeError(f"turn/start failed: {turn.get('error')}")
         turn_id = ((turn.get("result") or {}).get("turn") or {}).get("id")
         if not turn_id:
+            run.state = RunState.FAILED
+            run.native_state = "turn/start-no-id"
+            self._persist("dispatch_failed", run, {"stage": "turn/start"})
             raise RuntimeError("turn/start returned no turn id")
 
-        self._counter += 1
-        run_id = f"codex-run-{self._counter}-{uuid.uuid4().hex[:8]}"
         native_turn = NativeTurn(native_turn_id=turn_id, native_session_id=thread_id, purpose="initial")
-        run = _Run(run_id=run_id, binding=RunBinding.of(request), request_snapshot=snapshot,
-                   request_fingerprint=fingerprint, native_session_id=thread_id,
-                   turns=[native_turn], state=RunState.RUNNING, native_state="turn-started")
-        self._runs[run_id] = run
-        if request.idempotency_key:
-            self._idem[request.idempotency_key] = (fingerprint, run_id)
-        self._persist("submitted", run, {"thread_id": thread_id, "turn_id": turn_id})
+        run.turns = [native_turn]
+        run.state = RunState.RUNNING
+        run.native_state = "turn-started"
+        self._persist("dispatched", run, {"thread_id": thread_id, "turn_id": turn_id})
         return RunStatus(run_id=run_id, state=run.state, binding=run.binding,
                          native_turn=native_turn, latest_turn=native_turn,
                          native_state=run.native_state,
@@ -396,19 +642,25 @@ class CodexAgentSessionAdapter(AgentSessionAdapter):
                                    unverified=["collect: no run with this id"])
         if run.collected is not None:
             return run.collected
+        if run.recovered:
+            return CollectedResult(run_id=run.run_id, declared_status="unreported",
+                                   unverified=["recovered registry record; no live transport"])
         transport = self._get_transport()
         turn = run.turns[-1] if run.turns else None
         if turn is None:
             return CollectedResult(run_id=run.run_id, declared_status="unreported",
                                    unverified=["collect: run has no native turn"])
         waited = transport.wait_completion(run.native_session_id, turn.native_turn_id, timeout)
+        notifications = transport.notifications()
         if not waited.get("found"):
             run.state = RunState.UNKNOWN
+            raw = self._write_raw_evidence(run, notifications)
+            run.raw_evidence = raw
             result = CollectedResult(run_id=run.run_id, declared_status="unreported",
                                      raw_refs=[f"{run.native_session_id}/{turn.native_turn_id}"],
                                      unverified=[waited["reason"], "collect bounded wait; no retry"])
             run.collected = result
-            self._persist("collect_timeout", run, {"reason": waited["reason"]})
+            self._persist("collect_timeout", run, {"reason": waited["reason"], "raw": raw})
             return result
         frame = waited["frame"]
         params = frame.get("params") or {}
@@ -439,8 +691,30 @@ class CodexAgentSessionAdapter(AgentSessionAdapter):
         run.unknown_server_requests = transport.unknown_server_requests()
         if run.unknown_server_requests:
             unverified.append(f"unimplemented server requests: {run.unknown_server_requests}")
-        texts = _assistant_texts(transport.notifications(), run.native_session_id)
-        usage = _token_usage(transport.notifications(), run.native_session_id)
+
+        # R1: adopted facts must be bound to EXACTLY this thread and turn.
+        text_notes, ignored_texts = bound_notifications(
+            notifications, run.native_session_id, turn.native_turn_id, "item/completed")
+        texts = [note.get("params", {}).get("item", {}).get("text")
+                 for note in text_notes
+                 if note.get("params", {}).get("item", {}).get("type") == "agentMessage"]
+        texts = [t for t in texts if isinstance(t, str) and t]
+        if ignored_texts:
+            unverified.append(
+                f"ignored {ignored_texts} agent item notification(s) not bound to this thread and turn")
+        usage_notes, ignored_usage = bound_notifications(
+            notifications, run.native_session_id, turn.native_turn_id, "thread/tokenUsage/updated")
+        if ignored_usage:
+            unverified.append(
+                f"ignored {ignored_usage} token-usage notification(s) not bound to this thread and turn")
+        if usage_notes:
+            usage = _split_usage((usage_notes[-1].get("params") or {}).get("tokenUsage") or {})
+            usage["source"] = {"thread_id": run.native_session_id, "turn_id": turn.native_turn_id}
+        else:
+            usage = {}
+            unverified.append("token usage for this turn not proven; no bound usage notification observed")
+        raw = self._write_raw_evidence(run, notifications)
+        run.raw_evidence = raw
         result = CollectedResult(
             run_id=run.run_id,
             # A foreign completion's claim is never adopted as this run's status.
@@ -452,9 +726,16 @@ class CodexAgentSessionAdapter(AgentSessionAdapter):
             unverified=unverified,
         )
         run.collected = result
-        self._persist("collected", run, {"completion": observed,
-                                         "unverified": unverified,
-                                         "assistant_texts": texts})
+        self._persist("collected", run, {
+            "declared_status": result.declared_status,
+            "completion": observed,
+            "usage": usage,
+            "assistant_texts": texts,
+            "unverified": unverified,
+            "artifacts": result.artifacts,
+            "raw_refs": result.raw_refs,
+            "raw": raw,
+        })
         return result
 
     def continue_run(self, session: SessionAddress, run_id: Optional[str],
@@ -480,31 +761,3 @@ _SUPPORT_DETAIL = {
     "status": "local run registry (binding, fingerprint, native turn)",
     "collect": "turn/completed notification matched to this thread and turn",
 }
-
-
-def _assistant_texts(notifications: List[dict], thread_id: str) -> List[str]:
-    texts: List[str] = []
-    for note in notifications:
-        params = note.get("params") or {}
-        if params.get("threadId") not in (None, thread_id):
-            continue
-        item = params.get("item") or {}
-        if isinstance(item, dict) and item.get("type") == "agentMessage":
-            text = item.get("text")
-            if isinstance(text, str) and text:
-                texts.append(text)
-    return texts
-
-
-def _token_usage(notifications: List[dict], thread_id: str) -> Dict[str, Any]:
-    usage: Dict[str, Any] = {}
-    for note in notifications:
-        if note.get("method") != "thread/tokenUsage/updated":
-            continue
-        params = note.get("params") or {}
-        if params.get("threadId") not in (None, thread_id):
-            continue
-        payload = params.get("usage") or params.get("tokenUsage") or {}
-        if isinstance(payload, dict):
-            usage = dict(payload)
-    return usage

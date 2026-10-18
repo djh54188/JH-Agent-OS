@@ -6,7 +6,7 @@
 - GUI 为目标用户入口，Codex 保留默认主控/架构审查；Agent 应用、会话、模型、角色分离，支持跨应用和同应用不同会话的设计方向。ZCode 为首个候选；**真实执行应用本轮选用 Codex**（`codex app-server` 实测可用，见下）。
 - GUI 与统一应用接口已按「最小模块化 GUI＋只读查询＋草案」范围验收（JH-019）；**产品级 AgentSessionAdapter 已落地首个真实实现**（`src/agent_session_codex.py`），但自动审查流转与 GUI 执行入口仍未接入。
 - 已验收 N1、JH-005 和 JH-006 原成果保留。架构师已批准 c6c0af57 host-entry 接线批；d650bd3 仅补真实输入盘点；JH-018 于 d9cf37de 基线完成接口探测与契约设计，JH-019 于 6052cf31 基线验收。
-- 原运行证据：389 项 388 过/1 既有跳过，33 变异 32 检出/1 冗余/0 异常，来自既有提交前后日志。JH-020 真实会话切片后全量 **540 项 539 过/1 既有跳过**。旧 JH-006/Phase4/采集验证器成绩为**运行记录**，有效性待 Hark 修复与独立复核。
+- 原运行证据：389 项 388 过/1 既有跳过，33 变异 32 检出/1 冗余/0 异常，来自既有提交前后日志。JH-020 真实会话切片整改后全量 **559 项 558 过/1 既有跳过**。旧 JH-006/Phase4/采集验证器成绩为**运行记录**，有效性待 Hark 修复与独立复核。
 - 真实来源登记缺口仍在；N2/P1 未完成。production complete、FileToolExecutor 关闭，原树 80979f3 失败 WIP/STOP 和旧否决候选保留。
 - 实现工作树仍是 D:/JH-Agent OS/data/worktrees/n1-artifact-entry，分支 n1-artifact-entry。原树仅保留 WIP 和方向跳转，不用于新验收。
 - JH-020 真实会话切片：真实派发/收集已实测通过；**指定审查会话未发送**（只读核查见下）；**真实协作闭环仍未通过**。
@@ -68,7 +68,9 @@
 
 ---
 
-## 2026-10-18 · JH-020 真实会话接入切片（首个真实 AgentSessionAdapter + 一次真实往返；**待独立验收**）
+## 2026-10-18 · JH-020 真实会话接入切片（首个真实 AgentSessionAdapter + 一次真实往返；**候选，待独立验收**）
+
+> **状态更新（同日整改）**：`14e42a0` 经独立审查未通过，已按 R1–R3 整改（见下一节）；本节保留为历史记录，其 §`_assistant_texts/_token_usage` 行为与登记时机已被取代。当前**候选/待独立验收**。
 
 **本切片**：实现契约的首个**真实适配器** `src/agent_session_codex.py`（Codex app-server JSON-RPC over stdio），跑通**一次**隔离、只读、固定标识的真实派发/收集往返。选型依据：`codex` CLI 0.160.1 在本机 PATH、`auth.json` 存在、`app-server --stdio` 握手与 `thread/start`+`turn/start`+`turn/completed` 实跑成功；ZCode 非 PATH 命令且需第二个实例、默认模型已弃用，故本轮不用（可用性更脆）。
 
@@ -78,6 +80,17 @@
 - **指定审查会话**：只做**只读**核查（`thread/read` 成功、`cwd=D:\JH-Agent OS`、名称匹配本架构师角色）；本 app-server 报 `notLoaded` **不能**证明桌面宿主空闲，且其 rollout 于核查前约 52 分钟仍活动、末条为 `turn_aborted` ⇒ **裁决不发送**，未新建替代会话、未把 CLI 会话当作指定会话。
 - **验证**：新增契约测试 **19 项**、守卫变异 **5/5 检出**；全量 **540 项 539 过/1 既有跳过**。JH-018 守卫最小调整：核心仍禁止引用契约，**真实适配器**可引用，并新增“白名单项必须实际继承 `AgentSessionAdapter`”强制校验（不修改契约模块）。
 - **边界**：GUI 执行入口与有界整改（continue/cancel）留待该路径复核后推进；`production complete`、`FileToolExecutor` 关闭；**交付/送达 ≠ 验收成功，本切片不代表真实协作闭环完成**。见[报告](reports/jh020-real-session-20261018.md)。
+
+## 2026-10-18 · JH-020 真实会话切片限定整改 R1–R3（离线+真实只读往返通过；**候选，待独立验收**）
+
+按独立审查 `data/jh020-real-session-review-20261018/` 对 `14e42a0` 做**限定整改**，只改三项（未接 GUI、未实现 continue/cancel、未发送指定审查会话、未新建替代架构师）：
+
+- **R1 事实绑定 native thread＋turn**：`item/completed` 与 `thread/tokenUsage/updated` 必须 `threadId` **且** `turnId` 精确匹配本轮，否则**拒收并计数**；用量拆 `{turn, thread_total, model_context_window, source}`，无绑定即记 **“usage not proven”**。夹具改为携带真实关联字段。
+- **R2 派发前登记与不重复派发**：外部调用前落 `reserved`（含**规范化快照**），写盘失败即 **拒绝派发**；超时保留 `state=UNKNOWN` 与已知原生 ID、落 `dispatch_uncertain` 并返回该 run；同键重放**绝不重发**，**重开登记文件**后仍阻止不确定键重发；原始通知流写入 `raw/<run_id>.notifications.jsonl` 并登记**路径 + sha256 + 帧数**。
+- **R3 地址与显式约束**：派发前校验 `app_kind`/实例/会话——**只支持新建隔离会话**，既有/指定地址拒绝且不偷偷新建 thread；**显式模型下发并与服务器回报核验**；**有限预算拒绝**。
+- **反例对照**（`data/jh020-session-rectify-20261018/`）：R1 旧轮/无 thread 由“被采用”转“拒收”；R2 `timeout_replay` 的 `turn_start_calls` 2→1；R3 两例由“接受并调用”转 `UnsupportedAddress`、0 次调用。
+- **验证**：全量 **559 项 558 过/1 既有跳过**；定向变异 **11/11 检出**；整改后真实只读往返通过（显式模型核验、thread/turn 关联、无文件写入），提交后以**新隔离证据目录**再复验一次并保留旧记录。见[整改报告](reports/jh020-session-rectification-20261018.md)。
+- **仍为候选**：未验收；未宣布真实协作闭环通过；`production complete`、`FileToolExecutor`、现有成功门关闭。
 
 ---
 

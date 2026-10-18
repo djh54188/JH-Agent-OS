@@ -35,7 +35,8 @@ from src.agent_session_codex import CodexAgentSessionAdapter, READ_ONLY_SANDBOX 
 EVIDENCE_DIR = ROOT / "data" / "jh020-codex-session-20261018"
 APP_KIND = "codex"
 INSTANCE_ID = "codex-app-server/local"
-SESSION_ID = "jh020-isolated-exec-session"
+SESSION_ID = "new:jh020-isolated-exec-session"  # this slice only creates a NEW isolated session
+MODEL_ID = "gpt-6.1-sol"  # explicit model requirement, verified against the server report
 ROLE = "worker"
 
 
@@ -65,7 +66,7 @@ def main(argv=None) -> int:
     instructions = f"Reply with exactly this token and nothing else: {nonce}. Do not use any tools."
     adapter = CodexAgentSessionAdapter(registry_path=str(out_dir / "runs.jsonl"))
     session = SessionAddress(app_kind=APP_KIND, instance_id=INSTANCE_ID,
-                             session_id=SESSION_ID, model_id=None, role=ROLE)
+                             session_id=SESSION_ID, model_id=MODEL_ID, role=ROLE)
     request = SubmitRequest(task_id="task_jh020_codex_roundtrip", attempt=1, session=session,
                             instructions=instructions, workspace=str(ws),
                             allowed_scope=(), idempotency_key="jh020-roundtrip-" + secrets.token_hex(4),
@@ -78,7 +79,7 @@ def main(argv=None) -> int:
         "read_only_sandbox": READ_ONLY_SANDBOX,
         "request_fingerprint": request.fingerprint(),
         "target_session": {"app_kind": APP_KIND, "instance_id": INSTANCE_ID,
-                           "session_id": SESSION_ID, "role": ROLE},
+                           "session_id": SESSION_ID, "role": ROLE, "required_model": MODEL_ID},
     }
     failures = []
 
@@ -106,6 +107,9 @@ def main(argv=None) -> int:
               str(report["submit"]["binding"]))
         check("fingerprint_registered",
               adapter.inspect(status.run_id).request_fingerprint == request.fingerprint())
+        check("explicit_model_honored",
+              adapter.inspect(status.run_id).native_model == MODEL_ID,
+              f"server reported {adapter.inspect(status.run_id).native_model!r}")
 
         result = adapter.collect(session, status.run_id, timeout=args.timeout)
         report["collect"] = {"declared_status": result.declared_status, "usage": result.usage,
@@ -114,6 +118,8 @@ def main(argv=None) -> int:
         final_state = adapter.status(session, status.run_id).state
         report["final_run_state"] = final_state
         report["completion"] = adapter.inspect(status.run_id).completion
+        report["native_model"] = adapter.inspect(status.run_id).native_model
+        report["raw_evidence"] = adapter.inspect(status.run_id).raw_evidence
         report["unknown_server_requests"] = adapter.inspect(status.run_id).unknown_server_requests
 
         check("completion_observed", final_state == RunState.DECLARED_COMPLETE,
