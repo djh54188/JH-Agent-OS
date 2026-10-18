@@ -28,6 +28,7 @@ T = "test_jh020_codex_agent_session."
 R1 = T + "TestR1FactsBoundToTurn."
 R2 = T + "TestR2DurableRegistration."
 R2A = T + "TestR2ARegistryFailClosed."
+R2ASHAPE = T + "TestR2ARecordShapeValidation."
 R2B = T + "TestR2BRawEvidenceBytes."
 R3 = T + "TestR3AddressAndConstraints."
 NEG = T + "TestGuardsNegativeControls."
@@ -59,6 +60,15 @@ def _text_mode_write(path, data):
     # Re-introduces the newline-translation bug: disk bytes no longer equal the hash.
     with open(path, "w", encoding="utf-8", newline="\r\n") as handle:
         handle.write(data.decode("utf-8"))
+
+
+def _lenient_record_validation(record):
+    # Pre-rectification shape check: only the key NAMES are required, so a null
+    # run_id or an absent idempotency_key field slips through the validator.
+    if not isinstance(record, dict) or "run_id" not in record or "event" not in record:
+        raise codex_mod.RegistryUnavailable(
+            "registry history is corrupt: a record is missing its run_id or event")
+    return record
 
 
 # name, patchers, guard regression that must fail
@@ -115,6 +125,13 @@ MUTATIONS = [
      [patch.object(codex_mod, "verify_raw_evidence", new=lambda raw: (True, "")),
       patch.object(jh020_tests, "verify_raw_evidence", new=lambda raw: (True, ""))],
      R2B + "test_tampered_bytes_fail_verification"),
+    # R2-A — record shape/field validation
+    ("record_validation_bypassed",
+     [patch.object(codex_mod, "validate_registry_record", new=lambda record: record)],
+     R2ASHAPE + "test_null_run_id_refuses_dispatch_without_rewriting"),
+    ("missing_idempotency_field_defaulted",
+     [patch.object(codex_mod, "validate_registry_record", new=_lenient_record_validation)],
+     R2ASHAPE + "test_missing_idempotency_key_field_refuses_dispatch_without_rewriting"),
 ]
 
 

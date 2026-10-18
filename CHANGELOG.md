@@ -1,3 +1,17 @@
+# 2026-10-18 · JH-020 R2-A 登记记录字段校验（候选，待独立验收）
+
+按独立审查 `data/jh020-r2-final-review-20261018/` 仅补**字段校验**（R1/R3/R2-B 已关闭；读取失败与坏 JSON 原反例已关闭，未重做）：
+
+- **缺陷**：`parse_registry_text` 只要求 `run_id`/`event` **键名存在**，`_load_registry` 跳过 falsy `run_id` 并把缺失的 `idempotency_key` 当“无映射” ⇒ 把 unknown 请求的 `run_id` 置 `null`、或删除 `idempotency_key`（**JSON 仍可解析**）后，重开同键提交会**新建 run 并再次派发**并追加文件字节。
+- **整改**：新增 `validate_registry_record`，在建立任何索引之前逐条校验——`run_id` **非空字符串**；**`idempotency_key` 字段必须存在**（合法 `null` 与字段缺失必须区分）；绑定字段（`app_kind`/`instance_id`/`task_id` 非空字符串、`session_id` 字符串或 null、`attempt` 非负整数）与幂等/恢复字段（`request_fingerprint` 非空、`request_snapshot` 字符串、`state` 非空、`native_*` 字符串或 null、`native_turns` 非空字符串列表）；`collected` 记录另校验 `declared_status`/`artifacts`/`raw_refs`/`unverified`/`usage` 类型。任一记录非法 ⇒ **整体不可用、派发前拒绝、零外部调用、零文件改写**；**不跳过/不默认/不修复/不迁移/不截断**；删除 `_load_registry` 中原有的“跳过 falsy run_id”。
+- **反例对照**：`null_run_id` 与 `missing_idempotency_key` 由“新建 run、又一次派发、追加字节”变为 **`RegistryUnavailable`、0 调用、字节不变**；`healthy` 正控不变。**计数口径**：`initialize`/`thread/start`/`turn/start` 是三次协议调用＝**一次重新派发**，不是执行三遍。
+- **正反控**：完整记录通过；**合法 null 幂等键**重开为健康历史；字段缺失与非法值（`run_id` null/空、`attempt` 字符串/bool、`native_turns` 非列表、`state` 非串、`app_kind`/`request_fingerprint`/`idempotency_key` 空串等）全部拒绝。
+- **验证**：全量 **577 项 576 过/1 既有跳过**（独立计数 577）；定向变异 **17/17 检出**（新增 `record_validation_bypassed`、`missing_idempotency_field_defaulted`）；评审探针只读副本复跑通过。
+- **真实往返**：本批仅改登记校验、**未再调用真实模型**；沿用已核实的 `5b1dc26` 证据（`data/jh020-r2-final-roundtrip-20261018/`）。
+- 保持范围：未混入 Hark 集成、GUI 执行、continue/cancel 或指定审查会话发送；生产门与 `FileToolExecutor` 关闭。**未宣布协作闭环通过**。状态：**候选/待独立验收**。
+
+---
+
 # 2026-10-18 · JH-020 真实会话切片 R2 限定整改（R2-A/R2-B；候选，待独立验收）
 
 按独立审查 `data/jh020-session-r2-review-20261018/` 修 **R2 两项**（R1/R3 已关闭，未重做）：

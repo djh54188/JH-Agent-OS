@@ -44,6 +44,7 @@ from src.agent_session_codex import (  # noqa: E402
     UnsupportedRequest,
     parse_registry_text,
     read_registry_text,
+    validate_registry_record,
     verify_raw_evidence,
 )
 
@@ -159,6 +160,21 @@ def make_adapter(transport=None, registry_path=None, **kw):
     transport = transport or FakeCodexTransport()
     return CodexAgentSessionAdapter(transport=transport, registry_path=registry_path,
                                     cwd=WS, **kw), transport
+
+
+def registry_record(**over):
+    """One complete, valid record in the exact format the adapter writes."""
+    record = {"event": "reserved", "run_id": "codex-run-1-abcdef01", "app_kind": "codex",
+              "instance_id": INSTANCE, "session_id": "new", "task_id": "task_jh020_rt", "attempt": 1,
+              "request_fingerprint": "0" * 64, "request_snapshot": "{}", "idempotency_key": None,
+              "native_session_id": None, "native_turns": [], "native_model": None,
+              "state": RunState.QUEUED, "native_state": "reserved", "at": "2026-10-18T00:00:00Z"}
+    record.update(over)
+    return record
+
+
+def registry_line(**over):
+    return json.dumps(registry_record(**over), ensure_ascii=False)
 
 
 class TestCapabilities(unittest.TestCase):
@@ -594,13 +610,14 @@ class TestR2ARegistryFailClosed(unittest.TestCase):
                 read_registry_text(tmp)                                        # a directory: existing but unreadable
 
     def test_parse_registry_text_never_skips_a_malformed_record(self):
-        good = json.dumps({"event": "reserved", "run_id": "r1"})
+        good = registry_line()
         with self.assertRaises(RegistryUnavailable):
             parse_registry_text(good + "\n" + "{not json}\n")
         with self.assertRaises(RegistryUnavailable):
-            parse_registry_text(json.dumps({"event": "reserved"}) + "\n")      # missing run_id
+            parse_registry_text("{}\n")                                        # not a usable record
         self.assertEqual(len(parse_registry_text(good + "\n")), 1)
         self.assertEqual(parse_registry_text("\n  \n"), [])
+        self.assertEqual(len(parse_registry_text(registry_line(idempotency_key="k1") + "\n")), 1)
 
 
 class TestR2BRawEvidenceBytes(unittest.TestCase):
@@ -646,6 +663,102 @@ class TestR2BRawEvidenceBytes(unittest.TestCase):
             raw = self._raw(tmp)
             self.assertFalse(verify_raw_evidence({**raw, "frames": raw["frames"] + 1})[0])
             self.assertFalse(verify_raw_evidence({**raw, "path": None})[0])
+
+
+class TestR2ARecordShapeValidation(unittest.TestCase):
+    """R2-A: a parseable but incomplete history must not silently lose a key."""
+
+    def _uncertain_registry(self, tmp, key="uncertain-key"):
+        path = os.path.join(tmp, "runs.jsonl")
+        transport = FakeCodexTransport(timeout_method="turn/start")
+        adapter = CodexAgentSessionAdapter(transport=transport, registry_path=path, cwd=WS)
+        run = adapter.submit(make_request(idempotency_key=key))
+        return path, run
+
+    def _rewrite(self, path, mutate):
+        """Rewrite the fixture the way the reviewer does, preserving the original."""
+        original = Path(path).read_bytes()
+        Path(path[:-6] + ".original.jsonl").write_bytes(original)
+        records = [json.loads(line) for line in original.decode("utf-8").splitlines()]
+        for record in records:
+            mutate(record)
+        Path(path).write_bytes(("\n".join(json.dumps(r) for r in records) + "\n").encode("utf-8"))
+        return Path(path).read_bytes()
+
+    def _replay(self, path, key="uncertain-key"):
+        transport = FakeCodexTransport()
+        adapter = CodexAgentSessionAdapter(transport=transport, registry_path=path, cwd=WS)
+        return adapter.submit(make_request(idempotency_key=key)), transport
+
+    def test_validator_accepts_a_complete_record(self):
+        self.assertEqual(validate_registry_record(registry_record())["run_id"], "codex-run-1-abcdef01")
+
+    def test_validator_accepts_a_legitimate_null_idempotency_key(self):
+        record = registry_record(idempotency_key=None)
+        self.assertIn("idempotency_key", record)
+        self.assertIsNone(validate_registry_record(record)["idempotency_key"])
+
+    def test_validator_rejects_missing_idempotency_key_field(self):
+        record = registry_record()
+        record.pop("idempotency_key")                                           # absent != null
+        with self.assertRaises(RegistryUnavailable):
+            validate_registry_record(record)
+
+    def test_validator_rejects_invalid_values(self):
+        for over in ({"run_id": None}, {"run_id": ""}, {"attempt": "1"}, {"attempt": True},
+                     {"native_turns": "x"}, {"native_turns": [""]}, {"state": None},
+                     {"app_kind": ""}, {"request_fingerprint": ""}, {"idempotency_key": ""},
+                     {"native_session_id": 5}):
+            with self.assertRaises(RegistryUnavailable, msg=str(over)):
+                validate_registry_record(registry_record(**over))
+
+    def test_healthy_history_replays_unchanged(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path, first = self._uncertain_registry(tmp)
+            before = Path(path).read_bytes()
+            replay, transport = self._replay(path)
+            self.assertEqual(replay.run_id, first.run_id)
+            self.assertEqual(replay.state, RunState.UNKNOWN)
+            self.assertEqual(transport.calls, [])
+            self.assertEqual(Path(path).read_bytes(), before)
+
+    def test_dispatched_run_without_an_idempotency_key_is_still_a_healthy_history(self):
+        # A legitimate null key must load as a healthy history, not poison it.
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "runs.jsonl")
+            transport = FakeCodexTransport()
+            adapter = CodexAgentSessionAdapter(transport=transport, registry_path=path, cwd=WS)
+            run = adapter.submit(make_request())                                 # no idempotency key
+            before = Path(path).read_bytes()
+            reopened = CodexAgentSessionAdapter(transport=FakeCodexTransport(), registry_path=path, cwd=WS)
+            self.assertIsNotNone(reopened.inspect(run.run_id))                   # history recovered
+            self.assertEqual(reopened.inspect(run.run_id).idempotency_key, None)
+            self.assertEqual(Path(path).read_bytes(), before)
+
+    def test_null_run_id_refuses_dispatch_without_rewriting(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path, first = self._uncertain_registry(tmp)
+            corrupted = self._rewrite(path, lambda r: r.__setitem__("run_id", None))
+            poisoned = CodexAgentSessionAdapter(transport=FakeCodexTransport(), registry_path=path, cwd=WS)
+            transport = FakeCodexTransport()
+            poisoned._transport = transport
+            with self.assertRaises(RegistryUnavailable):
+                poisoned.submit(make_request(idempotency_key="uncertain-key"))
+            self.assertEqual(transport.calls, [])
+            self.assertEqual(Path(path).read_bytes(), corrupted)
+            self.assertFalse(poisoned.inspect(first.run_id))                     # index not silently shortened
+
+    def test_missing_idempotency_key_field_refuses_dispatch_without_rewriting(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path, _ = self._uncertain_registry(tmp)
+            corrupted = self._rewrite(path, lambda r: r.pop("idempotency_key"))
+            poisoned = CodexAgentSessionAdapter(transport=FakeCodexTransport(), registry_path=path, cwd=WS)
+            transport = FakeCodexTransport()
+            poisoned._transport = transport
+            with self.assertRaises(RegistryUnavailable):
+                poisoned.submit(make_request(idempotency_key="uncertain-key"))
+            self.assertEqual(transport.calls, [])
+            self.assertEqual(Path(path).read_bytes(), corrupted)
 
 
 if __name__ == "__main__":

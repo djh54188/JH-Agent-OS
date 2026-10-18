@@ -191,11 +191,73 @@ def read_registry_text(path: str) -> Optional[str]:
             f"registry history is unreadable; refusing to treat it as absent: {exc}") from None
 
 
-def parse_registry_text(text: str) -> List[Dict[str, Any]]:
-    """Parse a whole registry history; one malformed line makes it unusable.
+def validate_registry_record(record: Any) -> Dict[str, Any]:
+    """Validate one record against the format the adapter actually writes.
 
-    Records are never skipped, reset or repaired — an unparsable or incomplete
-    history must stop dispatch rather than silently shorten the idempotency index.
+    Recovery, binding and the idempotency index are rebuilt from these fields, so
+    a record that parses but is incomplete must poison the whole history rather
+    than be skipped or defaulted into an apparently healthy one. `run_id` must be
+    a non-empty string, and `idempotency_key` must be PRESENT: a legitimate null
+    is a different fact from a missing field, and only the former means "this
+    dispatch had no idempotency key".
+    """
+    if not isinstance(record, dict):
+        raise RegistryUnavailable("registry history is corrupt: a record is not an object")
+
+    def fail(detail: str):
+        raise RegistryUnavailable(f"registry history is corrupt: {detail}")
+
+    def require_text(name: str, *, allow_empty: bool = False):
+        value = record.get(name)
+        if not isinstance(value, str) or (not allow_empty and not value):
+            fail(f"{name} must be a non-empty string")
+        return value
+
+    def optional_text(name: str):
+        value = record.get(name)
+        if value is not None and not isinstance(value, str):
+            fail(f"{name} must be a string or null")
+        return value
+
+    event = require_text("event")
+    require_text("run_id")
+    require_text("app_kind")
+    require_text("instance_id")
+    require_text("task_id")
+    optional_text("session_id")
+    attempt = record.get("attempt")
+    if isinstance(attempt, bool) or not isinstance(attempt, int) or attempt < 0:
+        fail("attempt must be a non-negative integer")
+    require_text("request_fingerprint")
+    require_text("request_snapshot", allow_empty=True)
+    require_text("state")
+    optional_text("native_state")
+    optional_text("native_session_id")
+    optional_text("native_model")
+    turns = record.get("native_turns")
+    if not isinstance(turns, list) or any(not isinstance(t, str) or not t for t in turns):
+        fail("native_turns must be a list of non-empty strings")
+    if "idempotency_key" not in record:
+        fail("idempotency_key field is missing; a legitimate null must be written explicitly")
+    key = record["idempotency_key"]
+    if key is not None and (not isinstance(key, str) or not key):
+        fail("idempotency_key must be a non-empty string or null")
+    if event == "collected":
+        require_text("declared_status")
+        for name in ("artifacts", "raw_refs", "unverified"):
+            if not isinstance(record.get(name), list):
+                fail(f"{name} must be a list")
+        if not isinstance(record.get("usage"), dict):
+            fail("usage must be an object")
+    return record
+
+
+def parse_registry_text(text: str) -> List[Dict[str, Any]]:
+    """Parse and validate a whole registry history; one bad record makes it unusable.
+
+    Records are never skipped, reset, repaired or defaulted — an unparsable or
+    incomplete history must stop dispatch rather than silently shorten the
+    idempotency index.
     """
     records: List[Dict[str, Any]] = []
     for line in text.splitlines():
@@ -206,10 +268,7 @@ def parse_registry_text(text: str) -> List[Dict[str, Any]]:
         except ValueError as exc:
             raise RegistryUnavailable(
                 f"registry history is corrupt; refusing to dispatch: {exc}") from None
-        if not isinstance(record, dict) or "run_id" not in record or "event" not in record:
-            raise RegistryUnavailable(
-                "registry history is corrupt: a record is missing its run_id or event")
-        records.append(record)
+        records.append(validate_registry_record(record))
     return records
 
 
@@ -513,9 +572,7 @@ class CodexAgentSessionAdapter(AgentSessionAdapter):
             self._registry_problem = str(exc)
             return
         for record in records:
-            run_id = record.get("run_id")
-            if not run_id:
-                continue
+            run_id = record["run_id"]          # validated: a non-empty string
             run = self._runs.get(run_id)
             if run is None:
                 binding = RunBinding(record.get("app_kind") or self.app_kind,
