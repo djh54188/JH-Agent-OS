@@ -22,12 +22,44 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "tests"))
 
 import src.agent_session_codex as codex_mod
+import test_jh020_codex_agent_session as jh020_tests
 
 T = "test_jh020_codex_agent_session."
 R1 = T + "TestR1FactsBoundToTurn."
 R2 = T + "TestR2DurableRegistration."
+R2A = T + "TestR2ARegistryFailClosed."
+R2B = T + "TestR2BRawEvidenceBytes."
 R3 = T + "TestR3AddressAndConstraints."
 NEG = T + "TestGuardsNegativeControls."
+
+
+def _swallowing_read(path):
+    # The pre-rectification behaviour: any read error is treated as "no history".
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            return handle.read()
+    except OSError:
+        return None
+
+
+def _skipping_parse(text):
+    # The pre-rectification behaviour: malformed records are silently skipped.
+    records = []
+    for line in text.splitlines():
+        if not line.strip():
+            continue
+        try:
+            records.append(json.loads(line))
+        except ValueError:
+            continue
+    return records
+
+
+def _text_mode_write(path, data):
+    # Re-introduces the newline-translation bug: disk bytes no longer equal the hash.
+    with open(path, "w", encoding="utf-8", newline="\r\n") as handle:
+        handle.write(data.decode("utf-8"))
+
 
 # name, patchers, guard regression that must fail
 MUTATIONS = [
@@ -57,7 +89,7 @@ MUTATIONS = [
      R2 + "test_reopened_registry_blocks_redispatch_of_an_uncertain_key"),
     ("registry_write_failure_swallowed",
      [patch.object(codex_mod, "append_record", new=lambda path, record: None)],
-     R2 + "test_registry_write_failure_refuses_dispatch"),
+     R2 + "test_registry_write_failure_at_dispatch_refuses_before_any_call"),
     # R3 — address, model and budget constraints
     ("new_session_address_guard_ignored",
      [patch.object(codex_mod, "is_new_session_request", new=lambda session_id: True)],
@@ -68,6 +100,21 @@ MUTATIONS = [
     ("budget_refusal_ignored",
      [patch.object(codex_mod, "budget_is_dispatchable", new=lambda budget_tokens: True)],
      R3 + "test_finite_budget_is_refused_before_dispatch"),
+    # R2-A — an unusable registry history must refuse dispatch, never be skipped
+    ("registry_read_failure_swallowed",
+     [patch.object(codex_mod, "read_registry_text", new=_swallowing_read)],
+     R2A + "test_unreadable_registry_refuses_dispatch_before_any_call"),
+    ("registry_corruption_skipped",
+     [patch.object(codex_mod, "parse_registry_text", new=_skipping_parse)],
+     R2A + "test_corrupt_registry_refuses_dispatch_before_any_call"),
+    # R2-B — the digest must describe the bytes on disk
+    ("raw_evidence_written_as_text",
+     [patch.object(codex_mod, "write_bytes_file", new=_text_mode_write)],
+     R2B + "test_digest_matches_the_actual_file_bytes"),
+    ("raw_evidence_byte_check_ignored",
+     [patch.object(codex_mod, "verify_raw_evidence", new=lambda raw: (True, "")),
+      patch.object(jh020_tests, "verify_raw_evidence", new=lambda raw: (True, ""))],
+     R2B + "test_tampered_bytes_fail_verification"),
 ]
 
 

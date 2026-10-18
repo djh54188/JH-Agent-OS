@@ -1,3 +1,15 @@
+# 2026-10-18 · JH-020 真实会话切片 R2 限定整改（R2-A/R2-B；候选，待独立验收）
+
+按独立审查 `data/jh020-session-r2-review-20261018/` 修 **R2 两项**（R1/R3 已关闭，未重做）：
+
+- **R2-A 登记历史不可读/损坏必须拒发**：新增 `read_registry_text`——**文件确实不存在**视为首次建立（允许）；**存在但不可读**（`OSError`）抛 `RegistryUnavailable`，**绝不当作缺失**。新增 `parse_registry_text`——**任一行无法解析或缺必需键即整体不可用**，**不跳过/不清空/不修复/不截断**。`_load_registry` 记 `_registry_problem`（保留原因）且**不写任何字节**；`submit` 在任何外部调用与登记写入**之前**拒发。反例 `unreadable_at_load`/`corrupt_registry` 由“再派发 3 次并改写字节”变为 **`RegistryUnavailable`、0 次调用、字节不变**；`healthy_reopen` 仍同 run、0 调用、字节不变。
+- **R2-B 证据摘要绑定实际磁盘字节**：`_write_raw_evidence` 一次性编码负载并经 `write_bytes_file` **二进制**写入，摘要对**同一份字节负载**计算，登记 `{path, sha256, bytes, frames}`；新增 `verify_raw_evidence` 读取引用文件并**实际核对字节哈希与帧数**；`scripts/verify_jh020_codex_session.py` 新增检查 `raw_evidence_file_bytes_match`（不满足即退出非零）。修复前摘要按 LF 文本计算而文件为 CRLF，二者不一致（旧证据 declared `48b186db…` ≠ disk `2281a545…`）。
+- **旧证据**：原样保留、**不改写以迁就旧哈希**；已注明其摘要语义为换行规范化文本；新证据写入新隔离目录。
+- **验证**：全量 **569 项 568 过/1 既有跳过**；定向变异 **15/15 检出**（新增 4 项覆盖 R2-A/R2-B）；整改后真实只读往返脚本自检字节哈希与帧数通过，提交后在新隔离目录复验一次。
+- 保持范围：未接 GUI、未实现 continue/cancel、未发送指定审查会话、未新建替代架构师、未改 Hark 验证器；`production complete`、`FileToolExecutor`、成功门关闭。**未宣布协作闭环通过**。状态：**候选/待独立验收**。
+
+---
+
 # 2026-10-18 · JH-020 真实会话切片限定整改 R1–R3（候选，待独立验收）
 
 按独立审查 `data/jh020-real-session-review-20261018/` 对 `14e42a0` 做**限定整改**，只改三项，未接 GUI/未实现 continue·cancel/未发送指定会话：

@@ -30,7 +30,11 @@ sys.path.insert(0, str(ROOT))
 sys.stdout.reconfigure(encoding="utf-8")
 
 from src.agent_session import RunState, SessionAddress, SubmitRequest  # noqa: E402
-from src.agent_session_codex import CodexAgentSessionAdapter, READ_ONLY_SANDBOX  # noqa: E402
+from src.agent_session_codex import (  # noqa: E402
+    CodexAgentSessionAdapter,
+    READ_ONLY_SANDBOX,
+    verify_raw_evidence,
+)
 
 EVIDENCE_DIR = ROOT / "data" / "jh020-codex-session-20261018"
 APP_KIND = "codex"
@@ -120,6 +124,8 @@ def main(argv=None) -> int:
         report["completion"] = adapter.inspect(status.run_id).completion
         report["native_model"] = adapter.inspect(status.run_id).native_model
         report["raw_evidence"] = adapter.inspect(status.run_id).raw_evidence
+        raw_ok, raw_detail = verify_raw_evidence(report["raw_evidence"])
+        report["raw_evidence_verification"] = {"ok": raw_ok, "detail": raw_detail}
         report["unknown_server_requests"] = adapter.inspect(status.run_id).unknown_server_requests
 
         check("completion_observed", final_state == RunState.DECLARED_COMPLETE,
@@ -131,6 +137,7 @@ def main(argv=None) -> int:
         check("completion_matched_this_thread_and_turn",
               report["completion"] and report["completion"].get("turn_id") == status.native_turn.native_turn_id,
               str(report["completion"]))
+        check("raw_evidence_file_bytes_match", raw_ok, raw_detail)
         check("no_unimplemented_server_requests", not report["unknown_server_requests"],
               str(report["unknown_server_requests"]))
     except Exception as exc:  # noqa: BLE001 - report the failure, do not retry

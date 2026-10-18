@@ -38,6 +38,7 @@ import threading
 import time
 import uuid
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from src.agent_session import (
@@ -161,6 +162,71 @@ def append_record(path: Optional[str], record: Dict[str, Any]) -> None:
         return
     with open(path, "a", encoding="utf-8") as handle:
         handle.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+
+def write_bytes_file(path: str, data: bytes) -> None:
+    """Write an evidence payload in BINARY mode so disk bytes equal the hashed bytes.
+
+    A text-mode write would translate newlines on Windows and make a digest
+    computed over the payload describe a file that does not exist on disk.
+    """
+    with open(path, "wb") as handle:
+        handle.write(data)
+
+
+def read_registry_text(path: str) -> Optional[str]:
+    """Return the registry text, or None when the file does not exist yet.
+
+    A genuinely absent file is the first establishment and is allowed. An
+    existing file that cannot be read must never be treated as absent: that
+    would lose history and permit a duplicate dispatch, so it raises.
+    """
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            return handle.read()
+    except FileNotFoundError:
+        return None
+    except OSError as exc:
+        raise RegistryUnavailable(
+            f"registry history is unreadable; refusing to treat it as absent: {exc}") from None
+
+
+def parse_registry_text(text: str) -> List[Dict[str, Any]]:
+    """Parse a whole registry history; one malformed line makes it unusable.
+
+    Records are never skipped, reset or repaired — an unparsable or incomplete
+    history must stop dispatch rather than silently shorten the idempotency index.
+    """
+    records: List[Dict[str, Any]] = []
+    for line in text.splitlines():
+        if not line.strip():
+            continue
+        try:
+            record = json.loads(line)
+        except ValueError as exc:
+            raise RegistryUnavailable(
+                f"registry history is corrupt; refusing to dispatch: {exc}") from None
+        if not isinstance(record, dict) or "run_id" not in record or "event" not in record:
+            raise RegistryUnavailable(
+                "registry history is corrupt: a record is missing its run_id or event")
+        records.append(record)
+    return records
+
+
+def verify_raw_evidence(raw_evidence: Optional[Dict[str, Any]]) -> Tuple[bool, str]:
+    """Check a recorded digest and frame count against the file's actual bytes."""
+    if not isinstance(raw_evidence, dict) or not raw_evidence.get("path"):
+        return False, "raw evidence has no locatable path"
+    try:
+        data = Path(raw_evidence["path"]).read_bytes()
+    except OSError as exc:
+        return False, f"raw evidence file unreadable: {exc}"
+    if hashlib.sha256(data).hexdigest() != raw_evidence.get("sha256"):
+        return False, "raw evidence digest does not match the file's bytes"
+    frames = len([line for line in data.decode("utf-8").splitlines() if line.strip()])
+    if frames != raw_evidence.get("frames"):
+        return False, f"raw evidence frame count {frames} != recorded {raw_evidence.get('frames')}"
+    return True, "digest and frame count match the file bytes"
 
 
 def _sha256_text(text: str) -> str:
@@ -355,6 +421,7 @@ class CodexAgentSessionAdapter(AgentSessionAdapter):
         self._idem: Dict[str, Tuple[str, str]] = {}
         self._counter = 0
         self._initialized = False
+        self._registry_problem: Optional[str] = None
         if registry_path:
             self._load_registry()
 
@@ -412,37 +479,40 @@ class CodexAgentSessionAdapter(AgentSessionAdapter):
     def _write_raw_evidence(self, run: _Run, notifications: List[dict]) -> Dict[str, Any]:
         """Persist the raw notification stream we actually observed, with a hash.
 
-        This is a locatable, hashable subset of the native stream — not a claim
+        The payload is encoded once and written in BINARY mode, so the digest is
+        over the exact bytes on disk — a text-mode write would newline-translate
+        on Windows and make the digest describe text that is not the file.
+        This is a locatable, hashable subset of the native stream, not a claim
         that it is the complete original rollout, which lives in the host store.
         """
-        payload = "".join(json.dumps(n, ensure_ascii=False, sort_keys=True) + "\n" for n in notifications)
-        digest = _sha256_text(payload)
+        payload_bytes = "".join(
+            json.dumps(n, ensure_ascii=False, sort_keys=True) + "\n" for n in notifications).encode("utf-8")
+        digest = hashlib.sha256(payload_bytes).hexdigest()
+        evidence = {"frames": len(notifications), "bytes": len(payload_bytes), "sha256": digest, "path": None}
         if not self._registry_path:
-            return {"framed": len(notifications), "sha256": digest, "path": None}
+            return evidence
         raw_dir = os.path.join(os.path.dirname(os.path.abspath(self._registry_path)), "raw")
         os.makedirs(raw_dir, exist_ok=True)
         path = os.path.join(raw_dir, f"{run.run_id}.notifications.jsonl")
-        with open(path, "w", encoding="utf-8") as handle:
-            handle.write(payload)
-        return {"path": path, "sha256": digest, "framed": len(notifications)}
+        write_bytes_file(path, payload_bytes)
+        evidence["path"] = path
+        return evidence
 
     def _load_registry(self) -> None:
-        """Rebuild the idempotency index so a reopened registry blocks redispatch."""
+        """Rebuild the idempotency index so a reopened registry blocks redispatch.
+
+        A registry whose history cannot be established (unreadable or corrupt)
+        poisons the adapter: it records the cause and every dispatch is refused
+        before any external call or registry write. Nothing is skipped, reset,
+        repaired or truncated, and the original bytes are left untouched.
+        """
         try:
-            with open(self._registry_path, "r", encoding="utf-8") as handle:
-                text = handle.read()
-        except OSError:
-            # Unreadable or absent: nothing to recover. A write at dispatch time
-            # still fails loudly, so an unusable registry cannot silently pass.
+            text = read_registry_text(self._registry_path)
+            records = [] if text is None else parse_registry_text(text)
+        except RegistryUnavailable as exc:
+            self._registry_problem = str(exc)
             return
-        for line in text.splitlines():
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                record = json.loads(line)
-            except ValueError:
-                continue
+        for record in records:
             run_id = record.get("run_id")
             if not run_id:
                 continue
@@ -506,6 +576,12 @@ class CodexAgentSessionAdapter(AgentSessionAdapter):
 
     def submit(self, request: SubmitRequest) -> RunStatus:
         self._require("submit")
+        # A registry whose history could not be established must refuse dispatch
+        # outright: dispatching would risk a duplicate and would write over a
+        # history we never read.
+        if self._registry_problem:
+            raise RegistryUnavailable(
+                f"registry history unusable; refusing to dispatch: {self._registry_problem}")
         self._validate_dispatch(request)
         snapshot = request.snapshot()
         fingerprint = request.fingerprint()

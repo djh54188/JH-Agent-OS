@@ -13,12 +13,15 @@ violated and the adapter must NOT report a completed run.
 No test here claims task success: the adapter only reports `declared_complete`,
 and `unverified` always carries the boundary.
 """
+import builtins
+import hashlib
 import json
 import os
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -39,6 +42,9 @@ from src.agent_session_codex import (  # noqa: E402
     RegistryUnavailable,
     UnsupportedAddress,
     UnsupportedRequest,
+    parse_registry_text,
+    read_registry_text,
+    verify_raw_evidence,
 )
 
 THREAD = "01a14d5e-83d3-79d0-926d-7a472bd56b16"
@@ -322,10 +328,13 @@ class TestR2DurableRegistration(unittest.TestCase):
             self.assertEqual(replay.state, RunState.UNKNOWN)
             self.assertEqual(reopened_transport.calls, [])                # nothing dispatched
 
-    def test_registry_write_failure_refuses_dispatch(self):
+    def test_registry_write_failure_at_dispatch_refuses_before_any_call(self):
         with tempfile.TemporaryDirectory() as tmp:
+            # The parent directory does not exist: the read finds nothing (a first
+            # establishment), but the write before dispatch cannot be made.
+            path = os.path.join(tmp, "missing-dir", "runs.jsonl")
             transport = FakeCodexTransport()
-            adapter = CodexAgentSessionAdapter(transport=transport, registry_path=tmp, cwd=WS)  # a dir, not a file
+            adapter = CodexAgentSessionAdapter(transport=transport, registry_path=path, cwd=WS)
             with self.assertRaises(RegistryUnavailable):
                 adapter.submit(make_request(idempotency_key="k1"))
             self.assertEqual(transport.calls, [])
@@ -349,7 +358,7 @@ class TestR2DurableRegistration(unittest.TestCase):
             raw = collected["raw"]
             self.assertTrue(os.path.isfile(raw["path"]))                  # locatable
             self.assertEqual(len(raw["sha256"]), 64)                      # immutable hash
-            self.assertGreaterEqual(raw["framed"], 2)
+            self.assertGreaterEqual(raw["frames"], 2)
 
     def test_identical_replay_of_a_completed_key_does_not_redispatch(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -511,6 +520,132 @@ class TestIdempotency(unittest.TestCase):
         c = make_request(workspace=WS, instructions="y")
         self.assertNotEqual(a.fingerprint(), b.fingerprint())
         self.assertNotEqual(a.fingerprint(), c.fingerprint())
+
+
+class TestR2ARegistryFailClosed(unittest.TestCase):
+    """R2-A: an unusable registry history must refuse dispatch, not be skipped."""
+
+    def _uncertain_registry(self, tmp, key="uncertain-key"):
+        """Create a registry whose replay outcome is unknown (turn/start times out)."""
+        path = os.path.join(tmp, "runs.jsonl")
+        transport = FakeCodexTransport(timeout_method="turn/start")
+        adapter = CodexAgentSessionAdapter(transport=transport, registry_path=path, cwd=WS)
+        run = adapter.submit(make_request(idempotency_key=key))
+        return path, run
+
+    def test_new_registry_first_establishment_is_allowed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "runs.jsonl")
+            self.assertFalse(os.path.exists(path))
+            adapter, transport = make_adapter(registry_path=path)
+            status = adapter.submit(make_request(idempotency_key="k1"))
+            self.assertEqual(status.state, RunState.RUNNING)
+            self.assertTrue(os.path.exists(path))
+            self.assertIn("thread/start", [c["method"] for c in transport.calls])
+
+    def test_healthy_reopen_replays_without_dispatch_and_leaves_bytes_unchanged(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path, first = self._uncertain_registry(tmp)
+            before = Path(path).read_bytes()
+            transport = FakeCodexTransport()
+            reopened = CodexAgentSessionAdapter(transport=transport, registry_path=path, cwd=WS)
+            replay = reopened.submit(make_request(idempotency_key="uncertain-key"))
+            self.assertEqual(replay.run_id, first.run_id)
+            self.assertEqual(replay.state, RunState.UNKNOWN)
+            self.assertEqual(transport.calls, [])
+            self.assertEqual(Path(path).read_bytes(), before)
+
+    def test_unreadable_registry_refuses_dispatch_before_any_call(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path, _ = self._uncertain_registry(tmp)
+            before = Path(path).read_bytes()
+            real_open = builtins.open
+
+            def faulty_open(file, mode="r", *args, **kwargs):
+                if Path(file) == Path(path) and "r" in mode:
+                    raise PermissionError("injected registry read failure")
+                return real_open(file, mode, *args, **kwargs)
+
+            transport = FakeCodexTransport()
+            with mock.patch("builtins.open", faulty_open):
+                poisoned = CodexAgentSessionAdapter(transport=transport, registry_path=path, cwd=WS)
+            with self.assertRaises(RegistryUnavailable):
+                poisoned.submit(make_request(idempotency_key="uncertain-key"))
+            self.assertEqual(transport.calls, [])                              # zero dispatch
+            self.assertEqual(Path(path).read_bytes(), before)                  # bytes preserved
+
+    def test_corrupt_registry_refuses_dispatch_before_any_call(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path, _ = self._uncertain_registry(tmp)
+            original = Path(path).read_bytes()
+            Path(path).write_bytes(original.replace(b'"event":', b'"event"!'))
+            corrupted = Path(path).read_bytes()
+            transport = FakeCodexTransport()
+            poisoned = CodexAgentSessionAdapter(transport=transport, registry_path=path, cwd=WS)
+            with self.assertRaises(RegistryUnavailable):
+                poisoned.submit(make_request(idempotency_key="uncertain-key"))
+            self.assertEqual(transport.calls, [])
+            self.assertEqual(Path(path).read_bytes(), corrupted)               # not repaired or truncated
+
+    def test_read_registry_text_distinguishes_absent_from_unreadable(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertIsNone(read_registry_text(os.path.join(tmp, "absent.jsonl")))
+            with self.assertRaises(RegistryUnavailable):
+                read_registry_text(tmp)                                        # a directory: existing but unreadable
+
+    def test_parse_registry_text_never_skips_a_malformed_record(self):
+        good = json.dumps({"event": "reserved", "run_id": "r1"})
+        with self.assertRaises(RegistryUnavailable):
+            parse_registry_text(good + "\n" + "{not json}\n")
+        with self.assertRaises(RegistryUnavailable):
+            parse_registry_text(json.dumps({"event": "reserved"}) + "\n")      # missing run_id
+        self.assertEqual(len(parse_registry_text(good + "\n")), 1)
+        self.assertEqual(parse_registry_text("\n  \n"), [])
+
+
+class TestR2BRawEvidenceBytes(unittest.TestCase):
+    """R2-B: the evidence digest must describe the bytes actually on disk."""
+
+    def _raw(self, tmp):
+        path = os.path.join(tmp, "runs.jsonl")
+        transport = FakeCodexTransport(notes=[agent_item(NONCE), token_usage(1000, 120)],
+                                       registry_path=path)
+        adapter = CodexAgentSessionAdapter(transport=transport, registry_path=path, cwd=WS)
+        status = adapter.submit(make_request(idempotency_key="k1"))
+        adapter.collect(address(), status.run_id)
+        return adapter.inspect(status.run_id).raw_evidence
+
+    def test_digest_matches_the_actual_file_bytes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            raw = self._raw(tmp)
+            data = Path(raw["path"]).read_bytes()
+            self.assertEqual(raw["sha256"], hashlib.sha256(data).hexdigest())
+            self.assertEqual(raw["bytes"], len(data))
+            self.assertEqual(raw["frames"], len([l for l in data.decode("utf-8").splitlines() if l.strip()]))
+            self.assertNotIn(b"\r\n", data)                                    # no newline translation
+            ok, detail = verify_raw_evidence(raw)
+            self.assertTrue(ok, detail)
+
+    def test_tampered_bytes_fail_verification(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            raw = self._raw(tmp)
+            Path(raw["path"]).write_bytes(Path(raw["path"]).read_bytes() + b"{}")
+            ok, detail = verify_raw_evidence(raw)
+            self.assertFalse(ok)
+            self.assertIn("bytes", detail)
+
+    def test_missing_file_fails_verification(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            raw = self._raw(tmp)
+            os.remove(raw["path"])
+            ok, _ = verify_raw_evidence(raw)
+            self.assertFalse(ok)
+
+    def test_wrong_frame_count_fails_verification(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            raw = self._raw(tmp)
+            self.assertFalse(verify_raw_evidence({**raw, "frames": raw["frames"] + 1})[0])
+            self.assertFalse(verify_raw_evidence({**raw, "path": None})[0])
 
 
 if __name__ == "__main__":
