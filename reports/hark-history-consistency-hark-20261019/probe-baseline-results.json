@@ -1,0 +1,75 @@
+{
+  "synthetic": true,
+  "repo": "CANDIDATE",
+  "expect": "baseline",
+  "model_calls": 0,
+  "cases": [
+    {
+      "case": "valid",
+      "state": "ok",
+      "count": 1,
+      "run_ids": [
+        "synthetic-history-run-1"
+      ],
+      "source_bytes_unchanged": true,
+      "expected_state": "ok",
+      "passed": true
+    },
+    {
+      "case": "valid_reserved_prefix",
+      "state": "ok",
+      "count": 1,
+      "run_ids": [
+        "synthetic-history-run-1"
+      ],
+      "source_bytes_unchanged": true,
+      "expected_state": "ok",
+      "passed": true
+    },
+    {
+      "case": "binding_changed",
+      "state": "ok",
+      "count": 1,
+      "run_ids": [
+        "synthetic-history-run-1"
+      ],
+      "source_bytes_unchanged": true,
+      "expected_state": "ok",
+      "passed": true
+    },
+    {
+      "case": "fingerprint_changed",
+      "state": "ok",
+      "count": 1,
+      "run_ids": [
+        "synthetic-history-run-1"
+      ],
+      "source_bytes_unchanged": true,
+      "expected_state": "ok",
+      "passed": true
+    },
+    {
+      "case": "event_reordered",
+      "state": "ok",
+      "count": 1,
+      "run_ids": [
+        "synthetic-history-run-1"
+      ],
+      "source_bytes_unchanged": true,
+      "expected_state": "ok",
+      "passed": true
+    },
+    {
+      "case": "same_key_second_run",
+      "state": "ok",
+      "count": 2,
+      "run_ids": [
+        "synthetic-history-run-1",
+        "synthetic-history-run-2"
+      ],
+      "source_bytes_unchanged": true,
+      "expected_state": "ok",
+      "passed": true
+    }
+  ]
+}

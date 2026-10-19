@@ -1,0 +1,65 @@
+[
+ {
+  "case": "evidence_root_containment_ignored",
+  "control_ok": true,
+  "mut_failures": 1,
+  "mut_errors": 0,
+  "detected": true
+ },
+ {
+  "case": "special_path_check_ignored",
+  "control_ok": true,
+  "mut_failures": 1,
+  "mut_errors": 0,
+  "detected": true
+ },
+ {
+  "case": "reparse_check_ignored",
+  "control_ok": false,
+  "mut_failures": 0,
+  "mut_errors": 1,
+  "detected": false
+ },
+ {
+  "case": "equivalent_import_forms_ignored",
+  "control_ok": true,
+  "mut_failures": 1,
+  "mut_errors": 0,
+  "detected": true
+ },
+ {
+  "case": "dynamic_literal_import_ignored",
+  "control_ok": true,
+  "mut_failures": 1,
+  "mut_errors": 0,
+  "detected": true
+ },
+ {
+  "case": "evidence_state_ignored",
+  "control_ok": false,
+  "mut_failures": 1,
+  "mut_errors": 0,
+  "detected": true
+ },
+ {
+  "case": "registry_field_validation_skipped",
+  "control_ok": true,
+  "mut_failures": 1,
+  "mut_errors": 0,
+  "detected": true
+ },
+ {
+  "case": "absent_registry_folded_into_empty",
+  "control_ok": true,
+  "mut_failures": 1,
+  "mut_errors": 0,
+  "detected": true
+ },
+ {
+  "case": "unlinked_run_reported_as_linked",
+  "control_ok": true,
+  "mut_failures": 1,
+  "mut_errors": 0,
+  "detected": true
+ }
+]

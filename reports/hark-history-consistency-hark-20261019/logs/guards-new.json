@@ -1,0 +1,191 @@
+{
+  "scope": "hark_history_consistency_offline_only",
+  "model_calls": 0,
+  "processes": 0,
+  "message_checks": "off under controls and mutants",
+  "controls": 23,
+  "mutations": 23,
+  "detected": 23,
+  "rows": [
+    {
+      "case": "binding_check_disabled",
+      "detected": true,
+      "tests": 1,
+      "failures": 16,
+      "errors": 0
+    },
+    {
+      "case": "binding_field_dropped:app_kind",
+      "detected": true,
+      "tests": 1,
+      "failures": 2,
+      "errors": 0
+    },
+    {
+      "case": "binding_field_dropped:instance_id",
+      "detected": true,
+      "tests": 1,
+      "failures": 2,
+      "errors": 0
+    },
+    {
+      "case": "binding_field_dropped:session_id",
+      "detected": true,
+      "tests": 1,
+      "failures": 2,
+      "errors": 0
+    },
+    {
+      "case": "binding_field_dropped:task_id",
+      "detected": true,
+      "tests": 1,
+      "failures": 2,
+      "errors": 0
+    },
+    {
+      "case": "binding_field_dropped:attempt",
+      "detected": true,
+      "tests": 1,
+      "failures": 2,
+      "errors": 0
+    },
+    {
+      "case": "binding_field_dropped:request_snapshot",
+      "detected": true,
+      "tests": 1,
+      "failures": 2,
+      "errors": 0
+    },
+    {
+      "case": "binding_field_dropped:request_fingerprint",
+      "detected": true,
+      "tests": 1,
+      "failures": 2,
+      "errors": 0
+    },
+    {
+      "case": "binding_field_dropped:idempotency_key",
+      "detected": true,
+      "tests": 1,
+      "failures": 2,
+      "errors": 0
+    },
+    {
+      "case": "native_evolution_disabled",
+      "detected": true,
+      "tests": 2,
+      "failures": 2,
+      "errors": 0
+    },
+    {
+      "case": "native_null_regression_accepted",
+      "detected": true,
+      "tests": 2,
+      "failures": 2,
+      "errors": 0
+    },
+    {
+      "case": "native_turns_not_compared",
+      "detected": true,
+      "tests": 2,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "transition_check_disabled",
+      "detected": true,
+      "tests": 2,
+      "failures": 2,
+      "errors": 0
+    },
+    {
+      "case": "unknown_event_accepted",
+      "detected": true,
+      "tests": 1,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "run_may_start_anywhere",
+      "detected": true,
+      "tests": 1,
+      "failures": 3,
+      "errors": 0
+    },
+    {
+      "case": "append_after_terminal_accepted",
+      "detected": true,
+      "tests": 1,
+      "failures": 4,
+      "errors": 0
+    },
+    {
+      "case": "duplicate_events_accepted",
+      "detected": true,
+      "tests": 1,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "collection_without_dispatch_accepted",
+      "detected": true,
+      "tests": 1,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "event_shape_disabled",
+      "detected": true,
+      "tests": 2,
+      "failures": 2,
+      "errors": 0
+    },
+    {
+      "case": "dispatch_branches_unchecked",
+      "detected": true,
+      "tests": 2,
+      "failures": 2,
+      "errors": 0
+    },
+    {
+      "case": "collection_may_introduce_identifiers",
+      "detected": true,
+      "tests": 1,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "idempotency_check_disabled",
+      "detected": true,
+      "tests": 2,
+      "failures": 2,
+      "errors": 0
+    },
+    {
+      "case": "app_interface_skips_consistency",
+      "detected": true,
+      "tests": 2,
+      "failures": 2,
+      "errors": 0
+    }
+  ],
+  "redundant_not_counted": [
+    {
+      "case": "jh020_registry_field_validation_skipped (new layer active)",
+      "control_passed": true,
+      "test_failed_on_assertion": false,
+      "failures": 0,
+      "errors": 0,
+      "counted": false
+    },
+    {
+      "case": "jh020_registry_field_validation_skipped (new layer also off)",
+      "control_passed": true,
+      "test_failed_on_assertion": true,
+      "failures": 1,
+      "errors": 0,
+      "counted": false
+    }
+  ],
+  "verdict": "pass"
+}
