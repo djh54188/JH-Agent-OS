@@ -157,6 +157,10 @@ MUTATIONS = [
     ("collection_may_introduce_identifiers",
      [patch.object(rhc, "check_event_shape", new=_shape_without_collect_identity)],
      [SHAPE + "test_collection_never_introduces_identifiers"]),
+    ("stage_type_unchecked",
+     [patch.object(rhc, "check_stage_type", new=_noop)],
+     [T + "TestStageJsonType.test_direct_check_turns_every_invalid_stage_into_history_inconsistent",
+      T + "TestStageJsonType.test_api_list_and_detail_are_corrupt_without_reads"]),
     # 3. idempotency scope
     ("idempotency_check_disabled",
      [patch.object(rhc, "check_idempotency", new=_noop)],

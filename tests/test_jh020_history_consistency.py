@@ -564,5 +564,109 @@ class TestApiWiring(_Case):
         self.assertEqual(json.dumps(history, sort_keys=True), snapshot)
 
 
+# --------------------------------------------------------------------------
+# R1 (Hark-派单-04): JSON type space of the `stage` extra field
+# --------------------------------------------------------------------------
+STAGE_BRANCHES = [
+    ("failed_thread_refused", "dispatch_failed", "failed", "thread/start-refused", "thread/start", None),
+    ("failed_thread_no_id", "dispatch_failed", "failed", "thread/start-no-id", "thread/start", None),
+    ("failed_model", "dispatch_failed", "failed", "model-not-honored", "thread/start", THREAD),
+    ("failed_turn_refused", "dispatch_failed", "failed", "turn/start-refused", "turn/start", THREAD),
+    ("failed_turn_no_id", "dispatch_failed", "failed", "turn/start-no-id", "turn/start", THREAD),
+    ("uncertain_thread", "dispatch_uncertain", "unknown", "dispatch-uncertain", "thread/start", None),
+    ("uncertain_turn", "dispatch_uncertain", "unknown", "dispatch-uncertain", "turn/start", THREAD),
+]
+_MISSING = object()
+STAGE_VALUES = [("correct", _MISSING), ("null", None), ("absent", _MISSING), ("empty", ""),
+                ("unknown", "other"), ("bool", True), ("int", 7), ("float", 1.5),
+                ("empty_array", []), ("array", ["thread/start"]), ("empty_object", {}),
+                ("object", {"value": "turn/start"})]
+
+
+def stage_history(branch, kind, value):
+    _, event, state, native_state, stage, session = branch
+    last = rec(event, state=state, native_state=native_state, native_session_id=session)
+    if kind == "correct":
+        last["stage"] = stage
+    elif kind != "absent":
+        last["stage"] = value
+    return [reserved(), last]
+
+
+def observe(call):
+    """An API return or raise, as one explicit observed value."""
+    try:
+        return call()
+    except Exception as exc:  # observed and asserted on, never swallowed
+        return type(exc).__name__
+
+
+class TestStageJsonType(_Case):
+    def matrix(self):
+        for branch in STAGE_BRANCHES:
+            for kind, value in STAGE_VALUES:
+                yield branch, kind, stage_history(branch, kind, value)
+
+    def test_direct_check_turns_every_invalid_stage_into_history_inconsistent(self):
+        counts = {"ok": 0, "inconsistent": 0}
+        for branch, kind, history in self.matrix():
+            with self.subTest(branch=branch[0], stage=kind):
+                def run():
+                    try:
+                        check_history(history)
+                        return "ok"
+                    except HistoryInconsistent:
+                        return "inconsistent"
+                observed = observe(run)
+                expected = "ok" if kind == "correct" else "inconsistent"
+                self.assertEqual(observed, expected)
+                counts[observed] = counts.get(observed, 0) + 1
+        self.assertEqual(counts, {"ok": 7, "inconsistent": 77})
+
+    def test_api_list_and_detail_are_corrupt_without_reads(self):
+        for branch, kind, history in self.matrix():
+            if kind == "correct":
+                continue
+            with self.subTest(branch=branch[0], stage=kind):
+                runs = self.tmp / f"{branch[0]}-{kind}.jsonl"
+                before = write(runs, history)
+                api = self.api(runs=runs)
+                with mock.patch.object(app_api, "raw_evidence_state",
+                                       side_effect=AssertionError("evidence read")) as evidence, \
+                     mock.patch.object(AppInterface, "_task_link",
+                                       side_effect=AssertionError("task link read")) as link:
+                    listed = observe(api.list_agent_runs)
+                    detail = observe(lambda: api.agent_run_detail(RUN_A))
+                self.assertIsInstance(listed, dict, listed)
+                self.assertEqual((listed["state"], listed["runs"], listed["count"]), ("corrupt", [], 0))
+                self.assertIsInstance(detail, dict, detail)
+                self.assertEqual(detail["state"], "corrupt")
+                self.assertIsNone(detail["run"])
+                evidence.assert_not_called()
+                link.assert_not_called()
+                self.assertEqual(runs.read_bytes(), before)
+
+    def test_api_correct_stage_stays_ok(self):
+        for branch in STAGE_BRANCHES:
+            with self.subTest(branch=branch[0]):
+                runs = self.tmp / f"{branch[0]}-correct.jsonl"
+                before = write(runs, stage_history(branch, "correct", None))
+                api = self.api(runs=runs)
+                listed = observe(api.list_agent_runs)
+                detail = observe(lambda: api.agent_run_detail(RUN_A))
+                self.assertIsInstance(listed, dict, listed)
+                self.assertEqual((listed["state"], listed["count"]), ("ok", 1))
+                self.assertIsInstance(detail, dict, detail)
+                self.assertEqual(detail["run"]["run_id"], RUN_A)
+                self.assertEqual(runs.read_bytes(), before)
+
+    def test_inputs_pass_the_shared_field_parser(self):
+        from src.agent_session_codex import parse_registry_text
+        for branch, kind, history in self.matrix():
+            with self.subTest(branch=branch[0], stage=kind):
+                text = "".join(json.dumps(r) + "\n" for r in history)
+                self.assertEqual(len(parse_registry_text(text)), 2)
+
+
 if __name__ == "__main__":
     unittest.main()

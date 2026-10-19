@@ -113,6 +113,16 @@ def _require(cond: bool, run_id: Any, index: int, detail: str) -> None:
         _fail(run_id, index, detail)
 
 
+def check_stage_type(event: str, record: Dict[str, Any], run_id: Any, index: int) -> None:
+    """`stage` is an extra field the shared parser does not type-check, so an
+    array/object/number can reach this layer. The writer only ever writes a
+    string; anything else is a contradiction, never a lookup that can raise."""
+    stage = record.get("stage")
+    if not isinstance(stage, str):
+        _fail(run_id, index, f"{event} stage {stage!r} is not one the writer emits "
+                             f"(must be a string, got {type(stage).__name__})")
+
+
 def check_event_shape(event: str, record: Dict[str, Any], dispatched: Optional[Dict[str, Any]],
                       run_id: Any, index: int) -> None:
     """Invariant 4 (branches): the state and native fields each writer call site emits."""
@@ -125,6 +135,7 @@ def check_event_shape(event: str, record: Dict[str, Any], dispatched: Optional[D
         _require(session is None and model is None and not turns, run_id, index,
                  "reserved must not carry native identifiers")
     elif event == "dispatch_failed":
+        check_stage_type(event, record, run_id, index)
         branch = (record.get("stage"), native_state)
         _require(state == "failed", run_id, index, f"dispatch_failed must be failed, got {state!r}")
         _require(branch in DISPATCH_FAILED_BRANCHES, run_id, index,
@@ -135,6 +146,7 @@ def check_event_shape(event: str, record: Dict[str, Any], dispatched: Optional[D
         if branch[0] == "thread/start":
             _require(model is None, run_id, index, "native_model recorded before the model was accepted")
     elif event == "dispatch_uncertain":
+        check_stage_type(event, record, run_id, index)
         stage = record.get("stage")
         _require(state == "unknown" and native_state == "dispatch-uncertain", run_id, index,
                  f"dispatch_uncertain must be unknown/dispatch-uncertain, got {state!r}/{native_state!r}")
