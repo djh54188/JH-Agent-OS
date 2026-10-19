@@ -1,0 +1,182 @@
+# utc: 2026-10-19T14:45:28Z commit: e5f786e35aff473d2766e6c504ed7bf07292c824
+{
+  "scope": "jh020_run_history_offline_only",
+  "model_calls": 0,
+  "processes": 0,
+  "rows_total": 9,
+  "detected": 6,
+  "redundant": 1,
+  "classification_counts": {
+    "detected": 6,
+    "control_failed": 2,
+    "redundant": 1
+  },
+  "rows": [
+    {
+      "case": "evidence_root_containment_ignored",
+      "classification": "detected",
+      "control": {
+        "run": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "mutant": {
+        "run": 1,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0
+      },
+      "detected": true
+    },
+    {
+      "case": "special_path_check_ignored",
+      "classification": "detected",
+      "control": {
+        "run": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "mutant": {
+        "run": 1,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0
+      },
+      "detected": true
+    },
+    {
+      "case": "reparse_check_ignored",
+      "classification": "control_failed",
+      "control": {
+        "run": 1,
+        "failures": 0,
+        "errors": 1,
+        "skipped": 0
+      },
+      "mutant": {
+        "run": 1,
+        "failures": 0,
+        "errors": 1,
+        "skipped": 0
+      },
+      "detected": false
+    },
+    {
+      "case": "equivalent_import_forms_ignored",
+      "classification": "detected",
+      "control": {
+        "run": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "mutant": {
+        "run": 1,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0
+      },
+      "detected": true
+    },
+    {
+      "case": "dynamic_literal_import_ignored",
+      "classification": "detected",
+      "control": {
+        "run": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "mutant": {
+        "run": 1,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0
+      },
+      "detected": true
+    },
+    {
+      "case": "evidence_state_ignored",
+      "classification": "control_failed",
+      "control": {
+        "run": 1,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0
+      },
+      "mutant": {
+        "run": 1,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0
+      },
+      "detected": false
+    },
+    {
+      "case": "registry_field_validation_skipped",
+      "classification": "redundant",
+      "control": {
+        "run": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "mutant": {
+        "run": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "detected": false,
+      "isolated_diagnostic": {
+        "covering_layer_off": true,
+        "result": {
+          "run": 1,
+          "failures": 1,
+          "errors": 0,
+          "skipped": 0
+        },
+        "counted": false,
+        "reason": "Hark-派单-03 history consistency layer (check_history) rejects the lenient-parse sample as a run starting with 'dispatched'"
+      }
+    },
+    {
+      "case": "absent_registry_folded_into_empty",
+      "classification": "detected",
+      "control": {
+        "run": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "mutant": {
+        "run": 1,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0
+      },
+      "detected": true
+    },
+    {
+      "case": "unlinked_run_reported_as_linked",
+      "classification": "detected",
+      "control": {
+        "run": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "mutant": {
+        "run": 1,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0
+      },
+      "detected": true
+    }
+  ],
+  "verdict": "fail"
+}
+# exit_code: 1

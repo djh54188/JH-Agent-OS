@@ -1,0 +1,780 @@
+{
+  "synthetic": true,
+  "expect": "fixed",
+  "cases": [
+    {
+      "branch": "failed_thread_refused",
+      "stage_kind": "correct",
+      "observed": "ok",
+      "detail_observed": "ok",
+      "expected": "ok",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 2,
+      "passed": true
+    },
+    {
+      "branch": "failed_thread_refused",
+      "stage_kind": "null",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_thread_refused",
+      "stage_kind": "empty",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_thread_refused",
+      "stage_kind": "unknown",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_thread_refused",
+      "stage_kind": "bool",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_thread_refused",
+      "stage_kind": "int",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_thread_refused",
+      "stage_kind": "float",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_thread_refused",
+      "stage_kind": "empty_array",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_thread_refused",
+      "stage_kind": "array",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_thread_refused",
+      "stage_kind": "empty_object",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_thread_refused",
+      "stage_kind": "object",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_thread_no_id",
+      "stage_kind": "correct",
+      "observed": "ok",
+      "detail_observed": "ok",
+      "expected": "ok",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 2,
+      "passed": true
+    },
+    {
+      "branch": "failed_thread_no_id",
+      "stage_kind": "null",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_thread_no_id",
+      "stage_kind": "empty",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_thread_no_id",
+      "stage_kind": "unknown",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_thread_no_id",
+      "stage_kind": "bool",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_thread_no_id",
+      "stage_kind": "int",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_thread_no_id",
+      "stage_kind": "float",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_thread_no_id",
+      "stage_kind": "empty_array",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_thread_no_id",
+      "stage_kind": "array",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_thread_no_id",
+      "stage_kind": "empty_object",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_thread_no_id",
+      "stage_kind": "object",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_model",
+      "stage_kind": "correct",
+      "observed": "ok",
+      "detail_observed": "ok",
+      "expected": "ok",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 2,
+      "passed": true
+    },
+    {
+      "branch": "failed_model",
+      "stage_kind": "null",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_model",
+      "stage_kind": "empty",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_model",
+      "stage_kind": "unknown",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_model",
+      "stage_kind": "bool",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_model",
+      "stage_kind": "int",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_model",
+      "stage_kind": "float",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_model",
+      "stage_kind": "empty_array",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_model",
+      "stage_kind": "array",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_model",
+      "stage_kind": "empty_object",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_model",
+      "stage_kind": "object",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_turn_refused",
+      "stage_kind": "correct",
+      "observed": "ok",
+      "detail_observed": "ok",
+      "expected": "ok",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 2,
+      "passed": true
+    },
+    {
+      "branch": "failed_turn_refused",
+      "stage_kind": "null",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_turn_refused",
+      "stage_kind": "empty",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_turn_refused",
+      "stage_kind": "unknown",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_turn_refused",
+      "stage_kind": "bool",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_turn_refused",
+      "stage_kind": "int",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_turn_refused",
+      "stage_kind": "float",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_turn_refused",
+      "stage_kind": "empty_array",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_turn_refused",
+      "stage_kind": "array",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_turn_refused",
+      "stage_kind": "empty_object",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_turn_refused",
+      "stage_kind": "object",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_turn_no_id",
+      "stage_kind": "correct",
+      "observed": "ok",
+      "detail_observed": "ok",
+      "expected": "ok",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 2,
+      "passed": true
+    },
+    {
+      "branch": "failed_turn_no_id",
+      "stage_kind": "null",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_turn_no_id",
+      "stage_kind": "empty",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_turn_no_id",
+      "stage_kind": "unknown",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_turn_no_id",
+      "stage_kind": "bool",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_turn_no_id",
+      "stage_kind": "int",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_turn_no_id",
+      "stage_kind": "float",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_turn_no_id",
+      "stage_kind": "empty_array",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_turn_no_id",
+      "stage_kind": "array",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_turn_no_id",
+      "stage_kind": "empty_object",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "failed_turn_no_id",
+      "stage_kind": "object",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "uncertain_thread",
+      "stage_kind": "correct",
+      "observed": "ok",
+      "detail_observed": "ok",
+      "expected": "ok",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 2,
+      "passed": true
+    },
+    {
+      "branch": "uncertain_thread",
+      "stage_kind": "null",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "uncertain_thread",
+      "stage_kind": "empty",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "uncertain_thread",
+      "stage_kind": "unknown",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "uncertain_thread",
+      "stage_kind": "bool",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "uncertain_thread",
+      "stage_kind": "int",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "uncertain_thread",
+      "stage_kind": "float",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "uncertain_thread",
+      "stage_kind": "empty_array",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "uncertain_thread",
+      "stage_kind": "array",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "uncertain_thread",
+      "stage_kind": "empty_object",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "uncertain_thread",
+      "stage_kind": "object",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "uncertain_turn",
+      "stage_kind": "correct",
+      "observed": "ok",
+      "detail_observed": "ok",
+      "expected": "ok",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 2,
+      "passed": true
+    },
+    {
+      "branch": "uncertain_turn",
+      "stage_kind": "null",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "uncertain_turn",
+      "stage_kind": "empty",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "uncertain_turn",
+      "stage_kind": "unknown",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "uncertain_turn",
+      "stage_kind": "bool",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "uncertain_turn",
+      "stage_kind": "int",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "uncertain_turn",
+      "stage_kind": "float",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "uncertain_turn",
+      "stage_kind": "empty_array",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "uncertain_turn",
+      "stage_kind": "array",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "uncertain_turn",
+      "stage_kind": "empty_object",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    },
+    {
+      "branch": "uncertain_turn",
+      "stage_kind": "object",
+      "observed": "corrupt",
+      "detail_observed": "corrupt",
+      "expected": "corrupt",
+      "source_bytes_unchanged": true,
+      "evidence_calls": 0,
+      "passed": true
+    }
+  ],
+  "total": 77,
+  "exceptions": 0,
+  "model_calls": 0,
+  "all_expected": true
+}

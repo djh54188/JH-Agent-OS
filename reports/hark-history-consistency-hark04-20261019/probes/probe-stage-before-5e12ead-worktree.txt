@@ -1,0 +1,8 @@
+{
+  "synthetic": true,
+  "expect": "candidate",
+  "total": 77,
+  "exceptions": 28,
+  "model_calls": 0,
+  "all_expected": true
+}
