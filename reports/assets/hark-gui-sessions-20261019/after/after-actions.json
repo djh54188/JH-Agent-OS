@@ -1,0 +1,72 @@
+{
+  "label": "after",
+  "synthetic": true,
+  "banner": "合成预览，非真实运行 · SYNTHETIC PREVIEW — NOT A REAL RUN",
+  "gui_dir": "gui/",
+  "model_calls": 0,
+  "captured_at_utc": "2026-10-19T12:11:13Z",
+  "actions": [
+    {
+      "width": 1440,
+      "action": "click tab workbench",
+      "shot": "after-desktop-workbench.png"
+    },
+    {
+      "width": 1440,
+      "action": "click tab task",
+      "shot": "after-desktop-task.png"
+    },
+    {
+      "width": 1440,
+      "action": "click tab sessions",
+      "shot": "after-desktop-sessions.png"
+    },
+    {
+      "width": 1440,
+      "action": "click tab delivery",
+      "shot": "after-desktop-delivery.png"
+    },
+    {
+      "width": 1440,
+      "action": "element screenshot div.run-detail (viewport height 2600)",
+      "shot": "after-desktop-detail-pane.png"
+    },
+    {
+      "width": 1440,
+      "action": "pointer click run-action codex-run-SYNTH-very-long-identifier-0123456789abcdef0123456789abcdef0123456789abcdef-retry-02",
+      "shot": "after-desktop-sessions-detail.png",
+      "horizontal_overflow": false
+    },
+    {
+      "width": 760,
+      "action": "click tab workbench",
+      "shot": "after-narrow-workbench.png"
+    },
+    {
+      "width": 760,
+      "action": "click tab task",
+      "shot": "after-narrow-task.png"
+    },
+    {
+      "width": 760,
+      "action": "click tab sessions",
+      "shot": "after-narrow-sessions.png"
+    },
+    {
+      "width": 760,
+      "action": "click tab delivery",
+      "shot": "after-narrow-delivery.png"
+    },
+    {
+      "width": 760,
+      "action": "element screenshot div.run-detail (viewport height 2600)",
+      "shot": "after-narrow-detail-pane.png"
+    },
+    {
+      "width": 760,
+      "action": "pointer click run-action codex-run-SYNTH-very-long-identifier-0123456789abcdef0123456789abcdef0123456789abcdef-retry-02",
+      "shot": "after-narrow-sessions-detail.png",
+      "horizontal_overflow": false
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "harness": "jh020-run-history",
+  "ok": true,
+  "scenarios": {
+    "history_card_fields": {
+      "ok": true,
+      "detail": {
+        "hasFields": true
+      }
+    },
+    "declared_complete_is_not_success": {
+      "ok": true,
+      "detail": {
+        "disclaimerShown": true
+      }
+    },
+    "simulated_distinct_from_history": {
+      "ok": true,
+      "detail": {
+        "distinct": true
+      }
+    },
+    "evidence_states_render_differently": {
+      "ok": true,
+      "detail": {
+        "mismatchShown": true
+      }
+    },
+    "selecting_a_run_uses_its_id": {
+      "ok": true,
+      "detail": {
+        "askedForTheRunId": true
+      }
+    },
+    "corrupt_source_shows_its_message": {
+      "ok": true,
+      "detail": {
+        "corruptShown": true
+      }
+    },
+    "absent_source_is_not_an_error": {
+      "ok": true,
+      "detail": {
+        "absentShown": true
+      }
+    },
+    "detail_reverse_replies": {
+      "ok": true,
+      "detail": {
+        "latestKept": "RUN-B",
+        "staleDropped": true
+      }
+    },
+    "detail_same_id_repeat": {
+      "ok": true,
+      "detail": {
+        "newestWins": true
+      }
+    },
+    "detail_late_error": {
+      "ok": true,
+      "detail": {
+        "lateErrorIgnored": true
+      }
+    },
+    "detail_unrequested_run_id": {
+      "ok": true,
+      "detail": {
+        "unrequestedRejected": true
+      }
+    },
+    "detail_leave_view": {
+      "ok": true,
+      "detail": {
+        "crossViewInert": true
+      }
+    },
+    "detail_reenter_view": {
+      "ok": true,
+      "detail": {
+        "oldPanelInert": true
+      }
+    }
+  }
+}

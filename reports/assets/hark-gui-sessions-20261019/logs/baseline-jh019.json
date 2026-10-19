@@ -1,0 +1,36 @@
+{
+  "harness": "jh019-generation",
+  "scenarios": {
+    "workbench_then_sessions_late_workbench": {
+      "ok": true,
+      "detail": {
+        "rendered": true,
+        "lateIgnored": true
+      }
+    },
+    "task_switch_late_A_after_B": {
+      "ok": true,
+      "detail": {
+        "showedB": true,
+        "lateAIgnored": true
+      }
+    },
+    "draft_list_stale_empty_after_save": {
+      "ok": true,
+      "detail": {
+        "cardsAfterSave": 1,
+        "cardsAfterStale": 1,
+        "staleIgnored": true
+      }
+    },
+    "save_pending_across_view_switch": {
+      "ok": true,
+      "detail": {
+        "cardsAfterCurrentList": 1,
+        "cardsAfterStale": 1,
+        "stalePanelInert": true
+      }
+    }
+  },
+  "ok": true
+}

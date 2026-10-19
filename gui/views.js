@@ -237,36 +237,51 @@ JH.views = (function () {
     JH.api.listSessions().then(function (envelope) {
       if (!isCurrent(gen)) { return; }
       envelopeOrError("Agent / 会话", envelope, function () {
-        const panel = C().el("section", "panel");
+        const panel = C().el("section", "panel panel-simulated");
+        const head = C().el("div", "section-head");
+        head.appendChild(C().kindTag("sim", "◇ 模拟登记"));
+        head.appendChild(C().el("h3", null, "静态会话登记（非实时）"));
+        panel.appendChild(head);
         panel.appendChild(C().note("传输来源：" + envelope.transport + "；" + envelope.note));
+        const grid = C().el("div", "sim-grid");
         envelope.sessions.forEach(function (session) {
-          const card = C().el("div", "card");
-          card.appendChild(C().el("div", "card-title", session.app_kind + " · " + session.session_id));
-          card.appendChild(C().field("instance_id", session.instance_id));
+          const card = C().el("div", "card card-simulated");
+          const title = C().el("div", "card-title");
+          title.appendChild(C().el("span", null, session.app_kind + " · "));
+          title.appendChild(C().el("span", "mono", session.session_id));
+          card.appendChild(title);
+          card.appendChild(C().field("instance_id", session.instance_id, { mono: true }));
           card.appendChild(C().field("role", session.role));
           card.appendChild(C().field("model_id", session.model_id));
           card.appendChild(C().connectionNotice(session));
           card.appendChild(C().el("h4", null, "接口证据（来自 JH-018 实测）"));
           card.appendChild(C().evidenceList(session.evidence));
-          panel.appendChild(card);
+          grid.appendChild(card);
         });
-        render([heading("Agent / 会话", "静态登记为模拟；运行记录为历史，不代表实时在线"),
-                panel, runHistoryPanel(gen)], gen);
+        panel.appendChild(grid);
+        const top = heading("Agent / 会话", "静态登记为模拟；运行记录为历史，不代表实时在线");
+        top.appendChild(C().legend());
+        render([top, panel, runHistoryPanel(gen)], gen);
       });
     });
   }
 
   /* 运行记录面板：来源状态、历史列表、以及按需展开的详情（不触发任何执行）。 */
   function runHistoryPanel(panelGeneration) {
-    const panel = C().el("section", "panel");
-    panel.appendChild(C().el("h3", null, "运行记录（历史，只读）"));
+    const panel = C().el("section", "panel panel-history");
+    const head = C().el("div", "section-head");
+    head.appendChild(C().kindTag("hist", "● 历史运行"));
+    head.appendChild(C().el("h3", null, "运行记录（历史，只读）"));
+    panel.appendChild(head);
     panel.appendChild(C().note("登记来源由服务端配置；本界面只读，不派发、不收集、"
       + "不启动 app-server、不发送任何会话消息。历史记录不代表实时在线，"
       + "declared_complete 不代表任务验收成功。"));
     const list = C().el("div", "run-list");
     const detail = C().el("div", "run-detail");
-    panel.appendChild(list);
-    panel.appendChild(detail);
+    const layout = C().el("div", "run-layout");      // presentation only: list | detail
+    layout.appendChild(list);
+    layout.appendChild(detail);
+    panel.appendChild(layout);
 
     /* Detail-request generation and the run id the current pane is bound to;
      * both belong to THIS panel, so a replaced panel's reply is inert. */
@@ -274,32 +289,42 @@ JH.views = (function () {
     let currentDetailRunId = null;
 
     function renderRunCard(run) {
-      const card = C().el("div", "card");
-      card.appendChild(C().el("div", "card-title", run.app_kind + " · " + run.run_id));
-      card.appendChild(C().field("instance_id", run.instance_id));
-      card.appendChild(C().field("role", run.role));
-      card.appendChild(C().field("requested_model", run.requested_model));
-      card.appendChild(C().field("native_model", run.native_model));
+      const card = C().el("div", "card run-card");
+      const title = C().el("div", "card-title");
+      title.appendChild(C().el("span", null, run.app_kind + " · "));
+      title.appendChild(C().el("span", "mono", run.run_id));
+      card.appendChild(title);
       const row = C().el("div", "row");
       row.appendChild(C().statusBadge(run.record_state));
       row.appendChild(C().el("span", "muted", "native_state="
         + (run.native_state === null || run.native_state === undefined ? "—" : run.native_state)));
       card.appendChild(row);
-      card.appendChild(C().field("native_session_id", run.native_session_id));
-      card.appendChild(C().field("native_turns", (run.native_turns || []).join(", ")));
-      card.appendChild(C().field("last_recorded_at", run.last_recorded_at));
+      const grid = C().el("div", "field-grid");
+      grid.appendChild(C().field("instance_id", run.instance_id, { mono: true }));
+      grid.appendChild(C().field("role", run.role));
+      grid.appendChild(C().field("requested_model", run.requested_model));
+      grid.appendChild(C().field("native_model", run.native_model));
+      grid.appendChild(C().field("last_recorded_at", run.last_recorded_at));
       const usage = run.usage || {};
       const turn = (usage.turn || {}).totalTokens;
       const total = (usage.thread_total || {}).totalTokens;
-      card.appendChild(C().field("本轮用量(turn)", turn === undefined ? "—" : turn));
-      card.appendChild(C().field("线程累计(thread_total)", total === undefined ? "—" : total));
+      grid.appendChild(C().field("本轮用量(turn)", turn === undefined ? "—" : turn));
+      grid.appendChild(C().field("线程累计(thread_total)", total === undefined ? "—" : total));
+      card.appendChild(grid);
+      card.appendChild(C().field("native_session_id", run.native_session_id, { mono: true }));
+      card.appendChild(C().field("native_turns", (run.native_turns || []).join(", "), { mono: true }));
       card.appendChild(C().evidenceNotice(run.evidence || {}));
-      card.appendChild(C().el("div", "muted", "declared_status="
+      const declared = C().el("div", "declared");
+      declared.appendChild(C().kindTag("claim", "✎ 执行方声明"));
+      declared.appendChild(C().el("span", null, "declared_status="
         + (run.declared_status === null ? "—" : run.declared_status)
         + "（执行方声明，非任务验收成功）"));
+      card.appendChild(declared);
+      const foot = C().el("div", "run-foot");
       const button = C().el("button", "run-action", "查看记录详情");
       button.dataset.runId = run.run_id;
-      card.appendChild(button);
+      foot.appendChild(button);
+      card.appendChild(foot);
       return card;
     }
 
@@ -372,25 +397,48 @@ JH.views = (function () {
     return panel;
   }
 
+  /* Detail layout groups the same recorded fields by meaning; no field is
+   * added, dropped or derived. Long ids use the monospace wrap-anywhere face. */
+  const DETAIL_GROUPS = [
+    ["运行身份", ["app_kind", "instance_id", "session_id", "role"]],
+    ["模型", ["requested_model", "native_model"]],
+    ["请求与幂等", ["logical_task_id", "attempt", "request_fingerprint", "idempotency_key"]],
+    ["原生会话与状态", ["native_session_id", "native_state", "record_state", "declared_status"]],
+    ["时间", ["first_recorded_at", "last_recorded_at"]],
+  ];
+  const MONO_KEYS = { instance_id: 1, session_id: 1, request_fingerprint: 1,
+                      idempotency_key: 1, native_session_id: 1, logical_task_id: 1 };
+
   function renderRunDetail(run) {
     const box = C().el("div", "subpanel");
-    box.appendChild(C().el("h4", null, "运行详情：" + run.run_id));
-    ["app_kind", "instance_id", "session_id", "role", "requested_model", "native_model",
-     "logical_task_id", "attempt", "request_fingerprint", "idempotency_key",
-     "native_session_id", "native_state", "first_recorded_at", "last_recorded_at",
-     "record_state", "declared_status"].forEach(function (key) {
-      box.appendChild(C().field(key, run[key]));
+    const title = C().el("h4", "detail-title");
+    title.appendChild(C().kindTag("hist", "● 历史运行"));
+    title.appendChild(C().el("span", null, "运行详情："));
+    title.appendChild(C().el("span", "mono", run.run_id));
+    box.appendChild(title);
+    DETAIL_GROUPS.forEach(function (group) {
+      const section = C().el("div", "detail-group");
+      section.appendChild(C().el("h4", null, group[0]));
+      const grid = C().el("div", "field-grid");
+      group[1].forEach(function (key) {
+        grid.appendChild(C().field(key, run[key], { mono: !!MONO_KEYS[key] }));
+      });
+      section.appendChild(grid);
+      if (group[0] === "原生会话与状态") {
+        section.appendChild(C().field("native_turns", (run.native_turns || []).join(", "),
+                                      { mono: true }));
+        section.appendChild(C().field("events", (run.events || []).join(" → ")));
+      }
+      box.appendChild(section);
     });
-    box.appendChild(C().field("native_turns", (run.native_turns || []).join(", ")));
-    box.appendChild(C().field("events", (run.events || []).join(" → ")));
 
     const usage = run.usage || {};
     const usageBox = C().el("div", "subpanel");
     usageBox.appendChild(C().el("h4", null, "用量（本轮 / 线程累计）"));
-    usageBox.appendChild(C().field("turn", JSON.stringify(usage.turn)));
-    usageBox.appendChild(C().field("thread_total", JSON.stringify(usage.thread_total)));
+    usageBox.appendChild(C().field("turn", JSON.stringify(usage.turn), { mono: true }));
+    usageBox.appendChild(C().field("thread_total", JSON.stringify(usage.thread_total), { mono: true }));
     usageBox.appendChild(C().field("model_context_window", usage.model_context_window));
-    usageBox.appendChild(C().field("source", JSON.stringify(usage.source)));
+    usageBox.appendChild(C().field("source", JSON.stringify(usage.source), { mono: true }));
     box.appendChild(usageBox);
 
     box.appendChild(C().el("h4", null, "证据"));
@@ -403,8 +451,11 @@ JH.views = (function () {
     box.appendChild(C().el("h4", null, "关联任务"));
     box.appendChild(C().field("linked", link.linked));
     box.appendChild(C().el("div", "muted", link.note || "未提供关联说明"));
-    box.appendChild(C().el("div", "muted",
+    const claim = C().el("div", "declared");
+    claim.appendChild(C().kindTag("claim", "✎ 执行方声明"));
+    claim.appendChild(C().el("span", "muted",
       "历史记录不代表实时在线；declared_complete 不代表任务验收成功。"));
+    box.appendChild(claim);
     return box;
   }
 
