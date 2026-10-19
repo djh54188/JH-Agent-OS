@@ -31,7 +31,9 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import stat
 import queue
+import re
 import shutil
 import subprocess
 import threading
@@ -74,6 +76,8 @@ KNOWN_SERVER_REQUESTS: Dict[str, Any] = {
 # the SandboxPolicy object. Network access is off at the turn level.
 READ_ONLY_SANDBOX_MODE = "read-only"
 READ_ONLY_SANDBOX = {"type": "readOnly", "networkAccess": False}
+
+_HEX64 = re.compile(r"^[0-9a-f]{64}$")
 
 DEFAULT_CODEX_JS = os.environ.get(
     "CODEX_JS", r"D:\npm-global\node_modules\@openai\codex\bin\codex.js")
@@ -272,32 +276,171 @@ def parse_registry_text(text: str) -> List[Dict[str, Any]]:
     return records
 
 
-def raw_evidence_state(raw_evidence: Any) -> Tuple[str, str]:
+def is_special_path(value: str) -> Optional[str]:
+    """Name a Win32 path form that must never be opened. None when ordinary.
+
+    Checked on the raw string BEFORE any filesystem call: a UNC or device path
+    could reach a network share or a device even by stat-ing it.
+    """
+    text = value.strip()
+    lowered = text.lower()
+    if lowered.startswith("\\\\?\\") or lowered.startswith("//?/"):
+        return "device path (\\\\?\\ ...)"
+    if lowered.startswith("\\\\.\\") or lowered.startswith("//./"):
+        return "device path (\\\\.\\ ...)"
+    if text.startswith("\\\\") or text.startswith("//"):
+        return "UNC path"
+    if text.startswith("\\") or text.startswith("/"):
+        return "root-relative path (no drive specified)"
+    if len(text) >= 2 and text[1] == ":":
+        if ":" in text[2:]:
+            return "alternate data stream"
+    elif ":" in text:
+        return "alternate data stream or unsupported drive syntax"
+    return None
+
+
+def _reparse_component(candidate: str, root: str) -> Optional[str]:
+    """The first existing reparse point (junction/symlink) from the root down.
+
+    Only components at or below the configured root are inspected: an operator's
+    own drive layout above the root is not this check's business. A directory
+    junction beneath the root that points elsewhere is exactly the case that a
+    pure realpath comparison can hide, so it is refused explicitly.
+    """
+    try:
+        relative = os.path.relpath(os.path.abspath(candidate), os.path.abspath(root))
+    except ValueError:
+        return os.path.abspath(root)
+    parts = [] if relative in (".", "") else relative.split(os.sep)
+    current = os.path.abspath(root)
+    for part in [None] + parts:
+        if part is not None:
+            current = os.path.join(current, part)
+        try:
+            entry = os.lstat(current)
+        except OSError:
+            continue                     # a component that does not exist cannot be a link
+        if stat.S_ISLNK(entry.st_mode):
+            return current
+        if getattr(entry, "st_file_attributes", 0) & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400):
+            return current
+    return None
+
+
+def _lexically_within(candidate: str, root: str) -> bool:
+    """Prefix containment on the written path, before resolving links."""
+    try:
+        probe = os.path.normcase(os.path.abspath(candidate))
+        base = os.path.normcase(os.path.abspath(root))
+    except (OSError, ValueError):
+        return False
+    return probe == base or probe.startswith(base + os.sep)
+
+
+def _within_root(candidate: str, root: str) -> bool:
+    """Containment after canonicalization, so existing junctions are resolved.
+
+    realpath resolves every existing link/junction component; a path that only
+    reaches the root through a junction pointing outside therefore fails here.
+    """
+    try:
+        resolved = os.path.normcase(os.path.realpath(candidate))
+        base = os.path.normcase(os.path.realpath(root))
+    except (OSError, ValueError):
+        return False
+    return resolved == base or resolved.startswith(base + os.sep)
+
+
+def resolve_evidence_reference(raw_path: str, *, allowed_roots, registry_dir) -> Tuple[Optional[str], str]:
+    """(absolute path, "") when the reference is inside an allowed root, else (None, reason).
+
+    Relative references resolve against the REGISTRY directory, never the process
+    cwd. Special Win32 forms are refused before any filesystem call. The
+    containment decision happens before the file is opened, so an outside path is
+    never read and only later rejected by a digest comparison.
+    """
+    special = is_special_path(raw_path)
+    if special:
+        return None, f"refused before access: {special}"
+    candidate = Path(raw_path)
+    if not candidate.is_absolute():
+        if registry_dir is None:
+            return None, "relative reference has no registry directory to resolve against"
+        candidate = Path(registry_dir) / candidate
+    for root in allowed_roots or ():
+        # A lexically-inside path that canonicalizes outside got there through a
+        # link; report that as its own reason instead of a generic "outside".
+        if _lexically_within(str(candidate), str(root)):
+            reparse = _reparse_component(str(candidate), str(root))
+            if reparse is not None:
+                return None, f"refused before access: reparse point in evidence path ({reparse})"
+        if _within_root(str(candidate), str(root)):
+            return str(candidate), ""
+    return None, "outside the configured evidence root(s)"
+
+
+def raw_evidence_state(raw_evidence: Any, *, allowed_roots=None,
+                       registry_dir=None) -> Tuple[str, str]:
     """Classify a recorded evidence reference against the file actually on disk.
 
-    Four distinct outcomes, none of which is silently folded into another:
-      * "verified"     -- the byte digest and frame count match the file;
-      * "missing"      -- the record carries no locatable reference at all;
-      * "mismatch"     -- the file is readable but does not match the record;
-      * "unverifiable" -- the file cannot be read, so nothing is proven.
+    Outcomes, none silently folded into another:
+      * "verified"        -- the byte digest and frame count match the file;
+      * "missing"         -- the record carries no locatable reference at all;
+      * "mismatch"        -- readable, but the bytes or frame count differ;
+      * "unverifiable"    -- the file exists as a reference but cannot be read;
+      * "outside_root"    -- refused before any read: not under an allowed root;
+      * "invalid"         -- a malformed reference (wrong type, NUL, bad digest field);
+      * "invalid_content" -- readable and digest-matching, but not UTF-8 text.
+
+    `allowed_roots=None` keeps the legacy uncontained read used by the round-trip
+    script and the digest unit tests; the query layer always supplies the
+    server-owned roots.
     """
-    if not isinstance(raw_evidence, dict) or not raw_evidence.get("path"):
+    if raw_evidence is None:
         return "missing", "raw evidence has no locatable path"
+    if not isinstance(raw_evidence, dict):
+        return "invalid", "raw evidence reference is not an object"
+    if "path" not in raw_evidence or raw_evidence.get("path") in (None, ""):
+        return "missing", "raw evidence has no locatable path"
+    raw_path = raw_evidence.get("path")
+    if not isinstance(raw_path, str):
+        return "invalid", f"raw evidence path is {type(raw_path).__name__}, not a string"
+    if "\x00" in raw_path:
+        return "invalid", "raw evidence path contains a NUL byte"
+    digest = raw_evidence.get("sha256")
+    if not isinstance(digest, str) or not _HEX64.match(digest):
+        return "invalid", "raw evidence sha256 is not a 64-character hex digest"
+    frames_recorded = raw_evidence.get("frames")
+    if isinstance(frames_recorded, bool) or not isinstance(frames_recorded, int):
+        return "invalid", "raw evidence frames is not an integer"
+    if allowed_roots is not None:
+        resolved, reason = resolve_evidence_reference(
+            raw_path, allowed_roots=allowed_roots, registry_dir=registry_dir)
+        if resolved is None:
+            return "outside_root", reason
+        raw_path = resolved
     try:
-        data = Path(raw_evidence["path"]).read_bytes()
+        data = Path(raw_path).read_bytes()
     except OSError as exc:
         return "unverifiable", f"raw evidence file unreadable: {exc}"
-    if hashlib.sha256(data).hexdigest() != raw_evidence.get("sha256"):
+    if hashlib.sha256(data).hexdigest() != digest:
         return "mismatch", "raw evidence digest does not match the file's bytes"
-    frames = len([line for line in data.decode("utf-8").splitlines() if line.strip()])
-    if frames != raw_evidence.get("frames"):
-        return "mismatch", f"raw evidence frame count {frames} != recorded {raw_evidence.get('frames')}"
+    try:
+        text = data.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        return "invalid_content", f"raw evidence is not UTF-8 text: {exc}"
+    frames = len([line for line in text.splitlines() if line.strip()])
+    if frames != frames_recorded:
+        return "mismatch", f"raw evidence frame count {frames} != recorded {frames_recorded}"
     return "verified", "digest and frame count match the file bytes"
 
 
-def verify_raw_evidence(raw_evidence: Optional[Dict[str, Any]]) -> Tuple[bool, str]:
+def verify_raw_evidence(raw_evidence: Optional[Dict[str, Any]], *,
+                        allowed_roots=None, registry_dir=None) -> Tuple[bool, str]:
     """(ok, detail) over raw_evidence_state; kept for the existing callers."""
-    state, detail = raw_evidence_state(raw_evidence)
+    state, detail = raw_evidence_state(raw_evidence, allowed_roots=allowed_roots,
+                                       registry_dir=registry_dir)
     return state == "verified", detail
 
 

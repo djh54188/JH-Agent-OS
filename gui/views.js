@@ -268,6 +268,11 @@ JH.views = (function () {
     panel.appendChild(list);
     panel.appendChild(detail);
 
+    /* Detail-request generation and the run id the current pane is bound to;
+     * both belong to THIS panel, so a replaced panel's reply is inert. */
+    let panelDetailGeneration = 0;
+    let currentDetailRunId = null;
+
     function renderRunCard(run) {
       const card = C().el("div", "card");
       card.appendChild(C().el("div", "card-title", run.app_kind + " · " + run.run_id));
@@ -322,10 +327,28 @@ JH.views = (function () {
      * card text — the id is looked up in the history server-side. */
     function loadDetail(runId) {
       if (panelGeneration !== renderGeneration) { return; }
+      /* The detail pane is bound to four things: this view/panel, the latest
+       * detail request, the run id that was requested, and the run id the
+       * reply carries. A late success, a late error or a late empty reply from
+       * an older request must not clear or overwrite what is on screen. */
+      panelDetailGeneration += 1;
+      const myGeneration = panelDetailGeneration;
+      const requestedRunId = runId;
+      currentDetailRunId = requestedRunId;
       detail.textContent = "";
       detail.appendChild(C().loadingState("正在读取运行记录…"));
-      JH.api.agentRunDetail(runId).then(function (envelope) {
-        if (panelGeneration !== renderGeneration) { return; }
+      JH.api.agentRunDetail(requestedRunId).then(function (envelope) {
+        if (myGeneration !== panelDetailGeneration) { return; }   // a newer detail request exists
+        if (panelGeneration !== renderGeneration) { return; }     // this panel was replaced
+        if (currentDetailRunId !== requestedRunId) { return; }
+        if (envelope && envelope.ok === true && envelope.run
+            && envelope.run.run_id !== requestedRunId) {
+          // Never paint a run the user did not ask for; do not echo its id.
+          detail.textContent = "";
+          detail.appendChild(C().errorState({ code: "unexpected_run_id",
+            message: "响应与当前请求的 run 不一致，已丢弃" }));
+          return;
+        }
         detail.textContent = "";
         if (!envelope || envelope.ok !== true) {
           detail.appendChild(C().errorState((envelope && envelope.error) || {}));

@@ -23,7 +23,9 @@ import { fileURLToPath } from "node:url";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, "..", "..");
-const GUI = path.join(REPO, "gui");
+// JH_GUI_DIR lets a mutation check run the same behaviours against a
+// disposable copy of the GUI sources; default is the real gui/ directory.
+const GUI = process.env.JH_GUI_DIR || path.join(REPO, "gui");
 
 function makeNode(tag) {
   const node = {
@@ -251,6 +253,124 @@ async function scenarioAbsentSourceIsNotAnError() {
   return { absentShown: true };
 }
 
+function clickRun(world, id) {
+  const list = findAll(world.root, (n) => n.className === "run-list")[0];
+  const button = findAll(world.root, (n) => n.className === "run-action" && n.dataset.runId === id)[0];
+  if (!list || !button) throw new Error("run button not found: " + id);
+  list.listeners.find((l) => l.type === "click").fn({ target: { closest: () => button } });
+}
+
+function detailText(world) {
+  const pane = findAll(world.root, (n) => n.className === "run-detail")[0];
+  return pane ? pane.textContent : "";
+}
+
+const runDetailEnvelope = (id, over) => ({
+  ok: true, read_only: true, state: "ok",
+  run: Object.assign(runPayload({ run_id: id,
+    link: { checked: false, linked: false, note: "review fixture" } }), over || {}),
+  records: [],
+});
+
+async function scenarioDetailReverseReplies() {
+  const w = newWorld();
+  await openSessions(w, runsEnvelope({ count: 2,
+    runs: [runPayload({ run_id: "RUN-A" }), runPayload({ run_id: "RUN-B" })] }));
+  clickRun(w, "RUN-A");
+  clickRun(w, "RUN-B");
+  const a = w.pending.agentRunDetail.shift();
+  const b = w.pending.agentRunDetail.shift();
+  b.resolve(runDetailEnvelope("RUN-B"));
+  await w.tick();
+  const afterB = detailText(w);
+  a.resolve(runDetailEnvelope("RUN-A"));
+  await w.tick();
+  const afterA = detailText(w);
+  if (!afterB.includes("RUN-B")) throw new Error("B was not rendered");
+  if (afterA.includes("RUN-A")) throw new Error("late A replaced B");
+  return { latestKept: "RUN-B", staleDropped: true };
+}
+
+async function scenarioDetailSameIdRepeat() {
+  const w = newWorld();
+  await openSessions(w, runsEnvelope());
+  clickRun(w, "codex-run-1-abc12345");
+  clickRun(w, "codex-run-1-abc12345");
+  const old = w.pending.agentRunDetail.shift();
+  const fresh = w.pending.agentRunDetail.shift();
+  fresh.resolve(runDetailEnvelope("codex-run-1-abc12345", { native_model: "NEW-MODEL" }));
+  await w.tick();
+  old.resolve(runDetailEnvelope("codex-run-1-abc12345", { native_model: "OLD-MODEL" }));
+  await w.tick();
+  const text = detailText(w);
+  if (!text.includes("NEW-MODEL") || text.includes("OLD-MODEL")) {
+    throw new Error("an older reply for the same id replaced the newer one");
+  }
+  return { newestWins: true };
+}
+
+async function scenarioDetailLateError() {
+  const w = newWorld();
+  await openSessions(w, runsEnvelope({ count: 2,
+    runs: [runPayload({ run_id: "RUN-A" }), runPayload({ run_id: "RUN-B" })] }));
+  clickRun(w, "RUN-A");
+  clickRun(w, "RUN-B");
+  const a = w.pending.agentRunDetail.shift();
+  const b = w.pending.agentRunDetail.shift();
+  b.resolve(runDetailEnvelope("RUN-B"));
+  await w.tick();
+  a.resolve({ ok: false, error: { code: "late_A_error", message: "LATE-A-ERROR" } });
+  await w.tick();
+  const text = detailText(w);
+  if (text.includes("LATE-A-ERROR")) throw new Error("a late error erased the current detail");
+  if (!text.includes("RUN-B")) throw new Error("the current detail was cleared");
+  return { lateErrorIgnored: true };
+}
+
+async function scenarioDetailUnrequestedRunId() {
+  const w = newWorld();
+  await openSessions(w, runsEnvelope());
+  clickRun(w, "codex-run-1-abc12345");
+  w.pending.agentRunDetail.shift().resolve(runDetailEnvelope("UNREQUESTED-RUN"));
+  await w.tick();
+  const text = w.root.textContent;
+  if (text.includes("UNREQUESTED-RUN")) throw new Error("a run that was never requested was rendered");
+  if (!text.includes("unexpected_run_id")) throw new Error("the mismatch was not reported");
+  return { unrequestedRejected: true };
+}
+
+async function scenarioDetailLeaveView() {
+  const w = newWorld();
+  await openSessions(w, runsEnvelope());
+  clickRun(w, "codex-run-1-abc12345");
+  const stale = w.pending.agentRunDetail.shift();
+  clickTab(w, "workbench");
+  await w.tick();
+  stale.resolve(runDetailEnvelope("LATE-OLD-RUN"));
+  await w.tick();
+  if (w.root.textContent.includes("LATE-OLD-RUN")) throw new Error("a late reply painted another view");
+  return { crossViewInert: true };
+}
+
+async function scenarioDetailReenterView() {
+  const w = newWorld();
+  await openSessions(w, runsEnvelope());
+  clickRun(w, "codex-run-1-abc12345");
+  const stale = w.pending.agentRunDetail.shift();
+  clickTab(w, "workbench");
+  await w.tick();
+  clickTab(w, "sessions");
+  await w.tick();
+  w.pending.listSessions.shift().resolve(sessionsPayload);
+  await w.tick();
+  for (const d of w.pending.listAgentRuns.splice(0)) d.resolve(runsEnvelope());
+  await w.tick();
+  stale.resolve(runDetailEnvelope("OLD-PANEL-RUN"));
+  await w.tick();
+  if (w.root.textContent.includes("OLD-PANEL-RUN")) throw new Error("a replaced panel's reply painted");
+  return { oldPanelInert: true };
+}
+
 const SCENARIOS = [
   ["history_card_fields", scenarioHistoryCardFields],
   ["declared_complete_is_not_success", scenarioDeclaredCompleteIsNotSuccess],
@@ -259,6 +379,12 @@ const SCENARIOS = [
   ["selecting_a_run_uses_its_id", scenarioSelectingARunUsesItsId],
   ["corrupt_source_shows_its_message", scenarioCorruptSourceShowsItsMessage],
   ["absent_source_is_not_an_error", scenarioAbsentSourceIsNotAnError],
+  ["detail_reverse_replies", scenarioDetailReverseReplies],
+  ["detail_same_id_repeat", scenarioDetailSameIdRepeat],
+  ["detail_late_error", scenarioDetailLateError],
+  ["detail_unrequested_run_id", scenarioDetailUnrequestedRunId],
+  ["detail_leave_view", scenarioDetailLeaveView],
+  ["detail_reenter_view", scenarioDetailReenterView],
 ];
 
 async function main() {

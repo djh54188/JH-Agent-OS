@@ -122,6 +122,11 @@ RUNS_UNREADABLE = "unreadable"
 RUNS_CORRUPT = "corrupt"
 
 
+def _raw_field(raw: Any, key: str) -> Any:
+    """Read one field of a raw reference without assuming it is an object."""
+    return raw.get(key) if isinstance(raw, dict) else None
+
+
 def _binding_from_snapshot(snapshot: Optional[str]) -> Dict[str, Any]:
     """Read the requested address back out of the recorded canonical snapshot.
 
@@ -198,11 +203,20 @@ class AppInterface:
 
     def __init__(self, db_path: str | Path | None = None,
                  drafts_path: str | Path | None = None,
-                 runs_path: str | Path | None = None):
+                 runs_path: str | Path | None = None,
+                 evidence_roots=None):
         root = Path(__file__).resolve().parents[1]
         self.db_path = Path(db_path) if db_path else root / "data" / "jh_agent_os.sqlite3"
         self.drafts_path = Path(drafts_path) if drafts_path else DEFAULT_DRAFTS_PATH
         self.runs_path = Path(runs_path) if runs_path else DEFAULT_RUNS_PATH
+        # Evidence may only be read from server-owned roots. The default is the
+        # `raw` directory beside the configured registry; any other root must be
+        # configured explicitly on the server. A record's own `path` field can
+        # narrow nothing and widen nothing.
+        if evidence_roots:
+            self.evidence_roots = tuple(Path(item) for item in evidence_roots)
+        else:
+            self.evidence_roots = (self.runs_path.parent / "raw",)
 
     # -- storage -----------------------------------------------------------
     def _open(self):
@@ -364,7 +378,8 @@ class AppInterface:
         collected = next((r for r in reversed(records) if r["event"] == "collected"), None)
         uncertain = next((r for r in records if r["event"] == "dispatch_uncertain"), None)
         raw = (collected or {}).get("raw") or None
-        evidence_state, evidence_detail = raw_evidence_state(raw)
+        evidence_state, evidence_detail = raw_evidence_state(
+            raw, allowed_roots=self.evidence_roots, registry_dir=self.runs_path.parent)
         usage = (collected or {}).get("usage") or {}
         binding = _binding_from_snapshot(first.get("request_snapshot"))
         return {
@@ -390,8 +405,8 @@ class AppInterface:
                       "model_context_window": usage.get("model_context_window"),
                       "source": usage.get("source")},
             "evidence": {"state": evidence_state, "detail": evidence_detail,
-                         "path": (raw or {}).get("path"), "sha256": (raw or {}).get("sha256"),
-                         "frames": (raw or {}).get("frames"), "bytes": (raw or {}).get("bytes")},
+                         "path": _raw_field(raw, "path"), "sha256": _raw_field(raw, "sha256"),
+                         "frames": _raw_field(raw, "frames"), "bytes": _raw_field(raw, "bytes")},
             "unverified": list((collected or {}).get("unverified") or []),
             "declared_status": (collected or {}).get("declared_status"),
             "dispatch_uncertain_reason": (uncertain or {}).get("reason"),
@@ -405,7 +420,8 @@ class AppInterface:
             "ok": True, "read_only": True,
             "source": {"configured": True, "path": str(self.runs_path),
                        "browser_supplied": False,
-                       "note": "登记来源由服务端配置；浏览器不能传任意磁盘路径"},
+                       "evidence_roots": [str(item) for item in self.evidence_roots],
+                       "note": "登记来源与证据允许根由服务端配置；浏览器不能传任意磁盘路径"},
             "state": state,
             "runs": [self._run_view(entry) for entry in entries] if state == RUNS_OK else [],
             "count": len(entries) if state == RUNS_OK else 0,
@@ -432,7 +448,8 @@ class AppInterface:
         view["link"] = self._task_link(view.get("logical_task_id"))
         return {"ok": True, "read_only": True,
                 "source": {"configured": True, "path": str(self.runs_path),
-                           "browser_supplied": False},
+                           "browser_supplied": False,
+                           "evidence_roots": [str(item) for item in self.evidence_roots]},
                 "state": RUNS_OK, "run": view, "records": entry["records"],
                 "live": False,
                 "note": ("历史记录，不代表实时在线；declared_complete 不代表任务验收成功；"

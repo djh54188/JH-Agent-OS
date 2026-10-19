@@ -278,3 +278,138 @@ class TestRealEvidenceDisplay(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestEvidenceBoundary(_ApiCase):
+    """R1: evidence is readable only under server-owned roots, and is refused
+    BEFORE any byte is read. Every refusal here is also a zero-read assertion."""
+
+    def _registry_with_raw(self, raw):
+        write_registry(self.runs, healthy_records(raw))
+        return self.api()
+
+    def _reads(self, api, run_id=None):
+        seen = []
+        real = Path.read_bytes
+        def observed(path):
+            seen.append(str(path))
+            return real(path)
+        with mock.patch.object(Path, "read_bytes", observed):
+            if run_id:
+                api.agent_run_detail(run_id)
+            else:
+                api.list_agent_runs()
+        return seen
+
+    def test_inside_root_verifies_and_reads_once(self):
+        evidence = write_evidence(self.evidence)          # <registry>/raw/run...
+        api = self._registry_with_raw(evidence)
+        reads = self._reads(api)
+        self.assertEqual(len(reads), 1)
+        self.assertEqual(api.list_agent_runs()["runs"][0]["evidence"]["state"], "verified")
+
+    def test_outside_absolute_is_refused_before_read(self):
+        outside = self.tmp / "outside" / "x.jsonl"
+        raw = write_evidence(outside)
+        api = self._registry_with_raw(raw)
+        self.assertEqual(self._reads(api), [])
+        self.assertEqual(api.list_agent_runs()["runs"][0]["evidence"]["state"], "outside_root")
+
+    def test_relative_reference_resolves_against_registry_dir_not_cwd(self):
+        # A relative reference inside the registry's raw/ directory is legal...
+        write_evidence(self.evidence)
+        raw = {"path": "raw/run.notifications.jsonl",
+               "sha256": hashlib.sha256(self.evidence.read_bytes()).hexdigest(),
+               "frames": len(FRAMES), "bytes": self.evidence.stat().st_size}
+        api = self._registry_with_raw(raw)
+        self.assertEqual(api.list_agent_runs()["runs"][0]["evidence"]["state"], "verified")
+        # ...and one that climbs out is not.
+        escaped = {"path": "../outside/x.jsonl", **{k: raw[k] for k in ("sha256", "frames", "bytes")}}
+        self.assertEqual(self._registry_with_raw(escaped).list_agent_runs()["runs"][0]["evidence"]["state"],
+                         "outside_root")
+
+    def test_same_prefix_sibling_is_refused(self):
+        sibling = self.tmp / "run-history-other" / "x.jsonl"
+        api = self._registry_with_raw(write_evidence(sibling))
+        self.assertEqual(self._reads(api), [])
+        self.assertEqual(api.list_agent_runs()["runs"][0]["evidence"]["state"], "outside_root")
+
+    def test_special_path_forms_are_never_touched(self):
+        # Raw strings: these are the exact Win32 forms, not escaped text.
+        cases = {"unc": r"\\server\share\evidence.jsonl",
+                 "device": r"\\?\C:\Windows\win.ini",
+                 "ads": r"C:\evidence.jsonl:stream"}
+        for name, path in cases.items():
+            raw = {"path": path, "sha256": "a" * 64, "frames": 1, "bytes": 1}
+            api = self._registry_with_raw(raw)
+            with mock.patch.object(os.path, "realpath", side_effect=AssertionError("must not resolve")):
+                state = api.list_agent_runs()["runs"][0]["evidence"]
+            self.assertEqual(state["state"], "outside_root", name)
+            self.assertIn("refused before access", state["detail"], name)
+
+    def test_invalid_utf8_inside_root_is_structured(self):
+        self.evidence.parent.mkdir(parents=True, exist_ok=True)
+        payload = b"\xff\n"
+        self.evidence.write_bytes(payload)
+        raw = {"path": str(self.evidence), "sha256": hashlib.sha256(payload).hexdigest(),
+               "frames": 1, "bytes": len(payload)}
+        state = self._registry_with_raw(raw).list_agent_runs()["runs"][0]["evidence"]
+        self.assertEqual(state["state"], "invalid_content")
+        self.assertIn("UTF-8", state["detail"])
+
+    def test_malformed_references_are_invalid_without_exception(self):
+        for raw in ("not-an-object", 7, ["x"], {"path": 7}, {"path": "bad\x00path"},
+                    {"path": str(self.evidence), "sha256": "zz", "frames": 1},
+                    {"path": str(self.evidence), "sha256": "a" * 64, "frames": "1"}):
+            state = self._registry_with_raw(raw).list_agent_runs()["runs"][0]["evidence"]
+            self.assertEqual(state["state"], "invalid", raw)
+
+    def test_explicitly_configured_extra_root_is_allowed(self):
+        extra = self.tmp / "extra-root"
+        raw = write_evidence(extra / "x.jsonl")
+        write_registry(self.runs, healthy_records(raw))
+        api = AppInterface(runs_path=self.runs, evidence_roots=[extra],
+                           db_path=self.tmp / "absent.sqlite3",
+                           drafts_path=self.tmp / "drafts.json")
+        self.assertEqual(api.list_agent_runs()["runs"][0]["evidence"]["state"], "verified")
+
+    def test_junction_under_the_root_is_refused_before_read(self):
+        outside_dir = self.tmp / "outside-dir"
+        outside_dir.mkdir(parents=True, exist_ok=True)
+        payload = b'{"x":1}\n'
+        (outside_dir / "x.jsonl").write_bytes(payload)
+        raw_dir = self.runs.parent / "raw"
+        raw_dir.mkdir(parents=True, exist_ok=True)
+        junction = raw_dir / "linked"
+        # cmd.exe writes in the console codepage; read bytes so a localized
+        # message can never fail the test with a decode error.
+        made = subprocess.run(["cmd", "/c", "mklink", "/J", str(junction), str(outside_dir)],
+                              capture_output=True)
+        if not junction.exists():
+            self.skipTest(f"junction creation refused: {made.returncode}")
+        raw = {"path": str(junction / "x.jsonl"),
+               "sha256": hashlib.sha256(payload).hexdigest(), "frames": 1, "bytes": len(payload)}
+        api = self._registry_with_raw(raw)
+        self.assertEqual(self._reads(api), [])
+        state = api.list_agent_runs()["runs"][0]["evidence"]
+        self.assertEqual(state["state"], "outside_root")
+        self.assertIn("reparse", state["detail"])
+
+    def test_files_are_byte_identical_after_a_refused_and_an_allowed_query(self):
+        outside = write_evidence(self.tmp / "outside" / "x.jsonl")
+        write_registry(self.runs, healthy_records(outside))
+        before_registry, before_evidence = self.runs.read_bytes(), Path(outside["path"]).read_bytes()
+        api = self.api()
+        api.list_agent_runs()
+        api.agent_run_detail(RUN_ID)
+        self.assertEqual(self.runs.read_bytes(), before_registry)
+        self.assertEqual(Path(outside["path"]).read_bytes(), before_evidence)
+
+    def test_legacy_wrapper_keeps_the_two_tuple_contract(self):
+        from src.agent_session_codex import verify_raw_evidence
+        evidence = write_evidence(self.evidence)
+        ok, detail = verify_raw_evidence(evidence, allowed_roots=[self.evidence.parent])
+        self.assertIs(ok, True)
+        self.assertIsInstance(detail, str)
+        ok, _ = verify_raw_evidence(evidence, allowed_roots=[self.tmp / "somewhere-else"])
+        self.assertIs(ok, False)

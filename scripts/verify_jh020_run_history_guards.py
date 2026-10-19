@@ -21,9 +21,13 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "tests"))
 
+import src.agent_session_codex as codex_mod
 import src.app_api as app_api
+import test_jh018_agent_session_contract as contract_tests
 
 T = "test_jh020_run_history_api."
+BOUNDARY = T + "TestEvidenceBoundary."
+CONTRACT = "test_jh018_agent_session_contract.TestCoreHoldsNoConcreteAdapter."
 STATES = T + "TestRunHistoryStates."
 EVIDENCE = T + "TestEvidenceClassification."
 EFFECTS = T + "TestNoSideEffects."
@@ -34,7 +38,7 @@ def run_case(name):
         unittest.defaultTestLoader.loadTestsFromName(name))
 
 
-def _evidence_always_verified(raw_evidence):
+def _evidence_always_verified(raw_evidence, **kwargs):
     # A regression that stops reading the bytes and trusts the recorded digest.
     return "verified", "assumed verified"
 
@@ -61,12 +65,61 @@ def _absent_reads_as_empty(path):
         return ""
 
 
+_real_evidence_state = codex_mod.raw_evidence_state
+
+
+def _uncontained_evidence_state(raw_evidence, **kwargs):
+    # Drops the server-owned roots, i.e. the pre-rectification uncontained read.
+    return _real_evidence_state(raw_evidence)
+
+
+def _no_special_path(value):
+    return None
+
+
+def _no_reparse(candidate, root):
+    return None
+
+
+def _exact_match_only(self, path):
+    # The pre-rectification predicate: only the exact absolute form.
+    import ast as _ast
+    tree = _ast.parse(path.read_text(encoding="utf-8-sig"))
+    for node in _ast.walk(tree):
+        if isinstance(node, _ast.ImportFrom) and node.module == "src.agent_session" and node.level == 0:
+            return True
+        if isinstance(node, _ast.Import) and any(a.name == "src.agent_session" for a in node.names):
+            return True
+    return False
+
+
+def _no_literal_target(cls, call):
+    return None
+
+
 def _link_always_true(self, task_id):
     # A regression that reports an unlinked run as linked.
     return {"checked": True, "linked": True, "note": "assumed linked"}
 
 
 MUTATIONS = [
+    ("evidence_root_containment_ignored",
+     [patch.object(app_api, "raw_evidence_state", new=_uncontained_evidence_state)],
+     BOUNDARY + "test_outside_absolute_is_refused_before_read"),
+    ("special_path_check_ignored",
+     [patch.object(codex_mod, "is_special_path", new=_no_special_path)],
+     BOUNDARY + "test_special_path_forms_are_never_touched"),
+    ("reparse_check_ignored",
+     [patch.object(codex_mod, "_reparse_component", new=_no_reparse)],
+     BOUNDARY + "test_junction_under_the_root_is_refused_before_read"),
+    ("equivalent_import_forms_ignored",
+     [patch.object(contract_tests.TestCoreHoldsNoConcreteAdapter, "_imports_the_contract",
+                   new=_exact_match_only)],
+     CONTRACT + "test_every_equivalent_static_import_form_is_flagged"),
+    ("dynamic_literal_import_ignored",
+     [patch.object(contract_tests.TestCoreHoldsNoConcreteAdapter, "_literal_import_target",
+                   new=classmethod(_no_literal_target))],
+     CONTRACT + "test_every_equivalent_static_import_form_is_flagged"),
     ("evidence_state_ignored",
      [patch.object(app_api, "raw_evidence_state", new=_evidence_always_verified)],
      EVIDENCE + "test_mismatch_on_altered_bytes"),

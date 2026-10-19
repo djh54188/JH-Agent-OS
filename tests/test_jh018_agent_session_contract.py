@@ -523,22 +523,75 @@ class TestCoreHoldsNoConcreteAdapter(unittest.TestCase):
     # consumer must actually subclass AgentSessionAdapter (checked below).
     CONTRACT_CONSUMERS = frozenset({"agent_session_codex.py"})
 
-    @staticmethod
-    def _imports_the_contract(path):
-        """True only when the module imports the DESIGN contract itself.
+    CONTRACT_MODULE = "src.agent_session"
+    # Literal call targets that import a module by name. Only a constant string
+    # in the call's first argument is matched; anything computed is out of reach.
+    DYNAMIC_IMPORTERS = frozenset({"import_module", "__import__"})
 
-        A precise import check, not a filename substring: a module that merely
-        uses an adapter (whose name starts with 'agent_session_') is not
-        importing the contract module.
+    @classmethod
+    def _is_contract_module(cls, name):
+        return isinstance(name, str) and (
+            name == cls.CONTRACT_MODULE or name.startswith(cls.CONTRACT_MODULE + "."))
+
+    @classmethod
+    def _imports_the_contract(cls, path):
+        """True when the module imports the DESIGN contract in any static form.
+
+        Equivalent forms covered: absolute import with or without an alias,
+        a submodule path, `from src import agent_session`, package-relative
+        `from .agent_session import ...` / `from . import agent_session`, and a
+        literal `importlib.import_module("src.agent_session")` /
+        `__import__("src.agent_session")` (also through `getattr(..., "import_module")`).
+        A file that only uses an adapter (`src.agent_session_codex`) or mentions
+        the name in a comment is not flagged. Imports whose module name is
+        computed at runtime are outside static reach and are documented as
+        uncovered rather than guessed.
         """
         tree = ast.parse(path.read_text(encoding="utf-8-sig"))
         for node in ast.walk(tree):
-            if isinstance(node, ast.ImportFrom) and node.module == "src.agent_session":
-                return True
             if isinstance(node, ast.Import):
-                if any(alias.name == "src.agent_session" for alias in node.names):
+                if any(cls._is_contract_module(alias.name) for alias in node.names):
+                    return True
+            elif isinstance(node, ast.ImportFrom):
+                if node.level == 0:
+                    module = node.module or ""
+                    if cls._is_contract_module(module):
+                        return True
+                    if module == "src" and any(a.name == "agent_session" for a in node.names):
+                        return True
+                elif node.level == 1:
+                    # A file inside the `src` package: `.agent_session` is the contract.
+                    if node.module == "agent_session":
+                        return True
+                    if node.module is None and any(a.name == "agent_session" for a in node.names):
+                        return True
+            elif isinstance(node, ast.Call):
+                target = cls._literal_import_target(node)
+                if target is not None and cls._is_contract_module(target):
                     return True
         return False
+
+    @classmethod
+    def _literal_import_target(cls, call):
+        """The constant module name of a literal dynamic-import call, else None."""
+        func = call.func
+        name = None
+        if isinstance(func, ast.Name):
+            name = func.id
+        elif isinstance(func, ast.Attribute):
+            name = func.attr
+        elif isinstance(func, ast.Call):
+            # getattr(importlib, "import_module")(...)
+            inner = func.func
+            if isinstance(inner, ast.Name) and inner.id == "getattr" and len(func.args) >= 2:
+                second = func.args[1]
+                if isinstance(second, ast.Constant) and second.value in cls.DYNAMIC_IMPORTERS:
+                    name = second.value
+        if name not in cls.DYNAMIC_IMPORTERS:
+            return None
+        if call.args and isinstance(call.args[0], ast.Constant) and isinstance(call.args[0].value, str):
+            return call.args[0].value
+        return None
 
     def test_production_modules_do_not_import_this_contract(self):
         offenders = []
@@ -555,18 +608,61 @@ class TestCoreHoldsNoConcreteAdapter(unittest.TestCase):
         from src.agent_session_codex import CodexAgentSessionAdapter
         self.assertTrue(issubclass(CodexAgentSessionAdapter, AgentSessionAdapter))
 
-    def test_the_import_check_still_catches_a_real_contract_import(self):
-        """Negative control: the precise check must still flag the contract."""
-        sample = ROOT / "src" / "agent_session_codex.py"
-        self.assertTrue(self._imports_the_contract(sample))
+    # Every static form that reaches the contract module, plus the literal
+    # dynamic forms a bounded AST check can see. The computed-name cases are
+    # listed separately as deliberately UNCOVERED.
+    CONTRACT_IMPORT_FORMS = {
+        "absolute_from": "from src.agent_session import AgentSessionAdapter\n",
+        "absolute_import_alias": "import src.agent_session as contract\n",
+        "absolute_import": "import src.agent_session\n",
+        "absolute_submodule": "import src.agent_session.models\n",
+        "parent_from_alias": "from src import agent_session as contract\n",
+        "parent_from": "from src import agent_session\n",
+        "relative_from": "from .agent_session import AgentSessionAdapter\n",
+        "relative_parent": "from . import agent_session\n",
+        "dynamic_literal": "import importlib\nimportlib.import_module('src.agent_session')\n",
+        "dunder_import": "__import__('src.agent_session')\n",
+        "getattr_import": "import importlib\ngetattr(importlib, 'import_module')('src.agent_session')\n",
+    }
+    PERMITTED_FORMS = {
+        "adapter_query_helper": "from src.agent_session_codex import read_registry_text\n",
+        "comment_only": "# agent_session is documentation, not an import\nvalue = 1\n",
+        "parent_of_contract": "from ..agent_session import x\n",
+    }
+    UNCOVERED_DYNAMIC_FORMS = {
+        "computed_name": "import importlib\nname = 'src.agent_session'\n"
+                         "importlib.import_module(name)\n",
+        "concatenated": "import importlib\nimportlib.import_module('src.' + 'agent_session')\n",
+    }
+
+    def test_every_equivalent_static_import_form_is_flagged(self):
         import tempfile
         with tempfile.TemporaryDirectory() as tmp:
-            fake = Path(tmp) / "core.py"
-            fake.write_text("from src.agent_session import AgentSessionAdapter\n", encoding="utf-8")
-            self.assertTrue(self._imports_the_contract(fake))
-            fake.write_text("from src.agent_session_codex import CodexAgentSessionAdapter\n",
-                            encoding="utf-8")
-            self.assertFalse(self._imports_the_contract(fake))
+            for name, source in self.CONTRACT_IMPORT_FORMS.items():
+                sample = Path(tmp) / (name + ".py")
+                sample.write_text(source, encoding="utf-8")
+                self.assertTrue(self._imports_the_contract(sample), name)
+
+    def test_permitted_forms_are_not_flagged(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            for name, source in self.PERMITTED_FORMS.items():
+                sample = Path(tmp) / (name + ".py")
+                sample.write_text(source, encoding="utf-8")
+                self.assertFalse(self._imports_the_contract(sample), name)
+
+    def test_computed_dynamic_imports_are_documented_as_uncovered(self):
+        """A bounded static check cannot see a computed module name; that is a
+        documented limit, not a claim of full protection."""
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            for name, source in self.UNCOVERED_DYNAMIC_FORMS.items():
+                sample = Path(tmp) / (name + ".py")
+                sample.write_text(source, encoding="utf-8")
+                self.assertFalse(self._imports_the_contract(sample), name)
+
+    def test_the_real_adapter_is_flagged(self):
+        self.assertTrue(self._imports_the_contract(ROOT / "src" / "agent_session_codex.py"))
 
     def test_contract_module_has_no_native_app_imports(self):
         text = (ROOT / "src" / "agent_session.py").read_text(encoding="utf-8-sig")

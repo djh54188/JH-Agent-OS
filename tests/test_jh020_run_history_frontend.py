@@ -28,6 +28,12 @@ EXPECTED_SCENARIOS = {
     "selecting_a_run_uses_its_id",
     "corrupt_source_shows_its_message",
     "absent_source_is_not_an_error",
+    "detail_reverse_replies",
+    "detail_same_id_repeat",
+    "detail_late_error",
+    "detail_unrequested_run_id",
+    "detail_leave_view",
+    "detail_reenter_view",
 }
 
 
