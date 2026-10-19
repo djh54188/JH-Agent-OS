@@ -8,6 +8,19 @@ result cannot come from a broken harness.
 Patches replace single callables by name, so a mutant never fails merely because
 an in-memory copy changed identity. No process, no model call, no session send,
 and no source file is touched.
+
+Classification (Hark-派单-04 C, an explicit deviation from the accepted
+verifier; the nine mutations, their target tests and the production checks are
+unchanged):
+
+* detected   - control green, mutant fails on an assertion (no error/skip, 1 test);
+* redundant  - ONLY a row listed in DECLARED_REDUNDANT, whose control is green,
+               whose mutant passes cleanly (1 test, no failure/error/skip), and
+               whose isolated diagnostic (the declared covering layer ALSO off)
+               fails on an assertion. The diagnostic is reported, never counted
+               as a detection of the single-layer mutation;
+* everything else is a failure of the verification and is reported as such:
+  control_failed, error, skipped, no_tests, survived (an unknown survivor).
 """
 import io
 import json
@@ -135,27 +148,90 @@ MUTATIONS = [
 ]
 
 
+def _no_consistency_layer(records):
+    # Isolated diagnostic only: the declared covering layer switched off too.
+    return None
+
+
+#: Rows whose single-layer mutant is proven masked by another production layer.
+#: Value: (reason, extra patchers that switch that covering layer off).
+DECLARED_REDUNDANT = {
+    "registry_field_validation_skipped": (
+        "Hark-派单-03 history consistency layer (check_history) rejects the lenient-parse "
+        "sample as a run starting with 'dispatched'",
+        lambda: [patch.object(app_api, "check_history", new=_no_consistency_layer)]),
+}
+
+
+def summarize(result):
+    """Plain summary of a unittest result (what classification is decided on)."""
+    if result is None:
+        return None
+    return {"run": result.testsRun, "failures": len(result.failures),
+            "errors": len(result.errors), "skipped": len(result.skipped)}
+
+
+def _clean_pass(s):
+    return s is not None and s["run"] == 1 and not (s["failures"] or s["errors"] or s["skipped"])
+
+
+def _assertion_failure(s):
+    return s is not None and s["run"] == 1 and s["failures"] > 0 and not s["errors"] and not s["skipped"]
+
+
+def classify(name, control, mutant, diagnostic=None, declared=DECLARED_REDUNDANT):
+    """Classify one row from summaries; anything unproven is NOT redundant."""
+    if not _clean_pass(control):
+        return "control_failed"
+    if mutant is None or mutant["run"] == 0:
+        return "no_tests"
+    if mutant["errors"]:
+        return "error"
+    if mutant["skipped"]:
+        return "skipped"
+    if _assertion_failure(mutant):
+        return "detected"
+    if name in declared and _clean_pass(mutant) and _assertion_failure(diagnostic):
+        return "redundant"
+    return "survived"
+
+
+def verdict(rows):
+    return "pass" if rows and all(r["classification"] in ("detected", "redundant") for r in rows) else "fail"
+
+
+def _run_with(patchers, test_name):
+    with ExitStack() as stack:
+        for patcher in patchers:
+            stack.enter_context(patcher)
+        return run_case(test_name)
+
+
 def main():
-    controls = [run_case(row[-1]) for row in MUTATIONS]
-    if not all(r.wasSuccessful() and r.testsRun == 1 and not r.skipped for r in controls):
-        failing = [row[0] for row, r in zip(MUTATIONS, controls) if not r.wasSuccessful()]
-        print(json.dumps({"verdict": "fail", "reason": "baseline control failed", "cases": failing}))
-        return 1
     rows = []
     for name, patchers, test_name in MUTATIONS:
-        with ExitStack() as stack:
-            for patcher in patchers:
-                stack.enter_context(patcher)
-            result = run_case(test_name)
-        detected = bool(result.failures) and not result.errors
-        rows.append({"case": name, "detected": detected,
-                     "failures": len(result.failures), "errors": len(result.errors)})
-    passed = all(row["detected"] for row in rows)
+        control = summarize(run_case(test_name))
+        mutant = summarize(_run_with(patchers, test_name))
+        diagnostic = None
+        if name in DECLARED_REDUNDANT:
+            diagnostic = summarize(_run_with(patchers + DECLARED_REDUNDANT[name][1](), test_name))
+        row = {"case": name, "classification": classify(name, control, mutant, diagnostic),
+               "control": control, "mutant": mutant,
+               "detected": _clean_pass(control) and _assertion_failure(mutant)}
+        if diagnostic is not None:
+            row["isolated_diagnostic"] = {"covering_layer_off": True, "result": diagnostic,
+                                          "counted": False, "reason": DECLARED_REDUNDANT[name][0]}
+        rows.append(row)
+    counts = {}
+    for row in rows:
+        counts[row["classification"]] = counts.get(row["classification"], 0) + 1
     print(json.dumps({"scope": "jh020_run_history_offline_only", "model_calls": 0,
-                      "processes": 0, "controls": len(controls), "mutations": len(rows),
-                      "detected": sum(row["detected"] for row in rows),
-                      "rows": rows, "verdict": "pass" if passed else "fail"}, indent=2))
-    return 0 if passed else 1
+                      "processes": 0, "rows_total": len(rows),
+                      "detected": counts.get("detected", 0),
+                      "redundant": counts.get("redundant", 0),
+                      "classification_counts": counts,
+                      "rows": rows, "verdict": verdict(rows)}, ensure_ascii=False, indent=2))
+    return 0 if verdict(rows) == "pass" else 1
 
 
 if __name__ == "__main__":
