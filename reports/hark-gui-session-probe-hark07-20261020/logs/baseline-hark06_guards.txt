@@ -1,0 +1,213 @@
+# label: baseline
+# commit: 287317e7810609e7c0e80c45c364c6d3c6373f5d  tree-clean: yes
+# command: /workspace/work/venv-h05/bin/python scripts/verify_hark06_session_probe_guards.py
+# python: 3.14.8 Linux-6.12.110+-aarch64-with-glibc2.41  node: v22.23.3
+# started: Tue Oct 20 14:04:06 UTC 2026
+# ---- raw output below ----
+[gui] "POST /api/session-probe/prepare HTTP/1.1" 403 -
+[gui] "POST /api/session-probe/start HTTP/1.1" 403 -
+[gui] "POST /api/session-probe/prepare HTTP/1.1" 403 -
+[gui] "POST /api/session-probe/start HTTP/1.1" 403 -
+[gui] "POST /api/session-probe/prepare HTTP/1.1" 403 -
+[gui] "POST /api/session-probe/start HTTP/1.1" 403 -
+[gui] "POST /api/session-probe/prepare HTTP/1.1" 403 -
+[gui] "POST /api/session-probe/start HTTP/1.1" 403 -
+[gui] "POST /api/session-probe/prepare HTTP/1.1" 403 -
+[gui] "POST /api/session-probe/start HTTP/1.1" 403 -
+[gui] "POST /api/session-probe/prepare HTTP/1.1" 403 -
+[gui] "POST /api/session-probe/start HTTP/1.1" 403 -
+[gui] "POST /api/session-probe/prepare HTTP/1.1" 403 -
+[gui] "POST /api/session-probe/start HTTP/1.1" 403 -
+[gui] "POST /api/session-probe/prepare HTTP/1.1" 200 -
+{
+  "scope": "in-process patches + disposable gui copy",
+  "model_calls": 0,
+  "real_transport": false,
+  "python_mutations": 13,
+  "js_mutations": 4,
+  "detected": 16,
+  "redundant": 1,
+  "failed_rows": [],
+  "verdict": "pass",
+  "rows": [
+    {
+      "layer": "python",
+      "case": "disabled_switch_ignored",
+      "target": "test_hark06_session_probe.TestZeroDispatch.test_disabled_refuses_prepare_and_start",
+      "control": "passed",
+      "mutated": "assertion",
+      "diagnostic": null,
+      "verdict": "detected",
+      "counted": true
+    },
+    {
+      "layer": "python",
+      "case": "confirmation_ignored",
+      "target": "test_hark06_session_probe.TestZeroDispatch.test_unconfirmed_start_dispatches_nothing",
+      "control": "passed",
+      "mutated": "assertion",
+      "diagnostic": null,
+      "verdict": "detected",
+      "counted": true
+    },
+    {
+      "layer": "python",
+      "case": "field_whitelist_ignored",
+      "target": "test_hark06_session_probe.TestZeroDispatch.test_forbidden_fields_dispatch_nothing",
+      "control": "passed",
+      "mutated": "assertion",
+      "diagnostic": null,
+      "verdict": "detected",
+      "counted": true
+    },
+    {
+      "layer": "python",
+      "case": "origin_check_ignored",
+      "target": "test_hark06_session_probe.TestHttpBoundary.test_illegal_origin_or_host_dispatches_nothing",
+      "control": "passed",
+      "mutated": "assertion",
+      "diagnostic": null,
+      "verdict": "detected",
+      "counted": true
+    },
+    {
+      "layer": "python",
+      "case": "inflight_blocker_ignored",
+      "target": "test_hark06_session_probe.TestAtMostOnce.test_second_confirmation_while_in_flight_is_refused",
+      "control": "passed",
+      "mutated": "assertion",
+      "diagnostic": null,
+      "verdict": "detected",
+      "counted": true
+    },
+    {
+      "layer": "python",
+      "case": "unresolved_blocker_ignored",
+      "target": "test_hark06_session_probe.TestAtMostOnce.test_thread_start_timeout_stays_unknown_and_blocks",
+      "control": "passed",
+      "mutated": "assertion",
+      "diagnostic": null,
+      "verdict": "detected",
+      "counted": true
+    },
+    {
+      "layer": "python",
+      "case": "registry_state_ignored",
+      "target": "test_hark06_session_probe.TestRefusalBeforeDispatch.test_corrupt_json_registry_refuses",
+      "control": "passed",
+      "mutated": "assertion",
+      "diagnostic": null,
+      "verdict": "detected",
+      "counted": true
+    },
+    {
+      "layer": "python",
+      "case": "history_source_clash_ignored",
+      "target": "test_hark06_session_probe.TestRefusalBeforeDispatch.test_history_source_cannot_be_the_probe_registry",
+      "control": "passed",
+      "mutated": "assertion",
+      "diagnostic": null,
+      "verdict": "detected",
+      "counted": true
+    },
+    {
+      "layer": "python",
+      "case": "budget_demand_ignored",
+      "target": "test_hark06_session_probe.TestRefusalBeforeDispatch.test_finite_budget_demand_is_refused_not_ignored",
+      "control": "passed",
+      "mutated": "assertion",
+      "diagnostic": null,
+      "verdict": "detected",
+      "counted": true
+    },
+    {
+      "layer": "python",
+      "case": "usage_binding_ignored",
+      "target": "test_hark06_session_probe.TestBinding.test_foreign_reply_and_usage_are_not_adopted",
+      "control": "passed",
+      "mutated": "assertion",
+      "diagnostic": null,
+      "verdict": "detected",
+      "counted": true
+    },
+    {
+      "layer": "python",
+      "case": "echo_check_ignored",
+      "target": "test_hark06_session_probe.TestBinding.test_wrong_echo_is_not_a_round_trip",
+      "control": "passed",
+      "mutated": "assertion",
+      "diagnostic": null,
+      "verdict": "detected",
+      "counted": true
+    },
+    {
+      "layer": "python",
+      "case": "tool_item_check_ignored",
+      "target": "test_hark06_session_probe.TestBinding.test_tool_item_in_the_stream_is_not_a_clean_probe",
+      "control": "passed",
+      "mutated": "assertion",
+      "diagnostic": null,
+      "verdict": "detected",
+      "counted": true
+    },
+    {
+      "layer": "python",
+      "case": "replay_check_removed",
+      "target": "test_hark06_session_probe.TestAtMostOnce.test_same_probe_id_twice_dispatches_once",
+      "control": "passed",
+      "mutated": "error",
+      "diagnostic": {
+        "thread_starts": 1,
+        "second_start": "probe_not_prepared"
+      },
+      "verdict": "redundant",
+      "counted": false
+    },
+    {
+      "layer": "js",
+      "case": "double_click_guard_removed",
+      "target": "confirmed_click_once",
+      "anchor_count": 1,
+      "control": "passed",
+      "mutated": "assertion",
+      "error": "double click prepared 2 times",
+      "verdict": "detected",
+      "counted": true
+    },
+    {
+      "layer": "js",
+      "case": "confirmation_check_removed",
+      "target": "unconfirmed_click_does_nothing",
+      "anchor_count": 1,
+      "control": "passed",
+      "mutated": "assertion",
+      "error": "unconfirmed click prepared a probe",
+      "verdict": "detected",
+      "counted": true
+    },
+    {
+      "layer": "js",
+      "case": "left_view_start_guard_removed",
+      "target": "leave_before_start",
+      "anchor_count": 1,
+      "control": "passed",
+      "mutated": "assertion",
+      "error": "start was sent after the view was left",
+      "verdict": "detected",
+      "counted": true
+    },
+    {
+      "layer": "js",
+      "case": "poll_bound_removed",
+      "target": "inflight_polling_bounded",
+      "anchor_count": 1,
+      "control": "passed",
+      "mutated": "assertion",
+      "error": "polling never stopped",
+      "verdict": "detected",
+      "counted": true
+    }
+  ]
+}
+# ---- end raw output ----
+# exit_code: 0

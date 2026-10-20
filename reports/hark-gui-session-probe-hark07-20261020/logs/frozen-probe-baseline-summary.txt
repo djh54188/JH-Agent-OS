@@ -1,0 +1,18 @@
+{"case": "single_source_positive", "thread_starts": 1}
+{"case": "same_object_exclusion_control", "thread_starts": 1, "first": "accepted", "attempt": "probe_in_flight"}
+{"case": "two_service_objects_one_source", "thread_starts": 2, "first": "accepted", "attempt": "accepted"}
+{"case": "reopen_unresolved_control", "thread_starts": 1, "attempt": "probe_unresolved"}
+{"case": "exact_history_source_control", "thread_starts": 0, "attempt": "probe_registry_is_history_source"}
+{"case": "history_hardlink_alias", "thread_starts": 1, "attempt": "accepted", "history_bytes_unchanged": false}
+{"case": "healthy_history_hardlink_alias", "thread_starts": 1, "attempt": "accepted", "history_bytes_unchanged": false}
+{"case": "junction_root", "thread_starts": 0, "attempt": "probe_path_is_link", "files_in_outside": [], "dirs_in_outside": []}
+{"case": "junction_ancestor", "thread_starts": 1, "attempt": "accepted", "files_in_outside": ["probe/probe-runs.jsonl", "probe/raw/codex-run-1-8e3dc6b9.notifications.jsonl"], "dirs_in_outside": ["probe", "probe/raw", "probe/ws", "probe/ws/785f0c4abde3ffbb"]}
+{"case": "junction_raw", "thread_starts": 0, "attempt": "probe_path_is_link", "files_in_outside": [], "dirs_in_outside": []}
+{"case": "junction_ws", "thread_starts": 0, "attempt": "probe_path_is_link", "files_in_outside": [], "dirs_in_outside": []}
+{"case": "redundant_passed", "verifier_exit": 0, "verifier_verdict": "pass", "row_verdict": "redundant"}
+{"case": "redundant_assertion", "verifier_exit": 0, "verifier_verdict": "pass", "row_verdict": "redundant"}
+{"case": "redundant_error", "verifier_exit": 0, "verifier_verdict": "pass", "row_verdict": "redundant"}
+{"case": "redundant_skipped", "verifier_exit": 0, "verifier_verdict": "pass", "row_verdict": "redundant"}
+{"case": "redundant_zero_tests", "verifier_exit": 0, "verifier_verdict": "pass", "row_verdict": "redundant"}
+cases: 16 platform: linux
+a_b_identical_after_normalisation: True
