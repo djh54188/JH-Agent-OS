@@ -288,6 +288,30 @@ JH.views = (function () {
     let panelDetailGeneration = 0;
     let currentDetailRunId = null;
 
+    /* Hark-派单-05: current-selection cue and single-column detail placement.
+     * Both are driven ONLY by an explicit click in this panel: no reply (late,
+     * failed, empty or carrying another run id) ever changes the selection or
+     * scrolls. The cue is carried by aria-pressed and data-selected, never by
+     * colour alone. */
+    let runButtons = [];                 // [{ runId, button, card }] of the current list
+
+    function markSelected(runId) {
+      runButtons.forEach(function (entry) {
+        const on = entry.runId === runId;
+        setPressed(entry.button, on);
+        entry.card.dataset.selected = on ? "true" : "false";
+      });
+    }
+
+    function revealDetail() {
+      // Same breakpoint as the single-column rule in styles.css; the two-column
+      // layout keeps the sticky pane in place and never scrolls.
+      if (!isSingleColumn()) { return; }
+      if (typeof detail.scrollIntoView === "function") {
+        detail.scrollIntoView({ block: "start", inline: "nearest" });
+      }
+    }
+
     function renderRunCard(run) {
       const card = C().el("div", "card run-card");
       const title = C().el("div", "card-title");
@@ -323,6 +347,9 @@ JH.views = (function () {
       const foot = C().el("div", "run-foot");
       const button = C().el("button", "run-action", "查看记录详情");
       button.dataset.runId = run.run_id;
+      setPressed(button, false);
+      card.dataset.selected = "false";
+      runButtons.push({ runId: run.run_id, button: button, card: card });
       foot.appendChild(button);
       card.appendChild(foot);
       return card;
@@ -332,9 +359,11 @@ JH.views = (function () {
       if (panelGeneration !== renderGeneration) { return; }
       list.textContent = "";
       detail.textContent = "";
+      runButtons = [];
       JH.api.listAgentRuns().then(function (envelope) {
         if (panelGeneration !== renderGeneration) { return; }
         list.textContent = "";
+        runButtons = [];
         if (!envelope || envelope.ok !== true) {
           list.appendChild(C().errorState((envelope && envelope.error) || {}));
           return;
@@ -390,11 +419,32 @@ JH.views = (function () {
     list.addEventListener("click", function (event) {
       const button = event.target.closest ? event.target.closest("button.run-action") : null;
       if (!button) { return; }
+      markSelected(button.dataset.runId);
       loadDetail(button.dataset.runId);
+      revealDetail();
     });
 
     refresh();
     return panel;
+  }
+
+  /* Single-column breakpoint shared with the `@media (max-width: 1100px)` rule
+   * in styles.css. Without matchMedia the layout is treated as two-column, so
+   * nothing scrolls. */
+  const SINGLE_COLUMN_QUERY = "(max-width: 1100px)";
+
+  function isSingleColumn() {
+    return typeof window.matchMedia === "function"
+      && window.matchMedia(SINGLE_COLUMN_QUERY).matches === true;
+  }
+
+  function setPressed(button, on) {
+    const value = on ? "true" : "false";
+    if (typeof button.setAttribute === "function") {
+      button.setAttribute("aria-pressed", value);
+    } else {
+      button.ariaPressed = value;
+    }
   }
 
   /* Detail layout groups the same recorded fields by meaning; no field is
