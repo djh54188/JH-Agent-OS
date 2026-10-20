@@ -523,6 +523,18 @@ class TestCoreHoldsNoConcreteAdapter(unittest.TestCase):
     # consumer must actually subclass AgentSessionAdapter (checked below).
     CONTRACT_CONSUMERS = frozenset({"agent_session_codex.py"})
 
+    # Hark-派单-06 — INTENTIONAL DEVIATION, pending the architect's ruling.
+    # Old limit: only real adapters may import the contract. New, narrower
+    # allowance: ONE application service may import the contract's VALUE
+    # OBJECTS to build a request for the real adapter. It is neither core nor an
+    # adapter, it may import nothing else from the contract and only in the
+    # plain absolute form, and only the application interface may import it.
+    # The checks below keep that allowance from widening (see negative controls).
+    CONTRACT_APPLICATION_SERVICES = {
+        "session_probe.py": frozenset({"RunState", "SessionAddress", "SubmitRequest"}),
+    }
+    APPLICATION_SERVICE_IMPORTERS = frozenset({"app_api.py"})
+
     CONTRACT_MODULE = "src.agent_session"
     # Literal call targets that import a module by name. Only a constant string
     # in the call's first argument is matched; anything computed is out of reach.
@@ -598,9 +610,115 @@ class TestCoreHoldsNoConcreteAdapter(unittest.TestCase):
         for path in sorted((ROOT / "src").glob("*.py")):
             if path.name == "agent_session.py" or path.name in self.CONTRACT_CONSUMERS:
                 continue
+            if path.name in self.CONTRACT_APPLICATION_SERVICES:
+                continue                     # checked by the narrower service rules below
             if self._imports_the_contract(path):
                 offenders.append(path.name)
         self.assertEqual(offenders, [], "unexpected production import of the contract")
+
+    # -- application-service allowance (Hark-派单-06 deviation) -----------------
+    @classmethod
+    def _service_contract_use(cls, source):
+        """(names imported from the contract, forbidden forms used) for a service.
+
+        Only `from src.agent_session import A, B` is a permitted form. Any module
+        import, parent/relative form or literal dynamic import of the contract is
+        a forbidden form, whatever names it would reach.
+        """
+        names, forbidden = set(), []
+        for node in ast.walk(ast.parse(source)):
+            if isinstance(node, ast.Import):
+                if any(cls._is_contract_module(alias.name) for alias in node.names):
+                    forbidden.append("import " + ", ".join(a.name for a in node.names))
+            elif isinstance(node, ast.ImportFrom):
+                module = node.module or ""
+                if node.level == 0 and module == cls.CONTRACT_MODULE:
+                    names.update(alias.name for alias in node.names)
+                elif node.level == 0 and cls._is_contract_module(module):
+                    forbidden.append("from " + module)
+                elif node.level == 0 and module == "src" and any(a.name == "agent_session" for a in node.names):
+                    forbidden.append("from src import agent_session")
+                elif node.level == 1 and (module == "agent_session" or (
+                        not module and any(a.name == "agent_session" for a in node.names))):
+                    forbidden.append("relative import of agent_session")
+            elif isinstance(node, ast.Call):
+                target = cls._literal_import_target(node)
+                if target is not None and cls._is_contract_module(target):
+                    forbidden.append("dynamic import " + target)
+        return names, forbidden
+
+    @staticmethod
+    def _imports_module(source, dotted, short):
+        for node in ast.walk(ast.parse(source)):
+            if isinstance(node, ast.Import) and any(a.name == dotted for a in node.names):
+                return True
+            if isinstance(node, ast.ImportFrom):
+                if node.level == 0 and node.module == dotted:
+                    return True
+                if node.level == 0 and node.module == "src" and any(a.name == short for a in node.names):
+                    return True
+                if node.level == 1 and (node.module == short or (
+                        not node.module and any(a.name == short for a in node.names))):
+                    return True
+            if isinstance(node, ast.Call):
+                target = TestCoreHoldsNoConcreteAdapter._literal_import_target(node)
+                if target == dotted:
+                    return True
+        return False
+
+    def test_application_service_imports_only_value_objects(self):
+        for name, allowed in self.CONTRACT_APPLICATION_SERVICES.items():
+            source = (ROOT / "src" / name).read_text(encoding="utf-8-sig")
+            names, forbidden = self._service_contract_use(source)
+            self.assertEqual(forbidden, [], name)
+            self.assertTrue(names, f"{name} is allowlisted but does not use the contract")
+            self.assertLessEqual(names, allowed, f"{name} widened its contract use: {sorted(names - allowed)}")
+
+    def test_application_service_is_not_an_adapter(self):
+        for name in self.CONTRACT_APPLICATION_SERVICES:
+            tree = ast.parse((ROOT / "src" / name).read_text(encoding="utf-8-sig"))
+            for node in ast.walk(tree):
+                if isinstance(node, ast.ClassDef):
+                    bases = [ast.unparse(base) for base in node.bases]
+                    self.assertFalse(any("AgentSessionAdapter" in base for base in bases),
+                                     f"{name}.{node.name} subclasses the contract")
+
+    def test_only_the_application_interface_imports_the_service(self):
+        offenders = []
+        for service in self.CONTRACT_APPLICATION_SERVICES:
+            stem = service[:-3]
+            for path in sorted((ROOT / "src").glob("*.py")):
+                if path.name in (service,) or path.name in self.APPLICATION_SERVICE_IMPORTERS:
+                    continue
+                if self._imports_module(path.read_text(encoding="utf-8-sig"), "src." + stem, stem):
+                    offenders.append(path.name)
+        self.assertEqual(offenders, [], "a non-interface module imports the application service")
+
+    SERVICE_FORBIDDEN_SAMPLES = {
+        "adapter_base": ("from src.agent_session import AgentSessionAdapter\n", "names"),
+        "module_import": ("import src.agent_session\n", "form"),
+        "module_alias": ("import src.agent_session as contract\n", "form"),
+        "parent_from": ("from src import agent_session\n", "form"),
+        "relative_from": ("from .agent_session import SubmitRequest\n", "form"),
+        "dynamic_literal": ("import importlib\nimportlib.import_module('src.agent_session')\n", "form"),
+        "submodule": ("from src.agent_session.x import SubmitRequest\n", "form"),
+    }
+
+    def test_service_allowance_negative_controls(self):
+        allowed = self.CONTRACT_APPLICATION_SERVICES["session_probe.py"]
+        for label, (source, kind) in self.SERVICE_FORBIDDEN_SAMPLES.items():
+            names, forbidden = self._service_contract_use(source)
+            if kind == "form":
+                self.assertTrue(forbidden, label)
+            else:
+                self.assertFalse(names <= allowed, label)
+        names, forbidden = self._service_contract_use(
+            "from src.agent_session import SubmitRequest as S, RunState\n")
+        self.assertEqual(forbidden, [])
+        self.assertLessEqual(names, allowed)
+        core_import = "from src.session_probe import SessionProbeService\n"
+        self.assertTrue(self._imports_module(core_import, "src.session_probe", "session_probe"))
+        self.assertTrue(self._imports_module("from . import session_probe\n", "src.session_probe", "session_probe"))
 
     def test_contract_consumers_are_real_adapters(self):
         # The allowlist cannot be abused to smuggle a core import: every
