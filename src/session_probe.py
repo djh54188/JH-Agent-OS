@@ -35,16 +35,19 @@ modules never import it.
 """
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 import re
 import secrets
 import shutil
+import stat
+import tempfile
 import threading
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from src.agent_session import RunState, SessionAddress, SubmitRequest
 from src.agent_session_codex import CodexAgentSessionAdapter, default_codex_argv
@@ -60,6 +63,14 @@ CONFIRM_TTL_SECONDS = 600.0
 REGISTRY_NAME = "probe-runs.jsonl"
 RAW_DIR_NAME = "raw"
 WORKSPACE_DIR_NAME = "ws"
+#: Hark-派单-07: the durable source claim and the cross-process source lock.
+CLAIM_NAME = "probe-claim.json"
+LOCK_NAME = "probe.lock"
+CLAIM_SCHEMA = "jh020-gui-session-probe-claim/v1"
+CLAIM_STATES = ("accepted", "finished")
+SOURCE_LOCK_TIMEOUT = 5.0
+FINALIZE_LOCK_TIMEOUT = 30.0
+_REPARSE_FLAG = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
 
 #: The only fields a start request may carry.
 ALLOWED_START_FIELDS = frozenset({"probe_id", "confirm"})
@@ -213,8 +224,263 @@ def _tool_items(path: Optional[str]) -> Optional[List[str]]:
     return seen
 
 
+# --- Hark-派单-07: source identity, static link layout, source lock, claim ----
+
+def _is_link_entry(entry: os.stat_result) -> bool:
+    """A symlink, a Windows junction or any other reparse point."""
+    return stat.S_ISLNK(entry.st_mode) or bool(getattr(entry, "st_file_attributes", 0) & _REPARSE_FLAG)
+
+
+def link_component(path: Path) -> Optional[str]:
+    """The first EXISTING component of `path`, from the filesystem root down,
+    that is a link/junction/reparse point; None when the whole chain is plain.
+
+    Every ancestor is inspected, not only the last component: a junction above
+    the probe directory redirects every write below it just the same. A path
+    whose canonical form differs from its written form also reached somewhere
+    else and is refused.
+    """
+    absolute = Path(os.path.abspath(path))
+    chain = list(reversed(absolute.parents)) + [absolute]
+    deepest = None
+    for component in chain:
+        try:
+            entry = os.lstat(component)
+        except FileNotFoundError:
+            break
+        except OSError as exc:
+            return f"{component}（无法检查：{exc}）"
+        if _is_link_entry(entry):
+            return str(component)
+        deepest = component
+    if deepest is not None:
+        try:
+            if os.path.normcase(os.path.realpath(deepest)) != os.path.normcase(str(deepest)):
+                return f"{deepest}（规范路径不同：{os.path.realpath(deepest)}）"
+        except (OSError, ValueError) as exc:
+            return f"{deepest}（无法规范化：{exc}）"
+    return None
+
+
+def file_identity_problem(path: Path) -> Optional[Tuple[str, str]]:
+    """(code, reason) when an existing file the probe would write is not a plain,
+    singly-linked regular file; None when it is absent or plain.
+
+    A hard link has its own directory entry and is invisible to islink/realpath,
+    so the link count is what exposes a second name for the same bytes.
+    """
+    try:
+        entry = os.lstat(path)
+    except FileNotFoundError:
+        return None
+    except OSError as exc:
+        return "probe_path_invalid", f"{path} 无法检查：{exc}"
+    if _is_link_entry(entry):
+        return "probe_path_is_link", f"{path} 是链接"
+    if not stat.S_ISREG(entry.st_mode):
+        return "probe_path_invalid", f"{path} 不是普通文件"
+    if entry.st_nlink != 1:
+        return "probe_path_hardlinked", f"{path} 有 {entry.st_nlink} 个硬链接名称，拒绝写入"
+    return None
+
+
+def dir_problem(path: Path) -> Optional[Tuple[str, str]]:
+    """(code, reason) when an existing directory the probe would write into is a
+    link or not a directory; None when absent or a plain directory."""
+    try:
+        entry = os.lstat(path)
+    except FileNotFoundError:
+        return None
+    except OSError as exc:
+        return "probe_path_invalid", f"{path} 无法检查：{exc}"
+    if _is_link_entry(entry):
+        return "probe_path_is_link", f"{path} 是链接/联接"
+    if not stat.S_ISDIR(entry.st_mode):
+        return "probe_dir_invalid", f"{path} 不是目录"
+    return None
+
+
+def _norm(path: Path) -> str:
+    return os.path.normcase(os.path.abspath(path))
+
+
+def _norm_real(path: Path) -> str:
+    return os.path.normcase(os.path.realpath(path))
+
+
+def _inside(child: str, parent: str) -> bool:
+    return child == parent or child.startswith(parent.rstrip(os.sep) + os.sep)
+
+
+def history_conflict(registry: Path, probe_dir: Path, history: Optional[Path]) -> Optional[str]:
+    """Why the probe's writable source would alias the read-only history, or None.
+
+    Covers the same written path, the same canonical path, the same file under
+    another name (hard link or any alias `samefile` sees) and a history file that
+    lives inside the probe directory the probe writes into.
+    """
+    if history is None:
+        return None
+    try:
+        if _norm(registry) == _norm(history) or _norm_real(registry) == _norm_real(history):
+            return "试运行登记与只读历史来源是同一路径"
+        if os.path.exists(registry) and os.path.exists(history) and os.path.samefile(registry, history):
+            return "试运行登记与只读历史来源是同一文件（硬链接或别名）"
+        if _inside(_norm(history), _norm(probe_dir)) or _inside(_norm_real(history), _norm_real(probe_dir)):
+            return "只读历史来源位于试运行可写目录内"
+    except (OSError, ValueError) as exc:
+        return f"无法确认试运行登记与历史来源相互独立：{exc}"
+    return None
+
+
+_SOURCE_THREAD_LOCKS: Dict[str, threading.Lock] = {}
+_SOURCE_THREAD_LOCKS_GUARD = threading.Lock()
+
+
+def _thread_lock_for(key: str) -> threading.Lock:
+    with _SOURCE_THREAD_LOCKS_GUARD:
+        lock = _SOURCE_THREAD_LOCKS.get(key)
+        if lock is None:
+            lock = threading.Lock()
+            _SOURCE_THREAD_LOCKS[key] = lock
+        return lock
+
+
+def _os_lock(fd: int) -> None:
+    if os.name == "nt":                                  # pragma: no cover - Windows only
+        import msvcrt
+        os.lseek(fd, 0, os.SEEK_SET)
+        msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
+    else:
+        import fcntl
+        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+
+
+def _os_unlock(fd: int) -> None:
+    try:
+        if os.name == "nt":                              # pragma: no cover - Windows only
+            import msvcrt
+            os.lseek(fd, 0, os.SEEK_SET)
+            msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
+        else:
+            import fcntl
+            fcntl.flock(fd, fcntl.LOCK_UN)
+    except OSError:
+        pass
+
+
+@contextlib.contextmanager
+def acquire_source_lock(probe_dir: Path, timeout: Optional[float] = None):
+    """Exclusive lock on ONE probe source, across service objects AND processes.
+
+    A per-path thread lock serialises objects inside one process; an OS file
+    lock on `<probe_dir>/probe.lock` serialises processes. A source that stays
+    busy past `timeout` is refused (safe rejection of a second user), never
+    waited on forever and never bypassed.
+    """
+    if timeout is None:
+        timeout = SOURCE_LOCK_TIMEOUT
+    key = _norm(probe_dir)
+    deadline = time.monotonic() + timeout
+    thread_lock = _thread_lock_for(key)
+    if not thread_lock.acquire(timeout=max(timeout, 0.0)):
+        raise ProbeRefused("probe_source_busy", "同一试运行来源正被本进程另一使用者占用；未派发")
+    fd = None
+    try:
+        lock_path = Path(probe_dir) / LOCK_NAME
+        problem = file_identity_problem(lock_path)
+        if problem:
+            raise ProbeRefused(problem[0], f"试运行来源锁文件不可信：{problem[1]}；未派发")
+        flags = os.O_RDWR | os.O_CREAT | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_BINARY", 0)
+        fd = os.open(lock_path, flags, 0o600)
+        while True:
+            try:
+                _os_lock(fd)
+                break
+            except OSError:
+                if time.monotonic() >= deadline:
+                    raise ProbeRefused("probe_source_busy",
+                                       "同一试运行来源正被另一进程占用；安全拒绝第二使用者，未派发")
+                time.sleep(0.05)
+        try:
+            yield
+        finally:
+            _os_unlock(fd)
+    finally:
+        if fd is not None:
+            os.close(fd)
+        thread_lock.release()
+
+
+def read_claim(path: Path) -> Tuple[str, Optional[Dict[str, Any]], str]:
+    """(state, claim, message) of the durable source claim; never writes.
+
+    absent -> no probe ever accepted here; ok -> a validated claim; corrupt ->
+    anything else, which blocks rather than being read as absent.
+    """
+    try:
+        raw = Path(path).read_bytes()
+    except FileNotFoundError:
+        return "absent", None, ""
+    except OSError as exc:
+        return "corrupt", None, f"认领文件不可读：{exc}"
+    try:
+        data = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, ValueError) as exc:
+        return "corrupt", None, f"认领文件不是合法 JSON：{exc}"
+    if (not isinstance(data, dict) or data.get("schema") != CLAIM_SCHEMA
+            or data.get("state") not in CLAIM_STATES
+            or not isinstance(data.get("probe_id"), str) or not PROBE_ID_PATTERN.match(data["probe_id"])):
+        return "corrupt", None, "认领文件字段不符合格式"
+    return "ok", data, ""
+
+
+def claim_blocks(state: str, claim: Optional[Dict[str, Any]]) -> bool:
+    """A corrupt claim, or a claim accepted but never finished, blocks the source."""
+    if state == "absent":
+        return False
+    return state != "ok" or (claim or {}).get("state") != "finished"
+
+
+def write_claim(path: Path, data: Dict[str, Any]) -> None:
+    """Durably replace the claim: temp file in the same directory, fsync, rename.
+
+    The rename replaces the directory entry, so even a pre-existing hard link
+    would not receive the bytes; identity is still checked first.
+    """
+    problem = file_identity_problem(path)
+    if problem:
+        raise ProbeRefused(problem[0], f"试运行认领文件不可信：{problem[1]}；未派发")
+    payload = json.dumps(data, ensure_ascii=False, sort_keys=True).encode("utf-8")
+    handle, tmp_name = tempfile.mkstemp(dir=str(Path(path).parent), prefix=".probe-claim-", suffix=".tmp")
+    try:
+        with os.fdopen(handle, "wb") as stream:
+            stream.write(payload)
+            stream.flush()
+            os.fsync(stream.fileno())
+        for attempt in range(5):
+            try:
+                os.replace(tmp_name, path)
+                break
+            except PermissionError:
+                if attempt == 4:
+                    raise
+                time.sleep(0.02 * (attempt + 1))
+    except BaseException:
+        try:
+            os.unlink(tmp_name)
+        except OSError:
+            pass
+        raise
+
+
 class SessionProbeService:
-    """One opt-in probe source: one registry, one raw-evidence root, one lock."""
+    """One opt-in probe source: one registry, one raw-evidence root, one claim.
+
+    Mutual exclusion is per SOURCE (the probe directory), not per object: the
+    source lock plus a durable claim written before a start is accepted keep a
+    second object or process from accepting while a probe is unresolved.
+    """
 
     def __init__(self, config: ProbeConfig, *, history_runs_path: Optional[Path],
                  reader_factory: Callable[[Path, Path], Any],
@@ -229,6 +495,7 @@ class SessionProbeService:
         self.registry_path = base / REGISTRY_NAME
         self.raw_root = base / RAW_DIR_NAME
         self.workspace_root = base / WORKSPACE_DIR_NAME
+        self.claim_path = base / CLAIM_NAME
         self.history_runs_path = Path(history_runs_path) if history_runs_path else None
         self._reader_factory = reader_factory
         self._adapter_factory = adapter_factory or default_adapter_factory
@@ -244,6 +511,9 @@ class SessionProbeService:
         self._inflight: Optional[Dict[str, Any]] = None
         self._last_error: Optional[Dict[str, Any]] = None
         self.submit_calls = 0            # adapter.submit calls made by this service
+        #: Test seam: called inside the source lock, after the blockers were read
+        #: and before the claim is written. Production leaves it None.
+        self._claim_hook: Optional[Callable[[], None]] = None
 
     # -- reading ---------------------------------------------------------------
     def _reader(self):
@@ -253,13 +523,26 @@ class SessionProbeService:
         """The probe registry through the accepted read-only history reader."""
         return self._reader().list_agent_runs()
 
-    def _same_file(self, a: Path, b: Optional[Path]) -> bool:
-        if b is None:
-            return False
-        try:
-            return os.path.normcase(os.path.realpath(a)) == os.path.normcase(os.path.realpath(b))
-        except (OSError, ValueError):
-            return True
+    def _layout_blockers(self) -> List[Dict[str, str]]:
+        """Static isolation of the writable source; reads metadata only."""
+        out: List[Dict[str, str]] = []
+        conflict = history_conflict(self.registry_path, self.probe_dir, self.history_runs_path)
+        if conflict:
+            out.append({"code": "probe_registry_is_history_source",
+                        "message": conflict + "；拒绝把历史来源变成可写来源"})
+        linked = link_component(self.probe_dir)
+        if linked:
+            out.append({"code": "probe_path_is_link",
+                        "message": f"试运行目录或其祖先含链接/联接，拒绝写入：{linked}"})
+        for directory in (self.probe_dir, self.raw_root, self.workspace_root):
+            problem = dir_problem(directory)
+            if problem:
+                out.append({"code": problem[0], "message": f"试运行目录不可信：{problem[1]}"})
+        for name in (self.registry_path, self.claim_path, self.probe_dir / LOCK_NAME):
+            problem = file_identity_problem(name)
+            if problem:
+                out.append({"code": problem[0], "message": f"试运行文件不可信：{problem[1]}"})
+        return out
 
     def _blockers(self, view: Dict[str, Any]) -> List[Dict[str, str]]:
         out: List[Dict[str, str]] = []
@@ -269,14 +552,6 @@ class SessionProbeService:
 
         if not probe_enabled(self.config):
             block("probe_disabled", "服务端未启用会话试运行（默认关闭）")
-        if self._same_file(self.registry_path, self.history_runs_path):
-            block("probe_registry_is_history_source",
-                  "试运行登记与只读历史来源是同一文件；拒绝把历史来源变成可写来源")
-        for path in (self.probe_dir, self.registry_path, self.raw_root, self.workspace_root):
-            if os.path.islink(path):
-                block("probe_path_is_link", f"试运行目录含链接，拒绝写入：{path}")
-        if self.probe_dir.exists() and not self.probe_dir.is_dir():
-            block("probe_dir_invalid", f"试运行目录不是目录：{self.probe_dir}")
         if not budget_satisfiable(self.config.budget_tokens):
             block("probe_budget_unenforceable",
                   f"服务端要求有限 token 预算 {self.config.budget_tokens}，适配器无法强制；拒发")
@@ -289,6 +564,7 @@ class SessionProbeService:
                 block(f"probe_registry_{state}", f"试运行登记不可用：{view.get('message')}")
             else:
                 block("probe_registry_unknown", f"试运行登记状态未知：{state!r}")
+        out.extend(self._layout_blockers())
         for run in view.get("runs") or []:
             events = run.get("events") or []
             last = events[-1] if events else None
@@ -297,6 +573,14 @@ class SessionProbeService:
                       f"存在未解决的试运行 {run.get('run_id')}（最后事件 {last}）；结果未知，待人工处理，不会自动重发")
         if inflight_blocks(self._inflight):
             block("probe_in_flight", f"试运行 {self._inflight['probe_id']} 正在进行")
+        claim_state, claim, claim_message = read_claim(self.claim_path)
+        if claim_blocks(claim_state, claim):
+            if claim_state == "ok":
+                block("probe_claim_unresolved",
+                      f"同一来源的试运行 {claim['probe_id']} 已受理但尚未登记结束"
+                      "（可能在另一服务对象/进程中进行，或受理后进程退出）；待人工处理，不会自动重发")
+            else:
+                block("probe_claim_corrupt", f"试运行认领不可用：{claim_message}；拒发")
         return out
 
     # -- views -----------------------------------------------------------------
@@ -377,6 +661,12 @@ class SessionProbeService:
             "note": "试运行往返完成只表示固定标识往返；不授予任何任务成功（Task succeeded）",
         }
 
+    def _claim_view(self) -> Dict[str, Any]:
+        state, claim, message = read_claim(self.claim_path)
+        return {"state": state, "message": message,
+                "probe_id": (claim or {}).get("probe_id"), "claim_state": (claim or {}).get("state"),
+                "outcome": (claim or {}).get("outcome"), "path": str(self.claim_path)}
+
     def status(self) -> Dict[str, Any]:
         """Read-only. Never prepares, never dispatches, never writes."""
         view = self._registry_view()
@@ -395,6 +685,7 @@ class SessionProbeService:
                          "count": view.get("count"), "path": str(self.registry_path)},
             "inflight": inflight, "last_error": last_error, "latest": latest,
             "history_count": len(runs), "live_session_registry_changed": False,
+            "claim": self._claim_view(),
             "note": ("真实调用会使用模型额度；试运行往返完成不等于任务验收成功；"
                      "静态会话登记仍为 connected=false。"),
         }
@@ -432,33 +723,78 @@ class SessionProbeService:
         probe_id = payload.get("probe_id")
         if not isinstance(probe_id, str) or not PROBE_ID_PATTERN.match(probe_id):
             raise ProbeRefused("probe_id_invalid", "试运行编号无效；未派发", 400)
+        refused = self._pre_start(probe_id)
+        if refused is not None:
+            return refused
+        # Nothing has been written yet. Create the source directory only after
+        # the static layout passed, then re-check it: creating parents cannot
+        # have introduced a link, but a pre-existing one would be caught here.
+        try:
+            self.probe_dir.mkdir(parents=True, exist_ok=True)
+        except OSError as exc:
+            raise ProbeRefused("probe_dir_invalid", f"无法建立试运行目录：{exc}；未派发")
+        layout = self._layout_blockers()
+        if layout:
+            raise ProbeRefused(layout[0]["code"], layout[0]["message"])
+        with acquire_source_lock(self.probe_dir):
+            with self._lock:
+                # Decide on the SOURCE, inside the source lock: the registry and
+                # the claim another object or process may have written.
+                view = self._registry_view()
+                recorded = any(run.get("idempotency_key") == probe_id for run in view.get("runs") or [])
+                if already_used(probe_id, self._consumed, recorded):
+                    return self._replay(probe_id)
+                expiry = self._prepared.get(probe_id)
+                if expiry is None or expiry <= self._clock():
+                    self._prepared.pop(probe_id, None)
+                    raise ProbeRefused("probe_not_prepared",
+                                       "试运行编号未签发或已过期（服务重开后需重新准备）；未派发", 409)
+                blockers = self._blockers(view)
+                if blockers:
+                    raise ProbeRefused(blockers[0]["code"], blockers[0]["message"],
+                                       403 if blockers[0]["code"] == "probe_disabled" else 409)
+                if self._claim_hook is not None:
+                    self._claim_hook()
+                accepted_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+                try:
+                    # Durable BEFORE acceptance: a crash after this line leaves
+                    # an unfinished claim that blocks the source for a human.
+                    write_claim(self.claim_path, {"schema": CLAIM_SCHEMA, "probe_id": probe_id,
+                                                  "state": "accepted", "accepted_at": accepted_at,
+                                                  "pid": os.getpid()})
+                except OSError as exc:
+                    raise ProbeRefused("probe_claim_unwritable", f"无法持久化试运行认领：{exc}；未派发")
+                del self._prepared[probe_id]
+                self._consumed.add(probe_id)
+                self._inflight = {"probe_id": probe_id, "phase": "accepted", "accepted_at": accepted_at}
+                self._last_error = None
+        self._runner(lambda: self._execute(probe_id))
+        return {"ok": True, "read_only": False, "probe_id": probe_id, "accepted": True,
+                "replay": False, "dispatched_now": True,
+                "note": "已受理一次真实试运行；结果以登记与证据为准"}
+
+    def _replay(self, probe_id: str) -> Dict[str, Any]:
+        return {"ok": True, "read_only": False, "probe_id": probe_id,
+                "accepted": False, "replay": True, "dispatched_now": False,
+                "note": "该试运行编号已使用；不会重发"}
+
+    def _pre_start(self, probe_id: str) -> Optional[Dict[str, Any]]:
+        """Checks that need no write: replay, prepared id, every blocker."""
+        view = self._registry_view()
         with self._lock:
-            # Read the registry INSIDE the lock so a start can never decide on a
-            # history that a just-finished probe has already extended.
-            view = self._registry_view()
             recorded = any(run.get("idempotency_key") == probe_id for run in view.get("runs") or [])
             if already_used(probe_id, self._consumed, recorded):
-                return {"ok": True, "read_only": False, "probe_id": probe_id,
-                        "accepted": False, "replay": True, "dispatched_now": False,
-                        "note": "该试运行编号已使用；不会重发"}
+                return self._replay(probe_id)
             expiry = self._prepared.get(probe_id)
             if expiry is None or expiry <= self._clock():
                 self._prepared.pop(probe_id, None)
                 raise ProbeRefused("probe_not_prepared",
                                    "试运行编号未签发或已过期（服务重开后需重新准备）；未派发", 409)
             blockers = self._blockers(view)
-            if blockers:
-                raise ProbeRefused(blockers[0]["code"], blockers[0]["message"],
-                                   403 if blockers[0]["code"] == "probe_disabled" else 409)
-            del self._prepared[probe_id]
-            self._consumed.add(probe_id)
-            self._inflight = {"probe_id": probe_id, "phase": "accepted",
-                              "accepted_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
-            self._last_error = None
-        self._runner(lambda: self._execute(probe_id))
-        return {"ok": True, "read_only": False, "probe_id": probe_id, "accepted": True,
-                "replay": False, "dispatched_now": True,
-                "note": "已受理一次真实试运行；结果以登记与证据为准"}
+        if blockers:
+            raise ProbeRefused(blockers[0]["code"], blockers[0]["message"],
+                               403 if blockers[0]["code"] == "probe_disabled" else 409)
+        return None
 
     def _build_request(self, probe_id: str, workspace: Path) -> SubmitRequest:
         token = probe_token(probe_id)
@@ -475,9 +811,23 @@ class SessionProbeService:
             if self._inflight is not None:
                 self._inflight["phase"] = phase
 
+    def _precheck_before_submit(self) -> Optional[Dict[str, str]]:
+        """The static layout again, immediately before anything is created in the
+        workspace or handed to the adapter (which writes before any external call)."""
+        layout = self._layout_blockers()
+        return layout[0] if layout else None
+
     def _execute(self, probe_id: str) -> None:
         adapter = None
+        outcome = "error"
         try:
+            problem = self._precheck_before_submit()
+            if problem:
+                outcome = "refused_before_dispatch"
+                with self._lock:
+                    self._last_error = {"probe_id": probe_id, "type": "ProbeRefused",
+                                        "code": problem["code"], "message": problem["message"]}
+                return
             workspace = self.workspace_root / probe_id
             workspace.mkdir(parents=True, exist_ok=False)
             request = self._build_request(probe_id, workspace)
@@ -485,10 +835,13 @@ class SessionProbeService:
             self._set_phase("dispatching")
             self.submit_calls += 1
             status = adapter.submit(request)
+            outcome = "submitted"
             if status.state == RunState.RUNNING and status.native_turn is not None:
                 self._set_phase("collecting")
                 adapter.collect(request.session, status.run_id, timeout=self.config.collect_timeout)
+                outcome = "collected_or_timed_out"
         except Exception as exc:                       # recorded, never retried
+            outcome = "error"
             with self._lock:
                 self._last_error = {"probe_id": probe_id, "type": type(exc).__name__,
                                     "message": str(exc)}
@@ -498,5 +851,22 @@ class SessionProbeService:
                     adapter.close()
                 except Exception:
                     pass
+            self._finish_claim(probe_id, outcome)
             with self._lock:
                 self._inflight = None
+
+    def _finish_claim(self, probe_id: str, outcome: str) -> None:
+        """Mark the claim finished. The registry, not this mark, says whether the
+        run itself is resolved; a failure here leaves the source blocked."""
+        try:
+            with acquire_source_lock(self.probe_dir, timeout=FINALIZE_LOCK_TIMEOUT):
+                state, claim, _ = read_claim(self.claim_path)
+                if state != "ok" or claim.get("probe_id") != probe_id:
+                    return
+                claim = dict(claim, state="finished", outcome=outcome,
+                             finished_at=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
+                write_claim(self.claim_path, claim)
+        except Exception as exc:
+            with self._lock:
+                self._last_error = {"probe_id": probe_id, "type": type(exc).__name__,
+                                    "message": f"认领未能标记结束，来源保持阻断：{exc}"}
