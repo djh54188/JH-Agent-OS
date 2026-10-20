@@ -1,0 +1,32 @@
+{
+  "repeat_same_observations": true,
+  "cases": 16,
+  "guard_summary": {
+    "detected": 16,
+    "redundant": 1,
+    "verdict": "pass"
+  },
+  "redundant_rows": [
+    {
+      "layer": "python",
+      "case": "replay_check_removed",
+      "target": "test_hark06_session_probe.TestAtMostOnce.test_same_probe_id_twice_dispatches_once",
+      "control": "passed",
+      "mutated": "error",
+      "diagnostic": {
+        "thread_starts": 1,
+        "second_start": "probe_not_prepared"
+      },
+      "verdict": "redundant",
+      "counted": false
+    }
+  ],
+  "targeted": {
+    "ran": 86,
+    "passed": 84,
+    "skipped": 2,
+    "failures": 0,
+    "errors": 0
+  },
+  "independent_ast": 748
+}
