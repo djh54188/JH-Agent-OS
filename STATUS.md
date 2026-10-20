@@ -13,14 +13,16 @@
 
 ---
 
-## 2026-10-20 · Hark GUI 选中提示与窄窗口详情定位的 Windows 集成（候选，待独立验收）
+## 2026-10-20 · Hark GUI 选中提示与窄窗口详情定位的 Windows 集成（已按本批范围验收）
+
+最新裁决：[Windows独立验收](reports/hark-gui-selection-windows-independent-acceptance-20261020.md)。功能d5b67d9及报告/状态13c9e92已验收，无新增整改；不代表GUI派发、指定审查或JH-020整体完成。
 
 按独立复核 [Hark-派单-05 复核](reports/hark-gui-selection-independent-review-20261020.md)，从固定候选 `068afb5` 按原字节移植四文件：更新 `gui/views.js`、`gui/styles.css`，新增 `tests/js/hark05_run_selection_harness.mjs`、`scripts/verify_hark05_selection_guards.py`。功能提交 `d5b67d9`（+582/−0，仅四文件）。
 
 - 离线：JH019 4/4、JH020 13/13、新选择行为 11/11；新定向削弱 3/3 断言检出；既有前端变异 2 检出 + 2 冗余；完整套件提交前后 **704 项 703 过/1 既有跳过**（AST 独立计数 704）。基线对照：同一新测试指向移植前 GUI 为 1 通过 / 10 断言失败。
 - 浏览器（Windows，真实指针）：当前选择唯一；切换记录时旧详情先清为加载态；1440/1101 双列点击前后 `scrollY` 相等；1100/760/480 单列点击后详情标题可见（top≈31）；三种宽度无水平溢出；1101 双列、1100 单列断点一致。
 - 真实旧历史只读：`data/jh020-r2-final-roundtrip-20261018/runs.jsonl`（源 `5b1dc26`）仍 `ok`/`count=1`/`verified`/`live=false`，登记与原始证据字节未变；未调用模型。合成多记录来源为 `data/hark-gui-integration-20261019/fixtures/registry/runs.jsonl`（7 条合成 run），已分别标注。
-- 未改后台、HTTP、规则、既有测试/守卫或成功门；未接派发/审查，未推送/合并。**Windows 集成候选，待架构师独立验收**；production complete 与自动文件应用继续关闭。
+- 未改后台、HTTP、规则、既有测试/守卫或成功门；未接派发/审查。**Windows 集成已按本批范围验收**；production complete 与自动文件应用继续关闭。执行方交付时未推送；同步结果以架构师验收后的远端完整SHA核对为准。
 
 ## 2026-10-19 · Hark 历史一致性限定整改的 Windows 集成（2026-10-20 按只读查询范围验收）
 
