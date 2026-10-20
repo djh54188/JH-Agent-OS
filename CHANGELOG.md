@@ -1,3 +1,15 @@
+# 2026-10-19 · 登记历史跨记录一致性只读校验（Windows 集成候选，待独立验收）
+
+按 [Hark-派单-04 限定整改独立复核](reports/hark-history-rectification-independent-review-20261019.md)，从固定候选 `e5f786e` 精准移植六文件，不整分支合并、不改共享解析器/适配器/GUI/HTTP/成功门。
+
+- **新增查询层校验**（`src/run_history_consistency.py`）：`check_history` 在 `parse_registry_text` 之后、分组与证据读取之前，校验同一 run 的绑定字段/请求/幂等键不变、原生 thread/model 只增不回退、`native_turns` 只扩展、事件顺序符合唯一写入方的 `reserved → … → collected/collect_timeout/dispatch_failed/dispatch_uncertain` 分支、`stage` 与各分支的 `state`/原生字段形状一致，以及同一登记源内非空幂等键只绑定一个 run。任一矛盾 ⇒ 整份历史 `corrupt`（`runs=[]`、`count=0`、详情 `run=None`），不读证据、不查任务关联、不修复源字节。
+- **接受的边界**：正常前缀 `[reserved]`、`[reserved, dispatched]`、合法失败/不确定终态与多 run 交错仍接受；本批只加固查询路径，不声称恢复和派发已加固。
+- **验证**：stage 冻结探针 77 项 0 异常；seed 探针 2 项正常保留、4 项反例 corrupt 且源字节不变；分类矩阵 1458 项全部符合；定向测试 72 项（63+9）通过；新守卫 24/24 断言检出；旧守卫 8 检出 + 1 冗余（双层关闭只作隔离诊断）；全量 **704 项 703 过/1 既有跳过**（AST 独立计数 704 = 632+63+9）；JH019 4/4、JH020 13/13、前端变异 2+2。
+- **真实旧历史只读**：`data/jh020-r2-final-roundtrip-20261018/runs.jsonl`（源 `5b1dc26`）仍 `ok`/`count=1`/`evidence=verified`/`live=false`，登记与原始证据字节未变；未调用模型、未发送会话。
+- **偏离**：`scripts/verify_jh020_run_history_guards.py` 与其新增分类回归 `tests/test_jh020_run_history_guard_classification.py` 为已授权偏离，单独提交；其余四个文件一组。见[集成报告](reports/hark-history-windows-integration-20261019.md)。
+
+---
+
 # 2026-10-18 · JH-020 真实会话运行记录的统一查询与 GUI 只读展示（本切片完成，待独立复核）
 
 **复用**已验收代码：`read_registry_text` / `parse_registry_text`（逐字段校验，不跳过坏行）/ `raw_evidence_state`（读磁盘字节核对摘要）；`TaskStorage.get_task` 只读核对关联。未复制状态机或审核规则。

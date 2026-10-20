@@ -13,6 +13,18 @@
 
 ---
 
+## 2026-10-19 · Hark 历史一致性限定整改的 Windows 集成（候选，待独立验收）
+
+按独立复核 [Hark-派单-04 限定整改复核](reports/hark-history-rectification-independent-review-20261019.md)，从固定候选 `e5f786e` 精准移植六文件：新增 `src/run_history_consistency.py`、`tests/test_jh020_history_consistency.py`、`scripts/verify_hark_history_consistency_guards.py`、`tests/test_jh020_run_history_guard_classification.py`，更新 `src/app_api.py`、`scripts/verify_jh020_run_history_guards.py`（后者与分类回归为已授权偏离，单独提交）。
+
+- 探针：stage 77 项 0 异常；seed 两项正常保留、四项反例 corrupt 且源字节不变；分类矩阵 1458 项全部符合预期。
+- 定向测试 72 项（新历史 63 + 分类回归 9）通过；新守卫 24/24 断言检出；旧守卫 8 检出 + 1 冗余（双层关闭只作隔离诊断，不计第九次检出）。
+- 全量 **704 项 703 过/1 既有跳过**（AST 独立计数 704 = 632 + 63 + 9）；JH019 前端 4/4、JH020 前端 13/13、前端变异 2 检出 + 2 冗余。
+- 真实旧历史只读：`data/jh020-r2-final-roundtrip-20261018/runs.jsonl`（源 `5b1dc26`）仍 `ok`/`count=1`/`evidence=verified`/`live=false`，登记与原始证据字节未变；未调用模型、未发送会话。
+- 矛盾历史整份 `corrupt`（`runs=[]`、`count=0`、详情 `run=None`），拒绝发生在证据读取与任务关联之前；本批只加固查询路径，不声称恢复和派发已加固。**Windows 集成候选，待架构师独立验收**；production complete 与自动文件应用继续关闭。
+
+---
+
 ## 2026-10-17 · JH-018 应用/会话能力探测与适配契约（接口层完成，产品未实现）
 
 按明确指令派发并完成：实测 ZCode 0.16.9 与 Codex CLI 0.160.1 的会话接口。**ZCode**：`zcode app-server --stdio`（ZCode Protocol，换行 JSON、双向）+ 本地 CLI，实测 `session/create|send|read|messages|usage|events|setModel|stop`，派发-收集-取消跑通；限制是默认模型已弃用须显式 `setModel`（含 reasoningLevel），且客户端必须应答服务端反向请求（如 `session/requestRuntimePreferences`）。**Codex**：JSON-RPC app-server（187 方法，随包可生成 schema）+ `codex exec`/`exec resume`，实测对指定 thread `thread/resume`→`turn/start` 完成一轮并收到 `turn/completed` 与用量。
