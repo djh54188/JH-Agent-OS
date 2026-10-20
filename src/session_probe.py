@@ -369,14 +369,39 @@ def _os_unlock(fd: int) -> None:
         pass
 
 
+def _identity(path: Path) -> Optional[Tuple[int, int]]:
+    """(st_dev, st_ino) of the entry itself (lstat), or None when absent/unreadable."""
+    try:
+        entry = os.lstat(path)
+    except OSError:
+        return None
+    return entry.st_dev, entry.st_ino
+
+
+def source_dir_problem(probe_dir: Path) -> Optional[Tuple[str, str]]:
+    """(code, reason) when the probe directory ITSELF (or any ancestor) cannot be
+    trusted as the place to open a lock or write a claim; None when it can."""
+    linked = link_component(probe_dir)
+    if linked:
+        return "probe_path_is_link", f"试运行目录或其祖先含链接/联接：{linked}"
+    problem = dir_problem(probe_dir)
+    if problem:
+        return problem
+    return None
+
+
 @contextlib.contextmanager
-def acquire_source_lock(probe_dir: Path, timeout: Optional[float] = None):
+def acquire_source_lock(probe_dir: Path, timeout: Optional[float] = None, *, create: bool = True):
     """Exclusive lock on ONE probe source, across service objects AND processes.
 
     A per-path thread lock serialises objects inside one process; an OS file
     lock on `<probe_dir>/probe.lock` serialises processes. A source that stays
     busy past `timeout` is refused (safe rejection of a second user), never
     waited on forever and never bypassed.
+
+    Hark-派单-08: the directory is re-checked here, so no caller can open (let
+    alone create) a lock file through a link/junction the probe has refused.
+    With `create=False` an absent lock file is refused instead of created.
     """
     if timeout is None:
         timeout = SOURCE_LOCK_TIMEOUT
@@ -388,10 +413,15 @@ def acquire_source_lock(probe_dir: Path, timeout: Optional[float] = None):
     fd = None
     try:
         lock_path = Path(probe_dir) / LOCK_NAME
+        problem = source_dir_problem(probe_dir)
+        if problem:
+            raise ProbeRefused(problem[0], f"试运行来源目录不可信：{problem[1]}；不打开锁文件")
         problem = file_identity_problem(lock_path)
         if problem:
             raise ProbeRefused(problem[0], f"试运行来源锁文件不可信：{problem[1]}；未派发")
-        flags = os.O_RDWR | os.O_CREAT | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_BINARY", 0)
+        if not create and not os.path.lexists(lock_path):
+            raise ProbeRefused("probe_lock_missing", f"来源锁文件已不存在：{lock_path}；不重新创建")
+        flags = os.O_RDWR | (os.O_CREAT if create else 0) | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_BINARY", 0)
         fd = os.open(lock_path, flags, 0o600)
         while True:
             try:
@@ -514,6 +544,9 @@ class SessionProbeService:
         #: Test seam: called inside the source lock, after the blockers were read
         #: and before the claim is written. Production leaves it None.
         self._claim_hook: Optional[Callable[[], None]] = None
+        #: Hark-派单-08: identity of the source directory and of the claim this
+        #: object wrote at acceptance; the cleanup only writes back to THOSE.
+        self._accepted_identity: Dict[str, Dict[str, Any]] = {}
 
     # -- reading ---------------------------------------------------------------
     def _reader(self):
@@ -764,6 +797,8 @@ class SessionProbeService:
                                                   "pid": os.getpid()})
                 except OSError as exc:
                     raise ProbeRefused("probe_claim_unwritable", f"无法持久化试运行认领：{exc}；未派发")
+                self._accepted_identity[probe_id] = {"dir": _identity(self.probe_dir),
+                                                     "claim": _identity(self.claim_path)}
                 del self._prepared[probe_id]
                 self._consumed.add(probe_id)
                 self._inflight = {"probe_id": probe_id, "phase": "accepted", "accepted_at": accepted_at}
@@ -811,17 +846,33 @@ class SessionProbeService:
             if self._inflight is not None:
                 self._inflight["phase"] = phase
 
-    def _precheck_before_submit(self) -> Optional[Dict[str, str]]:
+    def _precheck_before_submit(self, probe_id: Optional[str] = None) -> Optional[Dict[str, str]]:
         """The static layout again, immediately before anything is created in the
-        workspace or handed to the adapter (which writes before any external call)."""
+        workspace or handed to the adapter (which writes before any external call).
+        Hark-派单-08: also the SOURCE identity recorded at acceptance, so a plain
+        directory swapped in after acceptance is not written to either."""
         layout = self._layout_blockers()
-        return layout[0] if layout else None
+        if layout:
+            return layout[0]
+        if probe_id is not None and probe_id in self._accepted_identity:
+            replaced = self._identity_problem(probe_id)
+            if replaced:
+                return {"code": replaced[0], "message": replaced[1] + "；未派发"}
+        return None
+
+    def _identity_problem(self, probe_id: str) -> Optional[Tuple[str, str]]:
+        expected = self._accepted_identity.get(probe_id) or {}
+        if expected.get("dir") is None or _identity(self.probe_dir) != expected.get("dir"):
+            return "probe_source_replaced", "试运行目录已不是受理时的同一目录"
+        if expected.get("claim") is None or _identity(self.claim_path) != expected.get("claim"):
+            return "probe_claim_replaced", "认领文件已不是受理时写入的同一文件"
+        return None
 
     def _execute(self, probe_id: str) -> None:
         adapter = None
         outcome = "error"
         try:
-            problem = self._precheck_before_submit()
+            problem = self._precheck_before_submit(probe_id)
             if problem:
                 outcome = "refused_before_dispatch"
                 with self._lock:
@@ -855,18 +906,63 @@ class SessionProbeService:
             with self._lock:
                 self._inflight = None
 
+    def _cleanup_problem(self, probe_id: str) -> Optional[Tuple[str, str]]:
+        """Why the claim must NOT be written back now, or None.
+
+        The cleanup honours every refusal already made about the SOURCE: the
+        probe directory (and its ancestors) must still be plain, still be the
+        same directory and hold the same claim file this object wrote; the
+        claim and lock files must still be plain singly-linked files. raw/ws
+        links do not affect where the claim lives and are reported by the
+        pre-submit refusal instead.
+        """
+        problem = source_dir_problem(self.probe_dir)
+        if problem:
+            return problem
+        for name in (self.claim_path, self.probe_dir / LOCK_NAME):
+            problem = file_identity_problem(name)
+            if problem:
+                return problem
+        return self._identity_problem(probe_id)
+
+    def _report_cleanup_refused(self, probe_id: str, code: str, message: str) -> None:
+        detail = {"code": code, "message": message + "；认领未标记结束，来源保持阻断，待人工处理"}
+        with self._lock:
+            if self._last_error and self._last_error.get("probe_id") == probe_id:
+                self._last_error = dict(self._last_error, cleanup_refused=detail)
+            else:
+                self._last_error = {"probe_id": probe_id, "type": "CleanupRefused", "code": code,
+                                    "message": detail["message"], "cleanup_refused": detail}
+
     def _finish_claim(self, probe_id: str, outcome: str) -> None:
-        """Mark the claim finished. The registry, not this mark, says whether the
-        run itself is resolved; a failure here leaves the source blocked."""
+        """Mark the claim finished, only where it is safe to do so.
+
+        The registry, not this mark, says whether the run itself is resolved.
+        When the source can no longer be trusted the claim is left untouched
+        (blocking) and the refusal is reported; nothing is created or written.
+        """
         try:
-            with acquire_source_lock(self.probe_dir, timeout=FINALIZE_LOCK_TIMEOUT):
+            problem = self._cleanup_problem(probe_id)
+            if problem:
+                self._report_cleanup_refused(probe_id, *problem)
+                return
+            with acquire_source_lock(self.probe_dir, timeout=FINALIZE_LOCK_TIMEOUT, create=False):
+                problem = self._cleanup_problem(probe_id)
+                if problem:
+                    self._report_cleanup_refused(probe_id, *problem)
+                    return
                 state, claim, _ = read_claim(self.claim_path)
-                if state != "ok" or claim.get("probe_id") != probe_id:
+                if state != "ok" or claim.get("probe_id") != probe_id or claim.get("state") != "accepted":
+                    self._report_cleanup_refused(probe_id, "probe_claim_unexpected",
+                                                 "认领内容已不是本次受理的记录")
                     return
                 claim = dict(claim, state="finished", outcome=outcome,
                              finished_at=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
                 write_claim(self.claim_path, claim)
+        except ProbeRefused as exc:
+            self._report_cleanup_refused(probe_id, exc.code, str(exc))
         except Exception as exc:
-            with self._lock:
-                self._last_error = {"probe_id": probe_id, "type": type(exc).__name__,
-                                    "message": f"认领未能标记结束，来源保持阻断：{exc}"}
+            self._report_cleanup_refused(probe_id, "probe_cleanup_failed",
+                                         f"{type(exc).__name__}: {exc}")
+        finally:
+            self._accepted_identity.pop(probe_id, None)
