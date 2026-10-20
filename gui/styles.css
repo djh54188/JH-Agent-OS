@@ -190,6 +190,20 @@ button:hover { border-color: var(--accent); color: var(--accent); }
 .run-card .notice { margin: 8px 0 0; }
 button.run-action { border-color: var(--hist-line); color: var(--hist); background: var(--hist-bg); }
 button.run-action:hover { background: #e7eeff; }
+/* Hark-派单-05: current selection (scoped to the run-history panel). The cue is
+ * a text marker plus outline, not colour alone; aria-pressed carries the state. */
+.panel-history .run-card[data-selected="true"] {
+  border-color: var(--hist); box-shadow: 0 0 0 2px var(--hist-line); background: var(--hist-bg);
+}
+.panel-history .run-card[data-selected="true"] .run-foot::before {
+  content: "● 当前查看"; margin-right: auto; align-self: center;
+  font-size: 12.5px; font-weight: 600; color: var(--hist);
+}
+.panel-history button.run-action[aria-pressed="true"] {
+  background: var(--hist); border-color: var(--hist); color: #fff;
+}
+.panel-history button.run-action:focus-visible { outline: 2px solid var(--hist); outline-offset: 2px; }
+.panel-history .run-detail { scroll-margin-top: 12px; }
 
 .run-detail {
   position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow: auto;
@@ -216,6 +230,8 @@ button.run-action:hover { background: #e7eeff; }
 @media (max-width: 1100px) {
   .run-layout { grid-template-columns: minmax(0, 1fr); }
   .run-detail { position: static; max-height: none; }
+  /* Hark-派单-05: room for the clicked detail to sit at the top of the viewport. */
+  .panel-history .run-detail:not(:empty) { min-height: calc(100vh - 24px); }
 }
 @media (max-width: 760px) {
   .topbar, .tabs { padding-left: 14px; padding-right: 14px; }
