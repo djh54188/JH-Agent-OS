@@ -38,6 +38,7 @@ from src.agent_session_codex import (
     raw_evidence_state,
     read_registry_text,
 )
+from src.run_history_consistency import HistoryInconsistent, check_history
 
 # Capabilities the interface surface is designed to expose. Anything the
 # collaboration core can do but that is NOT wired in this batch is listed with
@@ -337,6 +338,13 @@ class AppInterface:
             return RUNS_CORRUPT, [], str(exc)
         if not records:
             return RUNS_EMPTY, [], f"登记文件存在但没有任何记录：{self.runs_path}"
+        # Cross-record consistency is checked BEFORE grouping, summarising or
+        # touching any evidence: one contradiction makes the whole history
+        # corrupt, with no partial summary and no repair of the source.
+        try:
+            check_history(records)
+        except HistoryInconsistent as exc:
+            return RUNS_CORRUPT, [], str(exc)
         grouped: Dict[str, Dict[str, Any]] = {}
         order: List[str] = []
         for record in records:
