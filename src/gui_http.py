@@ -23,7 +23,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
 
-from src.app_api import ApiError, AppInterface
+from src.app_api import ApiError, AppInterface, ProbeConfig
 
 ROOT = Path(__file__).resolve().parents[1]
 GUI_DIR = ROOT / "gui"
@@ -99,6 +99,8 @@ class GuiHandler(BaseHTTPRequestHandler):
                 self._json(200, self.api.list_agent_runs())
             elif path == "/api/drafts":
                 self._json(200, self.api.list_drafts())
+            elif path == "/api/session-probe":
+                self._json(200, self.api.session_probe_status())
             else:
                 self._json(404, {"ok": False, "error": {"code": "not_found",
                                                         "message": f"未知路径：{path}"}})
@@ -110,6 +112,16 @@ class GuiHandler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:                                 # noqa: N802
         path = urlparse(self.path).path
+        if path in PROBE_ACTION_PATHS:
+            # Transport-level request hygiene BEFORE the body is read or the
+            # application interface is called: a cross-site, non-loopback-host
+            # or non-JSON request never reaches the probe service.
+            allowed, reason = probe_request_allowed(self.headers, self.server.server_address)
+            if not allowed:
+                self._json(403, {"ok": False, "read_only": True,
+                                 "error": {"code": "probe_origin_refused",
+                                           "message": f"拒绝非本页同源请求：{reason}；未派发"}})
+                return
         length = int(self.headers.get("Content-Length") or 0)
         raw = self.rfile.read(length) if length else b""
         try:
@@ -121,6 +133,10 @@ class GuiHandler(BaseHTTPRequestHandler):
         try:
             if path == "/api/drafts":
                 self._json(201, self.api.save_goal_draft(payload))
+            elif path == "/api/session-probe/prepare":
+                self._json(200, self.api.prepare_session_probe(payload))
+            elif path == "/api/session-probe/start":
+                self._json(202, self.api.start_session_probe(payload))
             else:
                 self._json(404, {"ok": False, "error": {"code": "not_found",
                                                         "message": f"未知路径：{path}"}})
@@ -149,14 +165,50 @@ def validate_host(host: str) -> str:
     return candidate
 
 
+PROBE_ACTION_PATHS = frozenset({"/api/session-probe/prepare", "/api/session-probe/start"})
+
+
+def probe_request_allowed(headers, server_address) -> tuple:
+    """(allowed, reason) for a probe action request.
+
+    The page that may act is the one this server served: the Host header must be
+    a loopback name with this server's port, the Origin must be exactly that
+    page's origin (a request without Origin is refused), a Fetch-Metadata site
+    other than same-origin is refused, and the body must be JSON (which a
+    cross-site form or simple request cannot send without a CORS preflight this
+    server never answers).
+    """
+    port = server_address[1]
+    host_header = (headers.get("Host") or "").strip()
+    allowed_hosts = {f"127.0.0.1:{port}", f"localhost:{port}", f"[::1]:{port}"}
+    if host_header not in allowed_hosts:
+        return False, f"Host {host_header!r} 不是本机环回地址与本服务端口"
+    origin = (headers.get("Origin") or "").strip()
+    if origin != f"http://{host_header}":
+        return False, f"Origin {origin!r} 与本页来源 http://{host_header} 不一致"
+    site = (headers.get("Sec-Fetch-Site") or "").strip()
+    if site and site != "same-origin":
+        return False, f"Sec-Fetch-Site={site!r}"
+    ctype = (headers.get("Content-Type") or "").split(";")[0].strip().lower()
+    if ctype != "application/json":
+        return False, f"Content-Type {ctype!r} 不是 application/json"
+    return True, ""
+
+
 def make_server(host: str = "127.0.0.1", port: int = 8765,
                 db_path: str | None = None, drafts_path: str | None = None,
                 runs_path: str | None = None, evidence_roots=None,
-                gui_dir: Path | None = None) -> ThreadingHTTPServer:
+                gui_dir: Path | None = None, session_probe: ProbeConfig | None = None,
+                probe_adapter_factory=None, probe_runtime_check=None,
+                probe_runner=None) -> ThreadingHTTPServer:
     host = validate_host(host)                      # refuse before binding
     handler = type("BoundGuiHandler", (GuiHandler,), {})
     handler.api = AppInterface(db_path=db_path, drafts_path=drafts_path,
-                               runs_path=runs_path, evidence_roots=evidence_roots)
+                               runs_path=runs_path, evidence_roots=evidence_roots,
+                               session_probe=session_probe,
+                               probe_adapter_factory=probe_adapter_factory,
+                               probe_runtime_check=probe_runtime_check,
+                               probe_runner=probe_runner)
     handler.gui_dir = Path(gui_dir) if gui_dir else GUI_DIR
     return ThreadingHTTPServer((host, int(port)), handler)
 
@@ -171,12 +223,24 @@ def main(argv=None) -> int:
                     help="运行登记 JSONL 路径（服务端配置；浏览器不能指定）")
     ap.add_argument("--evidence-root", action="append", default=None,
                     help="允许读取证据的根目录（可重复；服务端配置）")
+    ap.add_argument("--enable-session-probe", action="store_true",
+                    help="启用 GUI 固定标识会话试运行（默认关闭；每次仍须用户确认）")
+    ap.add_argument("--session-probe-dir", default=None,
+                    help="试运行专用登记/证据/隔离工作区目录（不得与 --runs 同一文件）")
+    ap.add_argument("--session-probe-model", default=None, help="试运行模型（服务端决定）")
+    ap.add_argument("--session-probe-budget-tokens", type=int, default=None,
+                    help="服务端要求的 token 上限；适配器无法强制，设置后将拒发")
     args = ap.parse_args(argv)
 
+    probe = ProbeConfig(enabled=bool(args.enable_session_probe),
+                        probe_dir=args.session_probe_dir,
+                        model_id=args.session_probe_model or ProbeConfig.model_id,
+                        budget_tokens=args.session_probe_budget_tokens)
     httpd = make_server(args.host, args.port, args.db, args.drafts, args.runs,
-                        args.evidence_root)
+                        args.evidence_root, session_probe=probe)
     host, port = httpd.server_address[0], httpd.server_address[1]
-    print(f"JH-Agent OS GUI: http://{host}:{port}/  (只读 + 草案；不触发执行)")
+    mode = "会话试运行已启用（逐次确认）" if probe.enabled else "不触发执行"
+    print(f"JH-Agent OS GUI: http://{host}:{port}/  (只读 + 草案；{mode})")
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

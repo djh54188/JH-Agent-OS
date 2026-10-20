@@ -50,6 +50,13 @@ JH.api = (function () {
       return request("GET", "/api/agent-runs/" + encodeURIComponent(runId));
     },
     listDrafts: function () { return request("GET", "/api/drafts"); },
+    /* Hark-派单-06 会话试运行：状态只读；prepare 只签发一次性编号；
+     * start 只携带 probe_id 与 confirm，其余全部由服务端决定。 */
+    sessionProbeStatus: function () { return request("GET", "/api/session-probe"); },
+    prepareSessionProbe: function () { return request("POST", "/api/session-probe/prepare", {}); },
+    startSessionProbe: function (probeId) {
+      return request("POST", "/api/session-probe/start", { probe_id: probeId, confirm: true });
+    },
     saveGoalDraft: function (draft) { return request("POST", "/api/drafts", draft); }
   };
 })();

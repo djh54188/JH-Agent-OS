@@ -39,6 +39,7 @@ from src.agent_session_codex import (
     read_registry_text,
 )
 from src.run_history_consistency import HistoryInconsistent, check_history
+from src.session_probe import ProbeConfig, ProbeRefused, SessionProbeService
 
 # Capabilities the interface surface is designed to expose. Anything the
 # collaboration core can do but that is NOT wired in this batch is listed with
@@ -205,7 +206,9 @@ class AppInterface:
     def __init__(self, db_path: str | Path | None = None,
                  drafts_path: str | Path | None = None,
                  runs_path: str | Path | None = None,
-                 evidence_roots=None):
+                 evidence_roots=None,
+                 session_probe: Optional[ProbeConfig] = None,
+                 probe_adapter_factory=None, probe_runtime_check=None, probe_runner=None):
         root = Path(__file__).resolve().parents[1]
         self.db_path = Path(db_path) if db_path else root / "data" / "jh_agent_os.sqlite3"
         self.drafts_path = Path(drafts_path) if drafts_path else DEFAULT_DRAFTS_PATH
@@ -218,6 +221,17 @@ class AppInterface:
             self.evidence_roots = tuple(Path(item) for item in evidence_roots)
         else:
             self.evidence_roots = (self.runs_path.parent / "raw",)
+        # Hark-派单-06: the opt-in GUI session probe. Off unless the SERVER passes
+        # an enabled ProbeConfig; its registry is its own, never the history
+        # source above, and it is read back through this same read-only reader.
+        db_for_reader = self.db_path
+        self.session_probe = SessionProbeService(
+            session_probe or ProbeConfig(enabled=False),
+            history_runs_path=self.runs_path,
+            reader_factory=lambda registry, raw: AppInterface(
+                db_path=db_for_reader, runs_path=registry, evidence_roots=(raw,)),
+            adapter_factory=probe_adapter_factory, runtime_check=probe_runtime_check,
+            runner=probe_runner)
 
     # -- storage -----------------------------------------------------------
     def _open(self):
@@ -236,12 +250,19 @@ class AppInterface:
 
     # -- capabilities ------------------------------------------------------
     def capabilities(self) -> Dict[str, Any]:
-        unsupported = [name for name, info in CAPABILITY_SURFACE.items()
+        surface = dict(CAPABILITY_SURFACE)
+        enabled = bool(self.session_probe.config.enabled)
+        surface["session_probe"] = (
+            {"supported": True, "note": "固定标识会话试运行（服务端已启用；仍须用户逐次确认）"}
+            if enabled else
+            {"supported": False, "reason": "会话试运行默认关闭；服务端未启用"})
+        unsupported = [name for name, info in surface.items()
                        if not info.get("supported")]
         return {"ok": True, "read_only": True,
-                "capabilities": CAPABILITY_SURFACE,
+                "capabilities": surface,
                 "unsupported": unsupported,
-                "note": "本批只读 + 草案；不触发 Agent/模型/工具执行"}
+                "note": ("只读 + 草案；会话试运行已由服务端启用（逐次确认，确认后调用真实模型）"
+                         if enabled else "本批只读 + 草案；不触发 Agent/模型/工具执行")}
 
     # -- workbench ---------------------------------------------------------
     def list_tasks(self, limit: int = 50) -> Dict[str, Any]:
@@ -462,6 +483,23 @@ class AppInterface:
                 "live": False,
                 "note": ("历史记录，不代表实时在线；declared_complete 不代表任务验收成功；"
                          "证据状态来自磁盘字节核对（verified/missing/mismatch/unverifiable）")}
+
+    # -- session probe (Hark-派单-06; opt-in, confirmed, at most once) -----
+    def session_probe_status(self) -> Dict[str, Any]:
+        """Read-only view of the probe: availability, plan and the latest run."""
+        return self.session_probe.status()
+
+    def prepare_session_probe(self, payload: Any) -> Dict[str, Any]:
+        try:
+            return self.session_probe.prepare(payload)
+        except ProbeRefused as exc:
+            raise ApiError(exc.code, exc.message, exc.http_status)
+
+    def start_session_probe(self, payload: Any) -> Dict[str, Any]:
+        try:
+            return self.session_probe.start(payload)
+        except ProbeRefused as exc:
+            raise ApiError(exc.code, exc.message, exc.http_status)
 
     # -- goal drafts (this batch does NOT execute) -------------------------
     def save_goal_draft(self, payload: Dict[str, Any]) -> Dict[str, Any]:

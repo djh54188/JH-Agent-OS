@@ -509,6 +509,205 @@ JH.views = (function () {
     return box;
   }
 
+  /* 会话试运行（Hark-派单-06）：固定标识往返，默认关闭。
+   * 打开与刷新只读状态；只有勾选确认并点击按钮才会先 prepare（签发一次性编号）
+   * 再 start（只带 probe_id 与 confirm）。按钮在本面板内只受理一次点击，
+   * 服务端另行保证至多派发一次。结果按文本显示，往返完成不等于任务验收成功。 */
+  const PROBE_POLL_MS = 2000;
+  const PROBE_OUTCOME = {
+    round_trip_complete: ["✓", "试运行往返完成：固定标识已回显（不等于任务验收成功）"],
+    round_trip_not_proven: ["✕", "往返未证实：回显、证据或工具检查未通过"],
+    dispatch_failed: ["✕", "派发失败（已登记，不重试）"],
+    unknown_manual: ["?", "结果未知：待人工处理，不会自动重发"],
+    in_progress: ["…", "进行中：已受理，正在派发或收集"],
+  };
+
+  function probe() {
+    const gen = beginRender();
+    const title = "会话试运行";
+    const sub = "固定标识往返（新建隔离只读 Codex 会话）；默认关闭，逐次确认，至多派发一次";
+    render([heading(title, sub), C().loadingState("正在读取试运行状态…")], gen);
+    let busy = false;                 // this panel accepts ONE confirmed click
+    let polls = 0;
+
+    function load() {
+      JH.api.sessionProbeStatus().then(function (envelope) {
+        if (!isCurrent(gen)) { return; }
+        if (!envelope || envelope.ok !== true) {
+          render([heading(title, sub), C().errorState((envelope && envelope.error) || {})], gen);
+          return;
+        }
+        busy = false;
+        render([heading(title, sub), probePanel(envelope)], gen);
+        if (envelope.inflight) {
+          const seconds = ((envelope.plan || {}).collect_timeout_seconds || 240) + 120;
+          if (polls < Math.ceil(seconds * 1000 / PROBE_POLL_MS)) {
+            polls += 1;
+            setTimeout(function () { if (isCurrent(gen)) { load(); } }, PROBE_POLL_MS);
+          }
+        } else {
+          polls = 0;
+        }
+      });
+    }
+
+    function probePanel(envelope) {
+      const panel = C().el("section", "panel panel-probe");
+      const source = C().el("div", envelope.adapter_source === "real_codex_adapter"
+        ? "notice probe-source" : "notice notice-warn probe-source");
+      source.dataset.source = String(envelope.adapter_source);
+      source.appendChild(C().el("strong", null, envelope.adapter_source === "real_codex_adapter"
+        ? "适配器：真实 Codex 会话适配器（会调用真实模型）"
+        : "适配器：离线/合成注入（非真实模型结果）"));
+      panel.appendChild(source);
+
+      const avail = C().el("div", envelope.available ? "notice notice-ok" : "notice notice-warn");
+      avail.dataset.state = envelope.available ? "available" : "blocked";
+      avail.appendChild(C().el("strong", null, envelope.available
+        ? "可以试运行：确认后发起一次真实会话" : "当前不能试运行"));
+      (envelope.blockers || []).forEach(function (item) {
+        avail.appendChild(C().el("div", "muted", item.code + "：" + item.message));
+      });
+      panel.appendChild(avail);
+
+      const plan = envelope.plan || {};
+      const planBox = C().el("div", "subpanel");
+      planBox.appendChild(C().el("h4", null, "将调用什么（全部由服务端决定）"));
+      [["app_kind", plan.app_kind], ["instance_id", plan.instance_id], ["session", plan.session],
+       ["role", plan.role], ["model", plan.model], ["sandbox", plan.sandbox],
+       ["network", plan.network], ["approval_policy", plan.approval_policy],
+       ["指令模板", plan.instruction_template], ["隔离工作区", plan.workspace_root],
+       ["登记", plan.registry], ["证据目录", plan.evidence_root], ["预算", plan.budget],
+       ["收集等待上限(秒)", plan.collect_timeout_seconds]].forEach(function (pair) {
+        planBox.appendChild(C().field(pair[0], pair[1], { mono: true }));
+      });
+      panel.appendChild(planBox);
+      panel.appendChild(C().note("真实调用会使用模型额度；适配器不支持硬 token 预算。"
+        + "试运行不发送任何既有、架构师或审查会话，不接受自由任务或路径。"));
+
+      const confirmRow = C().el("label", "probe-confirm");
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.className = "probe-confirm-box";
+      confirmRow.appendChild(checkbox);
+      confirmRow.appendChild(C().el("span", null,
+        "我确认发起一次真实 Codex 会话试运行，并知晓会使用模型额度"));
+      panel.appendChild(confirmRow);
+
+      const actions = C().el("div", "row probe-actions");
+      const start = C().el("button", "probe-start", "确认并发起一次试运行");
+      const refreshButton = C().el("button", "probe-refresh", "刷新状态（只读）");
+      const canStart = envelope.available === true && !envelope.inflight;
+      start.disabled = true;
+      checkbox.disabled = !canStart;
+      checkbox.addEventListener("change", function () {
+        start.disabled = !(canStart && checkbox.checked === true && !busy);
+      });
+      const message = C().el("div", "probe-message");
+      start.addEventListener("click", function () {
+        if (busy || start.disabled || checkbox.checked !== true || !canStart) { return; }
+        busy = true;
+        start.disabled = true;
+        checkbox.disabled = true;
+        message.textContent = "正在签发一次性试运行编号…";
+        JH.api.prepareSessionProbe().then(function (prepared) {
+          if (!isCurrent(gen)) { return; }
+          if (!prepared || prepared.ok !== true) {
+            message.textContent = "";
+            message.appendChild(C().errorState((prepared && prepared.error) || {}));
+            busy = false;
+            return;
+          }
+          message.textContent = "已确认，正在受理试运行 " + prepared.token + " …";
+          JH.api.startSessionProbe(prepared.probe_id).then(function (started) {
+            if (!isCurrent(gen)) { return; }
+            if (!started || started.ok !== true) {
+              message.textContent = "";
+              message.appendChild(C().errorState((started && started.error) || {}));
+            }
+            load();                                  // the registry decides what happened
+          });
+        });
+      });
+      refreshButton.addEventListener("click", function () {
+        if (busy) { return; }
+        load();
+      });
+      actions.appendChild(start);
+      actions.appendChild(refreshButton);
+      panel.appendChild(actions);
+      panel.appendChild(message);
+
+      if (envelope.inflight) {
+        panel.appendChild(C().note("试运行进行中（" + envelope.inflight.phase + "）；"
+          + "本页仅只读刷新状态，不会重发。"));
+      }
+      if (envelope.last_error) {
+        panel.appendChild(C().bulletList("最近一次执行异常（未重试）",
+          [envelope.last_error.type + "：" + envelope.last_error.message]));
+      }
+      panel.appendChild(probeResult(envelope.latest, envelope.registry || {}));
+      return panel;
+    }
+
+    load();
+  }
+
+  function probeResult(latest, registry) {
+    const box = C().el("div", "subpanel probe-result");
+    box.appendChild(C().el("h4", null, "最近一次试运行"));
+    box.appendChild(C().field("登记状态", registry.state));
+    if (!latest) {
+      box.appendChild(C().emptyState(registry.message || "尚无试运行记录"));
+      return box;
+    }
+    const outcome = PROBE_OUTCOME[latest.outcome] || ["?", "未知结果：" + latest.outcome];
+    const head = C().el("div", latest.outcome === "round_trip_complete" ? "notice notice-ok" : "notice notice-warn");
+    head.dataset.outcome = String(latest.outcome);
+    const strong = C().el("strong");
+    strong.appendChild(C().el("span", "state-icon", outcome[0]));
+    strong.appendChild(C().el("span", null, outcome[1]));
+    head.appendChild(strong);
+    box.appendChild(head);
+    [["run_id", latest.run_id], ["固定标识", latest.token], ["record_state", latest.record_state],
+     ["native_state", latest.native_state], ["requested_model", latest.requested_model],
+     ["native_model", latest.native_model], ["thread", latest.native_session_id],
+     ["turn", latest.native_turn_id], ["回显核对", latest.echo],
+     ["指令绑定本次编号", latest.instruction_bound],
+     ["last_recorded_at", latest.last_recorded_at]].forEach(function (pair) {
+      box.appendChild(C().field(pair[0], pair[1], { mono: true }));
+    });
+    box.appendChild(C().el("h4", null, "本次回复（按文本显示）"));
+    if (!latest.reply_texts || latest.reply_texts.length === 0) {
+      box.appendChild(C().el("div", "muted", "没有绑定本次 thread/turn 的回复"));
+    } else {
+      latest.reply_texts.forEach(function (text) {
+        box.appendChild(C().el("pre", "probe-reply", text));
+      });
+    }
+    box.appendChild(C().el("h4", null, "用量（仅采用绑定本次 thread/turn 的记录）"));
+    if (!latest.usage) {
+      box.appendChild(C().field("usage", "未知（" + latest.usage_state + "）；不按 0 计"));
+    } else {
+      box.appendChild(C().field("turn", JSON.stringify(latest.usage.turn), { mono: true }));
+      box.appendChild(C().field("thread_total", JSON.stringify(latest.usage.thread_total), { mono: true }));
+      box.appendChild(C().field("source", JSON.stringify(latest.usage.source), { mono: true }));
+    }
+    box.appendChild(C().el("h4", null, "原始证据"));
+    box.appendChild(C().evidenceNotice(latest.evidence || {}));
+    box.appendChild(C().field("path", (latest.evidence || {}).path, { mono: true }));
+    box.appendChild(C().field("工具调用", latest.tool_items === null || latest.tool_items === undefined
+      ? "未核验" : (latest.tool_items.length ? latest.tool_items.join(", ") : "无")));
+    box.appendChild(C().field("隔离工作区文件", latest.workspace_files === null || latest.workspace_files === undefined
+      ? "未核验" : (latest.workspace_files.length ? latest.workspace_files.join(", ") : "无")));
+    box.appendChild(C().bulletList("未验证事项", latest.unverified));
+    const claim = C().el("div", "declared");
+    claim.appendChild(C().kindTag("claim", "✎ 执行方声明"));
+    claim.appendChild(C().el("span", "muted", latest.note || ""));
+    box.appendChild(claim);
+    return box;
+  }
+
   /* 审查与交付。 */
   function delivery(taskId) {
     const gen = beginRender();
@@ -568,6 +767,7 @@ JH.views = (function () {
       else if (view === "sessions") sessions();
       else if (view === "task") taskDetail(currentTaskId);
       else if (view === "delivery") delivery(currentTaskId);
+      else if (view === "probe") probe();
     }
 
     tabs.addEventListener("click", function (event) {
@@ -592,6 +792,13 @@ JH.views = (function () {
         });
       }
       summary.appendChild(C().el("span", "muted", " · " + envelope.note));
+      const probeCap = (envelope.capabilities || {}).session_probe;
+      if (probeCap && probeCap.supported === true) {
+        // The static badge must not keep saying "never executes" once the
+        // server has enabled the confirmed probe.
+        document.getElementById("scope-badge").textContent =
+          "只读 + 草案 · 会话试运行已启用（逐次确认后调用真实模型）";
+      }
     });
 
     /* 任务卡片上的显式按钮负责选中任务并切换视图，不解析卡片正文。 */
@@ -606,5 +813,5 @@ JH.views = (function () {
   }
 
   return { start: start, workbench: workbench, taskDetail: taskDetail,
-           sessions: sessions, delivery: delivery };
+           sessions: sessions, delivery: delivery, probe: probe };
 })();

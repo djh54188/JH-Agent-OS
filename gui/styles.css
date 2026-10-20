@@ -245,3 +245,15 @@ button.run-action:hover { background: #e7eeff; }
   .field { flex-direction: column; gap: 0; padding: 3px 0; }
   .field-label { flex-basis: auto; font-size: 12px; }
 }
+
+/* ---- 会话试运行 (Hark-派单-06) --------------------------------------- */
+.panel-probe .probe-confirm { display: flex; gap: 8px; align-items: flex-start; margin: 12px 0 8px; }
+.panel-probe .probe-confirm input { margin-top: 4px; width: auto; flex: 0 0 auto; }
+.panel-probe .probe-confirm span { flex: 1 1 auto; }
+.panel-probe .probe-actions { gap: 8px; margin: 8px 0; }
+.panel-probe button.probe-start:disabled { opacity: .55; cursor: not-allowed; }
+.panel-probe .probe-reply {
+  white-space: pre-wrap; overflow-wrap: anywhere; font-family: var(--mono); font-size: 12.5px;
+  background: #fbfcfd; border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 8px 10px; margin: 4px 0;
+}
+.panel-probe .probe-source { margin-top: 0; }
