@@ -1,3 +1,15 @@
+# 2026-10-20 · 运行记录选中提示与窄窗口详情定位（Windows 集成候选，待独立验收）
+
+按 [Hark-派单-05 独立复核](reports/hark-gui-selection-independent-review-20261020.md)，从固定候选 `068afb5` 按原字节移植四文件，功能提交 `d5b67d9`（+582/−0）。不改后台、HTTP、规则、既有测试/守卫或成功门。
+
+- **选中提示**：`gui/views.js` 新增 `markSelected`/`setPressed`，点击后唯一按钮 `aria-pressed=true`、唯一卡片 `data-selected=true`；`gui/styles.css` 在 `.panel-history` 内给出描边与“● 当前查看”文字标记（不只靠颜色），并加 `:focus-visible`。
+- **窄窗口定位**：新增 `revealDetail`，仅在 `(max-width: 1100px)` 单列且由明确点击触发时 `scrollIntoView` 一次；双列与响应回调都不滚动。CSS 用 `scroll-margin-top` 与 `.panel-history .run-detail:not(:empty)` 的 `min-height` 提供定位空间（承接复核接受的偏离①）。
+- **离线**：JH019 4/4、JH020 13/13、新选择行为 11/11；新定向削弱 3/3 断言检出；既有前端变异 2 检出 + 2 冗余；完整套件提交前后 **704 项 703 过/1 既有跳过**（AST 独立计数 704）。基线对照：同一新测试指向移植前 GUI 为 1 通过 / 10 断言失败。
+- **Windows 浏览器（真实指针）**：当前选择唯一；切换记录时旧详情先清为加载态、迟到/错误响应不改选择与滚动；1440/1101 双列点击前后 `scrollY` 相等；1100/760/480 单列点击后详情标题可见（top≈31）；三种宽度无水平溢出。
+- **来源标注**：合成多记录来自 `data/hark-gui-integration-20261019/fixtures/registry/runs.jsonl`（7 条合成 run）；真实旧历史来自 `data/jh020-r2-final-roundtrip-20261018/runs.jsonl`（源 `5b1dc26`），只读 `ok`/`count=1`/`verified`/`live=false`，登记与原始证据字节未变，未调用模型。见[集成报告](reports/hark-gui-selection-windows-integration-20261020.md)。
+
+---
+
 # 2026-10-20 · 登记历史只读查询 Windows 集成独立验收
 
 执行AI-派单-05的移植e995789、已授权偏离575b627和报告3f891a6按限定范围验收。六文件字节及提交blob一致；独立复跑stage77/0异常、种子2正常+4拒绝、分类1458、新守卫24/24、旧守卫8检出+1冗余。核对执行方提交前后全套704/703/1日志及AST704，架构师未跑全套。健康返回字段保持相同，旧真实历史仍verified且字节未变；无模型调用。见[独立验收](reports/hark-history-windows-independent-acceptance-20261020.md)。本批不覆盖恢复/派发、指定审查、GUI执行或文件系统并发。
