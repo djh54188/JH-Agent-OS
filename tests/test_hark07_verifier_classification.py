@@ -60,9 +60,11 @@ class TestClassifyPythonRow(unittest.TestCase):
                          "control_failed")
 
     def test_inactive_mutation_is_not_redundant(self):
-        for active in (None, False):
-            self.assertEqual(self.classify(RED, mutated="passed", active=active, diag=GOOD_DIAG)[0],
-                             "mutation_inactive")
+        # Hark-派单-08: explicit False and unset None are reported differently.
+        self.assertEqual(self.classify(RED, mutated="passed", active=False, diag=GOOD_DIAG)[0],
+                         "mutation_inactive")
+        self.assertEqual(self.classify(RED, mutated="passed", active=None, diag=GOOD_DIAG)[0],
+                         "mutation_activity_unproven")
 
     def test_invalid_diagnostics_are_not_redundant(self):
         bad = [None, "1", {}, {"error": "boom"}, dict(GOOD_DIAG, thread_starts=2),
@@ -81,6 +83,54 @@ class TestClassifyPythonRow(unittest.TestCase):
 
     def test_undeclared_clean_pass_is_never_redundant(self):
         self.assertEqual(self.classify(PLAIN, mutated="passed", active=True, diag=GOOD_DIAG)[0], "not_detected")
+
+
+class TestExplicitlyInactiveMatrix(unittest.TestCase):
+    """Hark-派单-08 R3 tail: a weakening the verifier PROVED inactive can never
+    pass, whatever the formal target did; unset (None) stays distinct."""
+
+    STATES = ("passed", "assertion", "error", "skipped", "zero_tests")
+
+    def test_explicit_false_never_counts_for_any_row_or_outcome(self):
+        for name in (RED, PLAIN):
+            for mutated in self.STATES:
+                verdict, counted, extra = guard.classify_python_row(name, "passed", mutated, False, GOOD_DIAG)
+                self.assertEqual((verdict, counted), ("mutation_inactive", False), (name, mutated))
+                self.assertEqual(extra["mutation_activity"], "explicitly_inactive")
+                self.assertNotIn("redundancy_contradicted", extra)
+
+    def test_true_keeps_real_detection_and_legal_redundancy(self):
+        expected = {"passed": ("redundant", False), "assertion": ("detected", True),
+                    "error": ("mutated_error", False), "skipped": ("mutated_skipped", False),
+                    "zero_tests": ("mutated_zero_tests", False)}
+        for mutated, want in expected.items():
+            self.assertEqual(guard.classify_python_row(RED, "passed", mutated, True, GOOD_DIAG)[:2], want, mutated)
+
+    def test_none_on_ordinary_rows_keeps_assertion_evidence(self):
+        self.assertEqual(guard.classify_python_row(PLAIN, "passed", "assertion", None, None)[:2], ("detected", True))
+        self.assertEqual(guard.classify_python_row(PLAIN, "passed", "passed", None, None)[0], "not_detected")
+        verdict, _, extra = guard.classify_python_row(RED, "passed", "passed", None, GOOD_DIAG)
+        self.assertEqual((verdict, extra["mutation_activity"]), ("mutation_activity_unproven", "unproven"))
+
+    def test_main_with_an_unapplied_patch_and_an_assertion_fails(self):
+        """The review's main() shape: nullcontext (nothing weakened), control
+        passed, formal assertion -- with the verifier's REAL activity check."""
+        for state in self.STATES:
+            states = iter(["passed", state])
+            buf = io.StringIO()
+            with mock.patch.object(guard, "PY_MUTATIONS", [(RED, contextlib.nullcontext, "observed")]), \
+                 mock.patch.object(guard, "JS_MUTATIONS", []), mock.patch.object(guard, "NODE", "unused"), \
+                 mock.patch.object(guard, "run_case", lambda name: next(states)), \
+                 mock.patch.object(guard, "run_js", lambda path: {"scenarios": {}}), \
+                 mock.patch.object(guard, "replay_diagnostic", lambda: dict(GOOD_DIAG)), \
+                 contextlib.redirect_stdout(buf):
+                code = guard.main()
+            summary = json.loads(buf.getvalue())
+            row = summary["rows"][0]
+            self.assertEqual((code, summary["verdict"]), (1, "fail"), state)
+            self.assertEqual((row["mutation_active"], row["verdict"], row["counted"]),
+                             (False, "mutation_inactive", False), state)
+            self.assertEqual(summary["detected"] + summary["redundant"], 0)
 
 
 class TestClassifyJsRow(unittest.TestCase):

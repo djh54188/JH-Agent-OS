@@ -16,7 +16,14 @@ Classification (Hark-派单-07 correction, see `classify_python_row`):
              zero tests), the verifier itself observed that the weakening was
              active, and the declared diagnostic is valid. Not counted.
   everything else fails the run: control_failed, mutated error / skipped /
-  zero_tests / unexpected, mutation_inactive, invalid_diagnostic, not_detected.
+  zero_tests / unexpected, mutation_inactive, mutation_activity_unproven,
+  invalid_diagnostic, not_detected.
+
+Hark-派单-08: `mutation_active is False` (the verifier PROVED the weakening
+inactive) fails the row before any outcome is read, so an assertion failure of
+an unweakened target is never a detection. `None` means no proof was taken:
+ordinary detected rows need none (their assertion is the evidence); a
+redundancy claim with no proof is `mutation_activity_unproven`.
 
 The 06 version classified `replay_check_removed` as redundant from the side
 diagnostic alone while its formal target had ERRORED (mutated=error); that
@@ -45,11 +52,18 @@ import test_hark06_session_probe as probe_tests  # noqa: E402
 
 T = "test_hark06_session_probe."
 S = "test_hark07_source_isolation."
+C = "test_hark08_cleanup_isolation."
 HARNESS = ROOT / "tests" / "js" / "hark06_session_probe_harness.mjs"
 NODE = shutil.which("node")
 
 
-def _no_lock(probe_dir, timeout=None):
+def _always_create(original):
+    def lock(probe_dir, timeout=None, *, create=True):
+        return original(probe_dir, timeout, create=True)
+    return lock
+
+
+def _no_lock(probe_dir, timeout=None, **_):
     import contextlib
     return contextlib.nullcontext()
 
@@ -97,8 +111,18 @@ PY_MUTATIONS = [
     ("subdir_link_check_ignored", lambda: mock.patch.object(probe, "dir_problem", lambda path: None),
      S + "TestSourceIsolation.test_linked_raw_and_ws_are_refused"),
     ("worker_recheck_ignored", lambda: mock.patch.object(probe.SessionProbeService, "_precheck_before_submit",
-                                                         lambda self: None),
+                                                         lambda self, probe_id=None: None),
      S + "TestSourceIsolation.test_layout_changed_after_accept_is_refused_before_submit"),
+    # Hark-派单-08 cleanup guards.
+    ("cleanup_check_ignored", lambda: mock.patch.object(probe.SessionProbeService, "_cleanup_problem",
+                                                        lambda self, probe_id: None),
+     C + "TestCleanupAfterPlainReplacement.test_swapped_plain_directory_is_neither_dispatched_to_nor_cleaned_up"),
+    ("source_identity_recheck_ignored", lambda: mock.patch.object(probe.SessionProbeService, "_identity_problem",
+                                                                  lambda self, probe_id: None),
+     C + "TestCleanupAfterPlainReplacement.test_replaced_claim_file_is_not_rewritten"),
+    ("lock_recreate_guard_ignored", lambda: mock.patch.object(probe, "acquire_source_lock",
+                                                              _always_create(probe.acquire_source_lock)),
+     C + "TestCleanupAfterPlainReplacement.test_missing_lock_is_not_recreated_and_the_claim_stays_blocking"),
 ]
 
 REDUNDANT = {"replay_check_removed"}
@@ -168,6 +192,12 @@ def classify_python_row(name, control, mutated, mutation_active, diagnostic):
     extra = {}
     if control != "passed":
         return "control_failed", False, extra
+    if mutation_active is False:
+        # Hark-派单-08: the verifier itself established that the weakening did
+        # NOT take effect. Whatever the target did (even fail by assertion),
+        # that run is no evidence about the guard, so it can never count.
+        extra["mutation_activity"] = "explicitly_inactive"
+        return "mutation_inactive", False, extra
     if mutated == "assertion":
         if name in REDUNDANT:
             extra["redundancy_contradicted"] = True
@@ -177,7 +207,10 @@ def classify_python_row(name, control, mutated, mutation_active, diagnostic):
     if name not in REDUNDANT:
         return "not_detected", False, extra
     if mutation_active is not True:
-        return "mutation_inactive", False, extra
+        # Unset (None): no activity proof was taken. Not the same as an
+        # explicit False, but a redundancy claim needs a positive proof.
+        extra["mutation_activity"] = "unproven"
+        return "mutation_activity_unproven", False, extra
     ok, reason = diagnostic_valid(diagnostic)
     if not ok:
         extra["diagnostic_problem"] = reason
