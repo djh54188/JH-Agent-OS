@@ -329,6 +329,21 @@ class TestAtMostOnce(_Case):
         self.assertFalse(second["dispatched_now"])
         self.assertEqual(rig.thread_starts(), 1)
 
+    def test_repeat_start_of_one_id_never_dispatches_twice(self):
+        """Hark-派单-07 formal sample for the declared-redundant replay row: a
+        repeated start of one id may be answered as a replay OR refused, but it
+        never causes a second dispatch. Asserts only that external fact."""
+        rig = Rig(self.tmp)
+        prepared, first = rig.run_probe()
+        self.assertTrue(first["accepted"])
+        for _ in range(3):
+            try:
+                again = rig.api.start_session_probe({"probe_id": prepared["probe_id"], "confirm": True})
+                self.assertFalse(again["accepted"])
+            except ApiError as exc:
+                self.assertEqual(exc.code, "probe_not_prepared")
+        self.assertEqual(rig.thread_starts(), 1)
+
     def test_concurrent_same_id_dispatches_once(self):
         rig = Rig(self.tmp)
         prepared = rig.api.prepare_session_probe({})

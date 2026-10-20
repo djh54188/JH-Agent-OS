@@ -1,19 +1,26 @@
-"""Hark-派单-06 guard weakening for the GUI session probe.
+"""Hark-派单-06/07 guard weakening for the GUI session probe.
 
 Each guard is weakened ALONE and the behaviour test that pins it must then fail
-by ASSERTION. An error, a skip, zero tests run or a control that is not green is
-never counted as a detection.
+by ASSERTION. Python guards are weakened in-process with unittest.mock (src/ is
+not edited); GUI guards are weakened in a disposable copy of gui/ that the JS
+harness is pointed at through JH_GUI_DIR (gui/ is not edited). No browser,
+network, real transport or model is involved.
 
-Python guards are weakened in-process with unittest.mock (src/ is not edited);
-GUI guards are weakened in a disposable copy of gui/ that the JS harness is
-pointed at through JH_GUI_DIR (gui/ is not edited). No browser, network, real
-transport or model is involved.
+Classification (Hark-派单-07 correction, see `classify_python_row`):
 
-Classification:
-  detected   - control green, mutated target fails with an assertion;
-  redundant  - only the rows listed in REDUNDANT, and only when a stated
-               diagnostic proves the dispatch count still holds (not counted);
-  anything else (control red, error, skip, survived) fails the run.
+  detected   control passed AND mutated target failed by assertion only.
+             Counted. A row declared redundant that is in fact detected is
+             reported as detected with `redundancy_contradicted: true`.
+  redundant  ONLY for rows listed in REDUNDANT, and ONLY when the control passed,
+             the mutated formal target ALSO passed cleanly (not error / skip /
+             zero tests), the verifier itself observed that the weakening was
+             active, and the declared diagnostic is valid. Not counted.
+  everything else fails the run: control_failed, mutated error / skipped /
+  zero_tests / unexpected, mutation_inactive, invalid_diagnostic, not_detected.
+
+The 06 version classified `replay_check_removed` as redundant from the side
+diagnostic alone while its formal target had ERRORED (mutated=error); that
+"16 detected + 1 redundant, pass" summary was wrong and is corrected here.
 """
 from __future__ import annotations
 
@@ -37,8 +44,15 @@ import src.session_probe as probe  # noqa: E402
 import test_hark06_session_probe as probe_tests  # noqa: E402
 
 T = "test_hark06_session_probe."
+S = "test_hark07_source_isolation."
 HARNESS = ROOT / "tests" / "js" / "hark06_session_probe_harness.mjs"
 NODE = shutil.which("node")
+
+
+def _no_lock(probe_dir, timeout=None):
+    import contextlib
+    return contextlib.nullcontext()
+
 
 PY_MUTATIONS = [
     ("disabled_switch_ignored", lambda: mock.patch.object(probe, "probe_enabled", lambda config: True),
@@ -56,8 +70,7 @@ PY_MUTATIONS = [
      T + "TestAtMostOnce.test_thread_start_timeout_stays_unknown_and_blocks"),
     ("registry_state_ignored", lambda: mock.patch.object(probe, "registry_usable", lambda state: True),
      T + "TestRefusalBeforeDispatch.test_corrupt_json_registry_refuses"),
-    ("history_source_clash_ignored", lambda: mock.patch.object(probe.SessionProbeService, "_same_file",
-                                                               lambda self, a, b: False),
+    ("history_source_clash_ignored", lambda: mock.patch.object(probe, "history_conflict", lambda r, d, h: None),
      T + "TestRefusalBeforeDispatch.test_history_source_cannot_be_the_probe_registry"),
     ("budget_demand_ignored", lambda: mock.patch.object(probe, "budget_satisfiable", lambda budget: True),
      T + "TestRefusalBeforeDispatch.test_finite_budget_demand_is_refused_not_ignored"),
@@ -67,15 +80,37 @@ PY_MUTATIONS = [
      T + "TestBinding.test_wrong_echo_is_not_a_round_trip"),
     ("tool_item_check_ignored", lambda: mock.patch.object(probe, "TOOL_ITEM_TYPES", frozenset()),
      T + "TestBinding.test_tool_item_in_the_stream_is_not_a_clean_probe"),
+    # Hark-派单-07: the formal target accepts either a replay response or a
+    # refusal and asserts only the dispatch count, so a removed replay check
+    # passes it CLEANLY (single-use prepared ids + adapter idempotency).
     ("replay_check_removed", lambda: mock.patch.object(probe, "already_used", lambda pid, consumed, recorded: False),
-     T + "TestAtMostOnce.test_same_probe_id_twice_dispatches_once"),
+     T + "TestAtMostOnce.test_repeat_start_of_one_id_never_dispatches_twice"),
+    # Hark-派单-07 source exclusion and isolation guards.
+    ("source_claim_ignored", lambda: mock.patch.object(probe, "claim_blocks", lambda state, claim: False),
+     S + "TestSourceExclusion.test_second_object_refused_after_accept_before_reserve"),
+    ("source_lock_disabled", lambda: mock.patch.object(probe, "acquire_source_lock", _no_lock),
+     S + "TestSourceExclusion.test_lock_serialises_check_and_claim_across_objects"),
+    ("hardlink_identity_ignored", lambda: mock.patch.object(probe, "file_identity_problem", lambda path: None),
+     S + "TestSourceIsolation.test_registry_hardlinked_to_an_unrelated_file_is_refused"),
+    ("ancestor_link_check_ignored", lambda: mock.patch.object(probe, "link_component", lambda path: None),
+     S + "TestSourceIsolation.test_linked_ancestor_is_refused_before_any_write"),
+    ("subdir_link_check_ignored", lambda: mock.patch.object(probe, "dir_problem", lambda path: None),
+     S + "TestSourceIsolation.test_linked_raw_and_ws_are_refused"),
+    ("worker_recheck_ignored", lambda: mock.patch.object(probe.SessionProbeService, "_precheck_before_submit",
+                                                         lambda self: None),
+     S + "TestSourceIsolation.test_layout_changed_after_accept_is_refused_before_submit"),
 ]
 
-# The replay check is backed by single-use prepared ids (deleted on use) and by
-# the adapter's idempotency index, so removing it alone cannot cause a second
-# dispatch. It is recorded as redundant ONLY when the diagnostic below confirms
-# exactly one thread/start after a repeated start.
 REDUNDANT = {"replay_check_removed"}
+
+# The verifier's OWN proof that a declared-redundant weakening is active while
+# the formal target runs. A row whose mutation is not demonstrably active can
+# never be called redundant.
+MUTATION_ACTIVE_CHECKS = {
+    "replay_check_removed": lambda: probe.already_used("0" * 16, {"0" * 16}, True) is False,
+}
+
+DIAGNOSTIC_SECOND_START = frozenset({"replayed", "probe_not_prepared"})
 
 JS_MUTATIONS = [
     ("double_click_guard_removed",
@@ -93,31 +128,82 @@ JS_MUTATIONS = [
 
 
 def run_case(name):
-    result = unittest.TextTestRunner(stream=io.StringIO()).run(
-        unittest.defaultTestLoader.loadTestsFromName(name))
+    """passed | assertion | error | skipped | zero_tests for one named test."""
+    try:
+        suite = unittest.defaultTestLoader.loadTestsFromName(name)
+        result = unittest.TextTestRunner(stream=io.StringIO()).run(suite)
+    except Exception:
+        return "error"
     if result.testsRun == 0:
         return "zero_tests"
-    if result.skipped:
-        return "skipped"
-    if result.errors:
+    if result.errors or getattr(result, "unexpectedSuccesses", None):
         return "error"
+    if result.skipped or getattr(result, "expectedFailures", None):
+        return "skipped"
     if result.failures:
         return "assertion"
     return "passed"
 
 
+def diagnostic_valid(diagnostic):
+    """(ok, reason). A diagnostic must be a complete observation, not a token."""
+    if not isinstance(diagnostic, dict):
+        return False, "diagnostic is not an object"
+    if diagnostic.get("error"):
+        return False, f"diagnostic raised: {diagnostic['error']}"
+    starts = diagnostic.get("thread_starts")
+    if isinstance(starts, bool) or not isinstance(starts, int):
+        return False, "thread_starts is not an integer"
+    if starts != 1:
+        return False, f"thread_starts={starts}, expected exactly 1"
+    if diagnostic.get("first_start_accepted") is not True:
+        return False, "the first start was not observed as accepted"
+    if diagnostic.get("second_start") not in DIAGNOSTIC_SECOND_START:
+        return False, f"second_start={diagnostic.get('second_start')!r} is not a known outcome"
+    return True, ""
+
+
+def classify_python_row(name, control, mutated, mutation_active, diagnostic):
+    """(verdict, counted, extra). Pure; the meta-tests drive every branch."""
+    extra = {}
+    if control != "passed":
+        return "control_failed", False, extra
+    if mutated == "assertion":
+        if name in REDUNDANT:
+            extra["redundancy_contradicted"] = True
+        return "detected", True, extra
+    if mutated != "passed":
+        return f"mutated_{mutated}", False, extra
+    if name not in REDUNDANT:
+        return "not_detected", False, extra
+    if mutation_active is not True:
+        return "mutation_inactive", False, extra
+    ok, reason = diagnostic_valid(diagnostic)
+    if not ok:
+        extra["diagnostic_problem"] = reason
+        return "invalid_diagnostic", False, extra
+    return "redundant", False, extra
+
+
 def replay_diagnostic():
-    """Thread/start count after starting the same probe id twice (mutation active)."""
-    with tempfile.TemporaryDirectory() as tmp:
-        with mock.patch.object(probe_tests.codex_mod, "is_special_path", probe_tests._posix_evidence_seam):
-            rig = probe_tests.Rig(tmp)
-            prepared, _ = rig.run_probe()
-            outcome = "replayed"
-            try:
-                rig.api.start_session_probe({"probe_id": prepared["probe_id"], "confirm": True})
-            except Exception as exc:                  # the single-use prepared id refuses it
-                outcome = getattr(exc, "code", type(exc).__name__)
-            return {"thread_starts": rig.thread_starts(), "second_start": outcome}
+    """Observe, with the replay check removed, how many dispatches one id causes."""
+    try:
+        with tempfile.TemporaryDirectory() as tmp:
+            with mock.patch.object(probe_tests.codex_mod, "is_special_path", probe_tests._posix_evidence_seam):
+                rig = probe_tests.Rig(tmp)
+                prepared, first = rig.run_probe()
+                outcome = "replayed"
+                try:
+                    rig.api.start_session_probe({"probe_id": prepared["probe_id"], "confirm": True})
+                except Exception as exc:
+                    outcome = getattr(exc, "code", type(exc).__name__)
+                return {"thread_starts": rig.thread_starts(), "first_start_accepted": first.get("accepted") is True,
+                        "second_start": outcome}
+    except Exception as exc:
+        return {"error": f"{type(exc).__name__}: {exc}"}
+
+
+DIAGNOSTICS = {"replay_check_removed": lambda: replay_diagnostic()}
 
 
 def run_js(gui_dir):
@@ -130,24 +216,45 @@ def run_js(gui_dir):
         return None
 
 
+def classify_js_row(control_ok, anchor_count, result):
+    if anchor_count != 1:
+        return "anchor_not_unique", False
+    if not control_ok:
+        return "control_failed", False
+    if not isinstance(result, dict) or not result:
+        return "no_report", False
+    if result.get("ok") is False and result.get("kind") == "assertion":
+        return "detected", True
+    if result.get("ok") is False:
+        return f"mutated_{result.get('kind') or 'unknown'}", False
+    return "not_detected", False
+
+
 def main() -> int:
     rows = []
-    for name, make_patch, target in PY_MUTATIONS:
+    for entry in PY_MUTATIONS:
+        name, make_patch, target = entry[0], entry[1], entry[2]
         control = run_case(target)
-        with make_patch():
-            mutated = run_case(target)
-            diagnostic = replay_diagnostic() if name in REDUNDANT else None
-        if control != "passed":
-            verdict = "control_failed"
-        elif mutated == "assertion" and name not in REDUNDANT:
-            verdict = "detected"
-        elif name in REDUNDANT and diagnostic and diagnostic["thread_starts"] == 1:
-            verdict = "redundant"
-        else:
-            verdict = "not_detected"
-        rows.append({"layer": "python", "case": name, "target": target, "control": control,
-                     "mutated": mutated, "diagnostic": diagnostic, "verdict": verdict,
-                     "counted": verdict == "detected"})
+        mutation_active = None
+        diagnostic = None
+        try:
+            with make_patch():
+                mutated = run_case(target)
+                check = MUTATION_ACTIVE_CHECKS.get(name)
+                if check is not None:
+                    try:
+                        mutation_active = bool(check())
+                    except Exception:
+                        mutation_active = False
+                if name in REDUNDANT:
+                    diagnostic = (DIAGNOSTICS.get(name) or replay_diagnostic)()
+        except Exception as exc:
+            mutated = "error"
+            diagnostic = {"error": f"patch failed: {exc}"}
+        verdict, counted, extra = classify_python_row(name, control, mutated, mutation_active, diagnostic)
+        rows.append(dict({"layer": "python", "case": name, "target": target, "control": control,
+                          "mutated": mutated, "mutation_active": mutation_active, "diagnostic": diagnostic,
+                          "verdict": verdict, "counted": counted}, **extra))
 
     if NODE is None:
         rows.append({"layer": "js", "case": "node", "verdict": "control_failed", "counted": False})
@@ -155,25 +262,22 @@ def main() -> int:
         with tempfile.TemporaryDirectory(prefix="hark06-gui-") as tmp:
             control_dir = Path(tmp) / "control"
             shutil.copytree(ROOT / "gui", control_dir)
-            control = run_js(control_dir)
+            control = run_js(control_dir) or {}
             source = (ROOT / "gui" / "views.js").read_text(encoding="utf-8")
             for name, anchor, replacement, scenario in JS_MUTATIONS:
-                row = {"layer": "js", "case": name, "target": scenario, "anchor_count": source.count(anchor)}
-                control_ok = bool(control) and control["scenarios"].get(scenario, {}).get("ok") is True
-                if source.count(anchor) != 1 or not control_ok:
-                    row.update(verdict="control_failed" if not control_ok else "anchor_not_unique", counted=False)
-                    rows.append(row)
-                    continue
-                target_dir = Path(tmp) / name
-                shutil.copytree(ROOT / "gui", target_dir)
-                (target_dir / "views.js").write_text(source.replace(anchor, replacement, 1), encoding="utf-8")
-                report = run_js(target_dir)
-                result = (report or {}).get("scenarios", {}).get(scenario, {})
-                detected = result.get("ok") is False and result.get("kind") == "assertion"
-                row.update(control="passed", mutated=result.get("kind") or ("survived" if result else "no_report"),
-                           error=result.get("error"), verdict="detected" if detected else "not_detected",
-                           counted=detected)
-                rows.append(row)
+                control_ok = (control.get("scenarios") or {}).get(scenario, {}).get("ok") is True
+                count = source.count(anchor)
+                result = None
+                if count == 1 and control_ok:
+                    target_dir = Path(tmp) / name
+                    shutil.copytree(ROOT / "gui", target_dir)
+                    (target_dir / "views.js").write_text(source.replace(anchor, replacement, 1), encoding="utf-8")
+                    result = ((run_js(target_dir) or {}).get("scenarios") or {}).get(scenario)
+                verdict, counted = classify_js_row(control_ok, count, result)
+                rows.append({"layer": "js", "case": name, "target": scenario, "anchor_count": count,
+                             "control": "passed" if control_ok else "failed",
+                             "mutated": (result or {}).get("kind") or ("survived" if result else "not_run"),
+                             "error": (result or {}).get("error"), "verdict": verdict, "counted": counted})
 
     detected = sum(1 for r in rows if r["verdict"] == "detected")
     redundant = sum(1 for r in rows if r["verdict"] == "redundant")
