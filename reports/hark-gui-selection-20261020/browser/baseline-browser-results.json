@@ -1,0 +1,956 @@
+{
+  "label": "baseline",
+  "notice": "Linux合成预览，未作Windows验收",
+  "synthetic": true,
+  "model_calls": 0,
+  "platform": "Linux-6.12.110+-aarch64-with-glibc2.41",
+  "python": "3.12.15",
+  "widths": {
+    "1440": {
+      "initial": {
+        "scrollY": 0,
+        "innerHeight": 900,
+        "innerWidth": 1440,
+        "overflowX": 0,
+        "pressed": [
+          [
+            "SYNTHETIC-RUN-A",
+            null,
+            null
+          ],
+          [
+            "SYNTHETIC-RUN-B",
+            null,
+            null
+          ],
+          [
+            "SYNTHETIC-RUN-C",
+            null,
+            null
+          ],
+          [
+            "SYNTHETIC-RUN-D",
+            null,
+            null
+          ]
+        ],
+        "layoutColumns": 2,
+        "title": null,
+        "selectedCardStyle": null,
+        "unselectedCardStyle": null
+      },
+      "clicks": [
+        {
+          "run_id": "SYNTHETIC-RUN-A",
+          "before": {
+            "scrollY": 785,
+            "innerHeight": 900,
+            "innerWidth": 1440,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                null,
+                null
+              ]
+            ],
+            "layoutColumns": 2,
+            "title": null,
+            "selectedCardStyle": null,
+            "unselectedCardStyle": null
+          },
+          "after": {
+            "scrollY": 785,
+            "innerHeight": 900,
+            "innerWidth": 1440,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                null,
+                null
+              ]
+            ],
+            "layoutColumns": 2,
+            "title": {
+              "text": "● 历史运行运行详情：SYNTHETIC-RUN-A",
+              "top": 31,
+              "bottom": 54,
+              "visible": true
+            },
+            "selectedCardStyle": null,
+            "unselectedCardStyle": null
+          }
+        },
+        {
+          "run_id": "SYNTHETIC-RUN-B",
+          "before": {
+            "scrollY": 815,
+            "innerHeight": 900,
+            "innerWidth": 1440,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                null,
+                null
+              ]
+            ],
+            "layoutColumns": 2,
+            "title": {
+              "text": "● 历史运行运行详情：SYNTHETIC-RUN-A",
+              "top": 31,
+              "bottom": 54,
+              "visible": true
+            },
+            "selectedCardStyle": null,
+            "unselectedCardStyle": null
+          },
+          "after": {
+            "scrollY": 815,
+            "innerHeight": 900,
+            "innerWidth": 1440,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                null,
+                null
+              ]
+            ],
+            "layoutColumns": 2,
+            "title": {
+              "text": "● 历史运行运行详情：SYNTHETIC-RUN-B",
+              "top": 31,
+              "bottom": 54,
+              "visible": true
+            },
+            "selectedCardStyle": null,
+            "unselectedCardStyle": null
+          }
+        }
+      ],
+      "click_requests": [
+        "GET /api/agent-runs/SYNTHETIC-RUN-A",
+        "GET /api/agent-runs/SYNTHETIC-RUN-B"
+      ]
+    },
+    "1101": {
+      "initial": {
+        "scrollY": 0,
+        "innerHeight": 900,
+        "innerWidth": 1101,
+        "overflowX": 0,
+        "pressed": [
+          [
+            "SYNTHETIC-RUN-A",
+            null,
+            null
+          ],
+          [
+            "SYNTHETIC-RUN-B",
+            null,
+            null
+          ],
+          [
+            "SYNTHETIC-RUN-C",
+            null,
+            null
+          ],
+          [
+            "SYNTHETIC-RUN-D",
+            null,
+            null
+          ]
+        ],
+        "layoutColumns": 2,
+        "title": null,
+        "selectedCardStyle": null,
+        "unselectedCardStyle": null
+      },
+      "clicks": [
+        {
+          "run_id": "SYNTHETIC-RUN-A",
+          "before": {
+            "scrollY": 839,
+            "innerHeight": 900,
+            "innerWidth": 1101,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                null,
+                null
+              ]
+            ],
+            "layoutColumns": 2,
+            "title": null,
+            "selectedCardStyle": null,
+            "unselectedCardStyle": null
+          },
+          "after": {
+            "scrollY": 839,
+            "innerHeight": 900,
+            "innerWidth": 1101,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                null,
+                null
+              ]
+            ],
+            "layoutColumns": 2,
+            "title": {
+              "text": "● 历史运行运行详情：SYNTHETIC-RUN-A",
+              "top": 31,
+              "bottom": 54,
+              "visible": true
+            },
+            "selectedCardStyle": null,
+            "unselectedCardStyle": null
+          }
+        },
+        {
+          "run_id": "SYNTHETIC-RUN-B",
+          "before": {
+            "scrollY": 1330,
+            "innerHeight": 900,
+            "innerWidth": 1101,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                null,
+                null
+              ]
+            ],
+            "layoutColumns": 2,
+            "title": {
+              "text": "● 历史运行运行详情：SYNTHETIC-RUN-A",
+              "top": 31,
+              "bottom": 54,
+              "visible": true
+            },
+            "selectedCardStyle": null,
+            "unselectedCardStyle": null
+          },
+          "after": {
+            "scrollY": 1330,
+            "innerHeight": 900,
+            "innerWidth": 1101,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                null,
+                null
+              ]
+            ],
+            "layoutColumns": 2,
+            "title": {
+              "text": "● 历史运行运行详情：SYNTHETIC-RUN-B",
+              "top": 31,
+              "bottom": 54,
+              "visible": true
+            },
+            "selectedCardStyle": null,
+            "unselectedCardStyle": null
+          }
+        }
+      ],
+      "click_requests": [
+        "GET /api/agent-runs/SYNTHETIC-RUN-A",
+        "GET /api/agent-runs/SYNTHETIC-RUN-B"
+      ]
+    },
+    "1100": {
+      "initial": {
+        "scrollY": 0,
+        "innerHeight": 900,
+        "innerWidth": 1100,
+        "overflowX": 0,
+        "pressed": [
+          [
+            "SYNTHETIC-RUN-A",
+            null,
+            null
+          ],
+          [
+            "SYNTHETIC-RUN-B",
+            null,
+            null
+          ],
+          [
+            "SYNTHETIC-RUN-C",
+            null,
+            null
+          ],
+          [
+            "SYNTHETIC-RUN-D",
+            null,
+            null
+          ]
+        ],
+        "layoutColumns": 1,
+        "title": null,
+        "selectedCardStyle": null,
+        "unselectedCardStyle": null
+      },
+      "clicks": [
+        {
+          "run_id": "SYNTHETIC-RUN-A",
+          "before": {
+            "scrollY": 721,
+            "innerHeight": 900,
+            "innerWidth": 1100,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                null,
+                null
+              ]
+            ],
+            "layoutColumns": 1,
+            "title": null,
+            "selectedCardStyle": null,
+            "unselectedCardStyle": null
+          },
+          "after": {
+            "scrollY": 721,
+            "innerHeight": 900,
+            "innerWidth": 1100,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                null,
+                null
+              ]
+            ],
+            "layoutColumns": 1,
+            "title": {
+              "text": "● 历史运行运行详情：SYNTHETIC-RUN-A",
+              "top": 1652.796875,
+              "bottom": 1675.796875,
+              "visible": false
+            },
+            "selectedCardStyle": null,
+            "unselectedCardStyle": null
+          }
+        },
+        {
+          "run_id": "SYNTHETIC-RUN-B",
+          "before": {
+            "scrollY": 721,
+            "innerHeight": 900,
+            "innerWidth": 1100,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                null,
+                null
+              ]
+            ],
+            "layoutColumns": 1,
+            "title": {
+              "text": "● 历史运行运行详情：SYNTHETIC-RUN-A",
+              "top": 1652.796875,
+              "bottom": 1675.796875,
+              "visible": false
+            },
+            "selectedCardStyle": null,
+            "unselectedCardStyle": null
+          },
+          "after": {
+            "scrollY": 721,
+            "innerHeight": 900,
+            "innerWidth": 1100,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                null,
+                null
+              ]
+            ],
+            "layoutColumns": 1,
+            "title": {
+              "text": "● 历史运行运行详情：SYNTHETIC-RUN-B",
+              "top": 1652.796875,
+              "bottom": 1675.796875,
+              "visible": false
+            },
+            "selectedCardStyle": null,
+            "unselectedCardStyle": null
+          }
+        }
+      ],
+      "click_requests": [
+        "GET /api/agent-runs/SYNTHETIC-RUN-A",
+        "GET /api/agent-runs/SYNTHETIC-RUN-B"
+      ]
+    },
+    "760": {
+      "initial": {
+        "scrollY": 0,
+        "innerHeight": 900,
+        "innerWidth": 760,
+        "overflowX": 0,
+        "pressed": [
+          [
+            "SYNTHETIC-RUN-A",
+            null,
+            null
+          ],
+          [
+            "SYNTHETIC-RUN-B",
+            null,
+            null
+          ],
+          [
+            "SYNTHETIC-RUN-C",
+            null,
+            null
+          ],
+          [
+            "SYNTHETIC-RUN-D",
+            null,
+            null
+          ]
+        ],
+        "layoutColumns": 1,
+        "title": null,
+        "selectedCardStyle": null,
+        "unselectedCardStyle": null
+      },
+      "clicks": [
+        {
+          "run_id": "SYNTHETIC-RUN-A",
+          "before": {
+            "scrollY": 724,
+            "innerHeight": 900,
+            "innerWidth": 760,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                null,
+                null
+              ]
+            ],
+            "layoutColumns": 1,
+            "title": null,
+            "selectedCardStyle": null,
+            "unselectedCardStyle": null
+          },
+          "after": {
+            "scrollY": 724,
+            "innerHeight": 900,
+            "innerWidth": 760,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                null,
+                null
+              ]
+            ],
+            "layoutColumns": 1,
+            "title": {
+              "text": "● 历史运行运行详情：SYNTHETIC-RUN-A",
+              "top": 1710.609375,
+              "bottom": 1733.609375,
+              "visible": false
+            },
+            "selectedCardStyle": null,
+            "unselectedCardStyle": null
+          }
+        },
+        {
+          "run_id": "SYNTHETIC-RUN-B",
+          "before": {
+            "scrollY": 724,
+            "innerHeight": 900,
+            "innerWidth": 760,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                null,
+                null
+              ]
+            ],
+            "layoutColumns": 1,
+            "title": {
+              "text": "● 历史运行运行详情：SYNTHETIC-RUN-A",
+              "top": 1710.609375,
+              "bottom": 1733.609375,
+              "visible": false
+            },
+            "selectedCardStyle": null,
+            "unselectedCardStyle": null
+          },
+          "after": {
+            "scrollY": 724,
+            "innerHeight": 900,
+            "innerWidth": 760,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                null,
+                null
+              ]
+            ],
+            "layoutColumns": 1,
+            "title": {
+              "text": "● 历史运行运行详情：SYNTHETIC-RUN-B",
+              "top": 1710.609375,
+              "bottom": 1733.609375,
+              "visible": false
+            },
+            "selectedCardStyle": null,
+            "unselectedCardStyle": null
+          }
+        }
+      ],
+      "click_requests": [
+        "GET /api/agent-runs/SYNTHETIC-RUN-A",
+        "GET /api/agent-runs/SYNTHETIC-RUN-B"
+      ]
+    },
+    "480": {
+      "initial": {
+        "scrollY": 0,
+        "innerHeight": 900,
+        "innerWidth": 480,
+        "overflowX": 0,
+        "pressed": [
+          [
+            "SYNTHETIC-RUN-A",
+            null,
+            null
+          ],
+          [
+            "SYNTHETIC-RUN-B",
+            null,
+            null
+          ],
+          [
+            "SYNTHETIC-RUN-C",
+            null,
+            null
+          ],
+          [
+            "SYNTHETIC-RUN-D",
+            null,
+            null
+          ]
+        ],
+        "layoutColumns": 1,
+        "title": null,
+        "selectedCardStyle": null,
+        "unselectedCardStyle": null
+      },
+      "clicks": [
+        {
+          "run_id": "SYNTHETIC-RUN-A",
+          "before": {
+            "scrollY": 1038,
+            "innerHeight": 900,
+            "innerWidth": 480,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                null,
+                null
+              ]
+            ],
+            "layoutColumns": 1,
+            "title": null,
+            "selectedCardStyle": null,
+            "unselectedCardStyle": null
+          },
+          "after": {
+            "scrollY": 1038,
+            "innerHeight": 900,
+            "innerWidth": 480,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                null,
+                null
+              ]
+            ],
+            "layoutColumns": 1,
+            "title": {
+              "text": "● 历史运行运行详情：SYNTHETIC-RUN-A",
+              "top": 2188,
+              "bottom": 2211,
+              "visible": false
+            },
+            "selectedCardStyle": null,
+            "unselectedCardStyle": null
+          }
+        },
+        {
+          "run_id": "SYNTHETIC-RUN-B",
+          "before": {
+            "scrollY": 1589,
+            "innerHeight": 900,
+            "innerWidth": 480,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                null,
+                null
+              ]
+            ],
+            "layoutColumns": 1,
+            "title": {
+              "text": "● 历史运行运行详情：SYNTHETIC-RUN-A",
+              "top": 1637,
+              "bottom": 1660,
+              "visible": false
+            },
+            "selectedCardStyle": null,
+            "unselectedCardStyle": null
+          },
+          "after": {
+            "scrollY": 1589,
+            "innerHeight": 900,
+            "innerWidth": 480,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                null,
+                null
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                null,
+                null
+              ]
+            ],
+            "layoutColumns": 1,
+            "title": {
+              "text": "● 历史运行运行详情：SYNTHETIC-RUN-B",
+              "top": 1637,
+              "bottom": 1660,
+              "visible": false
+            },
+            "selectedCardStyle": null,
+            "unselectedCardStyle": null
+          }
+        }
+      ],
+      "click_requests": [
+        "GET /api/agent-runs/SYNTHETIC-RUN-A",
+        "GET /api/agent-runs/SYNTHETIC-RUN-B"
+      ]
+    }
+  },
+  "browser": "chromium 156.0.8078.4"
+}

@@ -1,0 +1,14 @@
+# commit: 068afb504bfcffdcbb9ba45ce056fd61b6a916ef  local time: Tue Oct 20 11:50:55 UTC 2026  node: v22.23.3  python: Python 3.12.15  platform: Linux aarch64
+# command: node tests/js/hark05_run_selection_harness.mjs
+ok   no_selection
+ok   a_to_b
+ok   repeat_same
+ok   out_of_order_success
+ok   late_error
+ok   wrong_run_id
+ok   leave_reenter
+ok   loading_error_empty
+ok   breakpoints_1100_1101
+ok   click_only_queries_detail
+ok   css_breakpoint_and_scope
+# exit_code: 0

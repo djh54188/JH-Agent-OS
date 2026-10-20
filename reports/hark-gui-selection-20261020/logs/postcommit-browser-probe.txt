@@ -1,0 +1,4 @@
+# gui under test: fresh clone 068afb504bfcffdcbb9ba45ce056fd61b6a916ef (gui/); probe script: reports/hark-gui-selection-20261020/browser_probe.py (report commit)
+# local time: Tue Oct 20 11:51:12 UTC 2026  platform: Linux aarch64
+{"browser": "chromium 156.0.8078.4", "out": "data/hark05-browser-postcommit-01"}
+# exit_code: 0

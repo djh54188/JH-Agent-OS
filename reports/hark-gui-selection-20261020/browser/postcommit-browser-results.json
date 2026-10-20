@@ -1,0 +1,1116 @@
+{
+  "label": "postcommit",
+  "notice": "Linux合成预览，未作Windows验收",
+  "synthetic": true,
+  "model_calls": 0,
+  "platform": "Linux-6.12.110+-aarch64-with-glibc2.41",
+  "python": "3.12.15",
+  "widths": {
+    "1440": {
+      "initial": {
+        "scrollY": 0,
+        "innerHeight": 900,
+        "innerWidth": 1440,
+        "overflowX": 0,
+        "pressed": [
+          [
+            "SYNTHETIC-RUN-A",
+            "false",
+            "false"
+          ],
+          [
+            "SYNTHETIC-RUN-B",
+            "false",
+            "false"
+          ],
+          [
+            "SYNTHETIC-RUN-C",
+            "false",
+            "false"
+          ],
+          [
+            "SYNTHETIC-RUN-D",
+            "false",
+            "false"
+          ]
+        ],
+        "layoutColumns": 2,
+        "title": null,
+        "selectedCardStyle": null,
+        "unselectedCardStyle": {
+          "borderColor": "rgb(203, 210, 217)",
+          "boxShadow": "none",
+          "marker": "none"
+        }
+      },
+      "clicks": [
+        {
+          "run_id": "SYNTHETIC-RUN-A",
+          "before": {
+            "scrollY": 785,
+            "innerHeight": 900,
+            "innerWidth": 1440,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                "false",
+                "false"
+              ]
+            ],
+            "layoutColumns": 2,
+            "title": null,
+            "selectedCardStyle": null,
+            "unselectedCardStyle": {
+              "borderColor": "rgb(203, 210, 217)",
+              "boxShadow": "none",
+              "marker": "none"
+            }
+          },
+          "after": {
+            "scrollY": 785,
+            "innerHeight": 900,
+            "innerWidth": 1440,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                "true",
+                "true"
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                "false",
+                "false"
+              ]
+            ],
+            "layoutColumns": 2,
+            "title": {
+              "text": "● 历史运行运行详情：SYNTHETIC-RUN-A",
+              "top": 31,
+              "bottom": 54,
+              "visible": true
+            },
+            "selectedCardStyle": {
+              "borderColor": "rgb(29, 78, 216)",
+              "boxShadow": "rgb(157, 182, 242) 0px 0px 0px 2px",
+              "marker": "\"● 当前查看\""
+            },
+            "unselectedCardStyle": {
+              "borderColor": "rgb(203, 210, 217)",
+              "boxShadow": "none",
+              "marker": "none"
+            }
+          }
+        },
+        {
+          "run_id": "SYNTHETIC-RUN-B",
+          "before": {
+            "scrollY": 815,
+            "innerHeight": 900,
+            "innerWidth": 1440,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                "true",
+                "true"
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                "false",
+                "false"
+              ]
+            ],
+            "layoutColumns": 2,
+            "title": {
+              "text": "● 历史运行运行详情：SYNTHETIC-RUN-A",
+              "top": 31,
+              "bottom": 54,
+              "visible": true
+            },
+            "selectedCardStyle": {
+              "borderColor": "rgb(29, 78, 216)",
+              "boxShadow": "rgb(157, 182, 242) 0px 0px 0px 2px",
+              "marker": "\"● 当前查看\""
+            },
+            "unselectedCardStyle": {
+              "borderColor": "rgb(203, 210, 217)",
+              "boxShadow": "none",
+              "marker": "none"
+            }
+          },
+          "after": {
+            "scrollY": 815,
+            "innerHeight": 900,
+            "innerWidth": 1440,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                "true",
+                "true"
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                "false",
+                "false"
+              ]
+            ],
+            "layoutColumns": 2,
+            "title": {
+              "text": "● 历史运行运行详情：SYNTHETIC-RUN-B",
+              "top": 31,
+              "bottom": 54,
+              "visible": true
+            },
+            "selectedCardStyle": {
+              "borderColor": "rgb(29, 78, 216)",
+              "boxShadow": "rgb(157, 182, 242) 0px 0px 0px 2px",
+              "marker": "\"● 当前查看\""
+            },
+            "unselectedCardStyle": {
+              "borderColor": "rgb(203, 210, 217)",
+              "boxShadow": "none",
+              "marker": "none"
+            }
+          }
+        }
+      ],
+      "click_requests": [
+        "GET /api/agent-runs/SYNTHETIC-RUN-A",
+        "GET /api/agent-runs/SYNTHETIC-RUN-B"
+      ]
+    },
+    "1101": {
+      "initial": {
+        "scrollY": 0,
+        "innerHeight": 900,
+        "innerWidth": 1101,
+        "overflowX": 0,
+        "pressed": [
+          [
+            "SYNTHETIC-RUN-A",
+            "false",
+            "false"
+          ],
+          [
+            "SYNTHETIC-RUN-B",
+            "false",
+            "false"
+          ],
+          [
+            "SYNTHETIC-RUN-C",
+            "false",
+            "false"
+          ],
+          [
+            "SYNTHETIC-RUN-D",
+            "false",
+            "false"
+          ]
+        ],
+        "layoutColumns": 2,
+        "title": null,
+        "selectedCardStyle": null,
+        "unselectedCardStyle": {
+          "borderColor": "rgb(203, 210, 217)",
+          "boxShadow": "none",
+          "marker": "none"
+        }
+      },
+      "clicks": [
+        {
+          "run_id": "SYNTHETIC-RUN-A",
+          "before": {
+            "scrollY": 839,
+            "innerHeight": 900,
+            "innerWidth": 1101,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                "false",
+                "false"
+              ]
+            ],
+            "layoutColumns": 2,
+            "title": null,
+            "selectedCardStyle": null,
+            "unselectedCardStyle": {
+              "borderColor": "rgb(203, 210, 217)",
+              "boxShadow": "none",
+              "marker": "none"
+            }
+          },
+          "after": {
+            "scrollY": 839,
+            "innerHeight": 900,
+            "innerWidth": 1101,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                "true",
+                "true"
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                "false",
+                "false"
+              ]
+            ],
+            "layoutColumns": 2,
+            "title": {
+              "text": "● 历史运行运行详情：SYNTHETIC-RUN-A",
+              "top": 31,
+              "bottom": 54,
+              "visible": true
+            },
+            "selectedCardStyle": {
+              "borderColor": "rgb(29, 78, 216)",
+              "boxShadow": "rgb(157, 182, 242) 0px 0px 0px 2px",
+              "marker": "\"● 当前查看\""
+            },
+            "unselectedCardStyle": {
+              "borderColor": "rgb(203, 210, 217)",
+              "boxShadow": "none",
+              "marker": "none"
+            }
+          }
+        },
+        {
+          "run_id": "SYNTHETIC-RUN-B",
+          "before": {
+            "scrollY": 1330,
+            "innerHeight": 900,
+            "innerWidth": 1101,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                "true",
+                "true"
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                "false",
+                "false"
+              ]
+            ],
+            "layoutColumns": 2,
+            "title": {
+              "text": "● 历史运行运行详情：SYNTHETIC-RUN-A",
+              "top": 31,
+              "bottom": 54,
+              "visible": true
+            },
+            "selectedCardStyle": {
+              "borderColor": "rgb(29, 78, 216)",
+              "boxShadow": "rgb(157, 182, 242) 0px 0px 0px 2px",
+              "marker": "\"● 当前查看\""
+            },
+            "unselectedCardStyle": {
+              "borderColor": "rgb(203, 210, 217)",
+              "boxShadow": "none",
+              "marker": "none"
+            }
+          },
+          "after": {
+            "scrollY": 1330,
+            "innerHeight": 900,
+            "innerWidth": 1101,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                "true",
+                "true"
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                "false",
+                "false"
+              ]
+            ],
+            "layoutColumns": 2,
+            "title": {
+              "text": "● 历史运行运行详情：SYNTHETIC-RUN-B",
+              "top": 31,
+              "bottom": 54,
+              "visible": true
+            },
+            "selectedCardStyle": {
+              "borderColor": "rgb(29, 78, 216)",
+              "boxShadow": "rgb(157, 182, 242) 0px 0px 0px 2px",
+              "marker": "\"● 当前查看\""
+            },
+            "unselectedCardStyle": {
+              "borderColor": "rgb(203, 210, 217)",
+              "boxShadow": "none",
+              "marker": "none"
+            }
+          }
+        }
+      ],
+      "click_requests": [
+        "GET /api/agent-runs/SYNTHETIC-RUN-A",
+        "GET /api/agent-runs/SYNTHETIC-RUN-B"
+      ]
+    },
+    "1100": {
+      "initial": {
+        "scrollY": 0,
+        "innerHeight": 900,
+        "innerWidth": 1100,
+        "overflowX": 0,
+        "pressed": [
+          [
+            "SYNTHETIC-RUN-A",
+            "false",
+            "false"
+          ],
+          [
+            "SYNTHETIC-RUN-B",
+            "false",
+            "false"
+          ],
+          [
+            "SYNTHETIC-RUN-C",
+            "false",
+            "false"
+          ],
+          [
+            "SYNTHETIC-RUN-D",
+            "false",
+            "false"
+          ]
+        ],
+        "layoutColumns": 1,
+        "title": null,
+        "selectedCardStyle": null,
+        "unselectedCardStyle": {
+          "borderColor": "rgb(203, 210, 217)",
+          "boxShadow": "none",
+          "marker": "none"
+        }
+      },
+      "clicks": [
+        {
+          "run_id": "SYNTHETIC-RUN-A",
+          "before": {
+            "scrollY": 721,
+            "innerHeight": 900,
+            "innerWidth": 1100,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                "false",
+                "false"
+              ]
+            ],
+            "layoutColumns": 1,
+            "title": null,
+            "selectedCardStyle": null,
+            "unselectedCardStyle": {
+              "borderColor": "rgb(203, 210, 217)",
+              "boxShadow": "none",
+              "marker": "none"
+            }
+          },
+          "after": {
+            "scrollY": 2343,
+            "innerHeight": 900,
+            "innerWidth": 1100,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                "true",
+                "true"
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                "false",
+                "false"
+              ]
+            ],
+            "layoutColumns": 1,
+            "title": {
+              "text": "● 历史运行运行详情：SYNTHETIC-RUN-A",
+              "top": 30.796875,
+              "bottom": 53.796875,
+              "visible": true
+            },
+            "selectedCardStyle": {
+              "borderColor": "rgb(29, 78, 216)",
+              "boxShadow": "rgb(157, 182, 242) 0px 0px 0px 2px",
+              "marker": "\"● 当前查看\""
+            },
+            "unselectedCardStyle": {
+              "borderColor": "rgb(203, 210, 217)",
+              "boxShadow": "none",
+              "marker": "none"
+            }
+          }
+        },
+        {
+          "run_id": "SYNTHETIC-RUN-B",
+          "before": {
+            "scrollY": 1093,
+            "innerHeight": 900,
+            "innerWidth": 1100,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                "true",
+                "true"
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                "false",
+                "false"
+              ]
+            ],
+            "layoutColumns": 1,
+            "title": {
+              "text": "● 历史运行运行详情：SYNTHETIC-RUN-A",
+              "top": 1280.796875,
+              "bottom": 1303.796875,
+              "visible": false
+            },
+            "selectedCardStyle": {
+              "borderColor": "rgb(29, 78, 216)",
+              "boxShadow": "rgb(157, 182, 242) 0px 0px 0px 2px",
+              "marker": "\"● 当前查看\""
+            },
+            "unselectedCardStyle": {
+              "borderColor": "rgb(203, 210, 217)",
+              "boxShadow": "none",
+              "marker": "none"
+            }
+          },
+          "after": {
+            "scrollY": 2343,
+            "innerHeight": 900,
+            "innerWidth": 1100,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                "true",
+                "true"
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                "false",
+                "false"
+              ]
+            ],
+            "layoutColumns": 1,
+            "title": {
+              "text": "● 历史运行运行详情：SYNTHETIC-RUN-B",
+              "top": 30.796875,
+              "bottom": 53.796875,
+              "visible": true
+            },
+            "selectedCardStyle": {
+              "borderColor": "rgb(29, 78, 216)",
+              "boxShadow": "rgb(157, 182, 242) 0px 0px 0px 2px",
+              "marker": "\"● 当前查看\""
+            },
+            "unselectedCardStyle": {
+              "borderColor": "rgb(203, 210, 217)",
+              "boxShadow": "none",
+              "marker": "none"
+            }
+          }
+        }
+      ],
+      "click_requests": [
+        "GET /api/agent-runs/SYNTHETIC-RUN-A",
+        "GET /api/agent-runs/SYNTHETIC-RUN-B"
+      ]
+    },
+    "760": {
+      "initial": {
+        "scrollY": 0,
+        "innerHeight": 900,
+        "innerWidth": 760,
+        "overflowX": 0,
+        "pressed": [
+          [
+            "SYNTHETIC-RUN-A",
+            "false",
+            "false"
+          ],
+          [
+            "SYNTHETIC-RUN-B",
+            "false",
+            "false"
+          ],
+          [
+            "SYNTHETIC-RUN-C",
+            "false",
+            "false"
+          ],
+          [
+            "SYNTHETIC-RUN-D",
+            "false",
+            "false"
+          ]
+        ],
+        "layoutColumns": 1,
+        "title": null,
+        "selectedCardStyle": null,
+        "unselectedCardStyle": {
+          "borderColor": "rgb(203, 210, 217)",
+          "boxShadow": "none",
+          "marker": "none"
+        }
+      },
+      "clicks": [
+        {
+          "run_id": "SYNTHETIC-RUN-A",
+          "before": {
+            "scrollY": 724,
+            "innerHeight": 900,
+            "innerWidth": 760,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                "false",
+                "false"
+              ]
+            ],
+            "layoutColumns": 1,
+            "title": null,
+            "selectedCardStyle": null,
+            "unselectedCardStyle": {
+              "borderColor": "rgb(203, 210, 217)",
+              "boxShadow": "none",
+              "marker": "none"
+            }
+          },
+          "after": {
+            "scrollY": 2404,
+            "innerHeight": 900,
+            "innerWidth": 760,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                "true",
+                "true"
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                "false",
+                "false"
+              ]
+            ],
+            "layoutColumns": 1,
+            "title": {
+              "text": "● 历史运行运行详情：SYNTHETIC-RUN-A",
+              "top": 30.609375,
+              "bottom": 53.609375,
+              "visible": true
+            },
+            "selectedCardStyle": {
+              "borderColor": "rgb(29, 78, 216)",
+              "boxShadow": "rgb(157, 182, 242) 0px 0px 0px 2px",
+              "marker": "\"● 当前查看\""
+            },
+            "unselectedCardStyle": {
+              "borderColor": "rgb(203, 210, 217)",
+              "boxShadow": "none",
+              "marker": "none"
+            }
+          }
+        },
+        {
+          "run_id": "SYNTHETIC-RUN-B",
+          "before": {
+            "scrollY": 1116,
+            "innerHeight": 900,
+            "innerWidth": 760,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                "true",
+                "true"
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                "false",
+                "false"
+              ]
+            ],
+            "layoutColumns": 1,
+            "title": {
+              "text": "● 历史运行运行详情：SYNTHETIC-RUN-A",
+              "top": 1318.609375,
+              "bottom": 1341.609375,
+              "visible": false
+            },
+            "selectedCardStyle": {
+              "borderColor": "rgb(29, 78, 216)",
+              "boxShadow": "rgb(157, 182, 242) 0px 0px 0px 2px",
+              "marker": "\"● 当前查看\""
+            },
+            "unselectedCardStyle": {
+              "borderColor": "rgb(203, 210, 217)",
+              "boxShadow": "none",
+              "marker": "none"
+            }
+          },
+          "after": {
+            "scrollY": 2404,
+            "innerHeight": 900,
+            "innerWidth": 760,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                "true",
+                "true"
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                "false",
+                "false"
+              ]
+            ],
+            "layoutColumns": 1,
+            "title": {
+              "text": "● 历史运行运行详情：SYNTHETIC-RUN-B",
+              "top": 30.609375,
+              "bottom": 53.609375,
+              "visible": true
+            },
+            "selectedCardStyle": {
+              "borderColor": "rgb(29, 78, 216)",
+              "boxShadow": "rgb(157, 182, 242) 0px 0px 0px 2px",
+              "marker": "\"● 当前查看\""
+            },
+            "unselectedCardStyle": {
+              "borderColor": "rgb(203, 210, 217)",
+              "boxShadow": "none",
+              "marker": "none"
+            }
+          }
+        }
+      ],
+      "click_requests": [
+        "GET /api/agent-runs/SYNTHETIC-RUN-A",
+        "GET /api/agent-runs/SYNTHETIC-RUN-B"
+      ]
+    },
+    "480": {
+      "initial": {
+        "scrollY": 0,
+        "innerHeight": 900,
+        "innerWidth": 480,
+        "overflowX": 0,
+        "pressed": [
+          [
+            "SYNTHETIC-RUN-A",
+            "false",
+            "false"
+          ],
+          [
+            "SYNTHETIC-RUN-B",
+            "false",
+            "false"
+          ],
+          [
+            "SYNTHETIC-RUN-C",
+            "false",
+            "false"
+          ],
+          [
+            "SYNTHETIC-RUN-D",
+            "false",
+            "false"
+          ]
+        ],
+        "layoutColumns": 1,
+        "title": null,
+        "selectedCardStyle": null,
+        "unselectedCardStyle": {
+          "borderColor": "rgb(203, 210, 217)",
+          "boxShadow": "none",
+          "marker": "none"
+        }
+      },
+      "clicks": [
+        {
+          "run_id": "SYNTHETIC-RUN-A",
+          "before": {
+            "scrollY": 1038,
+            "innerHeight": 900,
+            "innerWidth": 480,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                "false",
+                "false"
+              ]
+            ],
+            "layoutColumns": 1,
+            "title": null,
+            "selectedCardStyle": null,
+            "unselectedCardStyle": {
+              "borderColor": "rgb(203, 210, 217)",
+              "boxShadow": "none",
+              "marker": "none"
+            }
+          },
+          "after": {
+            "scrollY": 3195,
+            "innerHeight": 900,
+            "innerWidth": 480,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                "true",
+                "true"
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                "false",
+                "false"
+              ]
+            ],
+            "layoutColumns": 1,
+            "title": {
+              "text": "● 历史运行运行详情：SYNTHETIC-RUN-A",
+              "top": 31,
+              "bottom": 54,
+              "visible": true
+            },
+            "selectedCardStyle": {
+              "borderColor": "rgb(29, 78, 216)",
+              "boxShadow": "rgb(157, 182, 242) 0px 0px 0px 2px",
+              "marker": "\"● 当前查看\""
+            },
+            "unselectedCardStyle": {
+              "borderColor": "rgb(203, 210, 217)",
+              "boxShadow": "none",
+              "marker": "none"
+            }
+          }
+        },
+        {
+          "run_id": "SYNTHETIC-RUN-B",
+          "before": {
+            "scrollY": 1589,
+            "innerHeight": 900,
+            "innerWidth": 480,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                "true",
+                "true"
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                "false",
+                "false"
+              ]
+            ],
+            "layoutColumns": 1,
+            "title": {
+              "text": "● 历史运行运行详情：SYNTHETIC-RUN-A",
+              "top": 1637,
+              "bottom": 1660,
+              "visible": false
+            },
+            "selectedCardStyle": {
+              "borderColor": "rgb(29, 78, 216)",
+              "boxShadow": "rgb(157, 182, 242) 0px 0px 0px 2px",
+              "marker": "\"● 当前查看\""
+            },
+            "unselectedCardStyle": {
+              "borderColor": "rgb(203, 210, 217)",
+              "boxShadow": "none",
+              "marker": "none"
+            }
+          },
+          "after": {
+            "scrollY": 3195,
+            "innerHeight": 900,
+            "innerWidth": 480,
+            "overflowX": 0,
+            "pressed": [
+              [
+                "SYNTHETIC-RUN-A",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-B",
+                "true",
+                "true"
+              ],
+              [
+                "SYNTHETIC-RUN-C",
+                "false",
+                "false"
+              ],
+              [
+                "SYNTHETIC-RUN-D",
+                "false",
+                "false"
+              ]
+            ],
+            "layoutColumns": 1,
+            "title": {
+              "text": "● 历史运行运行详情：SYNTHETIC-RUN-B",
+              "top": 31,
+              "bottom": 54,
+              "visible": true
+            },
+            "selectedCardStyle": {
+              "borderColor": "rgb(29, 78, 216)",
+              "boxShadow": "rgb(157, 182, 242) 0px 0px 0px 2px",
+              "marker": "\"● 当前查看\""
+            },
+            "unselectedCardStyle": {
+              "borderColor": "rgb(203, 210, 217)",
+              "boxShadow": "none",
+              "marker": "none"
+            }
+          }
+        }
+      ],
+      "click_requests": [
+        "GET /api/agent-runs/SYNTHETIC-RUN-A",
+        "GET /api/agent-runs/SYNTHETIC-RUN-B"
+      ]
+    }
+  },
+  "browser": "chromium 156.0.8078.4"
+}

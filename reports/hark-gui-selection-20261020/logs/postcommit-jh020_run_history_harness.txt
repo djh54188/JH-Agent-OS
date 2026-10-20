@@ -1,0 +1,16 @@
+# commit: 068afb504bfcffdcbb9ba45ce056fd61b6a916ef  local time: Tue Oct 20 11:50:55 UTC 2026  node: v22.23.3  python: Python 3.12.15  platform: Linux aarch64
+# command: node tests/js/jh020_run_history_harness.mjs
+ok   history_card_fields
+ok   declared_complete_is_not_success
+ok   simulated_distinct_from_history
+ok   evidence_states_render_differently
+ok   selecting_a_run_uses_its_id
+ok   corrupt_source_shows_its_message
+ok   absent_source_is_not_an_error
+ok   detail_reverse_replies
+ok   detail_same_id_repeat
+ok   detail_late_error
+ok   detail_unrequested_run_id
+ok   detail_leave_view
+ok   detail_reenter_view
+# exit_code: 0

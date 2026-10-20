@@ -1,0 +1,47 @@
+# commit: 068afb504bfcffdcbb9ba45ce056fd61b6a916ef  local time: Tue Oct 20 11:50:55 UTC 2026  node: v22.23.3  python: Python 3.12.15  platform: Linux aarch64
+# command: python3 scripts/verify_jh020_run_history_frontend_guards.py
+{
+  "scope": "frontend_copy_only",
+  "model_calls": 0,
+  "browser": false,
+  "controls": 1,
+  "mutations": 2,
+  "detected": 2,
+  "redundant": 2,
+  "rows": [
+    {
+      "case": "detail_request_generation_removed",
+      "scenario": "detail_same_id_repeat",
+      "detected": true,
+      "redundant": false,
+      "exit": 1,
+      "error": null
+    },
+    {
+      "case": "detail_response_run_id_ignored",
+      "scenario": "detail_unrequested_run_id",
+      "detected": true,
+      "redundant": false,
+      "exit": 1,
+      "error": null
+    },
+    {
+      "case": "detail_requested_run_binding_removed",
+      "scenario": "detail_reverse_replies",
+      "detected": false,
+      "redundant": true,
+      "exit": 0,
+      "error": null
+    },
+    {
+      "case": "detail_panel_generation_removed",
+      "scenario": "detail_leave_view",
+      "detected": false,
+      "redundant": true,
+      "exit": 0,
+      "error": null
+    }
+  ],
+  "verdict": "pass"
+}
+# exit_code: 0

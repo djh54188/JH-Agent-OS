@@ -1,0 +1,13 @@
+# hark05 harness (from 068afb5) run against baseline gui 3d6611a via JH_GUI_DIR; expected to fail
+FAIL no_selection :: [assertion] before any click: aria-pressed of RUN-A is null, expected false
+FAIL a_to_b :: [assertion] after A: aria-pressed of RUN-A is null, expected true
+FAIL repeat_same :: [assertion] after A,A: aria-pressed of RUN-A is null, expected true
+FAIL out_of_order_success :: [assertion] after late A success: aria-pressed of RUN-A is null, expected false
+FAIL late_error :: [assertion] after late A error: aria-pressed of RUN-A is null, expected false
+FAIL wrong_run_id :: [assertion] after a reply carrying RUN-C: aria-pressed of RUN-A is null, expected false
+FAIL leave_reenter :: [assertion] re-entered panel: aria-pressed of RUN-A is null, expected false
+FAIL loading_error_empty :: [assertion] B loading: aria-pressed of RUN-A is null, expected false
+FAIL breakpoints_1100_1101 :: [assertion] 1100px single-column click positioned 0 times
+ok   click_only_queries_detail
+FAIL css_breakpoint_and_scope :: [assertion] views.js breakpoint differs from styles.css
+# exit_code: 1
