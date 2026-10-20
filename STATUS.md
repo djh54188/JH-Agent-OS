@@ -13,7 +13,9 @@
 
 ---
 
-## 2026-10-19 · Hark 历史一致性限定整改的 Windows 集成（候选，待独立验收）
+## 2026-10-19 · Hark 历史一致性限定整改的 Windows 集成（2026-10-20 按只读查询范围验收）
+
+最新裁决：[Windows独立验收](reports/hark-history-windows-independent-acceptance-20261020.md)。移植e995789、授权偏离575b627、执行方报告3f891a6均通过本批验收，不代表恢复/派发或JH-020整体完成。
 
 按独立复核 [Hark-派单-04 限定整改复核](reports/hark-history-rectification-independent-review-20261019.md)，从固定候选 `e5f786e` 精准移植六文件：新增 `src/run_history_consistency.py`、`tests/test_jh020_history_consistency.py`、`scripts/verify_hark_history_consistency_guards.py`、`tests/test_jh020_run_history_guard_classification.py`，更新 `src/app_api.py`、`scripts/verify_jh020_run_history_guards.py`（后者与分类回归为已授权偏离，单独提交）。
 
@@ -21,7 +23,7 @@
 - 定向测试 72 项（新历史 63 + 分类回归 9）通过；新守卫 24/24 断言检出；旧守卫 8 检出 + 1 冗余（双层关闭只作隔离诊断，不计第九次检出）。
 - 全量 **704 项 703 过/1 既有跳过**（AST 独立计数 704 = 632 + 63 + 9）；JH019 前端 4/4、JH020 前端 13/13、前端变异 2 检出 + 2 冗余。
 - 真实旧历史只读：`data/jh020-r2-final-roundtrip-20261018/runs.jsonl`（源 `5b1dc26`）仍 `ok`/`count=1`/`evidence=verified`/`live=false`，登记与原始证据字节未变；未调用模型、未发送会话。
-- 矛盾历史整份 `corrupt`（`runs=[]`、`count=0`、详情 `run=None`），拒绝发生在证据读取与任务关联之前；本批只加固查询路径，不声称恢复和派发已加固。**Windows 集成候选，待架构师独立验收**；production complete 与自动文件应用继续关闭。
+- 矛盾历史整份 `corrupt`（`runs=[]`、`count=0`、详情 `run=None`），拒绝发生在证据读取与任务关联之前；本批只加固查询路径，不声称恢复和派发已加固。**Windows 集成已按本批范围验收**；production complete 与自动文件应用继续关闭。
 
 ---
 
