@@ -1,0 +1,75 @@
+{
+  "candidate": "99abcd71db08931143612f36c9f6953718751c79",
+  "report_commit": "dc6c5c2c17a7f0b5b07c7d41e59f43ddee75ca4f",
+  "decision": "approved_for_exact_windows_integration_not_product_acceptance",
+  "targeted": {
+    "run": 90,
+    "failures": 0,
+    "errors": 0,
+    "skipped": [
+      [
+        "test_hark06_session_probe.TestRefusalBeforeDispatch.test_linked_probe_dir_refuses",
+        "symlink creation needs privileges on Windows"
+      ],
+      [
+        "test_hark06_session_probe.TestRefusalBeforeDispatch.test_unwritable_registry_refuses_before_transport",
+        "POSIX permission bits are not enforced here"
+      ],
+      [
+        "test_hark07_source_isolation.TestSourceIsolation.test_layout_changed_after_accept_is_refused_before_submit",
+        "symlink creation needs privileges on Windows; junctions untested"
+      ],
+      [
+        "test_hark07_source_isolation.TestSourceIsolation.test_linked_ancestor_is_refused_before_any_write",
+        "symlink creation needs privileges on Windows; junctions untested"
+      ],
+      [
+        "test_hark07_source_isolation.TestSourceIsolation.test_linked_raw_and_ws_are_refused",
+        "symlink creation needs privileges on Windows; junctions untested"
+      ],
+      [
+        "test_hark07_source_isolation.TestSourceIsolation.test_linked_root_is_refused",
+        "symlink creation needs privileges on Windows; junctions untested"
+      ],
+      [
+        "test_hark08_cleanup_isolation.TestCleanupAfterRefusedLinkLayout.test_ancestor_link_with_a_probe_subdirectory_gets_nothing",
+        "symlink creation needs privileges on Windows; junctions untested"
+      ],
+      [
+        "test_hark08_cleanup_isolation.TestCleanupAfterRefusedLinkLayout.test_raw_or_ws_link_still_finishes_the_claim_in_the_real_source",
+        "symlink creation needs privileges on Windows; junctions untested"
+      ],
+      [
+        "test_hark08_cleanup_isolation.TestCleanupAfterRefusedLinkLayout.test_root_link_to_a_target_with_a_synthetic_claim_is_not_marked_finished",
+        "symlink creation needs privileges on Windows; junctions untested"
+      ],
+      [
+        "test_hark08_cleanup_isolation.TestCleanupAfterRefusedLinkLayout.test_root_link_to_empty_target_gets_no_lock_and_no_write",
+        "symlink creation needs privileges on Windows; junctions untested"
+      ]
+    ],
+    "platform": "win32",
+    "python": "3.14.7 (tags/v3.14.7:823f032, Aug  5 2026, 10:51:32) [MSC v.1944 64 bit (AMD64)]",
+    "temp_workaround": "process-only inherited-directory ACL; no product or global ACL change"
+  },
+  "native_cleanup_cases": 6,
+  "native_cleanup_all_expected": true,
+  "native_repeat_same_behavior": true,
+  "frozen_cleanup_repeat_json_identical": true,
+  "prior_frozen_counterexamples_checked": true,
+  "independent_ast": 798,
+  "windows_guard": {
+    "detected": 22,
+    "redundant": 1,
+    "failed_rows": [
+      "ancestor_link_check_ignored",
+      "subdir_link_check_ignored",
+      "worker_recheck_ignored"
+    ],
+    "verdict": "fail"
+  },
+  "model_calls": 0,
+  "real_app_server_calls": 0,
+  "product_modified": false,
+  "port_files": 16
+}

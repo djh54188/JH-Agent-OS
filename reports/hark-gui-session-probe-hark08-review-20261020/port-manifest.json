@@ -1,0 +1,120 @@
+{
+  "schema": "jh020-gui-session-probe-port/v1",
+  "source_commit": "99abcd71db08931143612f36c9f6953718751c79",
+  "report_commit": "dc6c5c2c17a7f0b5b07c7d41e59f43ddee75ca4f",
+  "product_base": "6725d60796256a59577d6e50e7732b5145739d4a",
+  "files": [
+    {
+      "path": "gui/data_access.js",
+      "git_blob_sha1": "8dbc340d5f6bc6a368f90c99ccd5d417aa2c0ab1",
+      "sha256": "1f9a489323a5d4ee548c835d79de31a392a052786861c2835e842bb3386f7394",
+      "bytes": 2634,
+      "commit_group": "feature"
+    },
+    {
+      "path": "gui/index.html",
+      "git_blob_sha1": "0a86f6ab7c2a2c0a2ac97d460304fca9b23aa280",
+      "sha256": "b2ea7cce3593bbfaff2d63c27871dee93cafe06baa9065dd2afce458322e968a",
+      "bytes": 1271,
+      "commit_group": "feature"
+    },
+    {
+      "path": "gui/styles.css",
+      "git_blob_sha1": "385599d006bc5000fd5a6e5232564a3f1f4df626",
+      "sha256": "568a123f647c19d9682e472f5e91987c075af1f8f40e299d6a26a8c0489f5bf5",
+      "bytes": 13313,
+      "commit_group": "feature"
+    },
+    {
+      "path": "gui/views.js",
+      "git_blob_sha1": "842b0d1c11e4e2b7c1a8f4f4f56b33c19aaffde5",
+      "sha256": "e559bd6b2b5e3023fce915c46bad0f2a7187309abb6c6124112af9120113a7f0",
+      "bytes": 38811,
+      "commit_group": "feature"
+    },
+    {
+      "path": "scripts/verify_hark06_session_probe_guards.py",
+      "git_blob_sha1": "6ae20ecc6403455312e1ea70e11aeec0378ccac4",
+      "sha256": "1d43b0d927bb94d1e7acdb104e3e8faf5b2971227c10ef2b21bd536820fc2855",
+      "bytes": 17036,
+      "commit_group": "feature"
+    },
+    {
+      "path": "src/app_api.py",
+      "git_blob_sha1": "6d9e24d95c93bb9fdc3fd412cffa5484a32553af",
+      "sha256": "df8303f7133571fa23cab7043b1e175a5e6b06df2f0505207ff96663f4a4a49c",
+      "bytes": 29723,
+      "commit_group": "feature"
+    },
+    {
+      "path": "src/gui_http.py",
+      "git_blob_sha1": "33f2f2b97813c7a817b8b6ae384b02e26c41ffbb",
+      "sha256": "084a8485938543c9b3aef8c74df8b569e324c33073a3185a5d256db732d8186e",
+      "bytes": 12714,
+      "commit_group": "feature"
+    },
+    {
+      "path": "src/session_probe.py",
+      "git_blob_sha1": "0c60f36415e3bef64fc832d0efde769ae425e832",
+      "sha256": "995426fc53cf91577cd9bc5e245938d29b9ab4edcf20bab9d40eb1d3b608b354",
+      "bytes": 46485,
+      "commit_group": "feature"
+    },
+    {
+      "path": "tests/hark07_probe_child.py",
+      "git_blob_sha1": "a9e75b19cbf9dd3c8ce5d2680dadca1496beb913",
+      "sha256": "84184ab22fb646f2a523e2fe3658621087e6043718024f1997d2ad26b35ea064",
+      "bytes": 2588,
+      "commit_group": "feature"
+    },
+    {
+      "path": "tests/hark07_verifier_samples.py",
+      "git_blob_sha1": "6c1abd342198fab1910dcee3667bb3c2cc41d853",
+      "sha256": "76091ffbde1ef609756febc7e96ef1ce0008caafb2e791c7d67c42f9384b9c9a",
+      "bytes": 524,
+      "commit_group": "feature"
+    },
+    {
+      "path": "tests/js/hark06_session_probe_harness.mjs",
+      "git_blob_sha1": "4e7ff5f276567f776b9b391c46ace6bc652a08ee",
+      "sha256": "cb70edd7135abafd7df28ff4e0f715bb725e5c6ff46d66ae8b31d59ee1ac1dcd",
+      "bytes": 17310,
+      "commit_group": "feature"
+    },
+    {
+      "path": "tests/test_hark06_session_probe.py",
+      "git_blob_sha1": "da5458fe89ec9d5f45e0db5a6fbcebd2ef43fc58",
+      "sha256": "25178de9ce4cc1ccf78c63a10d4c4966a508f2d025cdf69f98d7d13f90b885df",
+      "bytes": 32672,
+      "commit_group": "feature"
+    },
+    {
+      "path": "tests/test_hark07_source_isolation.py",
+      "git_blob_sha1": "8d04ddca610aaffba01a73994945bcdd513ec569",
+      "sha256": "117c8ee039c118a20b1f736e931e94132728a7a02b9c937f82b398f088c5c53c",
+      "bytes": 14882,
+      "commit_group": "feature"
+    },
+    {
+      "path": "tests/test_hark07_verifier_classification.py",
+      "git_blob_sha1": "03db293de94cae77cdd5098e994f9dac7e9d7f7f",
+      "sha256": "7025886bd271d4f7d956e828d1edf38fe806e1bcab6a972a4d735252ed830c20",
+      "bytes": 12135,
+      "commit_group": "feature"
+    },
+    {
+      "path": "tests/test_hark08_cleanup_isolation.py",
+      "git_blob_sha1": "0752b5b4e0d16ddad3d8577365a60e4174b956c4",
+      "sha256": "2365deeced9cc6757a3c7d05ea9a42ddd4b0615fcfa246f408f9b4c0fbe5140f",
+      "bytes": 8636,
+      "commit_group": "feature"
+    },
+    {
+      "path": "tests/test_jh018_agent_session_contract.py",
+      "git_blob_sha1": "b7dcb27802a30502a0b1b64d3c31a4062d1b56a2",
+      "sha256": "627977fb3c24dd7a18b5047f0bee05092199ae32e44ed5bf042d86dddf0ff5f1",
+      "bytes": 42134,
+      "commit_group": "authorized-jh018-deviation"
+    }
+  ]
+}

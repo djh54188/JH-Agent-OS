@@ -1,0 +1,95 @@
+{
+  "platform": "win32",
+  "python": "3.14.7 (tags/v3.14.7:823f032, Aug  5 2026, 10:51:32) [MSC v.1944 64 bit (AMD64)]",
+  "model_calls": 0,
+  "real_app_server_calls": 0,
+  "all_expected": true,
+  "rows": [
+    {
+      "case": "root_empty",
+      "target_bytes_and_entries_unchanged": true,
+      "before": {},
+      "after": {},
+      "thread_starts": 0,
+      "source_claim_state": "accepted",
+      "expected_source_claim_state": "accepted",
+      "parked_source_bytes_unchanged": true,
+      "cleanup_refused": true,
+      "ok": true
+    },
+    {
+      "case": "root_claim",
+      "target_bytes_and_entries_unchanged": true,
+      "before": {
+        "probe-claim.json": "6a4a07dd73fa433b4b7a99f7318222ae9c07603c33e61dc82575cb48b13049b6"
+      },
+      "after": {
+        "probe-claim.json": "6a4a07dd73fa433b4b7a99f7318222ae9c07603c33e61dc82575cb48b13049b6"
+      },
+      "thread_starts": 0,
+      "source_claim_state": "accepted",
+      "expected_source_claim_state": "accepted",
+      "parked_source_bytes_unchanged": true,
+      "cleanup_refused": true,
+      "ok": true
+    },
+    {
+      "case": "root_claim_lock",
+      "target_bytes_and_entries_unchanged": true,
+      "before": {
+        "probe-claim.json": "a61243ca3c04c42729091a69a3e23c907c8062abaad8755ef131db0a3ef7b25d",
+        "probe.lock": "e461547b9719b70f46b310e72c0d06f40e7d011f23b38db811ed7c204387f149"
+      },
+      "after": {
+        "probe-claim.json": "a61243ca3c04c42729091a69a3e23c907c8062abaad8755ef131db0a3ef7b25d",
+        "probe.lock": "e461547b9719b70f46b310e72c0d06f40e7d011f23b38db811ed7c204387f149"
+      },
+      "thread_starts": 0,
+      "source_claim_state": "accepted",
+      "expected_source_claim_state": "accepted",
+      "parked_source_bytes_unchanged": true,
+      "cleanup_refused": true,
+      "ok": true
+    },
+    {
+      "case": "ancestor",
+      "target_bytes_and_entries_unchanged": true,
+      "before": {
+        "probe": "<directory>"
+      },
+      "after": {
+        "probe": "<directory>"
+      },
+      "thread_starts": 0,
+      "source_claim_state": "accepted",
+      "expected_source_claim_state": "accepted",
+      "parked_source_bytes_unchanged": true,
+      "cleanup_refused": true,
+      "ok": true
+    },
+    {
+      "case": "raw",
+      "target_bytes_and_entries_unchanged": true,
+      "before": {},
+      "after": {},
+      "thread_starts": 0,
+      "source_claim_state": "finished",
+      "expected_source_claim_state": "finished",
+      "parked_source_bytes_unchanged": null,
+      "cleanup_refused": false,
+      "ok": true
+    },
+    {
+      "case": "ws",
+      "target_bytes_and_entries_unchanged": true,
+      "before": {},
+      "after": {},
+      "thread_starts": 0,
+      "source_claim_state": "finished",
+      "expected_source_claim_state": "finished",
+      "parked_source_bytes_unchanged": null,
+      "cleanup_refused": false,
+      "ok": true
+    }
+  ]
+}
