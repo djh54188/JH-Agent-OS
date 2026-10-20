@@ -1,0 +1,48 @@
+# label: baseline
+# commit: 6725d60796256a59577d6e50e7732b5145739d4a  tree-clean: yes
+# command: node tests/js/jh019_generation_harness.mjs
+# python: 3.14.8 Linux-6.12.110+-aarch64-with-glibc2.41  node: v22.23.3
+# started: Tue Oct 20 13:08:54 UTC 2026
+# ---- raw output below ----
+{
+  "harness": "jh019-generation",
+  "scenarios": {
+    "workbench_then_sessions_late_workbench": {
+      "ok": true,
+      "detail": {
+        "rendered": true,
+        "lateIgnored": true
+      }
+    },
+    "task_switch_late_A_after_B": {
+      "ok": true,
+      "detail": {
+        "showedB": true,
+        "lateAIgnored": true
+      }
+    },
+    "draft_list_stale_empty_after_save": {
+      "ok": true,
+      "detail": {
+        "cardsAfterSave": 1,
+        "cardsAfterStale": 1,
+        "staleIgnored": true
+      }
+    },
+    "save_pending_across_view_switch": {
+      "ok": true,
+      "detail": {
+        "cardsAfterCurrentList": 1,
+        "cardsAfterStale": 1,
+        "stalePanelInert": true
+      }
+    }
+  },
+  "ok": true
+}
+PASS workbench_then_sessions_late_workbench
+PASS task_switch_late_A_after_B
+PASS draft_list_stale_empty_after_save
+PASS save_pending_across_view_switch
+# ---- end raw output ----
+# exit_code: 0

@@ -1,0 +1,282 @@
+{
+  "notice": "Linux合成预览（离线假传输，未调用真实模型），未作Windows验收",
+  "synthetic": true,
+  "real_model_calls": 0,
+  "platform": "Linux-6.12.110+-aarch64-with-glibc2.41",
+  "python": "3.12.15",
+  "runs": [
+    {
+      "scenario": "open_only",
+      "width": 1440,
+      "requests": [
+        "GET /api/capabilities",
+        "GET /api/tasks",
+        "GET /api/drafts",
+        "GET /api/session-probe",
+        "GET /api/session-probe"
+      ],
+      "posts": [],
+      "thread_starts": 0,
+      "before": {
+        "start_disabled": true,
+        "box_disabled": false,
+        "outcome": null,
+        "source": "injected_offline_adapter",
+        "replies": [],
+        "overflowX": 0,
+        "text_has_disclaimer": false
+      },
+      "after": {
+        "start_disabled": true,
+        "box_disabled": false,
+        "outcome": null,
+        "source": "injected_offline_adapter",
+        "replies": [],
+        "overflowX": 0,
+        "text_has_disclaimer": false
+      },
+      "registry_exists": false
+    },
+    {
+      "scenario": "unconfirmed",
+      "width": 1440,
+      "requests": [
+        "GET /api/capabilities",
+        "GET /api/tasks",
+        "GET /api/drafts",
+        "GET /api/session-probe"
+      ],
+      "posts": [],
+      "thread_starts": 0,
+      "before": {
+        "start_disabled": true,
+        "box_disabled": false,
+        "outcome": null,
+        "source": "injected_offline_adapter",
+        "replies": [],
+        "overflowX": 0,
+        "text_has_disclaimer": false
+      },
+      "after": {
+        "start_disabled": true,
+        "box_disabled": false,
+        "outcome": null,
+        "source": "injected_offline_adapter",
+        "replies": [],
+        "overflowX": 0,
+        "text_has_disclaimer": false
+      },
+      "registry_exists": false
+    },
+    {
+      "scenario": "confirmed",
+      "width": 1440,
+      "requests": [
+        "GET /api/capabilities",
+        "GET /api/tasks",
+        "GET /api/drafts",
+        "GET /api/session-probe",
+        "POST /api/session-probe/prepare",
+        "POST /api/session-probe/start",
+        "GET /api/session-probe"
+      ],
+      "posts": [
+        "POST /api/session-probe/prepare",
+        "POST /api/session-probe/start"
+      ],
+      "thread_starts": 1,
+      "before": {
+        "start_disabled": true,
+        "box_disabled": false,
+        "outcome": null,
+        "source": "injected_offline_adapter",
+        "replies": [],
+        "overflowX": 0,
+        "text_has_disclaimer": false
+      },
+      "after": {
+        "start_disabled": true,
+        "box_disabled": false,
+        "outcome": "round_trip_complete",
+        "source": "injected_offline_adapter",
+        "replies": [
+          "JH-PROBE-8FB98212EEBF256B"
+        ],
+        "overflowX": 0,
+        "text_has_disclaimer": true
+      },
+      "registry_exists": true
+    },
+    {
+      "scenario": "open_only",
+      "width": 760,
+      "requests": [
+        "GET /api/capabilities",
+        "GET /api/tasks",
+        "GET /api/drafts",
+        "GET /api/session-probe",
+        "GET /api/session-probe"
+      ],
+      "posts": [],
+      "thread_starts": 0,
+      "before": {
+        "start_disabled": true,
+        "box_disabled": false,
+        "outcome": null,
+        "source": "injected_offline_adapter",
+        "replies": [],
+        "overflowX": 0,
+        "text_has_disclaimer": false
+      },
+      "after": {
+        "start_disabled": true,
+        "box_disabled": false,
+        "outcome": null,
+        "source": "injected_offline_adapter",
+        "replies": [],
+        "overflowX": 0,
+        "text_has_disclaimer": false
+      },
+      "registry_exists": false
+    },
+    {
+      "scenario": "unconfirmed",
+      "width": 760,
+      "requests": [
+        "GET /api/capabilities",
+        "GET /api/tasks",
+        "GET /api/drafts",
+        "GET /api/session-probe"
+      ],
+      "posts": [],
+      "thread_starts": 0,
+      "before": {
+        "start_disabled": true,
+        "box_disabled": false,
+        "outcome": null,
+        "source": "injected_offline_adapter",
+        "replies": [],
+        "overflowX": 0,
+        "text_has_disclaimer": false
+      },
+      "after": {
+        "start_disabled": true,
+        "box_disabled": false,
+        "outcome": null,
+        "source": "injected_offline_adapter",
+        "replies": [],
+        "overflowX": 0,
+        "text_has_disclaimer": false
+      },
+      "registry_exists": false
+    },
+    {
+      "scenario": "confirmed",
+      "width": 760,
+      "requests": [
+        "GET /api/capabilities",
+        "GET /api/tasks",
+        "GET /api/drafts",
+        "GET /api/session-probe",
+        "POST /api/session-probe/prepare",
+        "POST /api/session-probe/start",
+        "GET /api/session-probe"
+      ],
+      "posts": [
+        "POST /api/session-probe/prepare",
+        "POST /api/session-probe/start"
+      ],
+      "thread_starts": 1,
+      "before": {
+        "start_disabled": true,
+        "box_disabled": false,
+        "outcome": null,
+        "source": "injected_offline_adapter",
+        "replies": [],
+        "overflowX": 0,
+        "text_has_disclaimer": false
+      },
+      "after": {
+        "start_disabled": true,
+        "box_disabled": false,
+        "outcome": "round_trip_complete",
+        "source": "injected_offline_adapter",
+        "replies": [
+          "JH-PROBE-3689FC13827FB424"
+        ],
+        "overflowX": 0,
+        "text_has_disclaimer": true
+      },
+      "registry_exists": true
+    },
+    {
+      "scenario": "disabled",
+      "width": 1440,
+      "requests": [
+        "GET /api/capabilities",
+        "GET /api/tasks",
+        "GET /api/drafts",
+        "GET /api/session-probe"
+      ],
+      "posts": [],
+      "thread_starts": 0,
+      "before": {
+        "start_disabled": true,
+        "box_disabled": true,
+        "outcome": null,
+        "source": "injected_offline_adapter",
+        "replies": [],
+        "overflowX": 0,
+        "text_has_disclaimer": false
+      },
+      "after": {
+        "start_disabled": true,
+        "box_disabled": true,
+        "outcome": null,
+        "source": "injected_offline_adapter",
+        "replies": [],
+        "overflowX": 0,
+        "text_has_disclaimer": false
+      },
+      "registry_exists": false
+    },
+    {
+      "scenario": "unknown",
+      "width": 1440,
+      "requests": [
+        "GET /api/capabilities",
+        "GET /api/tasks",
+        "GET /api/drafts",
+        "GET /api/session-probe",
+        "POST /api/session-probe/prepare",
+        "POST /api/session-probe/start",
+        "GET /api/session-probe"
+      ],
+      "posts": [
+        "POST /api/session-probe/prepare",
+        "POST /api/session-probe/start"
+      ],
+      "thread_starts": 1,
+      "before": {
+        "start_disabled": true,
+        "box_disabled": false,
+        "outcome": null,
+        "source": "injected_offline_adapter",
+        "replies": [],
+        "overflowX": 0,
+        "text_has_disclaimer": false
+      },
+      "after": {
+        "start_disabled": true,
+        "box_disabled": true,
+        "outcome": "unknown_manual",
+        "source": "injected_offline_adapter",
+        "replies": [],
+        "overflowX": 0,
+        "text_has_disclaimer": false
+      },
+      "registry_exists": true
+    }
+  ],
+  "browser": "chromium 156.0.8078.4"
+}

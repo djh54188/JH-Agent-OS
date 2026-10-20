@@ -1,0 +1,94 @@
+# source tree: 8a20ab66eff2cc8bd746af89293db4a1390f0fd8 (+ untracked reports/ preview script); local time: Tue Oct 20 13:09:16 UTC 2026
+[gui] "GET / HTTP/1.1" 200 -
+[gui] "GET /static/styles.css HTTP/1.1" 200 -
+[gui] "GET /static/components.js HTTP/1.1" 200 -
+[gui] "GET /static/views.js HTTP/1.1" 200 -
+[gui] "GET /static/data_access.js HTTP/1.1" 200 -
+[gui] "GET /api/capabilities HTTP/1.1" 200 -
+[gui] "GET /api/tasks HTTP/1.1" 200 -
+[gui] "GET /api/drafts HTTP/1.1" 200 -
+[gui] "GET /api/session-probe HTTP/1.1" 200 -
+[gui] "GET /api/session-probe HTTP/1.1" 200 -
+[gui] "GET / HTTP/1.1" 200 -
+[gui] "GET /static/components.js HTTP/1.1" 200 -
+[gui] "GET /static/styles.css HTTP/1.1" 200 -
+[gui] "GET /static/views.js HTTP/1.1" 200 -
+[gui] "GET /static/data_access.js HTTP/1.1" 200 -
+[gui] "GET /api/capabilities HTTP/1.1" 200 -
+[gui] "GET /api/tasks HTTP/1.1" 200 -
+[gui] "GET /api/drafts HTTP/1.1" 200 -
+[gui] "GET /api/session-probe HTTP/1.1" 200 -
+[gui] "GET / HTTP/1.1" 200 -
+[gui] "GET /static/components.js HTTP/1.1" 200 -
+[gui] "GET /static/styles.css HTTP/1.1" 200 -
+[gui] "GET /static/data_access.js HTTP/1.1" 200 -
+[gui] "GET /static/views.js HTTP/1.1" 200 -
+[gui] "GET /api/capabilities HTTP/1.1" 200 -
+[gui] "GET /api/tasks HTTP/1.1" 200 -
+[gui] "GET /api/drafts HTTP/1.1" 200 -
+[gui] "GET /api/session-probe HTTP/1.1" 200 -
+[gui] "POST /api/session-probe/prepare HTTP/1.1" 200 -
+[gui] "POST /api/session-probe/start HTTP/1.1" 202 -
+[gui] "GET /api/session-probe HTTP/1.1" 200 -
+[gui] "GET / HTTP/1.1" 200 -
+[gui] "GET /static/data_access.js HTTP/1.1" 200 -
+[gui] "GET /static/components.js HTTP/1.1" 200 -
+[gui] "GET /static/views.js HTTP/1.1" 200 -
+[gui] "GET /static/styles.css HTTP/1.1" 200 -
+[gui] "GET /api/capabilities HTTP/1.1" 200 -
+[gui] "GET /api/tasks HTTP/1.1" 200 -
+[gui] "GET /api/drafts HTTP/1.1" 200 -
+[gui] "GET /api/session-probe HTTP/1.1" 200 -
+[gui] "GET /api/session-probe HTTP/1.1" 200 -
+[gui] "GET / HTTP/1.1" 200 -
+[gui] "GET /static/styles.css HTTP/1.1" 200 -
+[gui] "GET /static/views.js HTTP/1.1" 200 -
+[gui] "GET /static/data_access.js HTTP/1.1" 200 -
+[gui] "GET /static/components.js HTTP/1.1" 200 -
+[gui] "GET /api/capabilities HTTP/1.1" 200 -
+[gui] "GET /api/tasks HTTP/1.1" 200 -
+[gui] "GET /api/drafts HTTP/1.1" 200 -
+[gui] "GET /api/session-probe HTTP/1.1" 200 -
+[gui] "GET / HTTP/1.1" 200 -
+[gui] "GET /static/components.js HTTP/1.1" 200 -
+[gui] "GET /static/styles.css HTTP/1.1" 200 -
+[gui] "GET /static/views.js HTTP/1.1" 200 -
+[gui] "GET /static/data_access.js HTTP/1.1" 200 -
+[gui] "GET /api/capabilities HTTP/1.1" 200 -
+[gui] "GET /api/tasks HTTP/1.1" 200 -
+[gui] "GET /api/drafts HTTP/1.1" 200 -
+[gui] "GET /api/session-probe HTTP/1.1" 200 -
+[gui] "POST /api/session-probe/prepare HTTP/1.1" 200 -
+[gui] "POST /api/session-probe/start HTTP/1.1" 202 -
+[gui] "GET /api/session-probe HTTP/1.1" 200 -
+[gui] "GET / HTTP/1.1" 200 -
+[gui] "GET /static/styles.css HTTP/1.1" 200 -
+[gui] "GET /static/data_access.js HTTP/1.1" 200 -
+[gui] "GET /static/views.js HTTP/1.1" 200 -
+[gui] "GET /static/components.js HTTP/1.1" 200 -
+[gui] "GET /api/capabilities HTTP/1.1" 200 -
+[gui] "GET /api/tasks HTTP/1.1" 200 -
+[gui] "GET /api/drafts HTTP/1.1" 200 -
+[gui] "GET /api/session-probe HTTP/1.1" 200 -
+[gui] "GET / HTTP/1.1" 200 -
+[gui] "GET /static/styles.css HTTP/1.1" 200 -
+[gui] "GET /static/data_access.js HTTP/1.1" 200 -
+[gui] "GET /static/components.js HTTP/1.1" 200 -
+[gui] "GET /static/views.js HTTP/1.1" 200 -
+[gui] "GET /api/tasks HTTP/1.1" 200 -
+[gui] "GET /api/capabilities HTTP/1.1" 200 -
+[gui] "GET /api/drafts HTTP/1.1" 200 -
+[gui] "GET /api/session-probe HTTP/1.1" 200 -
+[gui] "POST /api/session-probe/prepare HTTP/1.1" 200 -
+[gui] "POST /api/session-probe/start HTTP/1.1" 202 -
+[gui] "GET /api/session-probe HTTP/1.1" 200 -
+{"scenario": "open_only", "width": 1440, "posts": [], "thread_starts": 0, "outcome": null, "start_disabled": true, "overflowX": 0, "source": "injected_offline_adapter"}
+{"scenario": "unconfirmed", "width": 1440, "posts": [], "thread_starts": 0, "outcome": null, "start_disabled": true, "overflowX": 0, "source": "injected_offline_adapter"}
+{"scenario": "confirmed", "width": 1440, "posts": ["POST /api/session-probe/prepare", "POST /api/session-probe/start"], "thread_starts": 1, "outcome": "round_trip_complete", "start_disabled": true, "overflowX": 0, "source": "injected_offline_adapter"}
+{"scenario": "open_only", "width": 760, "posts": [], "thread_starts": 0, "outcome": null, "start_disabled": true, "overflowX": 0, "source": "injected_offline_adapter"}
+{"scenario": "unconfirmed", "width": 760, "posts": [], "thread_starts": 0, "outcome": null, "start_disabled": true, "overflowX": 0, "source": "injected_offline_adapter"}
+{"scenario": "confirmed", "width": 760, "posts": ["POST /api/session-probe/prepare", "POST /api/session-probe/start"], "thread_starts": 1, "outcome": "round_trip_complete", "start_disabled": true, "overflowX": 0, "source": "injected_offline_adapter"}
+{"scenario": "disabled", "width": 1440, "posts": [], "thread_starts": 0, "outcome": null, "start_disabled": true, "overflowX": 0, "source": "injected_offline_adapter"}
+{"scenario": "unknown", "width": 1440, "posts": ["POST /api/session-probe/prepare", "POST /api/session-probe/start"], "thread_starts": 1, "outcome": "unknown_manual", "start_disabled": true, "overflowX": 0, "source": "injected_offline_adapter"}
+chromium 156.0.8078.4
+# exit_code: 0
