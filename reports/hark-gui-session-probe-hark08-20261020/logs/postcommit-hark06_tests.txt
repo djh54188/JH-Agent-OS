@@ -1,0 +1,76 @@
+# label: postcommit
+# commit: 99abcd71db08931143612f36c9f6953718751c79  tree-clean: yes
+# command: /workspace/work/venv-h05/bin/python -m unittest -v tests.test_hark06_session_probe
+# python: 3.14.8 Linux-6.12.110+-aarch64-with-glibc2.41  node: v22.23.3
+# started: Tue Oct 20 14:25:58 UTC 2026
+# ---- raw output below ----
+test_collect_timeout_stays_unknown_and_blocks (tests.test_hark06_session_probe.TestAtMostOnce.test_collect_timeout_stays_unknown_and_blocks) ... ok
+test_concurrent_same_id_dispatches_once (tests.test_hark06_session_probe.TestAtMostOnce.test_concurrent_same_id_dispatches_once) ... ok
+test_dispatch_failure_is_recorded_and_not_retried (tests.test_hark06_session_probe.TestAtMostOnce.test_dispatch_failure_is_recorded_and_not_retried) ... ok
+test_prepared_id_does_not_survive_restart (tests.test_hark06_session_probe.TestAtMostOnce.test_prepared_id_does_not_survive_restart) ... ok
+test_repeat_start_of_one_id_never_dispatches_twice (tests.test_hark06_session_probe.TestAtMostOnce.test_repeat_start_of_one_id_never_dispatches_twice)
+Hark-派单-07 formal sample for the declared-redundant replay row: a ... ok
+test_restart_does_not_redispatch (tests.test_hark06_session_probe.TestAtMostOnce.test_restart_does_not_redispatch) ... ok
+test_same_probe_id_twice_dispatches_once (tests.test_hark06_session_probe.TestAtMostOnce.test_same_probe_id_twice_dispatches_once) ... ok
+test_second_confirmation_while_in_flight_is_refused (tests.test_hark06_session_probe.TestAtMostOnce.test_second_confirmation_while_in_flight_is_refused) ... ok
+test_thread_start_timeout_stays_unknown_and_blocks (tests.test_hark06_session_probe.TestAtMostOnce.test_thread_start_timeout_stays_unknown_and_blocks) ... ok
+test_turn_start_timeout_stays_unknown_and_blocks (tests.test_hark06_session_probe.TestAtMostOnce.test_turn_start_timeout_stays_unknown_and_blocks) ... ok
+test_unfinished_run_after_crash_blocks (tests.test_hark06_session_probe.TestAtMostOnce.test_unfinished_run_after_crash_blocks) ... ok
+test_foreign_reply_and_usage_are_not_adopted (tests.test_hark06_session_probe.TestBinding.test_foreign_reply_and_usage_are_not_adopted) ... ok
+test_request_is_server_decided_and_read_only (tests.test_hark06_session_probe.TestBinding.test_request_is_server_decided_and_read_only) ... ok
+test_success_binds_reply_usage_and_evidence_to_this_run (tests.test_hark06_session_probe.TestBinding.test_success_binds_reply_usage_and_evidence_to_this_run) ... ok
+test_tampered_evidence_is_reported (tests.test_hark06_session_probe.TestBinding.test_tampered_evidence_is_reported) ... ok
+test_tool_item_in_the_stream_is_not_a_clean_probe (tests.test_hark06_session_probe.TestBinding.test_tool_item_in_the_stream_is_not_a_clean_probe) ... ok
+test_unbound_usage_is_unknown_not_zero (tests.test_hark06_session_probe.TestBinding.test_unbound_usage_is_unknown_not_zero) ... ok
+test_wrong_echo_is_not_a_round_trip (tests.test_hark06_session_probe.TestBinding.test_wrong_echo_is_not_a_round_trip) ... ok
+test_get_status_over_http_never_dispatches (tests.test_hark06_session_probe.TestHttpBoundary.test_get_status_over_http_never_dispatches) ... [gui] "GET /api/session-probe HTTP/1.1" 200 -
+[gui] "GET /api/session-probe HTTP/1.1" 200 -
+[gui] "GET /api/session-probe HTTP/1.1" 200 -
+ok
+test_illegal_origin_or_host_dispatches_nothing (tests.test_hark06_session_probe.TestHttpBoundary.test_illegal_origin_or_host_dispatches_nothing) ... [gui] "POST /api/session-probe/prepare HTTP/1.1" 403 -
+[gui] "POST /api/session-probe/start HTTP/1.1" 403 -
+[gui] "POST /api/session-probe/prepare HTTP/1.1" 403 -
+[gui] "POST /api/session-probe/start HTTP/1.1" 403 -
+[gui] "POST /api/session-probe/prepare HTTP/1.1" 403 -
+[gui] "POST /api/session-probe/start HTTP/1.1" 403 -
+[gui] "POST /api/session-probe/prepare HTTP/1.1" 403 -
+[gui] "POST /api/session-probe/start HTTP/1.1" 403 -
+[gui] "POST /api/session-probe/prepare HTTP/1.1" 403 -
+[gui] "POST /api/session-probe/start HTTP/1.1" 403 -
+[gui] "POST /api/session-probe/prepare HTTP/1.1" 403 -
+[gui] "POST /api/session-probe/start HTTP/1.1" 403 -
+[gui] "POST /api/session-probe/prepare HTTP/1.1" 403 -
+[gui] "POST /api/session-probe/start HTTP/1.1" 403 -
+ok
+test_same_origin_confirmed_flow_dispatches_once (tests.test_hark06_session_probe.TestHttpBoundary.test_same_origin_confirmed_flow_dispatches_once) ... [gui] "POST /api/session-probe/prepare HTTP/1.1" 200 -
+[gui] "POST /api/session-probe/start HTTP/1.1" 202 -
+[gui] "POST /api/session-probe/start HTTP/1.1" 202 -
+[gui] "GET /api/session-probe HTTP/1.1" 200 -
+ok
+test_application_interface_builds_no_model_request (tests.test_hark06_session_probe.TestLayering.test_application_interface_builds_no_model_request) ... ok
+test_core_modules_do_not_import_the_probe (tests.test_hark06_session_probe.TestLayering.test_core_modules_do_not_import_the_probe) ... ok
+test_transport_wires_only_through_the_application_interface (tests.test_hark06_session_probe.TestLayering.test_transport_wires_only_through_the_application_interface) ... ok
+test_history_source_static_sessions_and_capabilities_untouched (tests.test_hark06_session_probe.TestNoCollateral.test_history_source_static_sessions_and_capabilities_untouched) ... ok
+test_only_the_probe_directory_is_written (tests.test_hark06_session_probe.TestNoCollateral.test_only_the_probe_directory_is_written) ... ok
+test_status_never_claims_task_success (tests.test_hark06_session_probe.TestNoCollateral.test_status_never_claims_task_success) ... ok
+test_corrupt_json_registry_refuses (tests.test_hark06_session_probe.TestRefusalBeforeDispatch.test_corrupt_json_registry_refuses) ... ok
+test_field_invalid_registry_refuses (tests.test_hark06_session_probe.TestRefusalBeforeDispatch.test_field_invalid_registry_refuses) ... ok
+test_finite_budget_demand_is_refused_not_ignored (tests.test_hark06_session_probe.TestRefusalBeforeDispatch.test_finite_budget_demand_is_refused_not_ignored) ... ok
+test_history_source_cannot_be_the_probe_registry (tests.test_hark06_session_probe.TestRefusalBeforeDispatch.test_history_source_cannot_be_the_probe_registry) ... ok
+test_inconsistent_history_refuses (tests.test_hark06_session_probe.TestRefusalBeforeDispatch.test_inconsistent_history_refuses) ... ok
+test_linked_probe_dir_refuses (tests.test_hark06_session_probe.TestRefusalBeforeDispatch.test_linked_probe_dir_refuses) ... ok
+test_missing_runtime_refuses (tests.test_hark06_session_probe.TestRefusalBeforeDispatch.test_missing_runtime_refuses) ... ok
+test_unreadable_registry_refuses (tests.test_hark06_session_probe.TestRefusalBeforeDispatch.test_unreadable_registry_refuses) ... ok
+test_unwritable_registry_refuses_before_transport (tests.test_hark06_session_probe.TestRefusalBeforeDispatch.test_unwritable_registry_refuses_before_transport) ... ok
+test_disabled_refuses_prepare_and_start (tests.test_hark06_session_probe.TestZeroDispatch.test_disabled_refuses_prepare_and_start) ... ok
+test_forbidden_fields_dispatch_nothing (tests.test_hark06_session_probe.TestZeroDispatch.test_forbidden_fields_dispatch_nothing) ... ok
+test_status_never_dispatches_or_writes (tests.test_hark06_session_probe.TestZeroDispatch.test_status_never_dispatches_or_writes) ... ok
+test_unconfirmed_start_dispatches_nothing (tests.test_hark06_session_probe.TestZeroDispatch.test_unconfirmed_start_dispatches_nothing) ... ok
+test_unprepared_or_expired_probe_id_dispatches_nothing (tests.test_hark06_session_probe.TestZeroDispatch.test_unprepared_or_expired_probe_id_dispatches_nothing) ... ok
+
+----------------------------------------------------------------------
+Ran 41 tests in 1.691s
+
+OK
+# ---- end raw output ----
+# exit_code: 0

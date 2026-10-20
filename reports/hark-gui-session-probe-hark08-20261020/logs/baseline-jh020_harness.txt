@@ -1,0 +1,21 @@
+# label: baseline
+# commit: 5c466b6980fb97e7759fde79d0583e1e12974051  tree-clean: yes
+# command: node tests/js/jh020_run_history_harness.mjs
+# python: 3.14.8 Linux-6.12.110+-aarch64-with-glibc2.41  node: v22.23.3
+# started: Tue Oct 20 14:25:27 UTC 2026
+# ---- raw output below ----
+ok   history_card_fields
+ok   declared_complete_is_not_success
+ok   simulated_distinct_from_history
+ok   evidence_states_render_differently
+ok   selecting_a_run_uses_its_id
+ok   corrupt_source_shows_its_message
+ok   absent_source_is_not_an_error
+ok   detail_reverse_replies
+ok   detail_same_id_repeat
+ok   detail_late_error
+ok   detail_unrequested_run_id
+ok   detail_leave_view
+ok   detail_reenter_view
+# ---- end raw output ----
+# exit_code: 0

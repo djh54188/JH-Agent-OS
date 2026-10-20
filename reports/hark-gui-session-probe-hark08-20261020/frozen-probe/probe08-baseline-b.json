@@ -1,0 +1,193 @@
+{
+  "platform": "linux",
+  "python": "3.14.8 (main, Oct 14 2026, 01:05:37) [Clang 23.1.3 ]",
+  "model_calls": 0,
+  "real_app_server_calls": 0,
+  "rows": [
+    {
+      "case": "root",
+      "accepted": true,
+      "thread_starts": 0,
+      "last_error": {
+        "type": "ProbeRefused",
+        "code": "probe_path_is_link"
+      },
+      "target_before": [],
+      "target_claim_before": null,
+      "target_claim_after": null,
+      "target_after": [
+        "probe.lock"
+      ],
+      "target_file_sizes": {
+        "probe.lock": 0
+      }
+    },
+    {
+      "case": "root_with_claim",
+      "accepted": true,
+      "thread_starts": 0,
+      "last_error": {
+        "type": "ProbeRefused",
+        "code": "probe_path_is_link"
+      },
+      "target_before": [
+        "probe-claim.json"
+      ],
+      "target_claim_before": "accepted",
+      "target_claim_after": "finished",
+      "target_after": [
+        "probe-claim.json",
+        "probe.lock"
+      ],
+      "target_file_sizes": {
+        "probe-claim.json": 228,
+        "probe.lock": 0
+      }
+    },
+    {
+      "case": "ancestor",
+      "accepted": true,
+      "thread_starts": 0,
+      "last_error": {
+        "type": "ProbeRefused",
+        "code": "probe_path_is_link"
+      },
+      "target_before": [
+        "probe"
+      ],
+      "target_claim_before": null,
+      "target_claim_after": null,
+      "target_after": [
+        "probe",
+        "probe/probe.lock"
+      ],
+      "target_file_sizes": {
+        "probe/probe.lock": 0
+      }
+    },
+    {
+      "case": "raw",
+      "accepted": true,
+      "thread_starts": 0,
+      "last_error": {
+        "type": "ProbeRefused",
+        "code": "probe_path_is_link"
+      },
+      "target_before": [],
+      "target_claim_before": null,
+      "target_claim_after": null,
+      "target_after": [],
+      "target_file_sizes": {}
+    },
+    {
+      "case": "ws",
+      "accepted": true,
+      "thread_starts": 0,
+      "last_error": {
+        "type": "ProbeRefused",
+        "code": "probe_path_is_link"
+      },
+      "target_before": [],
+      "target_claim_before": null,
+      "target_claim_after": null,
+      "target_after": [],
+      "target_file_sizes": {}
+    }
+  ],
+  "classifications": [
+    {
+      "active": false,
+      "mutated": "passed",
+      "verdict": "mutation_inactive",
+      "counted": false,
+      "extra": {}
+    },
+    {
+      "active": false,
+      "mutated": "assertion",
+      "verdict": "detected",
+      "counted": true,
+      "extra": {
+        "redundancy_contradicted": true
+      }
+    },
+    {
+      "active": false,
+      "mutated": "error",
+      "verdict": "mutated_error",
+      "counted": false,
+      "extra": {}
+    },
+    {
+      "active": false,
+      "mutated": "skipped",
+      "verdict": "mutated_skipped",
+      "counted": false,
+      "extra": {}
+    },
+    {
+      "active": false,
+      "mutated": "zero_tests",
+      "verdict": "mutated_zero_tests",
+      "counted": false,
+      "extra": {}
+    },
+    {
+      "active": true,
+      "mutated": "passed",
+      "verdict": "redundant",
+      "counted": false,
+      "extra": {}
+    },
+    {
+      "active": true,
+      "mutated": "assertion",
+      "verdict": "detected",
+      "counted": true,
+      "extra": {
+        "redundancy_contradicted": true
+      }
+    },
+    {
+      "active": true,
+      "mutated": "error",
+      "verdict": "mutated_error",
+      "counted": false,
+      "extra": {}
+    },
+    {
+      "active": true,
+      "mutated": "skipped",
+      "verdict": "mutated_skipped",
+      "counted": false,
+      "extra": {}
+    },
+    {
+      "active": true,
+      "mutated": "zero_tests",
+      "verdict": "mutated_zero_tests",
+      "counted": false,
+      "extra": {}
+    }
+  ],
+  "inactive_assertion_main": {
+    "exit_code": 0,
+    "verdict": "pass",
+    "row": {
+      "layer": "python",
+      "case": "replay_check_removed",
+      "target": "observed-outcomes",
+      "control": "passed",
+      "mutated": "assertion",
+      "mutation_active": false,
+      "diagnostic": {
+        "thread_starts": 1,
+        "first_start_accepted": true,
+        "second_start": "probe_not_prepared"
+      },
+      "verdict": "detected",
+      "counted": true,
+      "redundancy_contradicted": true
+    }
+  }
+}

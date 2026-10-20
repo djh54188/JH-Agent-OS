@@ -1,0 +1,19 @@
+# label: postcommit
+# commit: 99abcd71db08931143612f36c9f6953718751c79  tree-clean: yes
+# command: node tests/js/hark05_run_selection_harness.mjs
+# python: 3.14.8 Linux-6.12.110+-aarch64-with-glibc2.41  node: v22.23.3
+# started: Tue Oct 20 14:25:54 UTC 2026
+# ---- raw output below ----
+ok   no_selection
+ok   a_to_b
+ok   repeat_same
+ok   out_of_order_success
+ok   late_error
+ok   wrong_run_id
+ok   leave_reenter
+ok   loading_error_empty
+ok   breakpoints_1100_1101
+ok   click_only_queries_detail
+ok   css_breakpoint_and_scope
+# ---- end raw output ----
+# exit_code: 0

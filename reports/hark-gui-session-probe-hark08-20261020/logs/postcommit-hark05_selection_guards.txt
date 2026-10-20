@@ -1,0 +1,82 @@
+# label: postcommit
+# commit: 99abcd71db08931143612f36c9f6953718751c79  tree-clean: yes
+# command: /workspace/work/venv-h05/bin/python scripts/verify_hark05_selection_guards.py
+# python: 3.14.8 Linux-6.12.110+-aarch64-with-glibc2.41  node: v22.23.3
+# started: Tue Oct 20 14:25:55 UTC 2026
+# ---- raw output below ----
+{
+  "scope": "frontend_copy_only",
+  "model_calls": 0,
+  "browser": false,
+  "control_ok": true,
+  "mutations": 3,
+  "detected": 3,
+  "rows": [
+    {
+      "case": "selection_update_removed",
+      "scenario": "a_to_b",
+      "anchor_count": 1,
+      "detected": true,
+      "outcome": "assertion",
+      "exit": 1,
+      "target_error": "after A: aria-pressed of RUN-A is false, expected true",
+      "failed_scenarios": [
+        "a_to_b",
+        "late_error",
+        "leave_reenter",
+        "loading_error_empty",
+        "out_of_order_success",
+        "repeat_same",
+        "wrong_run_id"
+      ],
+      "failure_kinds": {
+        "a_to_b": "assertion",
+        "late_error": "assertion",
+        "leave_reenter": "assertion",
+        "loading_error_empty": "assertion",
+        "out_of_order_success": "assertion",
+        "repeat_same": "assertion",
+        "wrong_run_id": "assertion"
+      }
+    },
+    {
+      "case": "detail_positioning_removed",
+      "scenario": "breakpoints_1100_1101",
+      "anchor_count": 1,
+      "detected": true,
+      "outcome": "assertion",
+      "exit": 1,
+      "target_error": "1100px single-column click positioned 0 times",
+      "failed_scenarios": [
+        "breakpoints_1100_1101",
+        "leave_reenter",
+        "repeat_same"
+      ],
+      "failure_kinds": {
+        "breakpoints_1100_1101": "assertion",
+        "leave_reenter": "assertion",
+        "repeat_same": "assertion"
+      }
+    },
+    {
+      "case": "narrow_restriction_removed",
+      "scenario": "breakpoints_1100_1101",
+      "anchor_count": 1,
+      "detected": true,
+      "outcome": "assertion",
+      "exit": 1,
+      "target_error": "1440px two-column click scrolled (1)",
+      "failed_scenarios": [
+        "breakpoints_1100_1101",
+        "loading_error_empty"
+      ],
+      "failure_kinds": {
+        "breakpoints_1100_1101": "assertion",
+        "loading_error_empty": "assertion"
+      }
+    }
+  ],
+  "verdict": "pass"
+}
+# ---- end raw output ----
+# exit_code: 0

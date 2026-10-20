@@ -1,0 +1,65 @@
+# label: baseline
+# commit: 5c466b6980fb97e7759fde79d0583e1e12974051  tree-clean: yes
+# command: /workspace/work/venv-h05/bin/python -m unittest -v tests.test_jh018_agent_session_contract
+# python: 3.14.8 Linux-6.12.110+-aarch64-with-glibc2.41  node: v22.23.3
+# started: Tue Oct 20 14:25:30 UTC 2026
+# ---- raw output below ----
+test_cancel_without_confirmation_is_a_request (tests.test_jh018_agent_session_contract.TestCancelSemantics.test_cancel_without_confirmation_is_a_request) ... ok
+test_cancelled_only_after_native_confirmation (tests.test_jh018_agent_session_contract.TestCancelSemantics.test_cancelled_only_after_native_confirmation) ... ok
+test_repeated_cancel_after_confirmation_stays_cancelled (tests.test_jh018_agent_session_contract.TestCancelSemantics.test_repeated_cancel_after_confirmation_stays_cancelled)
+Confirming a cancel is terminal: repeating it must not append a turn ... ok
+test_dispatch_replay_query_cancel_sequence (tests.test_jh018_agent_session_contract.TestCombinedSequenceConsistency.test_dispatch_replay_query_cancel_sequence) ... ok
+test_every_adapter_implements_every_method (tests.test_jh018_agent_session_contract.TestContractSurface.test_every_adapter_implements_every_method) ... ok
+test_run_state_has_no_success_state (tests.test_jh018_agent_session_contract.TestContractSurface.test_run_state_has_no_success_state) ... ok
+test_six_capabilities_are_the_documented_set (tests.test_jh018_agent_session_contract.TestContractSurface.test_six_capabilities_are_the_documented_set) ... ok
+test_application_service_imports_only_value_objects (tests.test_jh018_agent_session_contract.TestCoreHoldsNoConcreteAdapter.test_application_service_imports_only_value_objects) ... ok
+test_application_service_is_not_an_adapter (tests.test_jh018_agent_session_contract.TestCoreHoldsNoConcreteAdapter.test_application_service_is_not_an_adapter) ... ok
+test_computed_dynamic_imports_are_documented_as_uncovered (tests.test_jh018_agent_session_contract.TestCoreHoldsNoConcreteAdapter.test_computed_dynamic_imports_are_documented_as_uncovered)
+A bounded static check cannot see a computed module name; that is a ... ok
+test_contract_consumers_are_real_adapters (tests.test_jh018_agent_session_contract.TestCoreHoldsNoConcreteAdapter.test_contract_consumers_are_real_adapters) ... ok
+test_contract_is_abstract (tests.test_jh018_agent_session_contract.TestCoreHoldsNoConcreteAdapter.test_contract_is_abstract) ... ok
+test_contract_module_has_no_native_app_imports (tests.test_jh018_agent_session_contract.TestCoreHoldsNoConcreteAdapter.test_contract_module_has_no_native_app_imports) ... ok
+test_every_equivalent_static_import_form_is_flagged (tests.test_jh018_agent_session_contract.TestCoreHoldsNoConcreteAdapter.test_every_equivalent_static_import_form_is_flagged) ... ok
+test_only_the_application_interface_imports_the_service (tests.test_jh018_agent_session_contract.TestCoreHoldsNoConcreteAdapter.test_only_the_application_interface_imports_the_service) ... ok
+test_permitted_forms_are_not_flagged (tests.test_jh018_agent_session_contract.TestCoreHoldsNoConcreteAdapter.test_permitted_forms_are_not_flagged) ... ok
+test_production_modules_do_not_import_this_contract (tests.test_jh018_agent_session_contract.TestCoreHoldsNoConcreteAdapter.test_production_modules_do_not_import_this_contract) ... ok
+test_service_allowance_negative_controls (tests.test_jh018_agent_session_contract.TestCoreHoldsNoConcreteAdapter.test_service_allowance_negative_controls) ... ok
+test_the_real_adapter_is_flagged (tests.test_jh018_agent_session_contract.TestCoreHoldsNoConcreteAdapter.test_the_real_adapter_is_flagged) ... ok
+test_same_key_different_artifact_conflicts (tests.test_jh018_agent_session_contract.TestFingerprintIsUnambiguous.test_same_key_different_artifact_conflicts) ... ok
+test_same_request_reuses_the_run (tests.test_jh018_agent_session_contract.TestFingerprintIsUnambiguous.test_same_request_reuses_the_run) ... ok
+test_scope_and_budget_are_part_of_the_fingerprint (tests.test_jh018_agent_session_contract.TestFingerprintIsUnambiguous.test_scope_and_budget_are_part_of_the_fingerprint) ... ok
+test_separator_collision_does_not_false_hit (tests.test_jh018_agent_session_contract.TestFingerprintIsUnambiguous.test_separator_collision_does_not_false_hit)
+A naive '|'.join would let these two collide; canonical JSON must not. ... ok
+test_snapshot_immune_to_caller_mutation (tests.test_jh018_agent_session_contract.TestFingerprintIsUnambiguous.test_snapshot_immune_to_caller_mutation)
+Registered facts must not change when the caller mutates its own dict. ... ok
+test_snapshot_is_the_canonical_pre_image (tests.test_jh018_agent_session_contract.TestFingerprintIsUnambiguous.test_snapshot_is_the_canonical_pre_image) ... ok
+test_distinct_keys_create_distinct_runs (tests.test_jh018_agent_session_contract.TestIdempotencyIsSeparateFromRunIndex.test_distinct_keys_create_distinct_runs) ... ok
+test_same_key_different_request_conflicts (tests.test_jh018_agent_session_contract.TestIdempotencyIsSeparateFromRunIndex.test_same_key_different_request_conflicts) ... ok
+test_same_key_same_request_reuses_the_run (tests.test_jh018_agent_session_contract.TestIdempotencyIsSeparateFromRunIndex.test_same_key_same_request_reuses_the_run) ... ok
+test_confirmed_cancel_refuses_remediation (tests.test_jh018_agent_session_contract.TestRemediationIdempotency.test_confirmed_cancel_refuses_remediation) ... ok
+test_interleaved_replay_returns_the_operations_own_turn (tests.test_jh018_agent_session_contract.TestRemediationIdempotency.test_interleaved_replay_returns_the_operations_own_turn)
+A(key=A), B(key=B), then replay A: the replay must identify A's turn, ... ok
+test_remediation_keeps_history_budget_and_scope (tests.test_jh018_agent_session_contract.TestRemediationIdempotency.test_remediation_keeps_history_budget_and_scope) ... ok
+test_replay_does_not_roll_back_current_state (tests.test_jh018_agent_session_contract.TestRemediationIdempotency.test_replay_does_not_roll_back_current_state) ... ok
+test_returned_state_matches_following_status_query (tests.test_jh018_agent_session_contract.TestRemediationIdempotency.test_returned_state_matches_following_status_query) ... ok
+test_same_key_different_request_conflicts (tests.test_jh018_agent_session_contract.TestRemediationIdempotency.test_same_key_different_request_conflicts) ... ok
+test_same_key_same_request_appends_one_turn (tests.test_jh018_agent_session_contract.TestRemediationIdempotency.test_same_key_same_request_appends_one_turn) ... ok
+test_remediation_does_not_widen_scope (tests.test_jh018_agent_session_contract.TestRemediationPreservesTaskContext.test_remediation_does_not_widen_scope) ... ok
+test_collect_never_reports_success (tests.test_jh018_agent_session_contract.TestReplacementNeedsNoCoreEdit.test_collect_never_reports_success) ... ok
+test_implementations_are_actually_different (tests.test_jh018_agent_session_contract.TestReplacementNeedsNoCoreEdit.test_implementations_are_actually_different) ... ok
+test_two_different_classes_share_one_call_site (tests.test_jh018_agent_session_contract.TestReplacementNeedsNoCoreEdit.test_two_different_classes_share_one_call_site) ... ok
+test_binding_records_task_and_attempt_and_ids_do_not_collide (tests.test_jh018_agent_session_contract.TestRunLookupAndAddressBinding.test_binding_records_task_and_attempt_and_ids_do_not_collide)
+A run is bound to its logical task and attempt; different tasks or ... ok
+test_cross_instance_and_cross_app_lookup_raise (tests.test_jh018_agent_session_contract.TestRunLookupAndAddressBinding.test_cross_instance_and_cross_app_lookup_raise) ... ok
+test_cross_session_lookup_raises_instead_of_unknown (tests.test_jh018_agent_session_contract.TestRunLookupAndAddressBinding.test_cross_session_lookup_raises_instead_of_unknown) ... ok
+test_returned_run_id_resolves_to_its_own_run (tests.test_jh018_agent_session_contract.TestRunLookupAndAddressBinding.test_returned_run_id_resolves_to_its_own_run) ... ok
+test_unknown_run_id_is_reported_unknown_for_a_known_address (tests.test_jh018_agent_session_contract.TestRunLookupAndAddressBinding.test_unknown_run_id_is_reported_unknown_for_a_known_address) ... ok
+test_every_capability_reported_not_claimed (tests.test_jh018_agent_session_contract.TestUnsupportedIsExplicit.test_every_capability_reported_not_claimed) ... ok
+test_missing_capability_raises_instead_of_simulating (tests.test_jh018_agent_session_contract.TestUnsupportedIsExplicit.test_missing_capability_raises_instead_of_simulating) ... ok
+
+----------------------------------------------------------------------
+Ran 46 tests in 0.297s
+
+OK
+# ---- end raw output ----
+# exit_code: 0

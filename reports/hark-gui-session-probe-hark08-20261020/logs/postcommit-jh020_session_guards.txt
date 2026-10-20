@@ -1,0 +1,121 @@
+# label: postcommit
+# commit: 99abcd71db08931143612f36c9f6953718751c79  tree-clean: yes
+# command: /workspace/work/venv-h05/bin/python scripts/verify_jh020_session_guards.py
+# python: 3.14.8 Linux-6.12.110+-aarch64-with-glibc2.41  node: v22.23.3
+# started: Tue Oct 20 14:25:57 UTC 2026
+# ---- raw output below ----
+{
+  "scope": "jh020_codex_adapter_offline_only",
+  "model_calls": 0,
+  "processes": 0,
+  "controls": 17,
+  "mutations": 17,
+  "detected": 17,
+  "rows": [
+    {
+      "case": "completion_association_ignored",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "completion_status_ignored",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "idempotency_conflict_ignored",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "address_binding_ignored",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "unobserved_capability_claimed",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "notification_binding_ignored",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "registry_reload_ignored",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "registry_write_failure_swallowed",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "new_session_address_guard_ignored",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "model_honored_check_ignored",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "budget_refusal_ignored",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "registry_read_failure_swallowed",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "registry_corruption_skipped",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "raw_evidence_written_as_text",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "raw_evidence_byte_check_ignored",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "record_validation_bypassed",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "case": "missing_idempotency_field_defaulted",
+      "detected": true,
+      "failures": 1,
+      "errors": 0
+    }
+  ],
+  "verdict": "pass"
+}
+# ---- end raw output ----
+# exit_code: 0
