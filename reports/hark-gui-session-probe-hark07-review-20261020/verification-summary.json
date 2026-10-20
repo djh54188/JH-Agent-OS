@@ -1,0 +1,54 @@
+{
+  "candidate": "5c466b6980fb97e7759fde79d0583e1e12974051",
+  "targeted": {
+    "run": 124,
+    "failures": 0,
+    "errors": 0,
+    "skipped": [
+      [
+        "test_hark06_session_probe.TestRefusalBeforeDispatch.test_linked_probe_dir_refuses",
+        "symlink creation needs privileges on Windows"
+      ],
+      [
+        "test_hark06_session_probe.TestRefusalBeforeDispatch.test_unwritable_registry_refuses_before_transport",
+        "POSIX permission bits are not enforced here"
+      ],
+      [
+        "test_hark07_source_isolation.TestSourceIsolation.test_layout_changed_after_accept_is_refused_before_submit",
+        "symlink creation needs privileges on Windows; junctions untested"
+      ],
+      [
+        "test_hark07_source_isolation.TestSourceIsolation.test_linked_ancestor_is_refused_before_any_write",
+        "symlink creation needs privileges on Windows; junctions untested"
+      ],
+      [
+        "test_hark07_source_isolation.TestSourceIsolation.test_linked_raw_and_ws_are_refused",
+        "symlink creation needs privileges on Windows; junctions untested"
+      ],
+      [
+        "test_hark07_source_isolation.TestSourceIsolation.test_linked_root_is_refused",
+        "symlink creation needs privileges on Windows; junctions untested"
+      ]
+    ],
+    "platform": "win32",
+    "python": "3.14.7 (tags/v3.14.7:823f032, Aug  5 2026, 10:51:32) [MSC v.1944 64 bit (AMD64)]",
+    "temp_workaround": "process-only inherited-directory ACL; no product or global ACL change"
+  },
+  "new_probe_repeat_identical": true,
+  "ast": 786,
+  "windows_guard": {
+    "detected": 19,
+    "redundant": 1,
+    "failed_rows": [
+      "ancestor_link_check_ignored",
+      "subdir_link_check_ignored",
+      "worker_recheck_ignored"
+    ],
+    "verdict": "fail"
+  },
+  "model_calls": 0,
+  "product_modified": false,
+  "prior_R1_and_static_R2_counterexamples_fixed": true,
+  "prior_R3_error_skip_zero_cases_fixed": true,
+  "cleanup_path_and_known_inactive_assertion_open": true
+}

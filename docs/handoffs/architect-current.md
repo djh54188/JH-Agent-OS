@@ -208,3 +208,20 @@ Hark：按本轮目标式派单06实现GUI真实会话试运行候选；尚未�
 Hark：本轮唯一派单07限定整改；尚未确认用户转发。
 用户：转发本轮Hark-派单-07即可，无需自行同步或合并。
 一句话现状：GUI试运行候选已能离线走通，但同源互斥、写入隔离和验证计分须先修好，再装到本机并作真实往返。
+
+## 2026-10-20 Hark-派单-07独立复核：核心整改关闭、两个尾项
+
+- 用户回传派单07，发送和交付确认。R1/R2候选e02faf4108d1d3ebc5082bc0dc4dc493a3d321b2、R3候选bddaf3f6617b976fc0295653c03724ce4dfa69d8、报告5c466b6980fb97e7759fde79d0583e1e12974051父链与54文件blob已核对；生产工作树没有移植候选。
+- 裁决暂不准入集成，但原R1同源多对象/进程互斥、R2启动前硬链接及真实Windows根/祖先/raw/ws的junction拒绝、R3原error/skip/零测试误记冗余均按离线范围关闭，不重复派整改。接受祖先链接拒绝、退出后accepted认领不自动清除、本批测试辅助模块与新样例偏离。见[独立复核](../../reports/hark-gui-session-probe-hark07-independent-review-20261020.md)。
+- Windows隔离副本定向124项118通过/6跳过，实际msvcrt多进程行为和冻结junction探针通过；独立AST786，读取云端748/786完整日志及去重失败集合。原样运行新验证器在Windows为19检出+1冗余+3因符号链接样例跳过的control_failed，exit1，不冒充Windows22+1。未跑全套或真实模型/GUI。
+- 新反例只保留两个尾项：R2已经识别并拒绝根/祖先junction后，finally仍创建目标锁文件；目标有同id合成认领时还改成finished。路径改变在worker前已完成，无syscall竞速，不要求扩建TOCTOU平台。R3已确认mutation_active=false但正式结果assertion时，仍detected/count=true/exit0。5布局+10格分类+main观测在两个新目录重复逐字段一致，源探针与观测同步供Hark读取。
+- 本轮发行“Hark-派单-08”，续接已交付07，仅修上述两个尾项，目标式派单、方案自主；不重做GUI、同源互斥、已关闭静态反例或JH018偏离。生成尚不代表送达。Hark仍只操作GitHub副本，本地执行AI继续等待。
+- 仅提交并按既有授权同步架构师复核/合成探针/交接，不包含候选产品、私有data或历史归档，不改main/PR#1/Hark分支。实际远端SHA核对记本地data/hark-gui-session-probe-hark07-review-20261020/sync.json。
+- 下一新编号“执行AI-派单-07”“Hark-派单-09”。执行AI-派单-07仍未发行；待尾项复核后安排精准集成及新的真实GUI往返。指定审查、一般派发、continue/cancel、production complete及自动文件应用继续未开放。
+
+下一步路由：
+
+执行AI：等待尾项复核后的Windows集成；无需发送。
+Hark：本轮唯一派单08限定整改；尚未确认用户转发。
+用户：只转发本轮Hark-派单-08，无需自行同步或合并。
+一句话现状：防重复和原静态路径问题已修，补完收尾与计分两个尾项后再装到本机。
