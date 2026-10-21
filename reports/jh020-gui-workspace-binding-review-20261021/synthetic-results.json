@@ -1,0 +1,265 @@
+{
+  "platform": "win32",
+  "python": "3.14.7 (tags/v3.14.7:823f032, Aug  5 2026, 10:51:32) [MSC v.1944 64 bit (AMD64)]",
+  "transport": "in-process resolver simulation",
+  "model_calls": 0,
+  "real_app_server_calls": 0,
+  "rows": [
+    {
+      "case": "absolute",
+      "input_is_absolute": true,
+      "expected_workspace": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute\\probe\\ws\\c6e8e6a16b3c7c88",
+      "protocol": [
+        {
+          "method": "thread/start",
+          "process_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute\\probe\\ws\\c6e8e6a16b3c7c88",
+          "supplied_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute\\probe\\ws\\c6e8e6a16b3c7c88",
+          "effective_native_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute\\probe\\ws\\c6e8e6a16b3c7c88"
+        },
+        {
+          "method": "turn/start",
+          "process_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute\\probe\\ws\\c6e8e6a16b3c7c88",
+          "supplied_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute\\probe\\ws\\c6e8e6a16b3c7c88",
+          "effective_native_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute\\probe\\ws\\c6e8e6a16b3c7c88"
+        }
+      ],
+      "workspace_matches": true,
+      "bound_native_cwd_notifications": [
+        "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute\\probe\\ws\\c6e8e6a16b3c7c88"
+      ],
+      "outcome": "round_trip_complete",
+      "reported_workspace_files": [],
+      "offline_dispatches": 1
+    },
+    {
+      "case": "relative",
+      "input_is_absolute": false,
+      "expected_workspace": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative\\probe\\ws\\84853ca2e7181542",
+      "protocol": [
+        {
+          "method": "thread/start",
+          "process_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative\\probe\\ws\\84853ca2e7181542",
+          "supplied_cwd": "data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative\\probe\\ws\\84853ca2e7181542",
+          "effective_native_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative\\probe\\ws\\84853ca2e7181542\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative\\probe\\ws\\84853ca2e7181542"
+        },
+        {
+          "method": "turn/start",
+          "process_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative\\probe\\ws\\84853ca2e7181542",
+          "supplied_cwd": "data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative\\probe\\ws\\84853ca2e7181542",
+          "effective_native_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative\\probe\\ws\\84853ca2e7181542\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative\\probe\\ws\\84853ca2e7181542"
+        }
+      ],
+      "workspace_matches": false,
+      "bound_native_cwd_notifications": [
+        "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative\\probe\\ws\\84853ca2e7181542\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative\\probe\\ws\\84853ca2e7181542"
+      ],
+      "outcome": "round_trip_complete",
+      "reported_workspace_files": [],
+      "offline_dispatches": 1
+    },
+    {
+      "case": "relative_dot",
+      "input_is_absolute": false,
+      "expected_workspace": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_dot\\probe\\ws\\b90c63b94dbe5085",
+      "protocol": [
+        {
+          "method": "thread/start",
+          "process_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_dot\\probe\\ws\\b90c63b94dbe5085",
+          "supplied_cwd": "data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_dot\\probe\\ws\\b90c63b94dbe5085",
+          "effective_native_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_dot\\probe\\ws\\b90c63b94dbe5085\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_dot\\probe\\ws\\b90c63b94dbe5085"
+        },
+        {
+          "method": "turn/start",
+          "process_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_dot\\probe\\ws\\b90c63b94dbe5085",
+          "supplied_cwd": "data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_dot\\probe\\ws\\b90c63b94dbe5085",
+          "effective_native_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_dot\\probe\\ws\\b90c63b94dbe5085\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_dot\\probe\\ws\\b90c63b94dbe5085"
+        }
+      ],
+      "workspace_matches": false,
+      "bound_native_cwd_notifications": [
+        "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_dot\\probe\\ws\\b90c63b94dbe5085\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_dot\\probe\\ws\\b90c63b94dbe5085"
+      ],
+      "outcome": "round_trip_complete",
+      "reported_workspace_files": [],
+      "offline_dispatches": 1
+    },
+    {
+      "case": "relative_dotdot",
+      "input_is_absolute": false,
+      "expected_workspace": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_dotdot\\probe\\ws\\e4dcd62ae3442cc8",
+      "protocol": [
+        {
+          "method": "thread/start",
+          "process_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_dotdot\\probe\\ws\\e4dcd62ae3442cc8",
+          "supplied_cwd": "data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_dotdot\\middle\\..\\probe\\ws\\e4dcd62ae3442cc8",
+          "effective_native_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_dotdot\\probe\\ws\\e4dcd62ae3442cc8\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_dotdot\\probe\\ws\\e4dcd62ae3442cc8"
+        },
+        {
+          "method": "turn/start",
+          "process_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_dotdot\\probe\\ws\\e4dcd62ae3442cc8",
+          "supplied_cwd": "data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_dotdot\\middle\\..\\probe\\ws\\e4dcd62ae3442cc8",
+          "effective_native_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_dotdot\\probe\\ws\\e4dcd62ae3442cc8\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_dotdot\\probe\\ws\\e4dcd62ae3442cc8"
+        }
+      ],
+      "workspace_matches": false,
+      "bound_native_cwd_notifications": [
+        "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_dotdot\\probe\\ws\\e4dcd62ae3442cc8\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_dotdot\\probe\\ws\\e4dcd62ae3442cc8"
+      ],
+      "outcome": "round_trip_complete",
+      "reported_workspace_files": [],
+      "offline_dispatches": 1
+    },
+    {
+      "case": "absolute_space",
+      "input_is_absolute": true,
+      "expected_workspace": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_space space \u7a7a\u683c\\probe\\ws\\2b1e1d1bc6559450",
+      "protocol": [
+        {
+          "method": "thread/start",
+          "process_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_space space \u7a7a\u683c\\probe\\ws\\2b1e1d1bc6559450",
+          "supplied_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_space space \u7a7a\u683c\\probe\\ws\\2b1e1d1bc6559450",
+          "effective_native_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_space space \u7a7a\u683c\\probe\\ws\\2b1e1d1bc6559450"
+        },
+        {
+          "method": "turn/start",
+          "process_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_space space \u7a7a\u683c\\probe\\ws\\2b1e1d1bc6559450",
+          "supplied_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_space space \u7a7a\u683c\\probe\\ws\\2b1e1d1bc6559450",
+          "effective_native_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_space space \u7a7a\u683c\\probe\\ws\\2b1e1d1bc6559450"
+        }
+      ],
+      "workspace_matches": true,
+      "bound_native_cwd_notifications": [
+        "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_space space \u7a7a\u683c\\probe\\ws\\2b1e1d1bc6559450"
+      ],
+      "outcome": "round_trip_complete",
+      "reported_workspace_files": [],
+      "offline_dispatches": 1
+    },
+    {
+      "case": "relative_space",
+      "input_is_absolute": false,
+      "expected_workspace": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_space space \u7a7a\u683c\\probe\\ws\\5f05e21033c65fc9",
+      "protocol": [
+        {
+          "method": "thread/start",
+          "process_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_space space \u7a7a\u683c\\probe\\ws\\5f05e21033c65fc9",
+          "supplied_cwd": "data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_space space \u7a7a\u683c\\probe\\ws\\5f05e21033c65fc9",
+          "effective_native_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_space space \u7a7a\u683c\\probe\\ws\\5f05e21033c65fc9\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_space space \u7a7a\u683c\\probe\\ws\\5f05e21033c65fc9"
+        },
+        {
+          "method": "turn/start",
+          "process_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_space space \u7a7a\u683c\\probe\\ws\\5f05e21033c65fc9",
+          "supplied_cwd": "data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_space space \u7a7a\u683c\\probe\\ws\\5f05e21033c65fc9",
+          "effective_native_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_space space \u7a7a\u683c\\probe\\ws\\5f05e21033c65fc9\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_space space \u7a7a\u683c\\probe\\ws\\5f05e21033c65fc9"
+        }
+      ],
+      "workspace_matches": false,
+      "bound_native_cwd_notifications": [
+        "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_space space \u7a7a\u683c\\probe\\ws\\5f05e21033c65fc9\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\relative_space space \u7a7a\u683c\\probe\\ws\\5f05e21033c65fc9"
+      ],
+      "outcome": "round_trip_complete",
+      "reported_workspace_files": [],
+      "offline_dispatches": 1
+    },
+    {
+      "case": "absolute_native_mismatch",
+      "input_is_absolute": true,
+      "expected_workspace": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_native_mismatch\\probe\\ws\\3640e97fecde2347",
+      "protocol": [
+        {
+          "method": "thread/start",
+          "process_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_native_mismatch\\probe\\ws\\3640e97fecde2347",
+          "supplied_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_native_mismatch\\probe\\ws\\3640e97fecde2347",
+          "effective_native_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\different-native-directory"
+        },
+        {
+          "method": "turn/start",
+          "process_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_native_mismatch\\probe\\ws\\3640e97fecde2347",
+          "supplied_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_native_mismatch\\probe\\ws\\3640e97fecde2347",
+          "effective_native_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\different-native-directory"
+        }
+      ],
+      "workspace_matches": false,
+      "bound_native_cwd_notifications": [
+        "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\different-native-directory"
+      ],
+      "outcome": "round_trip_complete",
+      "reported_workspace_files": [],
+      "offline_dispatches": 1
+    },
+    {
+      "case": "absolute_native_missing",
+      "input_is_absolute": true,
+      "expected_workspace": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_native_missing\\probe\\ws\\2356547bc8648de4",
+      "protocol": [
+        {
+          "method": "thread/start",
+          "process_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_native_missing\\probe\\ws\\2356547bc8648de4",
+          "supplied_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_native_missing\\probe\\ws\\2356547bc8648de4",
+          "effective_native_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_native_missing\\probe\\ws\\2356547bc8648de4"
+        },
+        {
+          "method": "turn/start",
+          "process_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_native_missing\\probe\\ws\\2356547bc8648de4",
+          "supplied_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_native_missing\\probe\\ws\\2356547bc8648de4",
+          "effective_native_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_native_missing\\probe\\ws\\2356547bc8648de4"
+        }
+      ],
+      "workspace_matches": true,
+      "bound_native_cwd_notifications": [],
+      "outcome": "round_trip_complete",
+      "reported_workspace_files": [],
+      "offline_dispatches": 1
+    },
+    {
+      "case": "absolute_foreign_native",
+      "input_is_absolute": true,
+      "expected_workspace": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_foreign_native\\probe\\ws\\0c8857c8a3d2d439",
+      "protocol": [
+        {
+          "method": "thread/start",
+          "process_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_foreign_native\\probe\\ws\\0c8857c8a3d2d439",
+          "supplied_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_foreign_native\\probe\\ws\\0c8857c8a3d2d439",
+          "effective_native_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_foreign_native\\probe\\ws\\0c8857c8a3d2d439"
+        },
+        {
+          "method": "turn/start",
+          "process_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_foreign_native\\probe\\ws\\0c8857c8a3d2d439",
+          "supplied_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_foreign_native\\probe\\ws\\0c8857c8a3d2d439",
+          "effective_native_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_foreign_native\\probe\\ws\\0c8857c8a3d2d439"
+        }
+      ],
+      "workspace_matches": true,
+      "bound_native_cwd_notifications": [],
+      "outcome": "round_trip_complete",
+      "reported_workspace_files": [],
+      "offline_dispatches": 1
+    },
+    {
+      "case": "absolute_native_conflict",
+      "input_is_absolute": true,
+      "expected_workspace": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_native_conflict\\probe\\ws\\2604bd515da5065e",
+      "protocol": [
+        {
+          "method": "thread/start",
+          "process_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_native_conflict\\probe\\ws\\2604bd515da5065e",
+          "supplied_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_native_conflict\\probe\\ws\\2604bd515da5065e",
+          "effective_native_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_native_conflict\\probe\\ws\\2604bd515da5065e"
+        },
+        {
+          "method": "turn/start",
+          "process_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_native_conflict\\probe\\ws\\2604bd515da5065e",
+          "supplied_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_native_conflict\\probe\\ws\\2604bd515da5065e",
+          "effective_native_cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\absolute_native_conflict\\probe\\ws\\2604bd515da5065e"
+        }
+      ],
+      "workspace_matches": true,
+      "bound_native_cwd_notifications": [
+        "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-acceptance-20261021\\workspace-03\\conflicting-native-directory"
+      ],
+      "outcome": "round_trip_complete",
+      "reported_workspace_files": [],
+      "offline_dispatches": 1
+    }
+  ]
+}

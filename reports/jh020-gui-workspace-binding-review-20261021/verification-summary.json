@@ -1,0 +1,161 @@
+{
+  "logs": {
+    "precommit-suite.txt": {
+      "ran": [
+        [
+          "798",
+          "134.901s"
+        ]
+      ],
+      "summary": [
+        "OK (skipped=11)"
+      ]
+    },
+    "postcommit-suite.txt": {
+      "ran": [
+        [
+          "798",
+          "134.739s"
+        ]
+      ],
+      "summary": [
+        "OK (skipped=11)"
+      ]
+    },
+    "targeted.txt": {
+      "ran": [
+        [
+          "90",
+          "11.691s"
+        ]
+      ],
+      "summary": [
+        "OK (skipped=10)"
+      ]
+    },
+    "jh018-contract.txt": {
+      "ran": [
+        [
+          "46",
+          "0.284s"
+        ]
+      ],
+      "summary": [
+        "OK"
+      ]
+    }
+  },
+  "independent_ast": 798,
+  "raw_verified": true,
+  "model_calls_by_reviewer": 0,
+  "workspace": {
+    "expected": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-integration-20261020\\trial-01\\ws\\536e8695bf01b0a7",
+    "native": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-integration-20261020\\trial-01\\ws\\536e8695bf01b0a7\\data\\hark-session-probe-integration-20261020\\trial-01\\ws\\536e8695bf01b0a7",
+    "same": false,
+    "expected_is_dir": true,
+    "native_is_dir": false
+  },
+  "reviewed_head": "411af6f4e25dd34b3949c2f7c6c212ddbdf53542",
+  "review_date": "2026-10-21",
+  "file_identity": [
+    {
+      "path": "gui/data_access.js",
+      "disk_sha256": "1f9a489323a5d4ee548c835d79de31a392a052786861c2835e842bb3386f7394",
+      "blob_sha1": "8dbc340d5f6bc6a368f90c99ccd5d417aa2c0ab1",
+      "match": true
+    },
+    {
+      "path": "gui/index.html",
+      "disk_sha256": "b2ea7cce3593bbfaff2d63c27871dee93cafe06baa9065dd2afce458322e968a",
+      "blob_sha1": "0a86f6ab7c2a2c0a2ac97d460304fca9b23aa280",
+      "match": true
+    },
+    {
+      "path": "gui/styles.css",
+      "disk_sha256": "568a123f647c19d9682e472f5e91987c075af1f8f40e299d6a26a8c0489f5bf5",
+      "blob_sha1": "385599d006bc5000fd5a6e5232564a3f1f4df626",
+      "match": true
+    },
+    {
+      "path": "gui/views.js",
+      "disk_sha256": "e559bd6b2b5e3023fce915c46bad0f2a7187309abb6c6124112af9120113a7f0",
+      "blob_sha1": "842b0d1c11e4e2b7c1a8f4f4f56b33c19aaffde5",
+      "match": true
+    },
+    {
+      "path": "scripts/verify_hark06_session_probe_guards.py",
+      "disk_sha256": "1d43b0d927bb94d1e7acdb104e3e8faf5b2971227c10ef2b21bd536820fc2855",
+      "blob_sha1": "6ae20ecc6403455312e1ea70e11aeec0378ccac4",
+      "match": true
+    },
+    {
+      "path": "src/app_api.py",
+      "disk_sha256": "df8303f7133571fa23cab7043b1e175a5e6b06df2f0505207ff96663f4a4a49c",
+      "blob_sha1": "6d9e24d95c93bb9fdc3fd412cffa5484a32553af",
+      "match": true
+    },
+    {
+      "path": "src/gui_http.py",
+      "disk_sha256": "084a8485938543c9b3aef8c74df8b569e324c33073a3185a5d256db732d8186e",
+      "blob_sha1": "33f2f2b97813c7a817b8b6ae384b02e26c41ffbb",
+      "match": true
+    },
+    {
+      "path": "src/session_probe.py",
+      "disk_sha256": "995426fc53cf91577cd9bc5e245938d29b9ab4edcf20bab9d40eb1d3b608b354",
+      "blob_sha1": "0c60f36415e3bef64fc832d0efde769ae425e832",
+      "match": true
+    },
+    {
+      "path": "tests/hark07_probe_child.py",
+      "disk_sha256": "84184ab22fb646f2a523e2fe3658621087e6043718024f1997d2ad26b35ea064",
+      "blob_sha1": "a9e75b19cbf9dd3c8ce5d2680dadca1496beb913",
+      "match": true
+    },
+    {
+      "path": "tests/hark07_verifier_samples.py",
+      "disk_sha256": "76091ffbde1ef609756febc7e96ef1ce0008caafb2e791c7d67c42f9384b9c9a",
+      "blob_sha1": "6c1abd342198fab1910dcee3667bb3c2cc41d853",
+      "match": true
+    },
+    {
+      "path": "tests/js/hark06_session_probe_harness.mjs",
+      "disk_sha256": "cb70edd7135abafd7df28ff4e0f715bb725e5c6ff46d66ae8b31d59ee1ac1dcd",
+      "blob_sha1": "4e7ff5f276567f776b9b391c46ace6bc652a08ee",
+      "match": true
+    },
+    {
+      "path": "tests/test_hark06_session_probe.py",
+      "disk_sha256": "25178de9ce4cc1ccf78c63a10d4c4966a508f2d025cdf69f98d7d13f90b885df",
+      "blob_sha1": "da5458fe89ec9d5f45e0db5a6fbcebd2ef43fc58",
+      "match": true
+    },
+    {
+      "path": "tests/test_hark07_source_isolation.py",
+      "disk_sha256": "117c8ee039c118a20b1f736e931e94132728a7a02b9c937f82b398f088c5c53c",
+      "blob_sha1": "8d04ddca610aaffba01a73994945bcdd513ec569",
+      "match": true
+    },
+    {
+      "path": "tests/test_hark07_verifier_classification.py",
+      "disk_sha256": "7025886bd271d4f7d956e828d1edf38fe806e1bcab6a972a4d735252ed830c20",
+      "blob_sha1": "03db293de94cae77cdd5098e994f9dac7e9d7f7f",
+      "match": true
+    },
+    {
+      "path": "tests/test_hark08_cleanup_isolation.py",
+      "disk_sha256": "2365deeced9cc6757a3c7d05ea9a42ddd4b0615fcfa246f408f9b4c0fbe5140f",
+      "blob_sha1": "0752b5b4e0d16ddad3d8577365a60e4174b956c4",
+      "match": true
+    },
+    {
+      "path": "tests/test_jh018_agent_session_contract.py",
+      "disk_sha256": "627977fb3c24dd7a18b5047f0bee05092199ae32e44ed5bf042d86dddf0ff5f1",
+      "blob_sha1": "b7dcb27802a30502a0b1b64d3c31a4062d1b56a2",
+      "match": true
+    }
+  ],
+  "suite_source": "Executor raw logs read independently; full suite not rerun by reviewer",
+  "synthetic_source_sha256": "aa90cd6aada1ade54c9768a5e9b1d2841e2830c2e20672537172fdf7e52708a5",
+  "decision": "Overall acceptance withheld; workspace binding and observation scope need correction"
+}

@@ -1,0 +1,53 @@
+{
+  "kind": "Filtered facts from existing Windows real GUI artifacts; not original private rollout",
+  "source_code": "8c5dfabb9e618c903c65b9440e689f609968500a",
+  "local_report_head": "411af6f4e25dd34b3949c2f7c6c212ddbdf53542",
+  "original_date": "2026-10-20",
+  "review_date": "2026-10-21",
+  "run_id": "codex-run-1-2060ac1b",
+  "probe_id": "536e8695bf01b0a7",
+  "raw": {
+    "sha256": "da763e979b5f5be087810b6e9ff6b098fd63ef63c9b4c651dbbeffa1b0b38811",
+    "bytes": 11782,
+    "frames": 35
+  },
+  "thread_started_cwd": [
+    "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-integration-20261020\\trial-01\\ws\\536e8695bf01b0a7\\data\\hark-session-probe-integration-20261020\\trial-01\\ws\\536e8695bf01b0a7"
+  ],
+  "session": [
+    {
+      "id": "01a159de-490a-75f0-8a47-b8fda46b1d2e",
+      "timestamp": "2026-10-20T15:11:44.009Z",
+      "cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-integration-20261020\\trial-01\\ws\\536e8695bf01b0a7\\data\\hark-session-probe-integration-20261020\\trial-01\\ws\\536e8695bf01b0a7",
+      "originator": "jh020-codex-adapter",
+      "cli_version": "0.160.1",
+      "source": "vscode",
+      "model_provider": "openai"
+    }
+  ],
+  "turn_contexts": [
+    {
+      "turn_id": "01a159de-5095-7df1-9ec8-735fc0b444fe",
+      "cwd": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-integration-20261020\\trial-01\\ws\\536e8695bf01b0a7\\data\\hark-session-probe-integration-20261020\\trial-01\\ws\\536e8695bf01b0a7",
+      "approval_policy": "never",
+      "sandbox_policy": {
+        "type": "read-only"
+      },
+      "model": "gpt-6.1-sol",
+      "reasoning_effort": null
+    }
+  ],
+  "assistant_outputs": [
+    "JH-PROBE-536E8695BF01B0A7"
+  ],
+  "native_function_calls": [],
+  "workspace": {
+    "expected": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-integration-20261020\\trial-01\\ws\\536e8695bf01b0a7",
+    "native": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark-session-probe-integration-20261020\\trial-01\\ws\\536e8695bf01b0a7\\data\\hark-session-probe-integration-20261020\\trial-01\\ws\\536e8695bf01b0a7",
+    "same": false,
+    "expected_is_dir": true,
+    "native_is_dir": false
+  },
+  "old_registry_sha256": "0ca5c260fae77de816a55253513b3e6d9153c152939f8d96c728c64e53ba85c1",
+  "new_model_calls_by_reviewer": 0
+}
