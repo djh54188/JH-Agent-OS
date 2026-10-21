@@ -1,0 +1,115 @@
+{
+  "model_calls": 0,
+  "real_app_server_calls": 0,
+  "platform": "win32",
+  "python": "3.14.7 (tags/v3.14.7:823f032, Aug  5 2026, 10:51:32) [MSC v.1944 64 bit (AMD64)]",
+  "initial_state": "verified",
+  "rows": [
+    {
+      "case": "valid_object",
+      "workspace_state": "verified",
+      "workspace_files": [],
+      "verified_empty": true,
+      "additional_thread_starts": 0,
+      "capture_bytes_unchanged": true
+    },
+    {
+      "case": "invalid_json",
+      "workspace_state": "native_evidence_invalid",
+      "workspace_files": null,
+      "verified_empty": null,
+      "additional_thread_starts": 0,
+      "capture_bytes_unchanged": true
+    },
+    {
+      "case": "top_null",
+      "exception": "AttributeError",
+      "message": "'NoneType' object has no attribute 'get'",
+      "additional_thread_starts": 0,
+      "capture_bytes_unchanged": true
+    },
+    {
+      "case": "top_array_empty",
+      "exception": "AttributeError",
+      "message": "'list' object has no attribute 'get'",
+      "additional_thread_starts": 0,
+      "capture_bytes_unchanged": true
+    },
+    {
+      "case": "top_array_object",
+      "exception": "AttributeError",
+      "message": "'list' object has no attribute 'get'",
+      "additional_thread_starts": 0,
+      "capture_bytes_unchanged": true
+    },
+    {
+      "case": "top_string",
+      "exception": "AttributeError",
+      "message": "'str' object has no attribute 'get'",
+      "additional_thread_starts": 0,
+      "capture_bytes_unchanged": true
+    },
+    {
+      "case": "top_integer",
+      "exception": "AttributeError",
+      "message": "'int' object has no attribute 'get'",
+      "additional_thread_starts": 0,
+      "capture_bytes_unchanged": true
+    },
+    {
+      "case": "top_float",
+      "exception": "AttributeError",
+      "message": "'float' object has no attribute 'get'",
+      "additional_thread_starts": 0,
+      "capture_bytes_unchanged": true
+    },
+    {
+      "case": "top_boolean",
+      "exception": "AttributeError",
+      "message": "'bool' object has no attribute 'get'",
+      "additional_thread_starts": 0,
+      "capture_bytes_unchanged": true
+    },
+    {
+      "case": "object_missing_keys",
+      "workspace_state": "native_evidence_invalid",
+      "workspace_files": null,
+      "verified_empty": null,
+      "additional_thread_starts": 0,
+      "capture_bytes_unchanged": true
+    },
+    {
+      "case": "facts_not_list",
+      "workspace_state": "native_evidence_invalid",
+      "workspace_files": null,
+      "verified_empty": null,
+      "additional_thread_starts": 0,
+      "capture_bytes_unchanged": true
+    },
+    {
+      "case": "fact_not_object",
+      "workspace_state": "native_evidence_invalid",
+      "workspace_files": null,
+      "verified_empty": null,
+      "additional_thread_starts": 0,
+      "capture_bytes_unchanged": true
+    },
+    {
+      "case": "wrong_probe_id",
+      "workspace_state": "native_evidence_invalid",
+      "workspace_files": null,
+      "verified_empty": null,
+      "additional_thread_starts": 0,
+      "capture_bytes_unchanged": true
+    },
+    {
+      "case": "same_thread_invalid_type",
+      "workspace_state": "native_conflict",
+      "workspace_files": null,
+      "verified_empty": null,
+      "additional_thread_starts": 0,
+      "capture_bytes_unchanged": true
+    }
+  ],
+  "probe_initial_capture_sha256": "64ee2e2187826341fb908d92de3178a4b084ba16801a5af2461f01c8cd9d4404"
+}

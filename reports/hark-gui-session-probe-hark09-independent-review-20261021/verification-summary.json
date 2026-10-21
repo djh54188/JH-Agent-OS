@@ -1,0 +1,63 @@
+{
+  "candidate": "175f52b64ac3e9cfb9e409be8c2db3f20da7725f",
+  "archive_files_verified": 826,
+  "ast": 819,
+  "suite_logs": [
+    {
+      "file": "suite-baseline-noproxy.txt",
+      "ran": "798",
+      "summary": "FAILED (failures=21, errors=63, skipped=2)",
+      "unique_failure_ids": 84
+    },
+    {
+      "file": "suite-baseline-proxy.txt",
+      "ran": "798",
+      "summary": "FAILED (failures=27, errors=78, skipped=2)",
+      "unique_failure_ids": 105
+    },
+    {
+      "file": "suite-postcommit-noproxy.txt",
+      "ran": "819",
+      "summary": "FAILED (failures=21, errors=63, skipped=2)",
+      "unique_failure_ids": 84
+    },
+    {
+      "file": "suite-postcommit-proxy.txt",
+      "ran": "819",
+      "summary": "FAILED (failures=27, errors=78, skipped=2)",
+      "unique_failure_ids": 105
+    }
+  ],
+  "platform": "win32",
+  "python": "3.14.7 (tags/v3.14.7:823f032, Aug  5 2026, 10:51:32) [MSC v.1944 64 bit (AMD64)]",
+  "new_tests": {
+    "ran": 21,
+    "passed": 18,
+    "failures": 1,
+    "skipped": 2
+  },
+  "frozen_cases": 10,
+  "capture_rows": 14,
+  "capture_unhandled_types": 7,
+  "read_rows": 8,
+  "model_calls": 0,
+  "real_app_server_calls": 0,
+  "sandbox_temp_acl": "Initial sandbox run blocked by TemporaryDirectory ACLs; a separate escalated offline run isolates the one actual fixture failure.",
+  "new_guards": {
+    "detected": 28,
+    "redundant": 1,
+    "failed_rows": [
+      "ancestor_link_check_ignored",
+      "subdir_link_check_ignored",
+      "worker_recheck_ignored"
+    ]
+  },
+  "new_six_mutations": "All detected; three known POSIX skips remain separate",
+  "frontends": {
+    "hark06": 15,
+    "jh019": 4,
+    "jh020": 13,
+    "hark05": 11
+  },
+  "decision": "Original ten workspace-binding cases closed offline; observation failure boundaries and Windows fixture remain; integration not admitted"
+}

@@ -1,0 +1,128 @@
+{
+  "cases": 10,
+  "failures": [],
+  "missing_cases": [],
+  "verdict": "pass",
+  "rows": [
+    {
+      "case": "absolute",
+      "expected": "verified",
+      "state": "verified",
+      "files": [],
+      "verified_empty": true,
+      "echo": "matched",
+      "outcome": "round_trip_complete",
+      "planned": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark09-workspace-review-20261021\\candidate\\data\\review-workspace-02\\absolute\\probe\\ws\\b2b13442e14a2004",
+      "dispatched": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark09-workspace-review-20261021\\candidate\\data\\review-workspace-02\\absolute\\probe\\ws\\b2b13442e14a2004",
+      "protocol_consistent": true,
+      "ok": true
+    },
+    {
+      "case": "relative",
+      "expected": "verified",
+      "state": "verified",
+      "files": [],
+      "verified_empty": true,
+      "echo": "matched",
+      "outcome": "round_trip_complete",
+      "planned": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark09-workspace-review-20261021\\candidate\\data\\review-workspace-02\\relative\\probe\\ws\\46fcdd3938d114ab",
+      "dispatched": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark09-workspace-review-20261021\\candidate\\data\\review-workspace-02\\relative\\probe\\ws\\46fcdd3938d114ab",
+      "protocol_consistent": true,
+      "ok": true
+    },
+    {
+      "case": "relative_dot",
+      "expected": "verified",
+      "state": "verified",
+      "files": [],
+      "verified_empty": true,
+      "echo": "matched",
+      "outcome": "round_trip_complete",
+      "planned": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark09-workspace-review-20261021\\candidate\\data\\review-workspace-02\\relative_dot\\probe\\ws\\7db9dcedd1eeaf61",
+      "dispatched": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark09-workspace-review-20261021\\candidate\\data\\review-workspace-02\\relative_dot\\probe\\ws\\7db9dcedd1eeaf61",
+      "protocol_consistent": true,
+      "ok": true
+    },
+    {
+      "case": "relative_dotdot",
+      "expected": "refused:probe_dir_parent_segment",
+      "refused": "probe_dir_parent_segment",
+      "offline_dispatches": 0,
+      "ok": true
+    },
+    {
+      "case": "absolute_space",
+      "expected": "verified",
+      "state": "verified",
+      "files": [],
+      "verified_empty": true,
+      "echo": "matched",
+      "outcome": "round_trip_complete",
+      "planned": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark09-workspace-review-20261021\\candidate\\data\\review-workspace-02\\absolute_space space 空格\\probe\\ws\\4720bb6e64bf72ea",
+      "dispatched": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark09-workspace-review-20261021\\candidate\\data\\review-workspace-02\\absolute_space space 空格\\probe\\ws\\4720bb6e64bf72ea",
+      "protocol_consistent": true,
+      "ok": true
+    },
+    {
+      "case": "relative_space",
+      "expected": "verified",
+      "state": "verified",
+      "files": [],
+      "verified_empty": true,
+      "echo": "matched",
+      "outcome": "round_trip_complete",
+      "planned": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark09-workspace-review-20261021\\candidate\\data\\review-workspace-02\\relative_space space 空格\\probe\\ws\\fe955be7c001d257",
+      "dispatched": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark09-workspace-review-20261021\\candidate\\data\\review-workspace-02\\relative_space space 空格\\probe\\ws\\fe955be7c001d257",
+      "protocol_consistent": true,
+      "ok": true
+    },
+    {
+      "case": "absolute_native_mismatch",
+      "expected": "native_mismatch",
+      "state": "native_mismatch",
+      "files": null,
+      "verified_empty": null,
+      "echo": "matched",
+      "outcome": "round_trip_complete",
+      "planned": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark09-workspace-review-20261021\\candidate\\data\\review-workspace-02\\absolute_native_mismatch\\probe\\ws\\78cd6d7ab658b9e9",
+      "dispatched": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark09-workspace-review-20261021\\candidate\\data\\review-workspace-02\\absolute_native_mismatch\\probe\\ws\\78cd6d7ab658b9e9",
+      "ok": true
+    },
+    {
+      "case": "absolute_native_missing",
+      "expected": "native_missing",
+      "state": "native_missing",
+      "files": null,
+      "verified_empty": null,
+      "echo": "matched",
+      "outcome": "round_trip_complete",
+      "planned": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark09-workspace-review-20261021\\candidate\\data\\review-workspace-02\\absolute_native_missing\\probe\\ws\\d59963d1263e8b7d",
+      "dispatched": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark09-workspace-review-20261021\\candidate\\data\\review-workspace-02\\absolute_native_missing\\probe\\ws\\d59963d1263e8b7d",
+      "ok": true
+    },
+    {
+      "case": "absolute_foreign_native",
+      "expected": "native_foreign_only",
+      "state": "native_foreign_only",
+      "files": null,
+      "verified_empty": null,
+      "echo": "matched",
+      "outcome": "round_trip_complete",
+      "planned": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark09-workspace-review-20261021\\candidate\\data\\review-workspace-02\\absolute_foreign_native\\probe\\ws\\018e5234342c4ff5",
+      "dispatched": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark09-workspace-review-20261021\\candidate\\data\\review-workspace-02\\absolute_foreign_native\\probe\\ws\\018e5234342c4ff5",
+      "ok": true
+    },
+    {
+      "case": "absolute_native_conflict",
+      "expected": "native_conflict",
+      "state": "native_conflict",
+      "files": null,
+      "verified_empty": null,
+      "echo": "matched",
+      "outcome": "round_trip_complete",
+      "planned": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark09-workspace-review-20261021\\candidate\\data\\review-workspace-02\\absolute_native_conflict\\probe\\ws\\105b30ad63feaf6d",
+      "dispatched": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark09-workspace-review-20261021\\candidate\\data\\review-workspace-02\\absolute_native_conflict\\probe\\ws\\105b30ad63feaf6d",
+      "ok": true
+    }
+  ]
+}

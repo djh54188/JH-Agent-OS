@@ -1,0 +1,82 @@
+{
+  "platform": "win32",
+  "python": "3.14.7 (tags/v3.14.7:823f032, Aug  5 2026, 10:51:32) [MSC v.1944 64 bit (AMD64)]",
+  "model_calls": 0,
+  "real_app_server_calls": 0,
+  "rows": [
+    {
+      "case": "conflict_positive_control",
+      "state": "native_conflict",
+      "files": null,
+      "verified_empty": null,
+      "raw_evidence": "verified",
+      "additional_thread_starts": 0,
+      "source_bytes_unchanged": true
+    },
+    {
+      "case": "native_observation_permission",
+      "state": "verified",
+      "files": [],
+      "verified_empty": true,
+      "raw_evidence": "verified",
+      "additional_thread_starts": 0,
+      "source_bytes_unchanged": true
+    },
+    {
+      "case": "native_observation_io_error",
+      "state": "verified",
+      "files": [],
+      "verified_empty": true,
+      "raw_evidence": "verified",
+      "additional_thread_starts": 0,
+      "source_bytes_unchanged": true
+    },
+    {
+      "case": "native_observation_decode_error",
+      "state": "verified",
+      "files": [],
+      "verified_empty": true,
+      "raw_evidence": "verified",
+      "additional_thread_starts": 0,
+      "source_bytes_unchanged": true
+    },
+    {
+      "case": "nonempty_positive_control",
+      "state": "verified",
+      "files": [
+        "nested\\exists.txt"
+      ],
+      "verified_empty": false,
+      "raw_evidence": "verified",
+      "additional_thread_starts": 0,
+      "source_bytes_unchanged": true
+    },
+    {
+      "case": "listing_root_permission",
+      "state": "verified",
+      "files": [],
+      "verified_empty": true,
+      "raw_evidence": "verified",
+      "additional_thread_starts": 0,
+      "source_bytes_unchanged": true
+    },
+    {
+      "case": "listing_child_permission",
+      "state": "verified",
+      "files": [],
+      "verified_empty": true,
+      "raw_evidence": "verified",
+      "additional_thread_starts": 0,
+      "source_bytes_unchanged": true
+    },
+    {
+      "case": "listing_root_io_error",
+      "state": "verified",
+      "files": [],
+      "verified_empty": true,
+      "raw_evidence": "verified",
+      "additional_thread_starts": 0,
+      "source_bytes_unchanged": true
+    }
+  ]
+}

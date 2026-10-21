@@ -1,0 +1,40 @@
+test_absolute (test_hark09_workspace_binding.TestConsistentBinding.test_absolute) ... ok
+test_absolute_parent_segment_is_refused (test_hark09_workspace_binding.TestConsistentBinding.test_absolute_parent_segment_is_refused) ... ok
+test_absolute_with_space_and_cjk (test_hark09_workspace_binding.TestConsistentBinding.test_absolute_with_space_and_cjk) ... ok
+test_parent_segment_is_refused_before_anything (test_hark09_workspace_binding.TestConsistentBinding.test_parent_segment_is_refused_before_anything) ... ok
+test_relative_is_anchored_once (test_hark09_workspace_binding.TestConsistentBinding.test_relative_is_anchored_once) ... ok
+test_relative_survives_a_later_cwd_change (test_hark09_workspace_binding.TestConsistentBinding.test_relative_survives_a_later_cwd_change) ... ok
+test_relative_with_leading_dot (test_hark09_workspace_binding.TestConsistentBinding.test_relative_with_leading_dot) ... ok
+test_relative_with_space_and_cjk (test_hark09_workspace_binding.TestConsistentBinding.test_relative_with_space_and_cjk) ... ok
+test_parent_segment_behind_a_link_is_refused_not_collapsed (test_hark09_workspace_binding.TestGuardsKept.test_parent_segment_behind_a_link_is_refused_not_collapsed) ... skipped 'symlink creation needs privileges on Windows; junctions untested'
+test_relative_config_still_claims_and_finishes (test_hark09_workspace_binding.TestGuardsKept.test_relative_config_still_claims_and_finishes) ... ok
+test_relative_path_through_a_link_is_still_refused (test_hark09_workspace_binding.TestGuardsKept.test_relative_path_through_a_link_is_still_refused) ... skipped 'symlink creation needs privileges on Windows; junctions untested'
+test_unknown_result_with_relative_config_is_not_redispatched (test_hark09_workspace_binding.TestGuardsKept.test_unknown_result_with_relative_config_is_not_redispatched) ... ok
+test_contradicting_same_thread_facts_are_not_verified (test_hark09_workspace_binding.TestNativeFacts.test_contradicting_same_thread_facts_are_not_verified) ... ok
+test_corrupt_capture_is_not_verified (test_hark09_workspace_binding.TestNativeFacts.test_corrupt_capture_is_not_verified) ... ok
+test_foreign_thread_only_is_not_verified (test_hark09_workspace_binding.TestNativeFacts.test_foreign_thread_only_is_not_verified) ... ok
+test_native_mismatch_is_not_verified (test_hark09_workspace_binding.TestNativeFacts.test_native_mismatch_is_not_verified) ... ok
+test_native_missing_is_not_verified (test_hark09_workspace_binding.TestNativeFacts.test_native_missing_is_not_verified) ... ok
+test_response_only_and_notification_only_are_each_enough (test_hark09_workspace_binding.TestNativeFacts.test_response_only_and_notification_only_are_each_enough) ... ok
+test_verified_listing_reports_real_content (test_hark09_workspace_binding.TestNativeFacts.test_verified_listing_reports_real_content) ... ok
+test_classify_real_windows_shape_is_not_verified (test_hark09_workspace_binding.TestResolution.test_classify_real_windows_shape_is_not_verified) ... FAIL
+test_spellings (test_hark09_workspace_binding.TestResolution.test_spellings) ... ok
+
+======================================================================
+FAIL: test_classify_real_windows_shape_is_not_verified (test_hark09_workspace_binding.TestResolution.test_classify_real_windows_shape_is_not_verified)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\data\hark09-workspace-review-20261021\candidate\tests\test_hark09_workspace_binding.py", line 185, in test_classify_real_windows_shape_is_not_verified
+    self.assertEqual(classify_workspace(planned, planned, "T", native, "absent", "verified")[0],
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     "native_mismatch")
+                     ^^^^^^^^^^^^^^^^^^
+AssertionError: 'dispatch_not_absolute' != 'native_mismatch'
+- dispatch_not_absolute
++ native_mismatch
+
+
+----------------------------------------------------------------------
+Ran 21 tests in 0.967s
+
+FAILED (failures=1, skipped=2)
