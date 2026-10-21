@@ -53,8 +53,29 @@ import test_hark06_session_probe as probe_tests  # noqa: E402
 T = "test_hark06_session_probe."
 S = "test_hark07_source_isolation."
 C = "test_hark08_cleanup_isolation."
+W = "test_hark09_workspace_binding."
 HARNESS = ROOT / "tests" / "js" / "hark06_session_probe_harness.mjs"
 NODE = shutil.which("node")
+
+
+def _unanchored(original):
+    """Weakening: keep a relative spelling relative (the R4 defect)."""
+    def resolve(configured, *, cwd=None, default=None):
+        path, resolution, problem = original(configured, cwd=cwd, default=default)
+        if configured and not os.path.isabs(configured) and problem is None:
+            return Path(configured), resolution, None
+        return path, resolution, problem
+    return resolve
+
+
+def _parent_allowed(original):
+    """Weakening: drop the '..' refusal (path is otherwise resolved the same)."""
+    def resolve(configured, *, cwd=None, default=None):
+        path, resolution, problem = original(configured, cwd=cwd, default=default)
+        if problem and problem[0] == "probe_dir_parent_segment":
+            return path, resolution, None
+        return path, resolution, problem
+    return resolve
 
 
 def _always_create(original):
@@ -120,6 +141,22 @@ PY_MUTATIONS = [
     ("source_identity_recheck_ignored", lambda: mock.patch.object(probe.SessionProbeService, "_identity_problem",
                                                                   lambda self, probe_id: None),
      C + "TestCleanupAfterPlainReplacement.test_replaced_claim_file_is_not_rewritten"),
+    # Hark-派单-09 workspace binding and observation guards.
+    ("relative_probe_dir_unanchored", lambda: mock.patch.object(probe, "resolve_probe_dir",
+                                                                _unanchored(probe.resolve_probe_dir)),
+     W + "TestConsistentBinding.test_relative_is_anchored_once"),
+    ("parent_segment_allowed", lambda: mock.patch.object(probe, "resolve_probe_dir",
+                                                         _parent_allowed(probe.resolve_probe_dir)),
+     W + "TestConsistentBinding.test_parent_segment_is_refused_before_anything"),
+    ("workspace_verification_skipped", lambda: mock.patch.object(probe, "classify_workspace",
+                                                                 lambda *a, **k: ("verified", "weakened")),
+     W + "TestNativeFacts.test_native_mismatch_is_not_verified"),
+    ("same_thread_filter_ignored", lambda: mock.patch.object(probe, "same_thread_facts",
+                                                             lambda facts, thread_id: list(facts)),
+     W + "TestNativeFacts.test_foreign_thread_only_is_not_verified"),
+    ("native_conflict_check_ignored", lambda: mock.patch.object(probe, "distinct_dirs",
+                                                                lambda values: set(values[:1])),
+     W + "TestNativeFacts.test_contradicting_same_thread_facts_are_not_verified"),
     ("lock_recreate_guard_ignored", lambda: mock.patch.object(probe, "acquire_source_lock",
                                                               _always_create(probe.acquire_source_lock)),
      C + "TestCleanupAfterPlainReplacement.test_missing_lock_is_not_recreated_and_the_claim_stays_blocking"),
@@ -146,6 +183,9 @@ JS_MUTATIONS = [
     ("left_view_start_guard_removed",
      "          if (!isCurrent(gen)) { return; }\n          if (!prepared || prepared.ok !== true) {",
      "          if (!prepared || prepared.ok !== true) {", "leave_before_start"),
+    ("workspace_unverified_shown_as_listing",
+     "const wsVerified = !!(ws && ws.verified === true && ws.state === \"verified\" && Array.isArray(latest.workspace_files));",
+     "const wsVerified = Array.isArray(latest.workspace_files);", "workspace_unverified_not_empty"),
     ("poll_bound_removed",
      "if (polls < Math.ceil(seconds * 1000 / PROBE_POLL_MS)) {", "if (true) {", "inflight_polling_bounded"),
 ]
