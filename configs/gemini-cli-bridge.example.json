@@ -1,0 +1,13 @@
+{
+  "_comment": "Example for src/agent_session_gemini.py (Hark-派单-11). No secrets: env_names lists variable NAMES only; values stay in the caller's environment and are never written by the adapter.",
+  "app_kind": "gemini-cli",
+  "instance_id": "gemini-cli/local",
+  "pinned_cli_version": "0.65.0",
+  "argv_prefix": ["node", "C:\\path\\to\\isolated\\node_modules\\@google\\gemini-cli\\bundle\\gemini.js"],
+  "cli_home": "C:\\path\\to\\jh-gemini-bridge\\cli-home",
+  "evidence_root": "C:\\path\\to\\jh-gemini-bridge\\evidence",
+  "auth_type": "gemini-api-key",
+  "env_names": ["GEMINI_API_KEY"],
+  "model_id": "gemini-2.5-flash",
+  "workspace": "C:\\path\\to\\a\\separate\\git\\worktree"
+}
