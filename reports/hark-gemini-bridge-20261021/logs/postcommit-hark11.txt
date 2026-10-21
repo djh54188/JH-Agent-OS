@@ -1,0 +1,49 @@
+test_address_mismatch (tests.test_hark11_gemini_session.TestAssociationErrors.test_address_mismatch) ... ok
+test_duplicate_init (tests.test_hark11_gemini_session.TestAssociationErrors.test_duplicate_init) ... ok
+test_foreign_session_is_not_adopted (tests.test_hark11_gemini_session.TestAssociationErrors.test_foreign_session_is_not_adopted) ... ok
+test_missing_result_event (tests.test_hark11_gemini_session.TestAssociationErrors.test_missing_result_event) ... ok
+test_non_native_line (tests.test_hark11_gemini_session.TestAssociationErrors.test_non_native_line) ... ok
+test_nonzero_exit (tests.test_hark11_gemini_session.TestAssociationErrors.test_nonzero_exit) ... ok
+test_requested_model_not_honored (tests.test_hark11_gemini_session.TestAssociationErrors.test_requested_model_not_honored) ... ok
+test_tool_result_without_tool_use (tests.test_hark11_gemini_session.TestAssociationErrors.test_tool_result_without_tool_use) ... ok
+test_tool_use_without_result (tests.test_hark11_gemini_session.TestAssociationErrors.test_tool_use_without_result) ... ok
+test_chat_record_missing_is_listed (tests.test_hark11_gemini_session.TestEvidenceMissing.test_chat_record_missing_is_listed) ... ok
+test_stdout_missing_fails (tests.test_hark11_gemini_session.TestEvidenceMissing.test_stdout_missing_fails) ... ok
+test_tampered_before_manifest_fails (tests.test_hark11_gemini_session.TestEvidenceMissing.test_tampered_before_manifest_fails) ... ok
+test_each_weakened_guard_fails_its_test (tests.test_hark11_gemini_session.TestGuardWeakening.test_each_weakened_guard_fails_its_test) ... /home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py:1139: ResourceWarning: subprocess 8253 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py:1139: ResourceWarning: subprocess 8255 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py:1139: ResourceWarning: subprocess 8261 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_ancestor_env_file_refused (tests.test_hark11_gemini_session.TestReadOnly.test_ancestor_env_file_refused) ... ok
+test_existing_session_refused (tests.test_hark11_gemini_session.TestReadOnly.test_existing_session_refused) ... ok
+test_overlapping_evidence_refused (tests.test_hark11_gemini_session.TestReadOnly.test_overlapping_evidence_refused) ... ok
+test_path_scope_and_budget_refused (tests.test_hark11_gemini_session.TestReadOnly.test_path_scope_and_budget_refused) ... ok
+test_relative_workspace_refused (tests.test_hark11_gemini_session.TestReadOnly.test_relative_workspace_refused) ... ok
+test_successful_write_tool_is_a_breach (tests.test_hark11_gemini_session.TestReadOnly.test_successful_write_tool_is_a_breach) ... ok
+test_unpinned_version_refused (tests.test_hark11_gemini_session.TestReadOnly.test_unpinned_version_refused) ... ok
+test_workspace_env_file_refused (tests.test_hark11_gemini_session.TestReadOnly.test_workspace_env_file_refused) ... ok
+test_workspace_host_config_refused (tests.test_hark11_gemini_session.TestReadOnly.test_workspace_host_config_refused) ... ok
+test_workspace_modification_is_detected (tests.test_hark11_gemini_session.TestReadOnly.test_workspace_modification_is_detected) ... ok
+test_refs_resolve_only_inside_workspace (tests.test_hark11_gemini_session.TestSourceRefs.test_refs_resolve_only_inside_workspace) ... ok
+test_bounded_wait_and_no_redispatch (tests.test_hark11_gemini_session.TestUnknownNotResent.test_bounded_wait_and_no_redispatch) ... ok
+test_collected_result_survives_reopen (tests.test_hark11_gemini_session.TestUnknownNotResent.test_collected_result_survives_reopen) ... ok
+test_same_key_different_request_conflicts (tests.test_hark11_gemini_session.TestUnknownNotResent.test_same_key_different_request_conflicts) ... /home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py:1139: ResourceWarning: subprocess 8278 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_unreadable_registry_refuses (tests.test_hark11_gemini_session.TestUnknownNotResent.test_unreadable_registry_refuses) ... ok
+test_capabilities_and_unsupported_operations (tests.test_hark11_gemini_session.TestValidDelivery.test_capabilities_and_unsupported_operations) ... ok
+test_evidence_bytes_are_verified_on_disk (tests.test_hark11_gemini_session.TestValidDelivery.test_evidence_bytes_are_verified_on_disk) ... ok
+test_host_restriction_flags_are_passed (tests.test_hark11_gemini_session.TestValidDelivery.test_host_restriction_flags_are_passed) ... ok
+test_valid_delivery_is_declared_not_succeeded (tests.test_hark11_gemini_session.TestValidDelivery.test_valid_delivery_is_declared_not_succeeded) ... ok
+
+----------------------------------------------------------------------
+Ran 32 tests in 5.111s
+
+OK

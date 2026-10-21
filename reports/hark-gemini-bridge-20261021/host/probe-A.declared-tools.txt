@@ -1,0 +1,1 @@
+0 ['enter_plan_mode', 'glob', 'google_web_search', 'grep_search', 'invoke_agent', 'list_directory', 'read_file', 'update_topic']

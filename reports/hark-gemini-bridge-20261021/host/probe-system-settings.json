@@ -1,0 +1,13 @@
+{
+  "tools": {
+    "core": ["read_file", "grep_search", "glob", "list_directory"],
+    "exclude": ["write_file", "replace", "run_shell_command", "web_fetch", "google_web_search", "write_todos", "save_memory", "activate_skill", "ask_user"],
+    "useRipgrep": false
+  },
+  "admin": {"mcp": {"enabled": false}, "extensions": {"enabled": false}, "skills": {"enabled": false}},
+  "hooksConfig": {"enabled": false},
+  "skills": {"enabled": false},
+  "advanced": {"ignoreLocalEnv": true},
+  "privacy": {"usageStatisticsEnabled": false},
+  "telemetry": {"enabled": false}
+}

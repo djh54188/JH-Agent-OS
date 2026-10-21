@@ -1,0 +1,4 @@
+{"type":"init","timestamp":"2026-10-21T14:41:18.420Z","session_id":"a8302cd2-cb45-4587-854b-79535d15b28b","model":"gemini-2.5-flash"}
+{"type":"message","timestamp":"2026-10-21T14:41:18.422Z","role":"user","content":"hi"}
+{"type":"message","timestamp":"2026-10-21T14:41:18.488Z","role":"assistant","content":"hello from synthetic endpoint","delta":true}
+{"type":"result","timestamp":"2026-10-21T14:41:18.495Z","status":"success","stats":{"total_tokens":18,"input_tokens":11,"output_tokens":7,"cached":0,"input":11,"duration_ms":75,"tool_calls":0,"models":{"synthetic-model":{"total_tokens":18,"input_tokens":11,"output_tokens":7,"cached":0,"input":11}}}}

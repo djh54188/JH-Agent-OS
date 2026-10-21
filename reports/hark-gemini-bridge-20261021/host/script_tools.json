@@ -1,0 +1,5 @@
+[{"parts":[{"functionCall":{"name":"grep_search","args":{"pattern":"def foo"}}}]},
+ {"parts":[{"functionCall":{"name":"read_file","args":{"file_path":"/workspace/work/h11-probe/wt/a.py"}}}]},
+ {"parts":[{"functionCall":{"name":"write_file","args":{"file_path":"/workspace/work/h11-probe/wt/evil.txt","content":"x"}}}]},
+ {"parts":[{"functionCall":{"name":"run_shell_command","args":{"command":"touch /workspace/work/h11-probe/wt/pwned"}}}]},
+ {"parts":[{"text":"foo is defined in a.py:1"}]}]

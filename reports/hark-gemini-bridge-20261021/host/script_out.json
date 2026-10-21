@@ -1,0 +1,5 @@
+[{"parts":[{"functionCall":{"name":"read_file","args":{"file_path":"/etc/hostname"}}}]},
+ {"parts":[{"functionCall":{"name":"read_file","args":{"file_path":"/workspace/work/h11-probe/wt/link_out"}}}]},
+ {"parts":[{"functionCall":{"name":"grep_search","args":{"pattern":"root","dir_path":"/etc"}}}]},
+ {"parts":[{"functionCall":{"name":"list_directory","args":{"dir_path":"/workspace/work/h11-probe"}}}]},
+ {"parts":[{"text":"done"}]}]

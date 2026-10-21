@@ -1,0 +1,21 @@
+.............F............................
+======================================================================
+FAIL: test_production_modules_do_not_import_this_contract (tests.test_jh018_agent_session_contract.TestCoreHoldsNoConcreteAdapter.test_production_modules_do_not_import_this_contract)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h11/tests/test_jh018_agent_session_contract.py", line 603, in test_production_modules_do_not_import_this_contract
+    self.assertEqual(offenders, [], "unexpected production import of the contract")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: ['agent_session_gemini.py'] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+'agent_session_gemini.py'
+
+- ['agent_session_gemini.py']
++ [] : unexpected production import of the contract
+
+----------------------------------------------------------------------
+Ran 42 tests in 0.142s
+
+FAILED (failures=1)

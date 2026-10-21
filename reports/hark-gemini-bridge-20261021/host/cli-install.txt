@@ -1,0 +1,9 @@
+package: @google/gemini-cli@0.65.0
+dist.integrity = 'sha512-B+flaYBNqX2zO71I5/gu7ZsnI38NlpOl654HWz+bK8I/P5sGILQsbkTOQ5a9V+w1Q6QO3wf9PlqtuMsl7XxpNQ=='
+dist.tarball = 'https://registry.npmjs.org/@google/gemini-cli/-/gemini-cli-0.65.0.tgz'
+node: v22.23.3
+installed package.json sha256: ea3543b010281115990c43095124eb27a6a0428bc6aa41349261f52675378058
+bundle/gemini.js sha256: 41847af2158ced805c4a3e098a05b9a2c26fb1a49b12583009b2eaf6a4059a59
+bundle/chunk-DKZARV6U.js sha256 (StreamJsonFormatter, policy toml-loader): 4d9cf6435503e5280ecb0f55078793531c8041fe435f60fa8dfce92317c8a28e
+bundle/gemini-GLQ4MVLB.js sha256 (runNonInteractive emitters): 1c5053102d2204335a96a71f930a0419d2b153cd6d17e1d1ee96753b5272fd9f
+install: npm install --ignore-scripts --prefix /workspace/work/h11-gemcli (isolated HOME and npm cache; no global config)

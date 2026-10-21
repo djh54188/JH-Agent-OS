@@ -1,0 +1,12 @@
+{"type":"init","timestamp":"2026-10-21T14:40:38.168Z","session_id":"11111111-2222-4333-8444-555555555555","model":"gemini-2.5-flash"}
+{"type":"message","timestamp":"2026-10-21T14:40:38.169Z","role":"user","content":"Locate foo"}
+{"type":"tool_use","timestamp":"2026-10-21T14:40:38.280Z","tool_name":"grep_search","tool_id":"grep_search__grep_search_1792593638250_0","parameters":{"pattern":"def foo"}}
+{"type":"tool_result","timestamp":"2026-10-21T14:40:38.324Z","tool_id":"grep_search__grep_search_1792593638250_0","status":"success"}
+{"type":"tool_use","timestamp":"2026-10-21T14:40:38.348Z","tool_name":"read_file","tool_id":"read_file__read_file_1792593638342_0","parameters":{"file_path":"/workspace/work/h11-probe/wt/a.py"}}
+{"type":"tool_result","timestamp":"2026-10-21T14:40:38.369Z","tool_id":"read_file__read_file_1792593638342_0","status":"success","output":""}
+{"type":"tool_use","timestamp":"2026-10-21T14:40:38.389Z","tool_name":"write_file","tool_id":"write_file__write_file_1792593638389_0","parameters":{"file_path":"/workspace/work/h11-probe/wt/evil.txt","content":"x"}}
+{"type":"tool_result","timestamp":"2026-10-21T14:40:38.396Z","tool_id":"write_file__write_file_1792593638389_0","status":"error","output":"Tool \"write_file\" not found. Did you mean one of: \"read_file\", \"grep_search\", \"glob\"?","error":{"type":"tool_not_registered","message":"Tool \"write_file\" not found. Did you mean one of: \"read_file\", \"grep_search\", \"glob\"?"}}
+{"type":"tool_use","timestamp":"2026-10-21T14:40:38.420Z","tool_name":"run_shell_command","tool_id":"run_shell_command__run_shell_command_1792593638420_0","parameters":{"command":"touch /workspace/work/h11-probe/wt/pwned"}}
+{"type":"tool_result","timestamp":"2026-10-21T14:40:38.426Z","tool_id":"run_shell_command__run_shell_command_1792593638420_0","status":"error","output":"Tool \"run_shell_command\" not found. Did you mean one of: \"grep_search\", \"read_file\", \"glob\"?","error":{"type":"tool_not_registered","message":"Tool \"run_shell_command\" not found. Did you mean one of: \"grep_search\", \"read_file\", \"glob\"?"}}
+{"type":"message","timestamp":"2026-10-21T14:40:38.443Z","role":"assistant","content":"foo is defined in a.py:1","delta":true}
+{"type":"result","timestamp":"2026-10-21T14:40:38.450Z","status":"success","stats":{"total_tokens":90,"input_tokens":55,"output_tokens":35,"cached":0,"input":55,"duration_ms":283,"tool_calls":4,"models":{"synthetic-model":{"total_tokens":90,"input_tokens":55,"output_tokens":35,"cached":0,"input":55}}}}

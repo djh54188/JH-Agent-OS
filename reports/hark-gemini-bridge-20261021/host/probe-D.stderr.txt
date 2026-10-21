@@ -1,0 +1,5 @@
+Warning: 256-color support not detected. Using a terminal with at least 256-color support is recommended for a better visual experience.
+Error executing tool read_file: Path not in workspace: Attempted path "/etc/hostname" resolves outside the allowed workspace directories: /workspace/work/h11-probe/wt or the project temp directory: /workspace/work/h11-probe/home-D/.gemini/tmp/wt
+Error executing tool read_file: Path not in workspace: Attempted path "/etc/hostname" resolves outside the allowed workspace directories: /workspace/work/h11-probe/wt or the project temp directory: /workspace/work/h11-probe/home-D/.gemini/tmp/wt
+Error executing tool grep_search: Path not in workspace: Attempted path "/etc" resolves outside the allowed workspace directories: /workspace/work/h11-probe/wt or the project temp directory: /workspace/work/h11-probe/home-D/.gemini/tmp/wt
+Error executing tool list_directory: Path not in workspace: Attempted path "/workspace/work/h11-probe" resolves outside the allowed workspace directories: /workspace/work/h11-probe/wt or the project temp directory: /workspace/work/h11-probe/home-D/.gemini/tmp/wt
