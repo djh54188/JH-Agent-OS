@@ -1,0 +1,34 @@
+# label: postcommit
+# commit: 0efdc04deb5a76923c582a4df5c823946b34748c  tree-clean: yes
+# command: /workspace/work/venv-h05/bin/python -m unittest -v tests.test_hark07_source_isolation
+# python: 3.14.8 Linux-6.12.110+-aarch64-with-glibc2.41  node: v22.23.3
+# started: Wed Oct 21 13:34:25 UTC 2026
+# ---- raw output below ----
+test_claim_reader_never_folds_corrupt_into_absent (tests.test_hark07_source_isolation.TestPredicates.test_claim_reader_never_folds_corrupt_into_absent) ... ok
+test_file_identity_classes (tests.test_hark07_source_isolation.TestPredicates.test_file_identity_classes) ... ok
+test_reparse_attribute_counts_as_a_link (tests.test_hark07_source_isolation.TestPredicates.test_reparse_attribute_counts_as_a_link)
+The Windows junction branch, driven through its attribute only. ... ok
+test_concurrent_processes_dispatch_at_most_once (tests.test_hark07_source_isolation.TestSourceExclusion.test_concurrent_processes_dispatch_at_most_once) ... ok
+test_corrupt_claim_blocks_and_is_not_rewritten (tests.test_hark07_source_isolation.TestSourceExclusion.test_corrupt_claim_blocks_and_is_not_rewritten) ... ok
+test_finished_probe_releases_the_source (tests.test_hark07_source_isolation.TestSourceExclusion.test_finished_probe_releases_the_source) ... ok
+test_lock_serialises_check_and_claim_across_objects (tests.test_hark07_source_isolation.TestSourceExclusion.test_lock_serialises_check_and_claim_across_objects) ... ok
+test_process_exit_after_accept_blocks_the_source (tests.test_hark07_source_isolation.TestSourceExclusion.test_process_exit_after_accept_blocks_the_source) ... ok
+test_second_object_refused_after_accept_before_reserve (tests.test_hark07_source_isolation.TestSourceExclusion.test_second_object_refused_after_accept_before_reserve) ... ok
+test_second_process_is_refused_while_the_source_is_held (tests.test_hark07_source_isolation.TestSourceExclusion.test_second_process_is_refused_while_the_source_is_held) ... ok
+test_status_and_prepare_write_nothing (tests.test_hark07_source_isolation.TestSourceExclusion.test_status_and_prepare_write_nothing) ... ok
+test_claim_or_lock_hardlinked_is_refused (tests.test_hark07_source_isolation.TestSourceIsolation.test_claim_or_lock_hardlinked_is_refused) ... ok
+test_history_hardlink_alias_is_refused_and_history_unchanged (tests.test_hark07_source_isolation.TestSourceIsolation.test_history_hardlink_alias_is_refused_and_history_unchanged) ... ok
+test_history_inside_the_probe_directory_is_refused (tests.test_hark07_source_isolation.TestSourceIsolation.test_history_inside_the_probe_directory_is_refused) ... ok
+test_layout_changed_after_accept_is_refused_before_submit (tests.test_hark07_source_isolation.TestSourceIsolation.test_layout_changed_after_accept_is_refused_before_submit) ... ok
+test_legitimate_separate_directory_still_completes (tests.test_hark07_source_isolation.TestSourceIsolation.test_legitimate_separate_directory_still_completes) ... ok
+test_linked_ancestor_is_refused_before_any_write (tests.test_hark07_source_isolation.TestSourceIsolation.test_linked_ancestor_is_refused_before_any_write) ... ok
+test_linked_raw_and_ws_are_refused (tests.test_hark07_source_isolation.TestSourceIsolation.test_linked_raw_and_ws_are_refused) ... ok
+test_linked_root_is_refused (tests.test_hark07_source_isolation.TestSourceIsolation.test_linked_root_is_refused) ... ok
+test_registry_hardlinked_to_an_unrelated_file_is_refused (tests.test_hark07_source_isolation.TestSourceIsolation.test_registry_hardlinked_to_an_unrelated_file_is_refused) ... ok
+
+----------------------------------------------------------------------
+Ran 20 tests in 8.632s
+
+OK
+# ---- end raw output ----
+# exit_code: 0

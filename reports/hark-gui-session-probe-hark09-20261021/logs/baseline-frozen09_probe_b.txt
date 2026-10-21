@@ -1,0 +1,273 @@
+# label: baseline
+# commit: dc6c5c2c17a7f0b5b07c7d41e59f43ddee75ca4f  tree-clean: yes
+# command: /workspace/work/venv-h05/bin/python -X utf8 /workspace/work/h09-frozen/probe_workspace_binding.py --repo . --out /workspace/work/h09-base/data/workspace-review-fresh-b
+# python: 3.14.8 Linux-6.12.110+-aarch64-with-glibc2.41  node: v22.23.3
+# started: Wed Oct 21 13:34:13 UTC 2026
+# ---- raw output below ----
+{
+  "platform": "linux",
+  "python": "3.14.8 (main, Oct 14 2026, 01:05:37) [Clang 23.1.3 ]",
+  "transport": "in-process resolver simulation",
+  "model_calls": 0,
+  "real_app_server_calls": 0,
+  "rows": [
+    {
+      "case": "absolute",
+      "input_is_absolute": true,
+      "expected_workspace": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute/probe/ws/1bf32857303b93b3",
+      "protocol": [
+        {
+          "method": "thread/start",
+          "process_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute/probe/ws/1bf32857303b93b3",
+          "supplied_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute/probe/ws/1bf32857303b93b3",
+          "effective_native_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute/probe/ws/1bf32857303b93b3"
+        },
+        {
+          "method": "turn/start",
+          "process_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute/probe/ws/1bf32857303b93b3",
+          "supplied_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute/probe/ws/1bf32857303b93b3",
+          "effective_native_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute/probe/ws/1bf32857303b93b3"
+        }
+      ],
+      "workspace_matches": true,
+      "bound_native_cwd_notifications": [
+        "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute/probe/ws/1bf32857303b93b3"
+      ],
+      "outcome": "round_trip_complete",
+      "reported_workspace_files": [],
+      "offline_dispatches": 1
+    },
+    {
+      "case": "relative",
+      "input_is_absolute": false,
+      "expected_workspace": "/workspace/work/h09-base/data/workspace-review-fresh-b/relative/probe/ws/8361042ab9376f03",
+      "protocol": [
+        {
+          "method": "thread/start",
+          "process_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/relative/probe/ws/8361042ab9376f03",
+          "supplied_cwd": "data/workspace-review-fresh-b/relative/probe/ws/8361042ab9376f03",
+          "effective_native_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/relative/probe/ws/8361042ab9376f03/data/workspace-review-fresh-b/relative/probe/ws/8361042ab9376f03"
+        },
+        {
+          "method": "turn/start",
+          "process_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/relative/probe/ws/8361042ab9376f03",
+          "supplied_cwd": "data/workspace-review-fresh-b/relative/probe/ws/8361042ab9376f03",
+          "effective_native_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/relative/probe/ws/8361042ab9376f03/data/workspace-review-fresh-b/relative/probe/ws/8361042ab9376f03"
+        }
+      ],
+      "workspace_matches": false,
+      "bound_native_cwd_notifications": [
+        "/workspace/work/h09-base/data/workspace-review-fresh-b/relative/probe/ws/8361042ab9376f03/data/workspace-review-fresh-b/relative/probe/ws/8361042ab9376f03"
+      ],
+      "outcome": "round_trip_complete",
+      "reported_workspace_files": [],
+      "offline_dispatches": 1
+    },
+    {
+      "case": "relative_dot",
+      "input_is_absolute": false,
+      "expected_workspace": "/workspace/work/h09-base/data/workspace-review-fresh-b/relative_dot/probe/ws/2c5162d9a27bd25c",
+      "protocol": [
+        {
+          "method": "thread/start",
+          "process_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/relative_dot/probe/ws/2c5162d9a27bd25c",
+          "supplied_cwd": "data/workspace-review-fresh-b/relative_dot/probe/ws/2c5162d9a27bd25c",
+          "effective_native_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/relative_dot/probe/ws/2c5162d9a27bd25c/data/workspace-review-fresh-b/relative_dot/probe/ws/2c5162d9a27bd25c"
+        },
+        {
+          "method": "turn/start",
+          "process_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/relative_dot/probe/ws/2c5162d9a27bd25c",
+          "supplied_cwd": "data/workspace-review-fresh-b/relative_dot/probe/ws/2c5162d9a27bd25c",
+          "effective_native_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/relative_dot/probe/ws/2c5162d9a27bd25c/data/workspace-review-fresh-b/relative_dot/probe/ws/2c5162d9a27bd25c"
+        }
+      ],
+      "workspace_matches": false,
+      "bound_native_cwd_notifications": [
+        "/workspace/work/h09-base/data/workspace-review-fresh-b/relative_dot/probe/ws/2c5162d9a27bd25c/data/workspace-review-fresh-b/relative_dot/probe/ws/2c5162d9a27bd25c"
+      ],
+      "outcome": "round_trip_complete",
+      "reported_workspace_files": [],
+      "offline_dispatches": 1
+    },
+    {
+      "case": "relative_dotdot",
+      "input_is_absolute": false,
+      "expected_workspace": "/workspace/work/h09-base/data/workspace-review-fresh-b/relative_dotdot/probe/ws/9bc66ccb3cd8012e",
+      "protocol": [
+        {
+          "method": "thread/start",
+          "process_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/relative_dotdot/probe/ws/9bc66ccb3cd8012e",
+          "supplied_cwd": "data/workspace-review-fresh-b/relative_dotdot/middle/../probe/ws/9bc66ccb3cd8012e",
+          "effective_native_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/relative_dotdot/probe/ws/9bc66ccb3cd8012e/data/workspace-review-fresh-b/relative_dotdot/probe/ws/9bc66ccb3cd8012e"
+        },
+        {
+          "method": "turn/start",
+          "process_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/relative_dotdot/probe/ws/9bc66ccb3cd8012e",
+          "supplied_cwd": "data/workspace-review-fresh-b/relative_dotdot/middle/../probe/ws/9bc66ccb3cd8012e",
+          "effective_native_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/relative_dotdot/probe/ws/9bc66ccb3cd8012e/data/workspace-review-fresh-b/relative_dotdot/probe/ws/9bc66ccb3cd8012e"
+        }
+      ],
+      "workspace_matches": false,
+      "bound_native_cwd_notifications": [
+        "/workspace/work/h09-base/data/workspace-review-fresh-b/relative_dotdot/probe/ws/9bc66ccb3cd8012e/data/workspace-review-fresh-b/relative_dotdot/probe/ws/9bc66ccb3cd8012e"
+      ],
+      "outcome": "round_trip_complete",
+      "reported_workspace_files": [],
+      "offline_dispatches": 1
+    },
+    {
+      "case": "absolute_space",
+      "input_is_absolute": true,
+      "expected_workspace": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_space space \u7a7a\u683c/probe/ws/d71072ac55d32093",
+      "protocol": [
+        {
+          "method": "thread/start",
+          "process_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_space space \u7a7a\u683c/probe/ws/d71072ac55d32093",
+          "supplied_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_space space \u7a7a\u683c/probe/ws/d71072ac55d32093",
+          "effective_native_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_space space \u7a7a\u683c/probe/ws/d71072ac55d32093"
+        },
+        {
+          "method": "turn/start",
+          "process_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_space space \u7a7a\u683c/probe/ws/d71072ac55d32093",
+          "supplied_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_space space \u7a7a\u683c/probe/ws/d71072ac55d32093",
+          "effective_native_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_space space \u7a7a\u683c/probe/ws/d71072ac55d32093"
+        }
+      ],
+      "workspace_matches": true,
+      "bound_native_cwd_notifications": [
+        "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_space space \u7a7a\u683c/probe/ws/d71072ac55d32093"
+      ],
+      "outcome": "round_trip_complete",
+      "reported_workspace_files": [],
+      "offline_dispatches": 1
+    },
+    {
+      "case": "relative_space",
+      "input_is_absolute": false,
+      "expected_workspace": "/workspace/work/h09-base/data/workspace-review-fresh-b/relative_space space \u7a7a\u683c/probe/ws/b00294453f430e31",
+      "protocol": [
+        {
+          "method": "thread/start",
+          "process_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/relative_space space \u7a7a\u683c/probe/ws/b00294453f430e31",
+          "supplied_cwd": "data/workspace-review-fresh-b/relative_space space \u7a7a\u683c/probe/ws/b00294453f430e31",
+          "effective_native_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/relative_space space \u7a7a\u683c/probe/ws/b00294453f430e31/data/workspace-review-fresh-b/relative_space space \u7a7a\u683c/probe/ws/b00294453f430e31"
+        },
+        {
+          "method": "turn/start",
+          "process_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/relative_space space \u7a7a\u683c/probe/ws/b00294453f430e31",
+          "supplied_cwd": "data/workspace-review-fresh-b/relative_space space \u7a7a\u683c/probe/ws/b00294453f430e31",
+          "effective_native_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/relative_space space \u7a7a\u683c/probe/ws/b00294453f430e31/data/workspace-review-fresh-b/relative_space space \u7a7a\u683c/probe/ws/b00294453f430e31"
+        }
+      ],
+      "workspace_matches": false,
+      "bound_native_cwd_notifications": [
+        "/workspace/work/h09-base/data/workspace-review-fresh-b/relative_space space \u7a7a\u683c/probe/ws/b00294453f430e31/data/workspace-review-fresh-b/relative_space space \u7a7a\u683c/probe/ws/b00294453f430e31"
+      ],
+      "outcome": "round_trip_complete",
+      "reported_workspace_files": [],
+      "offline_dispatches": 1
+    },
+    {
+      "case": "absolute_native_mismatch",
+      "input_is_absolute": true,
+      "expected_workspace": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_native_mismatch/probe/ws/9917f1ffbae4cd99",
+      "protocol": [
+        {
+          "method": "thread/start",
+          "process_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_native_mismatch/probe/ws/9917f1ffbae4cd99",
+          "supplied_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_native_mismatch/probe/ws/9917f1ffbae4cd99",
+          "effective_native_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/different-native-directory"
+        },
+        {
+          "method": "turn/start",
+          "process_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_native_mismatch/probe/ws/9917f1ffbae4cd99",
+          "supplied_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_native_mismatch/probe/ws/9917f1ffbae4cd99",
+          "effective_native_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/different-native-directory"
+        }
+      ],
+      "workspace_matches": false,
+      "bound_native_cwd_notifications": [
+        "/workspace/work/h09-base/data/workspace-review-fresh-b/different-native-directory"
+      ],
+      "outcome": "round_trip_complete",
+      "reported_workspace_files": [],
+      "offline_dispatches": 1
+    },
+    {
+      "case": "absolute_native_missing",
+      "input_is_absolute": true,
+      "expected_workspace": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_native_missing/probe/ws/6b735fa793263631",
+      "protocol": [
+        {
+          "method": "thread/start",
+          "process_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_native_missing/probe/ws/6b735fa793263631",
+          "supplied_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_native_missing/probe/ws/6b735fa793263631",
+          "effective_native_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_native_missing/probe/ws/6b735fa793263631"
+        },
+        {
+          "method": "turn/start",
+          "process_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_native_missing/probe/ws/6b735fa793263631",
+          "supplied_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_native_missing/probe/ws/6b735fa793263631",
+          "effective_native_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_native_missing/probe/ws/6b735fa793263631"
+        }
+      ],
+      "workspace_matches": true,
+      "bound_native_cwd_notifications": [],
+      "outcome": "round_trip_complete",
+      "reported_workspace_files": [],
+      "offline_dispatches": 1
+    },
+    {
+      "case": "absolute_foreign_native",
+      "input_is_absolute": true,
+      "expected_workspace": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_foreign_native/probe/ws/2e483f0d3c7231bb",
+      "protocol": [
+        {
+          "method": "thread/start",
+          "process_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_foreign_native/probe/ws/2e483f0d3c7231bb",
+          "supplied_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_foreign_native/probe/ws/2e483f0d3c7231bb",
+          "effective_native_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_foreign_native/probe/ws/2e483f0d3c7231bb"
+        },
+        {
+          "method": "turn/start",
+          "process_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_foreign_native/probe/ws/2e483f0d3c7231bb",
+          "supplied_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_foreign_native/probe/ws/2e483f0d3c7231bb",
+          "effective_native_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_foreign_native/probe/ws/2e483f0d3c7231bb"
+        }
+      ],
+      "workspace_matches": true,
+      "bound_native_cwd_notifications": [],
+      "outcome": "round_trip_complete",
+      "reported_workspace_files": [],
+      "offline_dispatches": 1
+    },
+    {
+      "case": "absolute_native_conflict",
+      "input_is_absolute": true,
+      "expected_workspace": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_native_conflict/probe/ws/310ac8b21831eebf",
+      "protocol": [
+        {
+          "method": "thread/start",
+          "process_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_native_conflict/probe/ws/310ac8b21831eebf",
+          "supplied_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_native_conflict/probe/ws/310ac8b21831eebf",
+          "effective_native_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_native_conflict/probe/ws/310ac8b21831eebf"
+        },
+        {
+          "method": "turn/start",
+          "process_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_native_conflict/probe/ws/310ac8b21831eebf",
+          "supplied_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_native_conflict/probe/ws/310ac8b21831eebf",
+          "effective_native_cwd": "/workspace/work/h09-base/data/workspace-review-fresh-b/absolute_native_conflict/probe/ws/310ac8b21831eebf"
+        }
+      ],
+      "workspace_matches": true,
+      "bound_native_cwd_notifications": [
+        "/workspace/work/h09-base/data/workspace-review-fresh-b/conflicting-native-directory"
+      ],
+      "outcome": "round_trip_complete",
+      "reported_workspace_files": [],
+      "offline_dispatches": 1
+    }
+  ]
+}
+# ---- end raw output ----
+# exit_code: 0

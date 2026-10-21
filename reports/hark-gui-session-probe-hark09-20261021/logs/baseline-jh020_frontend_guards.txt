@@ -1,0 +1,52 @@
+# label: baseline
+# commit: dc6c5c2c17a7f0b5b07c7d41e59f43ddee75ca4f  tree-clean: yes
+# command: /workspace/work/venv-h05/bin/python scripts/verify_jh020_run_history_frontend_guards.py
+# python: 3.14.8 Linux-6.12.110+-aarch64-with-glibc2.41  node: v22.23.3
+# started: Wed Oct 21 13:33:46 UTC 2026
+# ---- raw output below ----
+{
+  "scope": "frontend_copy_only",
+  "model_calls": 0,
+  "browser": false,
+  "controls": 1,
+  "mutations": 2,
+  "detected": 2,
+  "redundant": 2,
+  "rows": [
+    {
+      "case": "detail_request_generation_removed",
+      "scenario": "detail_same_id_repeat",
+      "detected": true,
+      "redundant": false,
+      "exit": 1,
+      "error": null
+    },
+    {
+      "case": "detail_response_run_id_ignored",
+      "scenario": "detail_unrequested_run_id",
+      "detected": true,
+      "redundant": false,
+      "exit": 1,
+      "error": null
+    },
+    {
+      "case": "detail_requested_run_binding_removed",
+      "scenario": "detail_reverse_replies",
+      "detected": false,
+      "redundant": true,
+      "exit": 0,
+      "error": null
+    },
+    {
+      "case": "detail_panel_generation_removed",
+      "scenario": "detail_leave_view",
+      "detected": false,
+      "redundant": true,
+      "exit": 0,
+      "error": null
+    }
+  ],
+  "verdict": "pass"
+}
+# ---- end raw output ----
+# exit_code: 0

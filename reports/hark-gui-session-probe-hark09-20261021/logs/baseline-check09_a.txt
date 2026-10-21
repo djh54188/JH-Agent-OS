@@ -1,0 +1,147 @@
+# label: baseline
+# commit: dc6c5c2c17a7f0b5b07c7d41e59f43ddee75ca4f  tree-clean: yes
+# command: /workspace/work/venv-h05/bin/python /workspace/work/h09-check/check_probe09.py --repo . --out /workspace/work/h09-base/data/workspace-review-fresh-a
+# python: 3.14.8 Linux-6.12.110+-aarch64-with-glibc2.41  node: v22.23.3
+# started: Wed Oct 21 13:34:15 UTC 2026
+# ---- raw output below ----
+{
+  "cases": 10,
+  "failures": [
+    "absolute",
+    "relative",
+    "relative_dot",
+    "relative_dotdot",
+    "absolute_space",
+    "relative_space",
+    "absolute_native_mismatch",
+    "absolute_native_missing",
+    "absolute_foreign_native",
+    "absolute_native_conflict"
+  ],
+  "missing_cases": [],
+  "verdict": "fail",
+  "rows": [
+    {
+      "case": "absolute",
+      "expected": "verified",
+      "state": null,
+      "files": [],
+      "verified_empty": null,
+      "echo": "matched",
+      "outcome": "round_trip_complete",
+      "planned": null,
+      "dispatched": null,
+      "protocol_consistent": true,
+      "ok": false
+    },
+    {
+      "case": "relative",
+      "expected": "verified",
+      "state": null,
+      "files": [],
+      "verified_empty": null,
+      "echo": "matched",
+      "outcome": "round_trip_complete",
+      "planned": null,
+      "dispatched": null,
+      "protocol_consistent": false,
+      "ok": false
+    },
+    {
+      "case": "relative_dot",
+      "expected": "verified",
+      "state": null,
+      "files": [],
+      "verified_empty": null,
+      "echo": "matched",
+      "outcome": "round_trip_complete",
+      "planned": null,
+      "dispatched": null,
+      "protocol_consistent": false,
+      "ok": false
+    },
+    {
+      "case": "relative_dotdot",
+      "expected": "refused:probe_dir_parent_segment",
+      "refused": null,
+      "offline_dispatches": 1,
+      "ok": false
+    },
+    {
+      "case": "absolute_space",
+      "expected": "verified",
+      "state": null,
+      "files": [],
+      "verified_empty": null,
+      "echo": "matched",
+      "outcome": "round_trip_complete",
+      "planned": null,
+      "dispatched": null,
+      "protocol_consistent": true,
+      "ok": false
+    },
+    {
+      "case": "relative_space",
+      "expected": "verified",
+      "state": null,
+      "files": [],
+      "verified_empty": null,
+      "echo": "matched",
+      "outcome": "round_trip_complete",
+      "planned": null,
+      "dispatched": null,
+      "protocol_consistent": false,
+      "ok": false
+    },
+    {
+      "case": "absolute_native_mismatch",
+      "expected": "native_mismatch",
+      "state": null,
+      "files": [],
+      "verified_empty": null,
+      "echo": "matched",
+      "outcome": "round_trip_complete",
+      "planned": null,
+      "dispatched": null,
+      "ok": false
+    },
+    {
+      "case": "absolute_native_missing",
+      "expected": "native_missing",
+      "state": null,
+      "files": [],
+      "verified_empty": null,
+      "echo": "matched",
+      "outcome": "round_trip_complete",
+      "planned": null,
+      "dispatched": null,
+      "ok": false
+    },
+    {
+      "case": "absolute_foreign_native",
+      "expected": "native_foreign_only",
+      "state": null,
+      "files": [],
+      "verified_empty": null,
+      "echo": "matched",
+      "outcome": "round_trip_complete",
+      "planned": null,
+      "dispatched": null,
+      "ok": false
+    },
+    {
+      "case": "absolute_native_conflict",
+      "expected": "native_conflict",
+      "state": null,
+      "files": [],
+      "verified_empty": null,
+      "echo": "matched",
+      "outcome": "round_trip_complete",
+      "planned": null,
+      "dispatched": null,
+      "ok": false
+    }
+  ]
+}
+# ---- end raw output ----
+# exit_code: 1

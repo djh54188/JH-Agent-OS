@@ -1,0 +1,23 @@
+# label: postcommit
+# commit: 0efdc04deb5a76923c582a4df5c823946b34748c  tree-clean: yes
+# command: node tests/js/hark06_session_probe_harness.mjs
+# python: 3.14.8 Linux-6.12.110+-aarch64-with-glibc2.41  node: v22.23.3
+# started: Wed Oct 21 13:34:22 UTC 2026
+# ---- raw output below ----
+ok   open_is_read_only
+ok   blocked_never_prepares
+ok   unconfirmed_click_does_nothing
+ok   confirmed_click_once
+ok   leave_before_start
+ok   late_status_after_leave
+ok   reply_is_text
+ok   unknown_is_manual
+ok   complete_is_not_task_success
+ok   usage_unknown_not_zero
+ok   workspace_unverified_not_empty
+ok   workspace_verified_listing
+ok   inflight_polling_bounded
+ok   offline_source_labelled
+ok   data_access_start_body
+# ---- end raw output ----
+# exit_code: 0
