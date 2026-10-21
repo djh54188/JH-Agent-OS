@@ -45,8 +45,9 @@ class EchoTransport(fx.FakeCodexTransport):
     """Fake app-server that answers with whatever the probe asked it to echo."""
 
     def __init__(self, *, reply=None, foreign_text=False, foreign_usage=False,
-                 tool_item=False, usage=True, **kw):
+                 tool_item=False, usage=True, native_cwd=False, **kw):
         super().__init__(**kw)
+        self._native_cwd = native_cwd
         self._reply = reply
         self._foreign_text = foreign_text
         self._foreign_usage = foreign_usage
@@ -61,10 +62,21 @@ class EchoTransport(fx.FakeCodexTransport):
                 return found.group(0) if found else None
         return None
 
+    def _thread_start_cwd(self):
+        for call in self.calls:
+            if call["method"] == "thread/start":
+                return call["params"].get("cwd")
+        return None
+
     def notifications(self):
         token = self._asked_token()
         text = self._reply if self._reply is not None else token
         notes = []
+        # Hark-派单-09: a real app-server announces the session with its cwd.
+        # Opt-in (the Rig turns it on) so subclasses keep their own notices.
+        if self._native_cwd and self._thread_start_cwd() is not None:
+            notes.append({"method": "thread/started",
+                          "params": {"thread": {"id": fx.THREAD, "cwd": self._thread_start_cwd()}}})
         if text:
             if self._foreign_text:
                 notes.append(fx.agent_item(text, thread=fx.OTHER_THREAD, turn=fx.OTHER_TURN))
@@ -93,7 +105,7 @@ class Rig:
         if history_text is not None:
             self.history.write_text(history_text, encoding="utf-8")
         self.probe_dir = Path(probe_dir) if probe_dir else self.tmp / "probe"
-        self.transport_kw = dict(transport_kw or {})
+        self.transport_kw = dict({"native_cwd": True}, **(transport_kw or {}))
         self.transports = []
         self.deferred = []
         self.runner_mode = runner
@@ -543,6 +555,7 @@ class TestBinding(_Case):
         self.assertTrue(Path(evidence["path"]).resolve().is_relative_to((rig.probe_dir / "raw").resolve()))
         self.assertEqual(latest["tool_items"], [])
         self.assertEqual(latest["workspace_files"], [])
+        self.assertEqual((latest["workspace"]["state"], latest["workspace"]["verified_empty"]), ("verified", True))
         self.assertNotEqual(latest["record_state"], "succeeded")
 
     def test_request_is_server_decided_and_read_only(self):

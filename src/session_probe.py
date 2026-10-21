@@ -51,6 +51,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from src.agent_session import RunState, SessionAddress, SubmitRequest
 from src.agent_session_codex import CodexAgentSessionAdapter, default_codex_argv
+import src.agent_session_codex as _codex_module
 
 PROBE_SCHEMA = "jh020-gui-session-probe/v1"
 PROBE_APP_KIND = "codex"
@@ -187,6 +188,140 @@ def default_adapter_factory(registry_path: str, workspace: str):
     """The real adapter: a fresh instance that reloads the probe registry."""
     return CodexAgentSessionAdapter(cwd=workspace, registry_path=registry_path,
                                     instance_ids=(PROBE_INSTANCE,))
+
+
+# --- Hark-派单-09: workspace binding and native workspace observation ----------
+
+NATIVE_CAPTURE_PREFIX = "probe-native-"
+
+
+def resolve_probe_dir(configured: Optional[str], *, cwd: Optional[str] = None,
+                      default: Optional[Path] = None) -> Tuple[Path, str, Optional[Tuple[str, str]]]:
+    """Turn the configured probe directory into ONE absolute path, once.
+
+    Returns (path, resolution, problem). A relative spelling is anchored to the
+    server's working directory at construction, so the planned workspace, the
+    directory handed to the adapter (process cwd AND thread/turn cwd) and the
+    directory the native session should report are the same absolute string;
+    nothing is re-anchored later. `.` segments are dropped lexically (Path does
+    this); a `..` segment is refused (problem), never collapsed, so normalising
+    cannot step around an ancestor link the layout check would have refused.
+    """
+    if not configured:
+        return Path(default), "default", None
+    text = os.fspath(configured)
+    if "\0" in text:
+        return Path("."), "invalid", ("probe_dir_invalid", "试运行目录含 NUL 字节")
+    resolution = "configured_absolute" if os.path.isabs(text) else "relative_to_server_cwd"
+    joined = Path(os.path.join(cwd or os.getcwd(), text))
+    if any(part == ".." for part in joined.parts):
+        return joined, resolution, ("probe_dir_parent_segment",
+                                    f"试运行目录含父级片段 '..'（{text}）；拒绝在任何外部调用前，避免规范化绕过链接检查")
+    if not joined.is_absolute() or (os.name == "nt" and not (joined.drive and joined.root)):
+        return joined, resolution, ("probe_dir_not_absolute",
+                                    f"试运行目录无法确定为带盘符的绝对路径：{text}")
+    return joined, resolution, None
+
+
+def _same_dir(a: Optional[str], b: Optional[str]) -> bool:
+    """Exact comparison after case/separator folding only. No '..' collapsing,
+    no realpath: a native cwd spelled differently is NOT silently accepted."""
+    if not isinstance(a, str) or not isinstance(b, str) or not a or not b:
+        return False
+    fold = lambda v: os.path.normcase(v.rstrip("\\/") or v)
+    return fold(a) == fold(b)
+
+
+class _NativeCwdObserver:
+    """Wraps the real stdio transport (looked up at call time) and records
+    what the app-server's thread/start RESPONSE says the session cwd is."""
+
+    def __init__(self, inner: Any, record: Callable[[Dict[str, Any]], None]):
+        self._inner = inner
+        self._record = record
+
+    def call(self, method, params, timeout=60):
+        result = self._inner.call(method, params, timeout)
+        if method == "thread/start":
+            body = result.get("result") if isinstance(result, dict) else None
+            body = body if isinstance(body, dict) else {}
+            thread = body.get("thread") if isinstance(body.get("thread"), dict) else {}
+            fact = {"source": "thread/start.response", "thread_id": thread.get("id"),
+                    "supplied_cwd": (params or {}).get("cwd")}
+            if "cwd" in body:
+                fact["cwd"] = body.get("cwd")
+            if "cwd" in thread:
+                fact["thread_cwd"] = thread.get("cwd")
+            try:
+                self._record(fact)
+            except Exception:
+                pass                   # observation only; never changes the dispatch
+        return result
+
+    def __getattr__(self, name):
+        return getattr(self._inner, name)
+
+
+def native_cwd_facts(frames: List[dict]) -> List[Dict[str, Any]]:
+    """thread/started notifications (the native session's own statement)."""
+    out = []
+    for frame in frames:
+        if not isinstance(frame, dict) or frame.get("method") != "thread/started":
+            continue
+        thread = (frame.get("params") or {}).get("thread")
+        if not isinstance(thread, dict):
+            continue
+        out.append({"source": "thread/started.notification", "thread_id": thread.get("id"),
+                    "cwd": thread.get("cwd") if "cwd" in thread else None,
+                    "has_cwd": "cwd" in thread})
+    return out
+
+
+def same_thread_facts(facts: List[Dict[str, Any]], thread_id: Optional[str]) -> List[Dict[str, Any]]:
+    """Only the bound thread's own statements count for its workspace."""
+    return [f for f in facts if thread_id and f.get("thread_id") == thread_id]
+
+
+def distinct_dirs(values: List[str]) -> set:
+    return {os.path.normcase(v.rstrip("\\/") or v) for v in values}
+
+
+def classify_workspace(planned: Optional[str], dispatched: Any, thread_id: Optional[str],
+                       facts: List[Dict[str, Any]], capture_state: str,
+                       evidence_state: Optional[str]) -> Tuple[str, str]:
+    """(state, reason). Only `verified` lets a listing speak for the native
+    workspace; every other state means 'not verified', never 'empty'."""
+    if not planned:
+        return "unverifiable", "无固定标识，无法确定计划工作区"
+    if not isinstance(dispatched, str) or not os.path.isabs(dispatched):
+        return "dispatch_not_absolute", f"派发给适配器的工作区不是绝对路径：{dispatched!r}"
+    if not _same_dir(dispatched, planned):
+        return "dispatch_mismatch", "派发工作区与计划工作区不一致"
+    if capture_state == "invalid":
+        return "native_evidence_invalid", "服务端捕获的原生目录记录不可读或损坏"
+    if evidence_state != "verified":
+        # The service capture alone cannot verify: without the verified raw
+        # stream a contradicting native notification could go unseen.
+        return "native_evidence_unverified", f"原始证据未核实（{evidence_state}）"
+    if not thread_id:
+        return "native_thread_unknown", "登记未给出原生 thread，无法确定同线程目录"
+    own = same_thread_facts(facts, thread_id)
+    values = [f.get(k) for f in own for k in ("cwd", "thread_cwd") if isinstance(f.get(k), str) and f.get(k)]
+    bad = [f for f in own for k in ("cwd", "thread_cwd") if k in f and f.get(k) is not None
+           and not isinstance(f.get(k), str)]
+    foreign = [f for f in facts if f not in own
+               and any(isinstance(f.get(k), str) for k in ("cwd", "thread_cwd"))]
+    if bad:
+        return "native_conflict", "同线程原生目录字段类型无效"
+    if not values:
+        if foreign:
+            return "native_foreign_only", "只有外来线程的原生目录，本线程无依据"
+        return "native_missing", "原生目录缺失"
+    if len(distinct_dirs(values)) > 1:
+        return "native_conflict", "同线程原生目录相互矛盾"
+    if not _same_dir(values[0], planned):
+        return "native_mismatch", f"原生目录与计划工作区不一致：{values[0]}"
+    return "verified", "计划、派发与原生目录一致"
 
 
 def _thread_runner(job: Callable[[], None]) -> None:
@@ -519,8 +654,13 @@ class SessionProbeService:
                  runner: Optional[Callable[[Callable[[], None]], None]] = None,
                  clock: Callable[[], float] = time.time):
         self.config = config
-        base = Path(config.probe_dir) if config.probe_dir else (
-            Path(__file__).resolve().parents[1] / "data" / "gui" / "session-probe")
+        base, resolution, path_problem = resolve_probe_dir(
+            config.probe_dir, default=Path(__file__).resolve().parents[1] / "data" / "gui" / "session-probe")
+        #: Hark-派单-09: resolved ONCE to an absolute path; every later use
+        #: (layout checks, lock, planned/dispatched workspace) is this string.
+        self.probe_dir_configured = config.probe_dir
+        self.probe_dir_resolution = resolution
+        self._path_problem = path_problem
         self.probe_dir = base
         self.registry_path = base / REGISTRY_NAME
         self.raw_root = base / RAW_DIR_NAME
@@ -528,7 +668,7 @@ class SessionProbeService:
         self.claim_path = base / CLAIM_NAME
         self.history_runs_path = Path(history_runs_path) if history_runs_path else None
         self._reader_factory = reader_factory
-        self._adapter_factory = adapter_factory or default_adapter_factory
+        self._adapter_factory = adapter_factory or self._observed_default_factory
         # Shown on every status so an offline/synthetic preview can never be
         # mistaken for a real model result.
         self.adapter_source = "real_codex_adapter" if adapter_factory is None else "injected_offline_adapter"
@@ -559,6 +699,9 @@ class SessionProbeService:
     def _layout_blockers(self) -> List[Dict[str, str]]:
         """Static isolation of the writable source; reads metadata only."""
         out: List[Dict[str, str]] = []
+        if self._path_problem:
+            # Refused before ANY other check touches the path.
+            return [{"code": self._path_problem[0], "message": self._path_problem[1]}]
         conflict = history_conflict(self.registry_path, self.probe_dir, self.history_runs_path)
         if conflict:
             out.append({"code": "probe_registry_is_history_source",
@@ -627,6 +770,10 @@ class SessionProbeService:
             "approval_policy": "never（审批请求一律拒绝）",
             "instruction_template": probe_instruction("JH-PROBE-<服务端生成>"),
             "workspace_root": str(self.workspace_root),
+            "workspace_binding": {"configured": self.probe_dir_configured,
+                                  "resolution": self.probe_dir_resolution,
+                                  "resolved_probe_dir": str(self.probe_dir),
+                                  "note": "计划、派发（进程 cwd 与 thread/turn cwd）使用同一绝对路径"},
             "registry": str(self.registry_path), "evidence_root": str(self.raw_root),
             "budget": ("适配器不支持硬 token 预算；真实调用会使用模型额度"
                        if self.config.budget_tokens is None else
@@ -672,6 +819,8 @@ class SessionProbeService:
         else:
             outcome = "unknown_manual"
         workspace = self.workspace_root / probe_id if token else None
+        observation = self._workspace_observation(probe_id if token else None, workspace,
+                                                  snapshot.get("workspace"), thread_id, evidence)
         return {
             "run_id": run["run_id"], "probe_id": probe_id, "token": token,
             "events": events, "record_state": run.get("record_state"),
@@ -687,11 +836,100 @@ class SessionProbeService:
             "usage_state": "bound" if bound else ("unbound" if usage.get("turn") or usage.get("thread_total")
                                                   else "unknown"),
             "evidence": evidence, "tool_items": tools,
-            "workspace_files": _listing(workspace) if workspace else None,
+            # Hark-派单-09: a listing only when the native workspace is VERIFIED
+            # to be the planned one; otherwise None ("not verified", never "empty").
+            "workspace_files": observation["files"],
+            "workspace": observation,
             "unverified": run.get("unverified") or [],
             "declared_status": run.get("declared_status"),
             "outcome": outcome,
             "note": "试运行往返完成只表示固定标识往返；不授予任何任务成功（Task succeeded）",
+        }
+
+    # -- Hark-派单-09: native workspace capture and observation ---------------
+    def _capture_path(self, probe_id: str) -> Path:
+        return self.raw_root / f"{NATIVE_CAPTURE_PREFIX}{probe_id}.json"
+
+    def _observed_default_factory(self, registry_path: str, workspace: str):
+        """The real adapter, with ONLY its stdio transport wrapped so the
+        thread/start response cwd is recorded. Same argv, same process cwd."""
+        probe_id = Path(workspace).name
+        capture = self._capture_path(probe_id)
+
+        def record(fact: Dict[str, Any]) -> None:
+            if source_dir_problem(self.probe_dir) or dir_problem(self.raw_root) or file_identity_problem(capture):
+                return                                    # never write through a refused layout
+            self.raw_root.mkdir(exist_ok=True)
+            if dir_problem(self.raw_root) or source_dir_problem(self.probe_dir):
+                return
+            payload = json.dumps({"probe_id": probe_id, "facts": [fact]}, ensure_ascii=False,
+                                 sort_keys=True).encode("utf-8")
+            handle, tmp = tempfile.mkstemp(dir=str(self.raw_root), prefix=".probe-native-", suffix=".tmp")
+            try:
+                with os.fdopen(handle, "wb") as stream:
+                    stream.write(payload)
+                    stream.flush()
+                    os.fsync(stream.fileno())
+                os.replace(tmp, capture)
+            finally:
+                if os.path.exists(tmp):
+                    os.unlink(tmp)
+
+        def transport():
+            inner = _codex_module.CodexStdioTransport(default_codex_argv(), workspace)
+            return _NativeCwdObserver(inner, record)
+
+        return CodexAgentSessionAdapter(cwd=workspace, registry_path=registry_path,
+                                        instance_ids=(PROBE_INSTANCE,), transport_factory=transport)
+
+    def _read_capture(self, probe_id: str) -> Tuple[str, List[Dict[str, Any]]]:
+        path = self._capture_path(probe_id)
+        if not os.path.lexists(path):
+            return "absent", []
+        if file_identity_problem(path):
+            return "invalid", []
+        try:
+            data = json.loads(path.read_bytes().decode("utf-8"))
+        except (OSError, UnicodeDecodeError, ValueError):
+            return "invalid", []
+        facts = data.get("facts") if isinstance(data, dict) else None
+        if data.get("probe_id") != probe_id or not isinstance(facts, list) \
+                or not all(isinstance(f, dict) for f in facts):
+            return "invalid", []
+        return "present", facts
+
+    def _workspace_observation(self, probe_id: Optional[str], workspace: Optional[Path],
+                               dispatched: Any, thread_id: Optional[str],
+                               evidence: Dict[str, Any]) -> Dict[str, Any]:
+        planned = str(workspace) if workspace else None
+        frames: List[dict] = []
+        if evidence.get("state") == "verified" and evidence.get("path"):
+            try:
+                for line in Path(evidence["path"]).read_bytes().decode("utf-8").splitlines():
+                    try:
+                        frames.append(json.loads(line))
+                    except ValueError:
+                        continue
+            except (OSError, UnicodeDecodeError):
+                frames = []
+        facts = native_cwd_facts(frames)
+        capture_state, captured = self._read_capture(probe_id) if probe_id else ("absent", [])
+        facts = facts + [dict(f, source=f.get("source") or "thread/start.response") for f in captured]
+        state, reason = classify_workspace(planned, dispatched, thread_id, facts, capture_state,
+                                           evidence.get("state"))
+        files = _listing(workspace) if (state == "verified" and workspace) else None
+        return {
+            "state": state, "verified": state == "verified", "reason": reason,
+            "planned": planned, "dispatched": dispatched if isinstance(dispatched, str) else None,
+            "native_sources": [{"source": f.get("source"), "thread_id": f.get("thread_id"),
+                                "same_thread": bool(thread_id) and f.get("thread_id") == thread_id,
+                                "cwd": f.get("cwd"), "thread_cwd": f.get("thread_cwd")}
+                               for f in facts],
+            "capture": capture_state,
+            "files": files,
+            "verified_empty": (files == []) if state == "verified" else None,
+            "scope": ("原生会话目录（已与计划、派发一致核实）" if state == "verified"
+                      else "未核实：不对实际工作区内容作任何断言"),
         }
 
     def _claim_view(self) -> Dict[str, Any]:

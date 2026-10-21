@@ -698,8 +698,17 @@ JH.views = (function () {
     box.appendChild(C().field("path", (latest.evidence || {}).path, { mono: true }));
     box.appendChild(C().field("工具调用", latest.tool_items === null || latest.tool_items === undefined
       ? "未核验" : (latest.tool_items.length ? latest.tool_items.join(", ") : "无")));
-    box.appendChild(C().field("隔离工作区文件", latest.workspace_files === null || latest.workspace_files === undefined
-      ? "未核验" : (latest.workspace_files.length ? latest.workspace_files.join(", ") : "无")));
+    // Hark-派单-09: a listing speaks for the native workspace only when the
+    // server verified plan == dispatch == native cwd; otherwise "未核实", never "无".
+    const ws = latest.workspace || null;
+    const wsVerified = !!(ws && ws.verified === true && ws.state === "verified" && Array.isArray(latest.workspace_files));
+    box.appendChild(C().field("工作区核实", ws
+      ? (wsVerified ? "已核实（计划、派发与原生目录一致）" : "未核实（" + ws.state + "）：" + (ws.reason || ""))
+      : "未核实（无工作区观测）"));
+    if (ws && ws.planned) box.appendChild(C().field("计划工作区", ws.planned, { mono: true }));
+    box.appendChild(C().field("隔离工作区文件", !wsVerified
+      ? "未核实：不对实际工作区内容作断言"
+      : (latest.workspace_files.length ? latest.workspace_files.join(", ") : "无（已核实为空）")));
     box.appendChild(C().bulletList("未验证事项", latest.unverified));
     const claim = C().el("div", "declared");
     claim.appendChild(C().kindTag("claim", "✎ 执行方声明"));

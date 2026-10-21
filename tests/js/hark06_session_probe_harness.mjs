@@ -263,6 +263,36 @@ async function scenarioCompleteIsNotTaskSuccess() {
   return { disclaimer: true };
 }
 
+// Hark-派单-09: workspace observation is shown with its source and never as "empty" unverified.
+async function scenarioWorkspaceUnverifiedNotEmpty() {
+  const w = newWorld();
+  await openProbe(w, statusPayload({ latest: latest({ workspace_files: null,
+    workspace: { state: "native_mismatch", verified: false, reason: "原生目录与计划工作区不一致",
+                 planned: "/p/ws/0123456789abcdef", files: null, verified_empty: null } }) }));
+  const text = w.root.textContent;
+  check(text.includes("未核实（native_mismatch）"), "unverified workspace state not shown");
+  check(text.includes("未核实：不对实际工作区内容作断言"), "unverified workspace not marked as no assertion");
+  check(!text.includes("无（已核实为空）"), "unverified workspace shown as verified empty");
+  check(text.includes("不等于任务验收成功"), "echo outcome disclaimer lost");
+  const legacy = newWorld();
+  await openProbe(legacy, statusPayload({ latest: latest({ workspace_files: [] }) }));
+  check(legacy.root.textContent.includes("未核实（无工作区观测）"), "payload without observation shown as verified");
+  check(!legacy.root.textContent.includes("无（已核实为空）"), "payload without observation shown as empty");
+  return { unverified: true };
+}
+
+async function scenarioWorkspaceVerifiedListing() {
+  const w = newWorld();
+  await openProbe(w, statusPayload({ latest: latest({ workspace_files: [],
+    workspace: { state: "verified", verified: true, reason: "一致", planned: "/p/ws/0123456789abcdef",
+                 files: [], verified_empty: true } }) }));
+  const text = w.root.textContent;
+  check(text.includes("已核实（计划、派发与原生目录一致）") && text.includes("无（已核实为空）"),
+        "verified empty workspace not shown");
+  check(text.includes("/p/ws/0123456789abcdef"), "planned workspace path missing");
+  return { verified: true };
+}
+
 async function scenarioUsageUnknownNotZero() {
   const w = newWorld();
   await openProbe(w, statusPayload({ latest: latest({ usage: null, usage_state: "unknown" }) }));
@@ -339,6 +369,8 @@ const SCENARIOS = [
   ["unknown_is_manual", scenarioUnknownIsManual],
   ["complete_is_not_task_success", scenarioCompleteIsNotTaskSuccess],
   ["usage_unknown_not_zero", scenarioUsageUnknownNotZero],
+  ["workspace_unverified_not_empty", scenarioWorkspaceUnverifiedNotEmpty],
+  ["workspace_verified_listing", scenarioWorkspaceVerifiedListing],
   ["inflight_polling_bounded", scenarioInflightPollingBounded],
   ["offline_source_labelled", scenarioOfflineSourceLabelled],
   ["data_access_start_body", scenarioDataAccessBody],
