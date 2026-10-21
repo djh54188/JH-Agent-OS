@@ -521,7 +521,7 @@ class TestCoreHoldsNoConcreteAdapter(unittest.TestCase):
     # Real adapters implement the contract; everything else is core/orchestration
     # and must stay decoupled from it. Allowlisting a name is not enough — the
     # consumer must actually subclass AgentSessionAdapter (checked below).
-    CONTRACT_CONSUMERS = frozenset({"agent_session_codex.py"})
+    CONTRACT_CONSUMERS = frozenset({"agent_session_codex.py", "agent_session_gemini.py"})
 
     CONTRACT_MODULE = "src.agent_session"
     # Literal call targets that import a module by name. Only a constant string
@@ -607,6 +607,8 @@ class TestCoreHoldsNoConcreteAdapter(unittest.TestCase):
         # allowlisted module must expose an AgentSessionAdapter subclass.
         from src.agent_session_codex import CodexAgentSessionAdapter
         self.assertTrue(issubclass(CodexAgentSessionAdapter, AgentSessionAdapter))
+        from src.agent_session_gemini import GeminiCliAgentSessionAdapter
+        self.assertTrue(issubclass(GeminiCliAgentSessionAdapter, AgentSessionAdapter))
 
     # Every static form that reaches the contract module, plus the literal
     # dynamic forms a bounded AST check can see. The computed-name cases are
@@ -663,6 +665,7 @@ class TestCoreHoldsNoConcreteAdapter(unittest.TestCase):
 
     def test_the_real_adapter_is_flagged(self):
         self.assertTrue(self._imports_the_contract(ROOT / "src" / "agent_session_codex.py"))
+        self.assertTrue(self._imports_the_contract(ROOT / "src" / "agent_session_gemini.py"))
 
     def test_contract_module_has_no_native_app_imports(self):
         text = (ROOT / "src" / "agent_session.py").read_text(encoding="utf-8-sig")
