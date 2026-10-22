@@ -53,3 +53,12 @@ python scripts/verify_hark11_gemini_bridge.py --mode real --authorize-real-model
 ```
 
 `host-probe` 不调用模型；`real` 会产生真实模型调用和费用，需另行授权，云端未运行。退出码：0 全部检查通过，1 运行完成但有检查未过，2 无法运行。
+
+## 准入整改（Hark-派单-12）
+
+- 登记准入：`evidence_root/registry.lock` 排他锁（线程内按路径一把锁＋跨进程 flock / Windows msvcrt.locking），从幂等判定持有到 `dispatched` 记录写入；等待超过 `registry_lock_timeout` 秒即以 `RegistryBusy` 拒绝，不无锁继续。每次 submit 在锁内按磁盘上的**当前**登记重建视图。
+- 登记合法性：逐条校验字段集合与类型、run_id/原生会话/摘要格式、指纹＝sha256(快照)、快照与绑定一致、事件允许的状态、每个 run 的事件顺序 reserved → dispatched|dispatch_failed → collected、后续记录重复保留的绑定、键与原生会话各只对应一个 run。登记只追加：本对象读过/写过的字节必须仍是前缀。任何不合规或不可读即对本对象粘滞拒绝，不修复、不重排、不补发。
+- 工作区观测：清单遍历遇到无法列出/读取一律报错；启动前失败 → `WorkspaceUnobservable`，零派发零登记；收集时失败 → failed，`workspace_unchanged` 为 null（未证明），不宣称未修改。FIFO 等特殊文件只记类型不打开。
+- 原生事件：按 0.65.0 字段形状校验，错形状给出诊断并失败，不抛未处理异常；非只读工具只有宿主自己的 `status:"error"` 才算确认拒绝，其他状态列入 `unconfirmed_tool_requests` 并失败。宿主聊天记录首行非对象时只给诊断。
+- 路径：在任何解析之前按输入本身要求绝对路径；相对（不论目录是否存在）、Windows 根相对 `\ws`、驱动器相对 `C:ws`、含 `..` 均在派发前拒绝。Windows 形式仅在 Linux 上以分类器和合成字符串验证，**不是 Windows 实测**。
+- 回放夹具：占位符在解码后的 JSON 值里替换并以 JSON.stringify 兼容格式重编码；对 11 捕获的原生流逐字节复现（sha256 be3ed400…）。

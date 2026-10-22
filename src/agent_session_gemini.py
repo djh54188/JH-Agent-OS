@@ -37,12 +37,16 @@ host's claim, never task success.
 """
 from __future__ import annotations
 
+import contextlib
 import glob as _glob
 import hashlib
 import json
+import ntpath
 import os
 import re
+import stat as _stat
 import subprocess
+import threading
 import time
 import uuid
 from dataclasses import dataclass, field
@@ -127,8 +131,16 @@ class RegistryUnavailable(RuntimeError):
     """The dispatch record could not be established before dispatch."""
 
 
+class RegistryBusy(RegistryUnavailable):
+    """Another user holds the registry lock; this submit is refused, not queued."""
+
+
 class HostRestrictionUnavailable(RuntimeError):
     """The host-side read-only restriction cannot be put in place for this run."""
+
+
+class WorkspaceUnobservable(RuntimeError):
+    """The target tree could not be fully observed before launch; nothing dispatched."""
 
 
 # --------------------------------------------------------------------------
@@ -171,6 +183,56 @@ def digest_matches(expected: Optional[str], actual: Optional[str]) -> bool:
     return bool(expected) and expected == actual
 
 
+#: tool_result.status values the pinned CLI emits (0.65.0: `isError ? "error" : "success"`).
+KNOWN_TOOL_STATUSES = ("success", "error")
+
+
+def tool_status_confirms_denial(status: Any) -> bool:
+    """Only the host's own `error` status confirms a non-read-only call was refused."""
+    return isinstance(status, str) and status == "error"
+
+
+def on_walk_error(exc: OSError) -> None:
+    """A directory that cannot be listed makes the manifest incomplete: fatal."""
+    raise exc
+
+
+def registry_prefix_intact(prefix: Tuple[int, str], data: bytes) -> bool:
+    """The registry is append-only: what this adapter last saw must still be its prefix."""
+    length, digest = prefix
+    return len(data) >= length and hashlib.sha256(data[:length]).hexdigest() == digest
+
+
+def workspace_path_problem(path: Any, flavor: Optional[str] = None) -> Optional[str]:
+    """Why `path` is not an absolute workspace path, checked on the input itself
+    BEFORE anything resolves it against the current directory. `flavor` is
+    "nt" or "posix" (default: this host). On Windows a root-relative (`\\ws`)
+    or drive-relative (`C:ws`) input is refused like any relative one."""
+    flavor = flavor or ("nt" if os.name == "nt" else "posix")
+    if not isinstance(path, str) or not path:
+        return "workspace must be a non-empty string"
+    if "\x00" in path:
+        return "workspace must not contain NUL"
+    if flavor == "nt":
+        if path.startswith(("\\\\?\\", "\\\\.\\", "//?/", "//./")):
+            return "workspace: device / extended-length paths are not supported"
+        drive, rest = ntpath.splitdrive(path)
+        if not drive:
+            if rest[:1] in ("\\", "/"):
+                return "workspace must be an absolute path (Windows root-relative input refused)"
+            return "workspace must be an absolute path (relative input refused)"
+        if len(drive) == 2 and drive[1] == ":" and rest[:1] not in ("\\", "/"):
+            return "workspace must be an absolute path (Windows drive-relative input refused)"
+        parts = re.split(r"[\\/]", rest)
+    else:
+        if not path.startswith("/"):
+            return "workspace must be an absolute path (relative input refused)"
+        parts = path.split("/")
+    if ".." in parts:
+        return "workspace must not contain '..' components"
+    return None
+
+
 # --------------------------------------------------------------------------
 # File helpers (bytes on disk are the evidence)
 # --------------------------------------------------------------------------
@@ -194,9 +256,17 @@ def write_bytes(path: str, data: bytes) -> None:
 
 def tree_manifest(root: str) -> Dict[str, Any]:
     """(relative path -> kind/size/sha256) for every entry under root, without
-    following symlinks. Used to prove the target tree was not modified."""
+    following symlinks. Used to prove the target tree was not modified.
+
+    Any directory that cannot be listed, entry that cannot be stat'ed or file
+    that cannot be read raises OSError: an incomplete manifest is never
+    returned, because two equally incomplete manifests would compare equal."""
     entries: Dict[str, Any] = {}
-    for dirpath, dirnames, filenames in os.walk(root, followlinks=False):
+
+    def _onerror(exc: OSError) -> None:
+        on_walk_error(exc)
+
+    for dirpath, dirnames, filenames in os.walk(root, onerror=_onerror, followlinks=False):
         dirnames.sort()
         rel_dir = os.path.relpath(dirpath, root)
         for name in sorted(dirnames):
@@ -209,11 +279,15 @@ def tree_manifest(root: str) -> Dict[str, Any]:
         for name in sorted(filenames):
             full = os.path.join(dirpath, name)
             rel = os.path.normpath(os.path.join(rel_dir, name)).replace(os.sep, "/")
-            if os.path.islink(full):
+            mode = os.lstat(full).st_mode
+            if _stat.S_ISLNK(mode):
                 entries[rel] = {"kind": "link", "target": os.readlink(full)}
-                continue
-            size, digest = sha256_file(full)
-            entries[rel] = {"kind": "file", "size": size, "sha256": digest}
+            elif _stat.S_ISREG(mode):
+                size, digest = sha256_file(full)
+                entries[rel] = {"kind": "file", "size": size, "sha256": digest}
+            else:
+                # FIFOs, sockets, devices: recorded, never opened (opening could block).
+                entries[rel] = {"kind": "special", "mode": _stat.S_IFMT(mode)}
     return entries
 
 
@@ -226,8 +300,9 @@ def _within(child: str, parent: str) -> bool:
 def workspace_preflight(workspace: str, evidence_root: str, cli_home: str) -> List[str]:
     """Reasons the host restriction cannot be trusted for this workspace."""
     problems: List[str] = []
-    if not isinstance(workspace, str) or not os.path.isabs(workspace):
-        return ["workspace must be an absolute path"]
+    path_problem = workspace_path_problem(workspace)
+    if path_problem:
+        return [path_problem]
     if not os.path.isdir(workspace):
         return [f"workspace {workspace!r} is not a directory"]
     if _within(evidence_root, workspace) or _within(workspace, evidence_root):
@@ -254,8 +329,56 @@ def workspace_preflight(workspace: str, evidence_root: str, cli_home: str) -> Li
 # Native stream parsing
 # --------------------------------------------------------------------------
 
+#: Required and optional field shapes of each native event (pinned 0.65.0
+#: StreamJsonFormatter / runNonInteractive). A wrong shape is a diagnosed
+#: problem, never an exception and never silently accepted.
+_EVENT_REQUIRED: Dict[str, Dict[str, type]] = {
+    "init": {"session_id": str, "model": str},
+    "message": {"role": str, "content": str},
+    "tool_use": {"tool_name": str, "tool_id": str, "parameters": dict},
+    "tool_result": {"tool_id": str, "status": str},
+    "error": {"severity": str, "message": str},
+    "result": {"status": str},
+}
+_EVENT_OPTIONAL: Dict[str, Dict[str, type]] = {
+    "message": {"delta": bool},
+    "tool_result": {"output": str, "error": dict},
+    "result": {"stats": dict, "error": dict},
+}
+
+
+_NON_EMPTY: Dict[str, Tuple[str, ...]] = {
+    "init": ("session_id",), "tool_use": ("tool_name", "tool_id"),
+    "tool_result": ("tool_id", "status"), "result": ("status",),
+}
+
+
+def _type_name(value: Any) -> str:
+    return "null" if value is None else type(value).__name__
+
+
+def event_shape_problems(event: Dict[str, Any]) -> List[str]:
+    kind = event["type"]
+    problems: List[str] = []
+    if "timestamp" in event and not isinstance(event["timestamp"], str):
+        problems.append(f"field 'timestamp' is {_type_name(event['timestamp'])}, expected str")
+    for name, kind_type in _EVENT_REQUIRED[kind].items():
+        if name not in event:
+            problems.append(f"{kind}: required field {name!r} missing")
+        elif not isinstance(event[name], kind_type) or isinstance(event[name], bool) != (kind_type is bool):
+            problems.append(f"{kind}: field {name!r} is {_type_name(event[name])}, expected {kind_type.__name__}")
+        elif name in _NON_EMPTY.get(kind, ()) and not event[name]:
+            problems.append(f"{kind}: field {name!r} is empty")
+    for name, kind_type in _EVENT_OPTIONAL.get(kind, {}).items():
+        if name in event and event[name] is not None and (
+                not isinstance(event[name], kind_type) or isinstance(event[name], bool) != (kind_type is bool)):
+            problems.append(f"{kind}: field {name!r} is {_type_name(event[name])}, expected {kind_type.__name__}")
+    return problems
+
+
 def parse_stream(data: bytes) -> Tuple[List[Dict[str, Any]], List[str]]:
-    """Native JSONL -> events, plus problems (never repaired or skipped silently)."""
+    """Native JSONL -> events, plus problems (never repaired or skipped silently).
+    An event whose fields have the wrong shape is reported and left out."""
     events: List[Dict[str, Any]] = []
     problems: List[str] = []
     try:
@@ -267,20 +390,30 @@ def parse_stream(data: bytes) -> Tuple[List[Dict[str, Any]], List[str]]:
             continue
         try:
             value = json.loads(line)
-        except json.JSONDecodeError:
+        except (json.JSONDecodeError, RecursionError):
             problems.append(f"line {number}: not JSON")
             continue
-        if not isinstance(value, dict) or value.get("type") not in NATIVE_EVENT_TYPES:
-            problems.append(f"line {number}: not a native stream-json event")
+        if not isinstance(value, dict):
+            problems.append(f"line {number}: not a native stream-json event ({_type_name(value)})")
+            continue
+        kind = value.get("type")
+        if not isinstance(kind, str) or kind not in NATIVE_EVENT_TYPES:
+            problems.append(f"line {number}: not a native stream-json event (type {_type_name(kind)})")
+            continue
+        shape = event_shape_problems(value)
+        if shape:
+            problems.extend(f"line {number}: {p}" for p in shape)
             continue
         events.append(value)
     return events, problems
 
 
 def associate(events: List[Dict[str, Any]], session_id: str) -> Dict[str, Any]:
-    """Bind the native events to this run's session and pair tool calls."""
+    """Bind the native events to this run's session and pair tool calls.
+    `events` are shape-checked by parse_stream."""
     out: Dict[str, Any] = {"problems": [], "init": None, "result": None, "tool_calls": [],
-                           "assistant_text": "", "errors": [], "denied_requests": []}
+                           "assistant_text": "", "errors": [], "denied_requests": [],
+                           "unconfirmed_requests": []}
     inits = [e for e in events if e["type"] == "init"]
     if len(inits) != 1:
         out["problems"].append(f"expected exactly one init event, saw {len(inits)}")
@@ -304,18 +437,15 @@ def associate(events: List[Dict[str, Any]], session_id: str) -> Dict[str, Any]:
     for event in events:
         kind = event["type"]
         if kind == "tool_use":
-            tool_id = event.get("tool_id")
-            if not isinstance(tool_id, str) or not tool_id:
-                out["problems"].append("tool_use without tool_id")
-                continue
+            tool_id = event["tool_id"]
             if tool_id in calls:
                 out["problems"].append(f"duplicate tool_use id {tool_id!r}")
                 continue
-            calls[tool_id] = {"tool_id": tool_id, "tool_name": event.get("tool_name"),
-                              "parameters": event.get("parameters"), "result": None}
+            calls[tool_id] = {"tool_id": tool_id, "tool_name": event["tool_name"],
+                              "parameters": event["parameters"], "result": None}
             order.append(tool_id)
         elif kind == "tool_result":
-            tool_id = event.get("tool_id")
+            tool_id = event["tool_id"]
             call = calls.get(tool_id)
             if call is None:
                 out["problems"].append(f"tool_result {tool_id!r} has no preceding tool_use")
@@ -323,27 +453,32 @@ def associate(events: List[Dict[str, Any]], session_id: str) -> Dict[str, Any]:
             if call["result"] is not None:
                 out["problems"].append(f"tool_result {tool_id!r} reported twice")
                 continue
-            call["result"] = {"status": event.get("status"),
+            call["result"] = {"status": event["status"],
                               "output": event.get("output") if "output" in event else None,
                               "error": event.get("error")}
-        elif kind == "message" and event.get("role") == "assistant":
-            content = event.get("content")
-            if isinstance(content, str):
-                texts.append(content)
+        elif kind == "message" and event["role"] == "assistant":
+            texts.append(event["content"])
         elif kind == "error":
-            out["errors"].append({"severity": event.get("severity"), "message": event.get("message")})
+            out["errors"].append({"severity": event["severity"], "message": event["message"]})
     for tool_id in order:
         call = calls[tool_id]
+        status = (call["result"] or {}).get("status")
         if call["result"] is None:
             out["problems"].append(f"tool_use {tool_id!r} has no tool_result")
         if not tool_name_is_permitted(call["tool_name"]):
-            # The host must have refused it. A success here is a breach.
-            status = (call["result"] or {}).get("status")
+            # The host must have refused it. A success here is a breach; anything
+            # but the host's own "error" leaves the refusal unconfirmed.
             if status == "success":
                 out["problems"].append(
                     f"non-read-only tool {call['tool_name']!r} reported success: host restriction breached")
-            else:
+            elif tool_status_confirms_denial(status):
                 out["denied_requests"].append(call["tool_name"])
+            else:
+                out["unconfirmed_requests"].append(call["tool_name"])
+                out["problems"].append(
+                    f"non-read-only tool {call['tool_name']!r} result status {status!r} does not confirm a refusal")
+        elif call["result"] is not None and status not in KNOWN_TOOL_STATUSES:
+            out["problems"].append(f"tool_result {tool_id!r} has unrecognized status {status!r}")
         out["tool_calls"].append(call)
     out["assistant_text"] = "".join(texts)
     return out
@@ -380,18 +515,26 @@ def extract_source_refs(text: str, workspace: str) -> List[Dict[str, Any]]:
     return refs
 
 
-def find_chat_record(cli_home: str, session_id: str) -> Optional[str]:
-    """The host's own session record for this session id, if it wrote one."""
+def find_chat_record(cli_home: str, session_id: str) -> Tuple[Optional[str], List[str]]:
+    """The host's own session record for this session id, if it wrote one,
+    plus diagnostics for candidate records that could not be read as one."""
     pattern = os.path.join(cli_home, ".gemini", "tmp", "*", "chats", "session-*.jsonl")
+    notes: List[str] = []
     for path in sorted(_glob.glob(pattern)):
         try:
             with open(path, "rb") as fh:
                 first = fh.readline()
-            if json.loads(first.decode("utf-8")).get("sessionId") == session_id:
-                return path
-        except (OSError, ValueError, UnicodeDecodeError):
+            head = json.loads(first.decode("utf-8"))
+        except (OSError, ValueError, UnicodeDecodeError, RecursionError) as exc:
+            notes.append(f"host chat record candidate {path!r} unreadable: {type(exc).__name__}")
             continue
-    return None
+        if not isinstance(head, dict):
+            notes.append(f"host chat record candidate {path!r}: first line is {_type_name(head)}, "
+                         "not a JSON object")
+            continue
+        if head.get("sessionId") == session_id:
+            return path, notes
+    return None, notes
 
 
 def usage_from_result(result: Optional[Dict[str, Any]]) -> Tuple[Dict[str, Any], List[str]]:
@@ -428,6 +571,7 @@ class GeminiCliConfig:
     extra_env: Tuple[Tuple[str, str], ...] = ()   # non-secret overrides (tests / offline probes)
     auth_type: Optional[str] = None        # host auth method name, e.g. "gemini-api-key" (not a secret)
     version_timeout: float = 30.0
+    registry_lock_timeout: float = 30.0   # bounded wait for the registry lock, then refuse
 
 
 def locked_settings(config: GeminiCliConfig) -> Dict[str, Any]:
@@ -496,6 +640,221 @@ def default_version_probe(config: GeminiCliConfig) -> str:
 # Adapter
 # --------------------------------------------------------------------------
 
+# --------------------------------------------------------------------------
+# Registry: append-only JSONL under an exclusive lock
+# --------------------------------------------------------------------------
+
+REGISTRY_EVENTS = ("reserved", "dispatched", "dispatch_failed", "collected")
+_RUN_ID = re.compile(r"^gemini-run-[0-9a-f]{12}$")
+_UUID = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
+_SHA256 = re.compile(r"^[0-9a-f]{64}$")
+_OPT_STR = (str, type(None))
+_COMMON_FIELDS: Dict[str, Any] = {
+    "event": str, "run_id": str, "app_kind": str, "instance_id": str, "session_id": str,
+    "task_id": str, "attempt": int, "request_fingerprint": str, "request_snapshot": str,
+    "idempotency_key": _OPT_STR, "workspace": str, "native_session_id": str,
+    "requested_model": _OPT_STR, "run_dir": str, "state": str, "native_state": _OPT_STR,
+    "at": str,
+}
+_EVENT_FIELDS: Dict[str, Dict[str, Any]] = {
+    "reserved": {"manifest_before_sha256": str, "cli_version": str, "env_names": list},
+    "dispatched": {"argv_tail": list},
+    "dispatch_failed": {"error": str},
+    "collected": {"declared_status": str, "artifacts": list, "usage": dict, "raw_refs": list,
+                  "unverified": list, "evidence": dict},
+}
+#: (state, native_state) each event writes; None = any string.
+_EVENT_STATES: Dict[str, Tuple[Tuple[str, Optional[str]], ...]] = {
+    "reserved": ((RunState.QUEUED, "reserved"),),
+    "dispatched": ((RunState.RUNNING, "process-started"),),
+    "dispatch_failed": ((RunState.FAILED, "launch-failed"),),
+    "collected": ((RunState.DECLARED_COMPLETE, None), (RunState.FAILED, None)),
+}
+#: Which event may follow which, per run.
+_NEXT_EVENT: Dict[Optional[str], Tuple[str, ...]] = {
+    None: ("reserved",), "reserved": ("dispatched", "dispatch_failed"),
+    "dispatched": ("collected",), "dispatch_failed": (), "collected": (),
+}
+#: Facts fixed at reservation; every later record of the run must repeat them.
+_RUN_CONSTANTS = ("app_kind", "instance_id", "session_id", "task_id", "attempt",
+                  "request_fingerprint", "request_snapshot", "idempotency_key", "workspace",
+                  "native_session_id", "requested_model", "run_dir")
+
+
+def _shape_ok(value: Any, expected: Any) -> bool:
+    if expected is int:
+        return isinstance(value, int) and not isinstance(value, bool)
+    return isinstance(value, expected) and not isinstance(value, bool)
+
+
+def validate_registry_records(records: List[Any], evidence_root: Optional[str] = None) -> List[str]:
+    """Every problem with a registry history, or [] when it is a legal history.
+
+    Checked on the records exactly as stored (nothing repaired or reordered):
+    field set and types per event; run id / native session id / digests in the
+    adapter's own formats; fingerprint == sha256(snapshot) and the snapshot
+    agreeing with the record's binding; state per event; per-run event order
+    reserved -> dispatched|dispatch_failed -> collected; every later record
+    repeating the reservation's binding; one run per idempotency key and per
+    native session. `evidence_root` (when given) also pins run_dir."""
+    problems: List[str] = []
+    runs: Dict[str, Dict[str, Any]] = {}
+    last_event: Dict[str, str] = {}
+    by_key: Dict[str, str] = {}
+    by_native: Dict[str, str] = {}
+    for number, record in enumerate(records, start=1):
+        where = f"registry record {number}"
+        if not isinstance(record, dict):
+            problems.append(f"{where}: not a JSON object ({_type_name(record)})")
+            continue
+        event = record.get("event")
+        if not isinstance(event, str) or event not in REGISTRY_EVENTS:
+            problems.append(f"{where}: unknown event {event!r}")
+            continue
+        expected = dict(_COMMON_FIELDS)
+        expected.update(_EVENT_FIELDS[event])
+        missing = sorted(set(expected) - set(record))
+        extra = sorted(set(record) - set(expected))
+        if missing:
+            problems.append(f"{where} ({event}): missing fields {missing}")
+        if extra:
+            problems.append(f"{where} ({event}): unexpected fields {extra}")
+        bad = [name for name, kind in expected.items()
+               if name in record and not _shape_ok(record[name], kind)]
+        if bad:
+            problems.append(f"{where} ({event}): wrong field types {sorted(bad)}")
+        if missing or extra or bad:
+            continue
+        run_id = record["run_id"]
+        where = f"{where} ({event} {run_id!r})"
+        local: List[str] = []
+        if not _RUN_ID.match(run_id):
+            local.append("run_id is not an adapter run id")
+        if record["app_kind"] != APP_KIND:
+            local.append(f"app_kind {record['app_kind']!r}")
+        for name in ("instance_id", "session_id", "task_id", "at"):
+            if not record[name]:
+                local.append(f"empty {name}")
+        if record["idempotency_key"] == "":
+            local.append("empty idempotency_key")
+        if not _UUID.match(record["native_session_id"]):
+            local.append("native_session_id is not a UUID")
+        if not _SHA256.match(record["request_fingerprint"]):
+            local.append("request_fingerprint is not a sha256 digest")
+        elif hashlib.sha256(record["request_snapshot"].encode("utf-8")).hexdigest() != record["request_fingerprint"]:
+            local.append("request_fingerprint does not match request_snapshot")
+        try:
+            snap = json.loads(record["request_snapshot"])
+        except (ValueError, RecursionError):
+            snap = None
+        if not isinstance(snap, dict) or snap.get("schema") != "jh018/submit/v1":
+            local.append("request_snapshot is not a jh018/submit/v1 snapshot")
+        else:
+            for snap_key, rec_key in (("app_kind", "app_kind"), ("instance_id", "instance_id"),
+                                      ("session_id", "session_id"), ("task_id", "task_id"),
+                                      ("attempt", "attempt"), ("workspace", "workspace"),
+                                      ("model_id", "requested_model")):
+                if snap.get(snap_key) != record[rec_key] or (
+                        snap_key == "attempt" and isinstance(snap.get(snap_key), bool)):
+                    local.append(f"request_snapshot {snap_key} disagrees with record {rec_key}")
+        path_problem = workspace_path_problem(record["workspace"])
+        if path_problem:
+            local.append(path_problem)
+        if evidence_root is not None:
+            if record["run_dir"] != os.path.join(evidence_root, "runs", run_id):
+                local.append("run_dir is not this registry's run directory")
+        elif os.path.basename(record["run_dir"]) != run_id:
+            local.append("run_dir does not name the run")
+        allowed = _EVENT_STATES[event]
+        if not any(record["state"] == st and (ns is None or record["native_state"] == ns)
+                   for st, ns in allowed):
+            local.append(f"state {record['state']!r}/{record['native_state']!r} is not what {event} writes")
+        if event == "reserved" and not _SHA256.match(record["manifest_before_sha256"]):
+            local.append("manifest_before_sha256 is not a sha256 digest")
+        previous = last_event.get(run_id)
+        if event not in _NEXT_EVENT[previous]:
+            local.append(f"event {event!r} cannot follow {previous!r}")
+        first = runs.get(run_id)
+        if first is not None:
+            changed = [name for name in _RUN_CONSTANTS if record[name] != first[name]]
+            if changed:
+                local.append(f"contradicts the reservation on {changed}")
+        if local:
+            problems.extend(f"{where}: {p}" for p in local)
+            continue
+        if first is None:
+            runs[run_id] = record
+            key = record["idempotency_key"]
+            if key is not None:
+                if key in by_key:
+                    problems.append(f"{where}: idempotency key already bound to {by_key[key]!r}")
+                by_key[key] = run_id
+            native = record["native_session_id"]
+            if native in by_native:
+                problems.append(f"{where}: native session already bound to {by_native[native]!r}")
+            by_native[native] = run_id
+        last_event[run_id] = event
+    return problems
+
+
+def _lock_handle(fd: int) -> None:
+    if os.name == "nt":
+        import msvcrt
+        os.lseek(fd, 0, os.SEEK_SET)
+        msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
+    else:
+        import fcntl
+        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+
+
+def _unlock_handle(fd: int) -> None:
+    if os.name == "nt":
+        import msvcrt
+        os.lseek(fd, 0, os.SEEK_SET)
+        msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
+    else:
+        import fcntl
+        fcntl.flock(fd, fcntl.LOCK_UN)
+
+
+_THREAD_LOCKS: Dict[str, threading.Lock] = {}
+_THREAD_LOCKS_GUARD = threading.Lock()
+
+
+@contextlib.contextmanager
+def registry_lock(evidence_root: str, timeout: float):
+    """Exclusive lock on `<evidence_root>/registry.lock`, across threads (one
+    in-process lock per path) and processes (flock / msvcrt). Waits at most
+    `timeout` seconds, then refuses with RegistryBusy: never proceeds unlocked."""
+    os.makedirs(evidence_root, exist_ok=True)
+    path = os.path.join(evidence_root, "registry.lock")
+    key = os.path.normcase(os.path.realpath(path))
+    with _THREAD_LOCKS_GUARD:
+        thread_lock = _THREAD_LOCKS.setdefault(key, threading.Lock())
+    deadline = time.monotonic() + timeout
+    if not thread_lock.acquire(timeout=max(timeout, 0.0)):
+        raise RegistryBusy(f"registry lock busy (in-process) after {timeout}s; refusing")
+    try:
+        fd = os.open(path, os.O_RDWR | os.O_CREAT, 0o600)
+        try:
+            while True:
+                try:
+                    _lock_handle(fd)
+                    break
+                except OSError:
+                    if time.monotonic() >= deadline:
+                        raise RegistryBusy(f"registry lock busy after {timeout}s; refusing") from None
+                    time.sleep(0.02)
+            try:
+                yield
+            finally:
+                _unlock_handle(fd)
+        finally:
+            os.close(fd)
+    finally:
+        thread_lock.release()
+
+
 @dataclass
 class _Run:
     run_id: str
@@ -521,7 +880,15 @@ def _canon(value: Any) -> bytes:
 
 
 class GeminiCliAgentSessionAdapter(AgentSessionAdapter):
-    """One application: the pinned Gemini CLI in headless stream-json mode."""
+    """One application: the pinned Gemini CLI in headless stream-json mode.
+
+    Admission is decided on the registry AS IT IS ON DISK NOW, under an
+    exclusive lock held from the idempotency check through the launch and the
+    `dispatched` record: several adapter objects, threads or processes sharing
+    one evidence_root dispatch a given key at most once. A registry that is
+    unreadable, malformed, not a legal history, or no longer extends what this
+    object saw (append-only) refuses every further dispatch from this object;
+    nothing is repaired, reordered or re-sent."""
 
     app_kind = APP_KIND
 
@@ -541,12 +908,105 @@ class GeminiCliAgentSessionAdapter(AgentSessionAdapter):
         self._instance_ids = frozenset(instance_ids or DEFAULT_INSTANCE_IDS)
         self._registry_path = os.path.join(config.evidence_root, "registry.jsonl")
         self._runs: Dict[str, _Run] = {}
+        self._owned: set = set()          # run ids this object launched (live process objects)
         self._idem: Dict[str, Tuple[str, str]] = {}
-        self._registry_problem: Optional[str] = None
-        self._load_registry()
+        self._registry_problem: Optional[str] = None   # sticky for this object
+        self._prefix: Tuple[int, str] = (0, hashlib.sha256(b"").hexdigest())
+        if os.path.exists(self._registry_path):
+            # Never creates anything: an absent registry stays absent until a dispatch.
+            try:
+                with registry_lock(config.evidence_root, config.registry_lock_timeout):
+                    self._reload_locked()
+            except (RegistryBusy, OSError) as exc:
+                self._registry_problem = f"registry unavailable at construction: {exc}"
 
     # --- registry -----------------------------------------------------------
-    def _persist(self, event: str, run: _Run, extra: Optional[Dict[str, Any]] = None) -> None:
+    def _read_registry_locked(self) -> Optional[bytes]:
+        try:
+            with open(self._registry_path, "rb") as fh:
+                return fh.read()
+        except FileNotFoundError:
+            return b""
+        except OSError as exc:
+            self._registry_problem = f"registry unreadable: {exc}"
+            return None
+
+    def _reload_locked(self) -> None:
+        """Rebuild the view of runs from the registry on disk (lock held)."""
+        if self._registry_problem:
+            return
+        data = self._read_registry_locked()
+        if data is None:
+            return
+        if not registry_prefix_intact(self._prefix, data):
+            self._registry_problem = ("registry no longer extends what this adapter recorded/read "
+                                      "(truncated or rewritten); refusing")
+            return
+        try:
+            lines = data.decode("utf-8").splitlines()
+            records = [json.loads(line) for line in lines if line.strip()]
+        except (ValueError, UnicodeDecodeError, RecursionError) as exc:
+            self._registry_problem = f"registry unreadable: {exc}"
+            return
+        if lines and lines[-1] and not data.endswith(b"\n"):
+            self._registry_problem = "registry unreadable: last record is not newline-terminated"
+            return
+        problems = validate_registry_records(records, self._config.evidence_root)
+        if problems:
+            self._registry_problem = "registry is not a legal history: " + "; ".join(problems[:8])
+            return
+        runs: Dict[str, _Run] = {}
+        idem: Dict[str, Tuple[str, str]] = {}
+        for record in records:
+            run_id = record["run_id"]
+            run = runs.get(run_id)
+            if run is None:
+                if run_id in self._owned:
+                    run = self._runs[run_id]
+                else:
+                    run = _Run(run_id=run_id,
+                               binding=RunBinding(record["app_kind"], record["instance_id"],
+                                                  record["session_id"], record["task_id"],
+                                                  record["attempt"]),
+                               request_snapshot=record["request_snapshot"],
+                               request_fingerprint=record["request_fingerprint"],
+                               idempotency_key=record["idempotency_key"],
+                               workspace=record["workspace"],
+                               native_session_id=record["native_session_id"],
+                               requested_model=record["requested_model"],
+                               run_dir=record["run_dir"], recovered=True)
+                runs[run_id] = run
+            if run_id in self._owned:
+                continue     # this object's live view of its own run stays authoritative
+            run.state = record["state"]
+            run.native_state = record["native_state"]
+            if record["event"] == "collected":
+                run.collected = CollectedResult(
+                    run_id=run.run_id, declared_status=record["declared_status"],
+                    artifacts=record["artifacts"], usage=record["usage"],
+                    raw_refs=record["raw_refs"],
+                    unverified=list(record["unverified"]) + ["recovered registry record"])
+            if record["idempotency_key"]:
+                idem[record["idempotency_key"]] = (run.request_fingerprint, run_id)
+        for run_id in self._owned:
+            if run_id not in runs:
+                self._registry_problem = f"registry lost the records of run {run_id!r}; refusing"
+                return
+            run = runs[run_id]
+            if run.idempotency_key:
+                idem[run.idempotency_key] = (run.request_fingerprint, run_id)
+        # A run that was dispatched (or only reserved) but never collected, and is
+        # not this object's live process: its outcome is unknown, never re-dispatched.
+        for run in runs.values():
+            if run.run_id not in self._owned and run.collected is None \
+                    and run.state in (RunState.QUEUED, RunState.RUNNING):
+                run.state = RunState.UNKNOWN
+                run.native_state = "outcome-unknown-after-reopen"
+        self._runs = runs
+        self._idem = idem
+        self._prefix = (len(data), hashlib.sha256(data).hexdigest())
+
+    def _record(self, event: str, run: _Run, extra: Optional[Dict[str, Any]] = None) -> bytes:
         record: Dict[str, Any] = {
             "event": event, "run_id": run.run_id, "app_kind": run.binding.app_kind,
             "instance_id": run.binding.instance_id, "session_id": run.binding.session_id,
@@ -560,57 +1020,26 @@ class GeminiCliAgentSessionAdapter(AgentSessionAdapter):
         }
         if extra:
             record.update(extra)
+        return _canon(record) + b"\n"
+
+    def _persist_locked(self, event: str, run: _Run, extra: Optional[Dict[str, Any]] = None) -> None:
+        """Append one record (lock held). Raises OSError when it cannot be written."""
+        line = self._record(event, run, extra)
+        data = self._read_registry_locked()
+        if data is None:
+            raise OSError(self._registry_problem)
+        intact = registry_prefix_intact(self._prefix, data)
+        if not intact and not self._registry_problem:
+            self._registry_problem = ("registry no longer extends what this adapter recorded/read "
+                                      "(truncated or rewritten); refusing")
         os.makedirs(os.path.dirname(self._registry_path), exist_ok=True)
         with open(self._registry_path, "ab") as fh:
-            fh.write(_canon(record) + b"\n")
+            fh.write(line)
             fh.flush()
             os.fsync(fh.fileno())
-
-    def _load_registry(self) -> None:
-        if not os.path.exists(self._registry_path):
-            return
-        try:
-            with open(self._registry_path, "rb") as fh:
-                lines = fh.read().decode("utf-8").splitlines()
-            records = [json.loads(line) for line in lines if line.strip()]
-            for record in records:
-                if not isinstance(record, dict) or not isinstance(record.get("run_id"), str):
-                    raise ValueError("registry record without run_id")
-        except (OSError, ValueError, UnicodeDecodeError) as exc:
-            self._registry_problem = f"registry unreadable: {exc}"
-            return
-        for record in records:
-            run = self._runs.get(record["run_id"])
-            if run is None:
-                run = _Run(run_id=record["run_id"],
-                           binding=RunBinding(record.get("app_kind"), record.get("instance_id"),
-                                              record.get("session_id"), record.get("task_id"),
-                                              record.get("attempt")),
-                           request_snapshot=record.get("request_snapshot") or "",
-                           request_fingerprint=record.get("request_fingerprint") or "",
-                           idempotency_key=record.get("idempotency_key"),
-                           workspace=record.get("workspace") or "",
-                           native_session_id=record.get("native_session_id") or "",
-                           requested_model=record.get("requested_model"),
-                           run_dir=record.get("run_dir") or "", recovered=True)
-                self._runs[run.run_id] = run
-            run.state = record.get("state") or run.state
-            run.native_state = record.get("native_state") or run.native_state
-            if record.get("event") == "collected":
-                run.collected = CollectedResult(
-                    run_id=run.run_id, declared_status=record.get("declared_status") or "unreported",
-                    artifacts=record.get("artifacts") or [], usage=record.get("usage") or {},
-                    raw_refs=record.get("raw_refs") or [],
-                    unverified=(record.get("unverified") or []) + ["recovered registry record"])
-            key = record.get("idempotency_key")
-            if key:
-                self._idem[key] = (run.request_fingerprint, run.run_id)
-        # A run that was dispatched but never collected has no live process now:
-        # its outcome is unknown and it is never re-dispatched.
-        for run in self._runs.values():
-            if run.collected is None and run.state in (RunState.QUEUED, RunState.RUNNING):
-                run.state = RunState.UNKNOWN
-                run.native_state = "outcome-unknown-after-reopen"
+        if intact:
+            new = data + line
+            self._prefix = (len(new), hashlib.sha256(new).hexdigest())
 
     # --- contract -----------------------------------------------------------
     def capabilities(self) -> Dict[str, Any]:
@@ -640,33 +1069,71 @@ class GeminiCliAgentSessionAdapter(AgentSessionAdapter):
                 "path-level scope cannot be enforced; only the whole workspace read-only is supported")
         if not isinstance(request.instructions, str) or not request.instructions.strip():
             raise UnsupportedRequest("instructions must be non-empty text")
+        # Checked on the input as given, before anything resolves it.
+        path_problem = workspace_path_problem(request.workspace)
+        if path_problem:
+            raise HostRestrictionUnavailable(path_problem)
+        # Config overlap is refused before the evidence root is created.
+        for root, label in ((self._config.evidence_root, "evidence root"),
+                            (self._config.cli_home, "CLI home")):
+            if _within(root, request.workspace) or _within(request.workspace, root):
+                raise HostRestrictionUnavailable(f"{label} and workspace overlap")
+
+    def _replay_locked(self, request: SubmitRequest) -> Optional[RunStatus]:
+        """Admission on the current registry (lock held): refuse, replay, or None."""
+        self._reload_locked()
+        if self._registry_problem:
+            raise RegistryUnavailable(f"refusing to dispatch: {self._registry_problem}")
+        key = request.idempotency_key
+        if not key or key not in self._idem:
+            return None
+        stored, run_id = self._idem[key]
+        if stored != request.fingerprint():
+            raise IdempotencyConflict(key)
+        run = self._runs[run_id]
+        turn = run.turns[0] if run.turns else None
+        return RunStatus(run_id=run_id, state=run.state, binding=run.binding,
+                         native_turn=turn, latest_turn=turn, native_state=run.native_state,
+                         note="idempotent replay; not re-dispatched")
 
     def submit(self, request: SubmitRequest) -> RunStatus:
         self._require("submit")
         if self._registry_problem:
             raise RegistryUnavailable(f"refusing to dispatch: {self._registry_problem}")
         self._validate(request)
-        fingerprint = request.fingerprint()
-        key = request.idempotency_key
-        if key and key in self._idem:
-            stored, run_id = self._idem[key]
-            if stored != fingerprint:
-                raise IdempotencyConflict(key)
-            run = self._runs[run_id]
-            turn = run.turns[0] if run.turns else None
-            return RunStatus(run_id=run_id, state=run.state, binding=run.binding,
-                             native_turn=turn, latest_turn=turn, native_state=run.native_state,
-                             note="idempotent replay; not re-dispatched")
-
-        workspace = os.path.abspath(request.workspace) if isinstance(request.workspace, str) else request.workspace
-        problems = workspace_preflight(workspace, self._config.evidence_root, self._config.cli_home)
-        if problems:
-            raise HostRestrictionUnavailable("; ".join(problems))
+        timeout = self._config.registry_lock_timeout
+        if os.path.exists(self._registry_path):
+            with registry_lock(self._config.evidence_root, timeout):
+                replay = self._replay_locked(request)
+            if replay is not None:
+                return replay
+        # The version probe starts no model and records nothing; it runs unlocked.
         reported = self._version_probe(self._config)
         if not version_is_pinned(reported):
             raise HostRestrictionUnavailable(
                 f"CLI version {reported!r} is not the verified {PINNED_CLI_VERSION}")
+        workspace = request.workspace
+        problems = workspace_preflight(workspace, self._config.evidence_root, self._config.cli_home)
+        if problems:
+            raise HostRestrictionUnavailable("; ".join(problems))
+        with registry_lock(self._config.evidence_root, timeout):
+            replay = self._replay_locked(request)       # re-decided under the lock
+            if replay is not None:
+                return replay
+            return self._dispatch_locked(request, workspace, reported)
 
+    def _dispatch_locked(self, request: SubmitRequest, workspace: str, reported: str) -> RunStatus:
+        problems = workspace_preflight(workspace, self._config.evidence_root, self._config.cli_home)
+        if problems:
+            raise HostRestrictionUnavailable("; ".join(problems))
+        try:
+            manifest = tree_manifest(workspace)
+        except OSError as exc:
+            raise WorkspaceUnobservable(
+                f"workspace could not be fully observed before launch; nothing dispatched: {exc}") from None
+        manifest_bytes = _canon(manifest)
+        fingerprint = request.fingerprint()
+        key = request.idempotency_key
         run_id = f"gemini-run-{uuid.uuid4().hex[:12]}"
         native_session_id = str(uuid.uuid4())
         run_dir = os.path.join(self._config.evidence_root, "runs", run_id)
@@ -684,22 +1151,18 @@ class GeminiCliAgentSessionAdapter(AgentSessionAdapter):
             os.makedirs(settings_dir, exist_ok=True)
             write_bytes(os.path.join(settings_dir, "settings.json"),
                         json.dumps(locked_settings(self._config), indent=2).encode("utf-8"))
-            manifest = tree_manifest(workspace)
-            manifest_bytes = _canon(manifest)
             write_bytes(os.path.join(run_dir, "workspace-before.json"), manifest_bytes)
             run.manifest_before_sha = hashlib.sha256(manifest_bytes).hexdigest()
-            self._runs[run_id] = run
-            if key:
-                self._idem[key] = (fingerprint, run_id)
             # Registered BEFORE the external process exists.
-            self._persist("reserved", run, {"manifest_before_sha256": run.manifest_before_sha,
-                                            "cli_version": reported,
-                                            "env_names": list(self._config.env_names)})
+            self._persist_locked("reserved", run, {"manifest_before_sha256": run.manifest_before_sha,
+                                                   "cli_version": reported,
+                                                   "env_names": list(self._config.env_names)})
         except OSError as exc:
-            self._runs.pop(run_id, None)
-            if key:
-                self._idem.pop(key, None)
             raise RegistryUnavailable(f"registry/evidence not writable; refusing to dispatch: {exc}") from None
+        self._runs[run_id] = run
+        self._owned.add(run_id)
+        if key:
+            self._idem[key] = (fingerprint, run_id)
 
         argv = build_argv(self._config, session_id=native_session_id, policy_path=policy_path,
                           model=request.session.model_id)
@@ -712,14 +1175,23 @@ class GeminiCliAgentSessionAdapter(AgentSessionAdapter):
         except OSError as exc:
             run.state = RunState.FAILED
             run.native_state = "launch-failed"
-            self._persist("dispatch_failed", run, {"error": str(exc)})
+            try:
+                self._persist_locked("dispatch_failed", run, {"error": str(exc)})
+            except OSError:
+                self._registry_problem = self._registry_problem or "could not record a failed launch"
             raise RuntimeError(f"could not start Gemini CLI: {exc}") from None
         turn = NativeTurn(native_turn_id=f"{native_session_id}#invocation-1",
                           native_session_id=native_session_id, purpose="initial")
         run.turns = [turn]
         run.state = RunState.RUNNING
         run.native_state = "process-started"
-        self._persist("dispatched", run, {"argv_tail": argv[len(self._config.argv_prefix):]})
+        try:
+            self._persist_locked("dispatched", run, {"argv_tail": argv[len(self._config.argv_prefix):]})
+        except OSError as exc:
+            # The process exists but the registry does not say so: no further
+            # dispatch from this object; the reservation already makes the key
+            # unknown (never re-sent) for every other reader.
+            self._registry_problem = f"dispatched but could not record it: {exc}"
         return RunStatus(run_id=run_id, state=run.state, binding=run.binding, native_turn=turn,
                          latest_turn=turn, native_state=run.native_state,
                          note="CLI started; native turn id is adapter-assigned (host exposes none)")
@@ -788,10 +1260,11 @@ class GeminiCliAgentSessionAdapter(AgentSessionAdapter):
         events, parse_problems = parse_stream(stdout_bytes)
         assoc = associate(events, run.native_session_id) if events else {
             "problems": ["no native events"], "init": None, "result": None, "tool_calls": [],
-            "assistant_text": "", "errors": [], "denied_requests": []}
+            "assistant_text": "", "errors": [], "denied_requests": [], "unconfirmed_requests": []}
         problems = parse_problems + assoc["problems"]
 
-        chat = find_chat_record(self._config.cli_home, run.native_session_id)
+        chat, chat_notes = find_chat_record(self._config.cli_home, run.native_session_id)
+        unverified += chat_notes
         if chat:
             with open(chat, "rb") as fh:
                 chat_bytes = fh.read()
@@ -806,18 +1279,36 @@ class GeminiCliAgentSessionAdapter(AgentSessionAdapter):
             evidence["host-chat-record.jsonl"] = None
             unverified.append("host chat record for this session not found")
 
-        after = tree_manifest(run.workspace) if os.path.isdir(run.workspace) else {"missing": True}
-        after_bytes = _canon(after)
-        write_bytes(os.path.join(run.run_dir, "workspace-after.json"), after_bytes)
+        # workspace_unchanged: True only when both complete manifests are proven
+        # equal; False when they differ; None when it cannot be proven.
+        after: Optional[Dict[str, Any]] = None
+        if os.path.isdir(run.workspace):
+            try:
+                after = tree_manifest(run.workspace)
+            except OSError as exc:
+                problems.append(f"workspace could not be fully observed at collect: {exc}")
+        else:
+            after = {"missing": True}
+        if after is not None:
+            write_bytes(os.path.join(run.run_dir, "workspace-after.json"), _canon(after))
         before_path = os.path.join(run.run_dir, "workspace-before.json")
-        with open(before_path, "rb") as fh:
-            before_bytes = fh.read()
-        before_ok = digest_matches(run.manifest_before_sha, hashlib.sha256(before_bytes).hexdigest())
-        if not before_ok:
-            problems.append("workspace-before manifest on disk does not match the registered digest")
-        workspace_unchanged = before_ok and manifests_equal(json.loads(before_bytes.decode("utf-8")), after)
-        if not workspace_unchanged:
-            problems.append("workspace modified (or unprovable) during the run")
+        before: Optional[Dict[str, Any]] = None
+        try:
+            with open(before_path, "rb") as fh:
+                before_bytes = fh.read()
+            if digest_matches(run.manifest_before_sha, hashlib.sha256(before_bytes).hexdigest()):
+                before = json.loads(before_bytes.decode("utf-8"))
+            else:
+                problems.append("workspace-before manifest on disk does not match the registered digest")
+        except (OSError, ValueError, UnicodeDecodeError) as exc:
+            problems.append(f"workspace-before manifest unreadable: {exc}")
+        if before is None or after is None:
+            workspace_unchanged: Optional[bool] = None
+            problems.append("workspace unchanged: not proven")
+        else:
+            workspace_unchanged = manifests_equal(before, after)
+            if not workspace_unchanged:
+                problems.append("workspace modified during the run")
 
         init = assoc["init"] or {}
         reported_model = init.get("model")
@@ -848,6 +1339,7 @@ class GeminiCliAgentSessionAdapter(AgentSessionAdapter):
             "backend_models": backend_models,
             "tool_calls": assoc["tool_calls"],
             "denied_tool_requests": assoc["denied_requests"],
+            "unconfirmed_tool_requests": assoc["unconfirmed_requests"],
             "host_errors": assoc["errors"],
             "assistant_text": assoc["assistant_text"],
             "source_refs": refs,
@@ -863,9 +1355,14 @@ class GeminiCliAgentSessionAdapter(AgentSessionAdapter):
                                  [e["path"] for e in evidence.values() if e],
                                  unverified=unverified)
         run.collected = result
-        self._persist("collected", run, {"declared_status": declared, "artifacts": result.artifacts,
-                                         "usage": usage, "raw_refs": result.raw_refs,
-                                         "unverified": unverified, "evidence": evidence})
+        extra = {"declared_status": declared, "artifacts": result.artifacts, "usage": usage,
+                 "raw_refs": result.raw_refs, "unverified": unverified, "evidence": evidence}
+        try:
+            with registry_lock(self._config.evidence_root, self._config.registry_lock_timeout):
+                self._persist_locked("collected", run, extra)
+        except (OSError, RegistryUnavailable) as exc:
+            # The observation stands; the registry could not take it.
+            result.unverified.append(f"collected record not persisted: {exc}")
         return result
 
     def continue_run(self, session: SessionAddress, run_id: Optional[str],

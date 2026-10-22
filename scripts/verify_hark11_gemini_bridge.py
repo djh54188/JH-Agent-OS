@@ -75,7 +75,12 @@ def main(argv=None) -> int:
     os.makedirs(out, exist_ok=True)
     cli_home = os.path.abspath(args.cli_home or os.path.join(out, "cli-home"))
     os.makedirs(cli_home, exist_ok=True)
-    workspace = os.path.abspath(args.workspace)
+    # Hark-派单-12 R3: the workspace is passed to the adapter exactly as given;
+    # a relative input is refused here instead of being resolved.
+    if not os.path.isabs(args.workspace):
+        print("--workspace must be an absolute path", file=sys.stderr)
+        return 2
+    workspace = args.workspace
     server = None
     extra_env = []
     env_names = tuple(args.env_name)
