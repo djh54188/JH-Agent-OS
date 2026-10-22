@@ -252,6 +252,19 @@ class TestR1RegistryState(_Base):
             reader.submit(self.h.request())             # same key: must not be re-sent
         self.assertEqual(len(self.h.launches), 1)
 
+    def test_tail_cut_registry_refuses_reader(self):
+        # Hark-派单-13: run evidence is now also checked, so cut back only to a
+        # LEGAL reserved-only prefix (run directory still accounted for); here
+        # the append-only prefix check is the guard that refuses.
+        self._legal_history()
+        reader = self.h.adapter()                       # has seen reserved + dispatched
+        lines = open(self.h.registry, "rb").read().splitlines(keepends=True)
+        with open(self.h.registry, "wb") as fh:
+            fh.write(lines[0])
+        with self.assertRaises(gem.RegistryUnavailable):
+            reader.submit(self.h.request())
+        self.assertEqual(len(self.h.launches), 1)
+
     def test_deleted_registry_refuses_owner(self):
         owner = self.h.adapter()
         owner.submit(self.h.request())
@@ -597,7 +610,7 @@ WEAKENINGS = {
                       "TestR1SharedRegistry.test_threads_synchronised_in_version_probe_dispatch_once"),
     "validate_registry_records": (lambda *a, **k: [],
                                   "TestR1RegistryState.test_derived_illegal_histories_refuse_new_dispatch"),
-    "registry_prefix_intact": (lambda prefix, data: True, "TestR1RegistryState.test_truncated_registry_refuses"),
+    "registry_prefix_intact": (lambda prefix, data: True, "TestR1RegistryState.test_tail_cut_registry_refuses_reader"),
     "on_walk_error": (lambda exc: None, "TestR2Observation.test_subdir_unlistable_before_launch_refuses"),
     "tool_status_confirms_denial": (lambda status: True, "TestR2Observation.test_unknown_tool_status_is_unconfirmed"),
     "event_shape_problems": (lambda event: [], "TestR2Observation.test_tool_id_array_is_diagnosed"),

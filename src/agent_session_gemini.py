@@ -797,6 +797,54 @@ def validate_registry_records(records: List[Any], evidence_root: Optional[str] =
     return problems
 
 
+def unaccounted_run_traces(evidence_root: str, registered_run_ids) -> List[str]:
+    """Run evidence on disk that the registry does not account for (Hark-派单-13).
+
+    `runs/<run_id>/` is created before the `reserved` record is written, so a
+    run directory without a registry record means the registry lost history
+    (deleted, emptied, cut back) or a reservation failed half-way. Either way an
+    empty or short registry is NOT evidence that nothing was dispatched, and the
+    caller must refuse. Entries that are not adapter run directories, and a
+    `runs` path that cannot be listed, are refused too (cannot be judged).
+    Directory names are only compared, never turned into registry facts."""
+    runs_dir = os.path.join(evidence_root, "runs")
+    try:
+        mode = os.lstat(runs_dir).st_mode
+    except FileNotFoundError:
+        return []
+    except OSError as exc:
+        return [f"run evidence directory cannot be inspected: {exc}"]
+    if not _stat.S_ISDIR(mode):
+        return ["run evidence path is not a plain directory"]
+    problems: List[str] = []
+    try:
+        with os.scandir(runs_dir) as entries:
+            found = []
+            for entry in entries:
+                found.append((entry.name, entry.is_dir(follow_symlinks=False)))
+    except OSError as exc:
+        return [f"run evidence directory unreadable: {exc}"]
+    for name, is_dir in sorted(found):
+        if not is_dir or not _RUN_ID.match(name):
+            problems.append(f"unexpected entry {name!r} under runs/ cannot be judged")
+        elif name not in registered_run_ids:
+            problems.append(f"run evidence {name!r} has no registry record (registry incomplete)")
+    return problems
+
+
+def registry_text_problem(data: bytes) -> Optional[str]:
+    """A legal registry is UTF-8 records, one per non-blank, newline-terminated line."""
+    try:
+        text = data.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        return f"registry is not UTF-8: {exc}"
+    if data and not data.endswith(b"\n"):
+        return "last record is not newline-terminated"
+    if any(not line.strip() for line in text.split("\n")[:-1]):
+        return "registry contains blank or whitespace-only lines"
+    return None
+
+
 def _lock_handle(fd: int) -> None:
     if os.name == "nt":
         import msvcrt
@@ -912,8 +960,9 @@ class GeminiCliAgentSessionAdapter(AgentSessionAdapter):
         self._idem: Dict[str, Tuple[str, str]] = {}
         self._registry_problem: Optional[str] = None   # sticky for this object
         self._prefix: Tuple[int, str] = (0, hashlib.sha256(b"").hexdigest())
-        if os.path.exists(self._registry_path):
+        if os.path.exists(self._registry_path) or os.path.lexists(os.path.join(config.evidence_root, "runs")):
             # Never creates anything: an absent registry stays absent until a dispatch.
+            # Run evidence without a registry is judged here too (Hark-派单-13).
             try:
                 with registry_lock(config.evidence_root, config.registry_lock_timeout):
                     self._reload_locked()
@@ -942,18 +991,26 @@ class GeminiCliAgentSessionAdapter(AgentSessionAdapter):
             self._registry_problem = ("registry no longer extends what this adapter recorded/read "
                                       "(truncated or rewritten); refusing")
             return
-        try:
-            lines = data.decode("utf-8").splitlines()
-            records = [json.loads(line) for line in lines if line.strip()]
-        except (ValueError, UnicodeDecodeError, RecursionError) as exc:
-            self._registry_problem = f"registry unreadable: {exc}"
+        text_problem = registry_text_problem(data)
+        if text_problem:
+            self._registry_problem = f"registry unreadable: {text_problem}"
             return
-        if lines and lines[-1] and not data.endswith(b"\n"):
-            self._registry_problem = "registry unreadable: last record is not newline-terminated"
+        try:
+            records = [json.loads(line) for line in data.decode("utf-8").split("\n")[:-1]]
+        except (ValueError, RecursionError) as exc:
+            self._registry_problem = f"registry unreadable: {exc}"
             return
         problems = validate_registry_records(records, self._config.evidence_root)
         if problems:
             self._registry_problem = "registry is not a legal history: " + "; ".join(problems[:8])
+            return
+        # Hark-派单-13: an absent / empty / short registry is not proof that no
+        # run exists. Every run directory must be accounted for by a record.
+        registered = {r["run_id"] for r in records} | set(self._owned)
+        traces = unaccounted_run_traces(self._config.evidence_root, registered)
+        if traces:
+            self._registry_problem = ("registry does not account for existing run evidence; refusing: "
+                                      + "; ".join(traces[:8]))
             return
         runs: Dict[str, _Run] = {}
         idem: Dict[str, Tuple[str, str]] = {}
@@ -1102,7 +1159,7 @@ class GeminiCliAgentSessionAdapter(AgentSessionAdapter):
             raise RegistryUnavailable(f"refusing to dispatch: {self._registry_problem}")
         self._validate(request)
         timeout = self._config.registry_lock_timeout
-        if os.path.exists(self._registry_path):
+        if os.path.exists(self._registry_path) or os.path.lexists(os.path.join(self._config.evidence_root, "runs")):
             with registry_lock(self._config.evidence_root, timeout):
                 replay = self._replay_locked(request)
             if replay is not None:
