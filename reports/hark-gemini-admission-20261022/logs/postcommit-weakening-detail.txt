@@ -1,0 +1,7 @@
+registry_lock	control=pass	weakened=detected	failures=1	errors=0	target=TestR1SharedRegistry.test_threads_synchronised_in_version_probe_dispatch_once
+validate_registry_records	control=pass	weakened=detected	failures=16	errors=10	target=TestR1RegistryState.test_derived_illegal_histories_refuse_new_dispatch
+registry_prefix_intact	control=pass	weakened=detected	failures=1	errors=0	target=TestR1RegistryState.test_truncated_registry_refuses
+on_walk_error	control=pass	weakened=detected	failures=1	errors=0	target=TestR2Observation.test_subdir_unlistable_before_launch_refuses
+tool_status_confirms_denial	control=pass	weakened=detected	failures=1	errors=0	target=TestR2Observation.test_unknown_tool_status_is_unconfirmed
+event_shape_problems	control=pass	weakened=detected	failures=0	errors=1	target=TestR2Observation.test_tool_id_array_is_diagnosed
+workspace_path_problem	control=pass	weakened=detected	failures=1	errors=0	target=TestR3Paths.test_existing_relative_directory_refused

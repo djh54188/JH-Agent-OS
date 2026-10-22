@@ -1,0 +1,6 @@
+test_each_weakened_guard_fails_its_test (tests.test_hark12_gemini_admission.TestGuardWeakening.test_each_weakened_guard_fails_its_test) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 2.193s
+
+OK

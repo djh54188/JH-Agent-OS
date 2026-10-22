@@ -1,0 +1,44 @@
+baseline-suite.txt 736 FAILED (failures=27, errors=78, skipped=2)
+postcommit-suite.txt 768 FAILED (failures=27, errors=78, skipped=2)
+failset baseline 105 postcommit 105 identical True
+postcommit-hark12-run1.txt 32 OK
+postcommit-hark12-run2.txt 32 OK
+postcommit-hark12-run3.txt 32 OK
+postcommit-hark11-jh018.txt 74 OK
+postcommit-weakening.txt 1 OK
+weakenings 7 control pass 7 detected 7
+repro cases 32
+- R1 two adapters, one evidence_root, same key | baseline: {"launches": 2} | candidate: {"launches": 1}
+- R1 one adapter, two threads met in version_probe | baseline: {"errors": [], "launches": 2} | candidate: {"errors": [], "launches": 1}
+- R1 two processes, same key | baseline: {"launches": 2, "results": ["ok:gemini-run-d527894fd08f", "ok:gemini-run-7bf0e6c5c994"]} | candidate: {"launches": 1, "results": ["ok:gemini-run-59126dc0028b", "ok:gemini-run-59126dc0028b"]}
+- R1 registry corrupted after construction | baseline: {"launches": 1, "raised": null, "submit": "returned"} | candidate: {"launches": 0, "raised": "RegistryUnavailable", "submit": "raised"}
+- R1 derived history: missing native_session_id | baseline: {"new_launches": 1, "raised": null, "submit": "returned"} | candidate: {"new_launches": 0, "raised": "RegistryUnavailable", "submit": "raised"}
+- R1 derived history: missing instance_id | baseline: {"new_launches": 1, "raised": null, "submit": "returned"} | candidate: {"new_launches": 0, "raised": "RegistryUnavailable", "submit": "raised"}
+- R1 derived history: missing request_snapshot | baseline: {"new_launches": 1, "raised": null, "submit": "returned"} | candidate: {"new_launches": 0, "raised": "RegistryUnavailable", "submit": "raised"}
+- R1 derived history: attempt as string | baseline: {"new_launches": 1, "raised": null, "submit": "returned"} | candidate: {"new_launches": 0, "raised": "RegistryUnavailable", "submit": "raised"}
+- R1 derived history: empty run_id | baseline: {"new_launches": 1, "raised": null, "submit": "returned"} | candidate: {"new_launches": 0, "raised": "RegistryUnavailable", "submit": "raised"}
+- R1 derived history: run_id int | baseline: {"new_launches": 0, "raised": "RegistryUnavailable", "submit": "raised"} | candidate: {"new_launches": 0, "raised": "RegistryUnavailable", "submit": "raised"}
+- R1 derived history: unknown event | baseline: {"new_launches": 1, "raised": null, "submit": "returned"} | candidate: {"new_launches": 0, "raised": "RegistryUnavailable", "submit": "raised"}
+- R1 derived history: illegal state | baseline: {"new_launches": 1, "raised": null, "submit": "returned"} | candidate: {"new_launches": 0, "raised": "RegistryUnavailable", "submit": "raised"}
+- R1 derived history: fingerprint != snapshot | baseline: {"new_launches": 1, "raised": null, "submit": "returned"} | candidate: {"new_launches": 0, "raised": "RegistryUnavailable", "submit": "raised"}
+- R1 derived history: snapshot edited | baseline: {"new_launches": 1, "raised": null, "submit": "returned"} | candidate: {"new_launches": 0, "raised": "RegistryUnavailable", "submit": "raised"}
+- R1 derived history: native binding contradiction | baseline: {"new_launches": 1, "raised": null, "submit": "returned"} | candidate: {"new_launches": 0, "raised": "RegistryUnavailable", "submit": "raised"}
+- R1 derived history: events reversed | baseline: {"new_launches": 1, "raised": null, "submit": "returned"} | candidate: {"new_launches": 0, "raised": "RegistryUnavailable", "submit": "raised"}
+- R1 control: legal reserved/dispatched prefix, reopen, same key | baseline: {"new_launches": 0, "replayed_same_run": true} | candidate: {"new_launches": 0, "replayed_same_run": true}
+- R2 scandir PermissionError on root before launch AND at collect | baseline: {"launches": 1, "raised": null, "state": "declared_complete", "submit": "returned", "workspace_unchanged": true} | candidate: {"launches": 0, "raised": "WorkspaceUnobservable", "state": null, "submit": "raised", "workspace_unchanged": null}
+- R2 scandir PermissionError on subdir src before launch AND at collect | baseline: {"launches": 1, "raised": null, "state": "declared_complete", "submit": "returned", "workspace_unchanged": true} | candidate: {"launches": 0, "raised": "WorkspaceUnobservable", "state": null, "submit": "raised", "workspace_unchanged": null}
+- R2 write_file tool_result.status missing | baseline: {"declared": "success", "denied": ["write_file", "run_shell_command"]} | candidate: {"declared": "unattributed", "denied": ["run_shell_command"]}
+- R2 write_file tool_result.status null | baseline: {"declared": "success", "denied": ["write_file", "run_shell_command"]} | candidate: {"declared": "unattributed", "denied": ["run_shell_command"]}
+- R2 write_file tool_result.status unknown string | baseline: {"declared": "success", "denied": ["write_file", "run_shell_command"]} | candidate: {"declared": "unattributed", "denied": ["run_shell_command"]}
+- R2 write_file tool_result.status array | baseline: {"declared": "success", "denied": ["write_file", "run_shell_command"]} | candidate: {"declared": "unattributed", "denied": ["run_shell_command"]}
+- R2 tool_result.tool_id array | baseline: {"collect": "raised", "declared": null, "raised": "TypeError", "state": null} | candidate: {"collect": "returned", "declared": "unattributed", "raised": null, "state": "failed"}
+- R2 event type array | baseline: {"collect": "raised", "declared": null, "raised": "TypeError", "state": null} | candidate: {"collect": "returned", "declared": "success", "raised": null, "state": "failed"}
+- R2 chat record first line [] | baseline: {"collect": "raised", "raised": "AttributeError"} | candidate: {"collect": "returned", "raised": null}
+- R2 chat record first line null | baseline: {"collect": "raised", "raised": "AttributeError"} | candidate: {"collect": "returned", "raised": null}
+- R2 chat record first line "s" | baseline: {"collect": "raised", "raised": "AttributeError"} | candidate: {"collect": "returned", "raised": null}
+- R2 chat record first line 3 | baseline: {"collect": "raised", "raised": "AttributeError"} | candidate: {"collect": "returned", "raised": null}
+- R2 chat record first line true | baseline: {"collect": "raised", "raised": "AttributeError"} | candidate: {"collect": "returned", "raised": null}
+- R3 existing relative directory 'ws' | baseline: {"launches": 1, "raised": null, "submit": "returned"} | candidate: {"launches": 0, "raised": "HostRestrictionUnavailable", "submit": "raised"}
+- R3 fake_cli replay with a backslash in the workspace path | baseline: {"cli_stderr_invalid_escape": true, "declared": "unattributed", "json_problems": []} | candidate: {"cli_stderr_invalid_escape": false, "declared": "success", "json_problems": []}
+host-probe PASS 13 FAIL 0
+synthetic endpoint requests 5 (real model calls: 0)

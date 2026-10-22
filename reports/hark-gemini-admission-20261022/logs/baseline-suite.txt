@@ -1,0 +1,1820 @@
+F......................................../home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py:1139: ResourceWarning: subprocess 3203 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py:1139: ResourceWarning: subprocess 3205 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py:1139: ResourceWarning: subprocess 3211 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+............../home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py:1139: ResourceWarning: subprocess 3222 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+..............................................EEE.EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE..EEEE..EE..E...EEEEEEEF...............................................................F................................E.......EEE.....E..E..E.....................................................................................................E/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/tempfile.py:484: ResourceWarning: Implicitly cleaning up <HTTPError 404: 'Not Found'>
+  _warnings.warn(self.warn_message, ResourceWarning)
+EEEFFEEEEFF.F....FE...............................................................................................................................................................F.FFEF.....FF.FF....s...F...............E/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/tempfile.py:484: ResourceWarning: Implicitly cleaning up <HTTPError 404: 'Not Found'>
+  _warnings.warn(self.warn_message, ResourceWarning)
+EEEE.E...........F.............FFFF.sF...............F..........................F...FEE...E..E.EE......................................
+======================================================================
+ERROR: test_active_attempt_change_invalidates_current (test_jh006_binding_audit.TestBindingAudit.test_active_attempt_change_invalidates_current)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_binding_audit.py", line 42, in test_active_attempt_change_invalidates_current
+    orch, tid, delivery, _, _, _ = self._registered()
+                                   ~~~~~~~~~~~~~~~~^^
+  File "/workspace/work/h12-base/tests/test_jh006_binding_audit.py", line 19, in _registered
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_approval_pending_does_not_provide_current_binding (test_jh006_binding_audit.TestBindingAudit.test_approval_pending_does_not_provide_current_binding)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_binding_audit.py", line 100, in test_approval_pending_does_not_provide_current_binding
+    orch, tid, delivery, _, _, _ = self._registered()
+                                   ~~~~~~~~~~~~~~~~^^
+  File "/workspace/work/h12-base/tests/test_jh006_binding_audit.py", line 19, in _registered
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_boolean_artifact_claim_is_not_version_one (test_jh006_binding_audit.TestBindingAudit.test_boolean_artifact_claim_is_not_version_one)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_binding_audit.py", line 159, in test_boolean_artifact_claim_is_not_version_one
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store,
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                        claim_over={"artifact_claim":{"version":True}})
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_control_plan_baseline_bytes_fail_before_check (test_jh006_binding_audit.TestBindingAudit.test_control_plan_baseline_bytes_fail_before_check)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_binding_audit.py", line 128, in test_control_plan_baseline_bytes_fail_before_check
+    result = subprocess.run(plan["argv"], cwd=self.ws, capture_output=True, text=True, timeout=30)
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py", line 555, in run
+    with Popen(*popenargs, **kwargs) as process:
+         ~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py", line 1039, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        pass_fds, cwd, env,
+                        ^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+                        gid, gids, uid, umask,
+                        ^^^^^^^^^^^^^^^^^^^^^^
+                        start_new_session, process_group)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py", line 1990, in _execute_child
+    raise child_exception_type(errno_num, err_msg, err_filename)
+FileNotFoundError: [Errno 2] No such file or directory: '/home/sandbox/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/powershell/pwsh.exe'
+
+======================================================================
+ERROR: test_control_plan_runs_sealed_check_on_actual_target (test_jh006_binding_audit.TestBindingAudit.test_control_plan_runs_sealed_check_on_actual_target)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_binding_audit.py", line 119, in test_control_plan_runs_sealed_check_on_actual_target
+    result = subprocess.run(plan["argv"], cwd=self.ws, capture_output=True, text=True, timeout=30)
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py", line 555, in run
+    with Popen(*popenargs, **kwargs) as process:
+         ~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py", line 1039, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        pass_fds, cwd, env,
+                        ^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+                        gid, gids, uid, umask,
+                        ^^^^^^^^^^^^^^^^^^^^^^
+                        start_new_session, process_group)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py", line 1990, in _execute_child
+    raise child_exception_type(errno_num, err_msg, err_filename)
+FileNotFoundError: [Errno 2] No such file or directory: '/home/sandbox/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/powershell/pwsh.exe'
+
+======================================================================
+ERROR: test_echo_reassertion_is_not_a_fixed_check (test_jh006_binding_audit.TestBindingAudit.test_echo_reassertion_is_not_a_fixed_check)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_binding_audit.py", line 58, in test_echo_reassertion_is_not_a_fixed_check
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store,
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                        argv=argv, call_script=script)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_old_unregistered_call_cannot_be_relabelled (test_jh006_binding_audit.TestBindingAudit.test_old_unregistered_call_cannot_be_relabelled)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_binding_audit.py", line 70, in test_old_unregistered_call_cannot_be_relabelled
+    archive, _, _, _ = self._archive_for(tid_a, delivery_a, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_readonly_verification_preserves_database_bytes (test_jh006_binding_audit.TestBindingAudit.test_readonly_verification_preserves_database_bytes)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_binding_audit.py", line 147, in test_readonly_verification_preserves_database_bytes
+    orch, tid, delivery, _, _, _ = self._registered(file_db=True)
+                                   ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_binding_audit.py", line 19, in _registered
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_registration_event_failure_rolls_back_row (test_jh006_binding_audit.TestBindingAudit.test_registration_event_failure_rolls_back_row)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_binding_audit.py", line 106, in test_registration_event_failure_rolls_back_row
+    store = self._live_store(); archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                                                   ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_review_payload_revoked_invalidates_current (test_jh006_binding_audit.TestBindingAudit.test_review_payload_revoked_invalidates_current)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_binding_audit.py", line 32, in test_review_payload_revoked_invalidates_current
+    orch, tid, delivery, _, _, _ = self._registered()
+                                   ~~~~~~~~~~~~~~~~^^
+  File "/workspace/work/h12-base/tests/test_jh006_binding_audit.py", line 19, in _registered
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_same_call_with_another_item_violates_database_unique (test_jh006_binding_audit.TestBindingAudit.test_same_call_with_another_item_violates_database_unique)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_binding_audit.py", line 133, in test_same_call_with_another_item_violates_database_unique
+    orch, _, _, _, _, row = self._registered()
+                            ~~~~~~~~~~~~~~~~^^
+  File "/workspace/work/h12-base/tests/test_jh006_binding_audit.py", line 19, in _registered
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_same_item_with_another_call_violates_database_unique (test_jh006_binding_audit.TestBindingAudit.test_same_item_with_another_call_violates_database_unique)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_binding_audit.py", line 140, in test_same_item_with_another_call_violates_database_unique
+    orch, _, _, _, _, row = self._registered()
+                            ~~~~~~~~~~~~~~~~^^
+  File "/workspace/work/h12-base/tests/test_jh006_binding_audit.py", line 19, in _registered
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_target_drift_during_source_validation_refused (test_jh006_binding_audit.TestBindingAudit.test_target_drift_during_source_validation_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_binding_audit.py", line 168, in test_target_drift_during_source_validation_refused
+    store = self._live_store(); archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                                                   ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_target_drift_invalidates_current (test_jh006_binding_audit.TestBindingAudit.test_target_drift_invalidates_current)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_binding_audit.py", line 25, in test_target_drift_invalidates_current
+    orch, tid, delivery, _, _, _ = self._registered()
+                                   ~~~~~~~~~~~~~~~~^^
+  File "/workspace/work/h12-base/tests/test_jh006_binding_audit.py", line 19, in _registered
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_unknown_usage_does_not_provide_current_binding (test_jh006_binding_audit.TestBindingAudit.test_unknown_usage_does_not_provide_current_binding)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_binding_audit.py", line 94, in test_unknown_usage_does_not_provide_current_binding
+    orch, tid, delivery, _, _, _ = self._registered()
+                                   ~~~~~~~~~~~~~~~~^^
+  File "/workspace/work/h12-base/tests/test_jh006_binding_audit.py", line 19, in _registered
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_workspace_change_invalidates_current (test_jh006_binding_audit.TestBindingAudit.test_workspace_change_invalidates_current)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_binding_audit.py", line 47, in test_workspace_change_invalidates_current
+    orch, tid, delivery, _, _, _ = self._registered()
+                                   ~~~~~~~~~~~~~~~~^^
+  File "/workspace/work/h12-base/tests/test_jh006_binding_audit.py", line 19, in _registered
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_wrong_apply_attempt_refused (test_jh006_binding_audit.TestBindingAudit.test_wrong_apply_attempt_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_binding_audit.py", line 184, in test_wrong_apply_attempt_refused
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store,
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                        claim_over={"apply_attempt_id":"arbitrary"})
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_cli_protocol_archive_refused (test_jh006_capture_binding.TestCaptureBindingArchive.test_cli_protocol_archive_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 523, in test_cli_protocol_archive_refused
+    archive, manifest, _, _ = self._archive_for(tid, delivery, live_store=store)
+                              ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_duplicate_archive_item_refused (test_jh006_capture_binding.TestCaptureBindingArchive.test_duplicate_archive_item_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 542, in test_duplicate_archive_item_refused
+    archive, manifest, events_raw, _ = self._archive_for(tid, delivery, live_store=store)
+                                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_malformed_manifest_refused (test_jh006_capture_binding.TestCaptureBindingArchive.test_malformed_manifest_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 514, in test_malformed_manifest_refused
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_missing_archive_files_refused (test_jh006_capture_binding.TestCaptureBindingArchive.test_missing_archive_files_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 505, in test_missing_archive_files_refused
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_request_selection_mismatch_refused (test_jh006_capture_binding.TestCaptureBindingArchive.test_request_selection_mismatch_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 534, in test_request_selection_mismatch_refused
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_tampered_event_bytes_refused (test_jh006_capture_binding.TestCaptureBindingArchive.test_tampered_event_bytes_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 493, in test_tampered_event_bytes_refused
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_tampered_manifest_digest_refused (test_jh006_capture_binding.TestCaptureBindingArchive.test_tampered_manifest_digest_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 482, in test_tampered_manifest_digest_refused
+    archive, manifest, _, _ = self._archive_for(tid, delivery, live_store=store)
+                              ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_changed_artifact_refused (test_jh006_capture_binding.TestCaptureBindingClaims.test_changed_artifact_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 358, in test_changed_artifact_refused
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_malformed_delivery_refused (test_jh006_capture_binding.TestCaptureBindingClaims.test_malformed_delivery_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 379, in test_malformed_delivery_refused
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_manifest_artifact_claim_mismatch_refused (test_jh006_capture_binding.TestCaptureBindingClaims.test_manifest_artifact_claim_mismatch_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 331, in test_manifest_artifact_claim_mismatch_refused
+    archive, _, _, _ = self._archive_for(
+                       ~~~~~~~~~~~~~~~~~^
+        tid, delivery, live_store=store,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        claim_over={"artifact_claim": artifact})
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_manifest_delivery_claim_mismatch_refused (test_jh006_capture_binding.TestCaptureBindingClaims.test_manifest_delivery_claim_mismatch_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 319, in test_manifest_delivery_claim_mismatch_refused
+    archive, _, _, _ = self._archive_for(
+                       ~~~~~~~~~~~~~~~~~^
+        tid, delivery, live_store=store,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        claim_over={"delivery_claim": "dlv_other"})
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_manifest_review_claim_mismatch_refused (test_jh006_capture_binding.TestCaptureBindingClaims.test_manifest_review_claim_mismatch_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 341, in test_manifest_review_claim_mismatch_refused
+    archive, _, _, _ = self._archive_for(
+                       ~~~~~~~~~~~~~~~~~^
+        tid, delivery, live_store=store,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        claim_over={"review_claim": {"review_id": "rev_other0001"}})
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_manifest_task_claim_mismatch_refused (test_jh006_capture_binding.TestCaptureBindingClaims.test_manifest_task_claim_mismatch_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 309, in test_manifest_task_claim_mismatch_refused
+    archive, _, _, _ = self._archive_for(
+                       ~~~~~~~~~~~~~~~~~^
+        tid, delivery, live_store=store,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        claim_over={"task_claim": "task_other0001"})
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_new_review_attempt_refused (test_jh006_capture_binding.TestCaptureBindingClaims.test_new_review_attempt_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 368, in test_new_review_attempt_refused
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_binding_survives_restart_and_reads_back (test_jh006_capture_binding.TestCaptureBindingCurrent.test_binding_survives_restart_and_reads_back)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 642, in test_binding_survives_restart_and_reads_back
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_cancelled_task_binding_not_current_but_kept (test_jh006_capture_binding.TestCaptureBindingCurrent.test_cancelled_task_binding_not_current_but_kept)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 662, in test_cancelled_task_binding_not_current_but_kept
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_changed_artifact_binding_not_current (test_jh006_capture_binding.TestCaptureBindingCurrent.test_changed_artifact_binding_not_current)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 677, in test_changed_artifact_binding_not_current
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_deleted_archive_binding_not_current (test_jh006_capture_binding.TestCaptureBindingCurrent.test_deleted_archive_binding_not_current)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 694, in test_deleted_archive_binding_not_current
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_baseline_target_refused_and_state_kept (test_jh006_capture_binding.TestCaptureBindingLifecycle.test_baseline_target_refused_and_state_kept)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 572, in test_baseline_target_refused_and_state_kept
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_owner_held_refused (test_jh006_capture_binding.TestCaptureBindingLifecycle.test_owner_held_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 582, in test_owner_held_refused
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_same_call_conflicting_delivery_refused (test_jh006_capture_binding.TestCaptureBindingLifecycle.test_same_call_conflicting_delivery_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 617, in test_same_call_conflicting_delivery_refused
+    archive_a, _, _, _ = self._archive_for(
+                         ~~~~~~~~~~~~~~~~~^
+        payload_a["task_id"], delivery_a, live_store=store)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_same_delivery_conflicting_call_refused (test_jh006_capture_binding.TestCaptureBindingLifecycle.test_same_delivery_conflicting_call_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 594, in test_same_delivery_conflicting_call_refused
+    first, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_register_persists_binding_and_event (test_jh006_capture_binding.TestCaptureBindingRegister.test_register_persists_binding_and_event)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 190, in test_register_persists_binding_and_event
+    archive, manifest, events_raw, _ = self._archive_for(
+                                       ~~~~~~~~~~~~~~~~~^
+        tid, delivery, live_store=store)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_repeat_registration_is_idempotent (test_jh006_capture_binding.TestCaptureBindingRegister.test_repeat_registration_is_idempotent)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 229, in test_repeat_registration_is_idempotent
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_wrong_delivery_id_refused (test_jh006_capture_binding.TestCaptureBindingRegister.test_wrong_delivery_id_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 273, in test_wrong_delivery_id_refused
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store,
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                         claim_over={"delivery_claim": "dlv_other"})
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_duplicate_live_item_refused (test_jh006_capture_binding.TestCaptureBindingTruth.test_duplicate_live_item_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 464, in test_duplicate_live_item_refused
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_echo_argv_refused (test_jh006_capture_binding.TestCaptureBindingTruth.test_echo_argv_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 396, in test_echo_argv_refused
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store,
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                         argv=echo)
+                                         ^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_live_bytes_diverged_refused (test_jh006_capture_binding.TestCaptureBindingTruth.test_live_bytes_diverged_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 441, in test_live_bytes_diverged_refused
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_markerless_output_refused (test_jh006_capture_binding.TestCaptureBindingTruth.test_markerless_output_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 423, in test_markerless_output_refused
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store,
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                         output="case 0: FAIL\nFAIL\n")
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_missing_live_thread_refused (test_jh006_capture_binding.TestCaptureBindingTruth.test_missing_live_thread_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 454, in test_missing_live_thread_refused
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_nonzero_exit_refused (test_jh006_capture_binding.TestCaptureBindingTruth.test_nonzero_exit_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 414, in test_nonzero_exit_refused
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store,
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                         exit_code=1)
+                                         ^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_wrong_call_script_refused (test_jh006_capture_binding.TestCaptureBindingTruth.test_wrong_call_script_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 432, in test_wrong_call_script_refused
+    archive, _, _, _ = self._archive_for(
+                       ~~~~~~~~~~~~~~~~~^
+        tid, delivery, live_store=store, call_script="tools.exec_command({cmd: OTHER})")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_plan_register_query_across_processes (test_jh006_host_entry.TestHostEntryCrossProcess.test_plan_register_query_across_processes)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_host_entry.py", line 380, in test_plan_register_query_across_processes
+    archive, _, _, _ = self._archive_for(
+                       ~~~~~~~~~~~~~~~~~^
+        tid, delivery, live_store=store, argv=list(plan["argv"]),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        call_script=plan["call_input"])
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_query_after_cancel (test_jh006_host_entry.TestHostEntryQuery.test_query_after_cancel)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_host_entry.py", line 330, in test_query_after_cancel
+    tid, dlv, _ = self._registered()
+                  ~~~~~~~~~~~~~~~~^^
+  File "/workspace/work/h12-base/tests/test_jh006_host_entry.py", line 296, in _registered
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_query_bound_current (test_jh006_host_entry.TestHostEntryQuery.test_query_bound_current)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_host_entry.py", line 306, in test_query_bound_current
+    tid, dlv, binding_id = self._registered()
+                           ~~~~~~~~~~~~~~~~^^
+  File "/workspace/work/h12-base/tests/test_jh006_host_entry.py", line 296, in _registered
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_query_loads_no_models (test_jh006_host_entry.TestHostEntryQuery.test_query_loads_no_models)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_host_entry.py", line 361, in test_query_loads_no_models
+    tid, dlv, _ = self._registered()
+                  ~~~~~~~~~~~~~~~~^^
+  File "/workspace/work/h12-base/tests/test_jh006_host_entry.py", line 296, in _registered
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_register_loads_no_models (test_jh006_host_entry.TestHostEntryRegister.test_register_loads_no_models)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_host_entry.py", line 269, in test_register_loads_no_models
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_register_persists_binding_and_event (test_jh006_host_entry.TestHostEntryRegister.test_register_persists_binding_and_event)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_host_entry.py", line 131, in test_register_persists_binding_and_event
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_register_tampered_archive (test_jh006_host_entry.TestHostEntryRegister.test_register_tampered_archive)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_host_entry.py", line 187, in test_register_tampered_archive
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+======================================================================
+ERROR: test_concurrent_saves_over_http_all_persist (test_jh019_gui_http.TestDraftWritesOverRealHTTP.test_concurrent_saves_over_http_all_persist)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh019_gui_http.py", line 245, in test_concurrent_saves_over_http_all_persist
+    outcomes = list(pool.map(
+        lambda i: self.post({"title": f"t{i}", "goal": f"g{i}"}), range(8)))
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/concurrent/futures/_base.py", line 645, in result_iterator
+    yield _result_or_cancel(fs.pop())
+          ~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/concurrent/futures/_base.py", line 312, in _result_or_cancel
+    return fut.result(timeout)
+           ~~~~~~~~~~^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/concurrent/futures/_base.py", line 454, in result
+    return self.__get_result()
+           ~~~~~~~~~~~~~~~~~^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/concurrent/futures/_base.py", line 396, in __get_result
+    raise self._exception
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/workspace/work/h12-base/tests/test_jh019_gui_http.py", line 246, in <lambda>
+    lambda i: self.post({"title": f"t{i}", "goal": f"g{i}"}), range(8)))
+              ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh019_gui_http.py", line 235, in post
+    return exc.code, json.loads(exc.read())
+                     ~~~~~~~~~~^^^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/__init__.py", line 352, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/decoder.py", line 363, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+======================================================================
+ERROR: test_failed_publish_returns_an_error_and_keeps_old_data (test_jh019_gui_http.TestDraftWritesOverRealHTTP.test_failed_publish_returns_an_error_and_keeps_old_data)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh019_gui_http.py", line 263, in test_failed_publish_returns_an_error_and_keeps_old_data
+    status, _ = self.post({"title": "keep", "goal": "g"})
+                ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh019_gui_http.py", line 235, in post
+    return exc.code, json.loads(exc.read())
+                     ~~~~~~~~~~^^^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/__init__.py", line 352, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/decoder.py", line 363, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+======================================================================
+ERROR: test_refused_save_leaves_no_record (test_jh019_gui_http.TestDraftWritesOverRealHTTP.test_refused_save_leaves_no_record)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh019_gui_http.py", line 257, in test_refused_save_leaves_no_record
+    status, body = self.post({"title": "t", "goal": "g", "dispatch": True})
+                   ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh019_gui_http.py", line 235, in post
+    return exc.code, json.loads(exc.read())
+                     ~~~~~~~~~~^^^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/__init__.py", line 352, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/decoder.py", line 363, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+======================================================================
+ERROR: test_capabilities_show_unsupported_explicitly (test_jh019_gui_http.TestGuiEndpoints.test_capabilities_show_unsupported_explicitly)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh019_gui_http.py", line 119, in test_capabilities_show_unsupported_explicitly
+    payload = json.loads(body)
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/__init__.py", line 352, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/decoder.py", line 363, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+======================================================================
+ERROR: test_sessions_are_simulated_and_disconnected (test_jh019_gui_http.TestGuiEndpoints.test_sessions_are_simulated_and_disconnected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh019_gui_http.py", line 145, in test_sessions_are_simulated_and_disconnected
+    payload = json.loads(self.get("/api/sessions")[2])
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/__init__.py", line 352, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/decoder.py", line 363, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+======================================================================
+ERROR: test_task_detail_and_delivery (test_jh019_gui_http.TestGuiEndpoints.test_task_detail_and_delivery)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh019_gui_http.py", line 133, in test_task_detail_and_delivery
+    detail = json.loads(self.get("/api/tasks/task_http00000001")[2])
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/__init__.py", line 352, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/decoder.py", line 363, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+======================================================================
+ERROR: test_task_index_uses_recorded_rows (test_jh019_gui_http.TestGuiEndpoints.test_task_index_uses_recorded_rows)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh019_gui_http.py", line 126, in test_task_index_uses_recorded_rows
+    payload = json.loads(body)
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/__init__.py", line 352, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/decoder.py", line 363, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+======================================================================
+ERROR: test_unknown_task_is_a_structured_404 (test_jh019_gui_http.TestGuiEndpoints.test_unknown_task_is_a_structured_404)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh019_gui_http.py", line 142, in test_unknown_task_is_a_structured_404
+    self.assertEqual(json.loads(body)["error"]["code"], "task_not_found")
+                     ~~~~~~~~~~^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/__init__.py", line 352, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/decoder.py", line 363, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+======================================================================
+ERROR: test_task_list_reports_the_absence (test_jh019_gui_http.TestMissingDatabaseIsShownHonestly.test_task_list_reports_the_absence)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh019_gui_http.py", line 283, in test_task_list_reports_the_absence
+    payload = json.loads(self.get("/api/tasks")[2])
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/__init__.py", line 352, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/decoder.py", line 363, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+======================================================================
+ERROR: test_junction_under_the_root_is_refused_before_read (test_jh020_run_history_api.TestEvidenceBoundary.test_junction_under_the_root_is_refused_before_read)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh020_run_history_api.py", line 386, in test_junction_under_the_root_is_refused_before_read
+    made = subprocess.run(["cmd", "/c", "mklink", "/J", str(junction), str(outside_dir)],
+                          capture_output=True)
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py", line 555, in run
+    with Popen(*popenargs, **kwargs) as process:
+         ~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py", line 1039, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        pass_fds, cwd, env,
+                        ^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+                        gid, gids, uid, umask,
+                        ^^^^^^^^^^^^^^^^^^^^^^
+                        start_new_session, process_group)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py", line 1990, in _execute_child
+    raise child_exception_type(errno_num, err_msg, err_filename)
+FileNotFoundError: [Errno 2] No such file or directory: 'cmd'
+
+======================================================================
+ERROR: test_a_query_string_cannot_change_the_source (test_jh020_run_history_http.TestRunHistoryEndpoints.test_a_query_string_cannot_change_the_source)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh020_run_history_http.py", line 105, in test_a_query_string_cannot_change_the_source
+    status, payload = self.get("/api/agent-runs?path=" + urllib.parse.quote("/etc/passwd")
+                      ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                               + "&runs=C:/windows/win.ini")
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh020_run_history_http.py", line 79, in get
+    return exc.code, json.loads(exc.read().decode("utf-8"))
+                     ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/__init__.py", line 352, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/decoder.py", line 363, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+======================================================================
+ERROR: test_detail_endpoint_returns_one_run (test_jh020_run_history_http.TestRunHistoryEndpoints.test_detail_endpoint_returns_one_run)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh020_run_history_http.py", line 92, in test_detail_endpoint_returns_one_run
+    status, payload = self.get("/api/agent-runs/" + RUN_ID)
+                      ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh020_run_history_http.py", line 79, in get
+    return exc.code, json.loads(exc.read().decode("utf-8"))
+                     ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/__init__.py", line 352, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/decoder.py", line 363, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+======================================================================
+ERROR: test_list_endpoint_returns_the_configured_history (test_jh020_run_history_http.TestRunHistoryEndpoints.test_list_endpoint_returns_the_configured_history)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh020_run_history_http.py", line 84, in test_list_endpoint_returns_the_configured_history
+    status, payload = self.get("/api/agent-runs")
+                      ~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh020_run_history_http.py", line 79, in get
+    return exc.code, json.loads(exc.read().decode("utf-8"))
+                     ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/__init__.py", line 352, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/decoder.py", line 363, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+======================================================================
+ERROR: test_run_id_that_looks_like_a_path_is_not_read_as_one (test_jh020_run_history_http.TestRunHistoryEndpoints.test_run_id_that_looks_like_a_path_is_not_read_as_one)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh020_run_history_http.py", line 113, in test_run_id_that_looks_like_a_path_is_not_read_as_one
+    status, payload = self.get("/api/agent-runs/..%2F..%2Fwindows%2Fwin.ini")
+                      ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh020_run_history_http.py", line 79, in get
+    return exc.code, json.loads(exc.read().decode("utf-8"))
+                     ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/__init__.py", line 352, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/decoder.py", line 363, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+======================================================================
+ERROR: test_unknown_run_is_404 (test_jh020_run_history_http.TestRunHistoryEndpoints.test_unknown_run_is_404)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh020_run_history_http.py", line 98, in test_unknown_run_is_404
+    status, payload = self.get("/api/agent-runs/no-such-run")
+                      ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh020_run_history_http.py", line 79, in get
+    return exc.code, json.loads(exc.read().decode("utf-8"))
+                     ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/__init__.py", line 352, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/decoder.py", line 363, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+======================================================================
+ERROR: test_queries_leave_the_registry_byte_identical (test_jh020_run_history_http.TestRunHistoryIsReadOnly.test_queries_leave_the_registry_byte_identical)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh020_run_history_http.py", line 121, in test_queries_leave_the_registry_byte_identical
+    self.get("/api/agent-runs")
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh020_run_history_http.py", line 79, in get
+    return exc.code, json.loads(exc.read().decode("utf-8"))
+                     ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/__init__.py", line 352, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/json/decoder.py", line 363, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+======================================================================
+ERROR: test_race_planted_junction_refused (test_phase4_file_tools.TestFileToolExecutor.test_race_planted_junction_refused)
+TOCTOU: a junction planted between boundary check and open is caught
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_phase4_file_tools.py", line 242, in test_race_planted_junction_refused
+    result = executor.execute(stage_request("task_race00000001", "out/race.txt", "x"))
+  File "/workspace/work/h12-base/src/file_tools.py", line 283, in execute
+    staged = self.stage_write(
+        tool_request["task_id"], target_path=params["path"], content=params["content"])
+  File "/workspace/work/h12-base/src/file_tools.py", line 341, in stage_write
+    fd = self._open_verified(staged_path, mode="create_exclusive")
+  File "/workspace/work/h12-base/src/file_tools.py", line 221, in _open_verified
+    self.race_hook(resolved)
+    ~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_phase4_file_tools.py", line 238, in plant_junction
+    import _winapi
+ModuleNotFoundError: No module named '_winapi'
+
+======================================================================
+ERROR: test_real_junction_escape_refused (test_phase4_file_tools.TestFileToolExecutor.test_real_junction_escape_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_phase4_file_tools.py", line 207, in test_real_junction_escape_refused
+    r = subprocess.run(["cmd", "/c", "mklink", "/J", str(link), str(outside)],
+                       capture_output=True)
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py", line 555, in run
+    with Popen(*popenargs, **kwargs) as process:
+         ~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py", line 1039, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        pass_fds, cwd, env,
+                        ^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+                        gid, gids, uid, umask,
+                        ^^^^^^^^^^^^^^^^^^^^^^
+                        start_new_session, process_group)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py", line 1990, in _execute_child
+    raise child_exception_type(errno_num, err_msg, err_filename)
+FileNotFoundError: [Errno 2] No such file or directory: 'cmd'
+
+======================================================================
+ERROR: test_arch01_staging_junction_does_not_truncate_outside_file (test_phase4_file_tools.TestPhase4FileLoop.test_arch01_staging_junction_does_not_truncate_outside_file)
+ARCH-01: if _staging is a junction to outside, stage_write refuses BEFORE truncating victim.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_phase4_file_tools.py", line 487, in test_arch01_staging_junction_does_not_truncate_outside_file
+    import _winapi
+ModuleNotFoundError: No module named '_winapi'
+
+======================================================================
+ERROR: test_arch04_parent_swapped_to_junction_before_commit_refused (test_phase4_file_tools.TestPhase4FileLoop.test_arch04_parent_swapped_to_junction_before_commit_refused)
+ARCH-04: if target parent is swapped to a junction at temp_written, commit refuses without touching outside.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_phase4_file_tools.py", line 551, in test_arch04_parent_swapped_to_junction_before_commit_refused
+    executor.apply_staged(
+    ~~~~~~~~~~~~~~~~~~~~~^
+        "task_arch04", target_path="out/main.txt", staged_path=st["staged_path"],
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        content_sha256=st["content_sha256"], target_pre_sha256=st["target_pre_sha256"],
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        authorized_files={"out/main.txt"},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/workspace/work/h12-base/src/file_tools.py", line 446, in apply_staged
+    self.fault_injector("temp_written")
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_phase4_file_tools.py", line 545, in swap_parent
+    import _winapi
+ModuleNotFoundError: No module named '_winapi'
+
+======================================================================
+ERROR: test_backup_uses_verified_read_before_any_target_write (test_phase4_file_tools.TestPhase4FileLoop.test_backup_uses_verified_read_before_any_target_write)
+F1: backup creation refuses via verified open when the target escapes mid-apply.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_phase4_file_tools.py", line 696, in test_backup_uses_verified_read_before_any_target_write
+    executor.apply_staged(
+    ~~~~~~~~~~~~~~~~~~~~~^
+        "task_f1000001", target_path="out/victim.txt", staged_path=st["staged_path"],
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        content_sha256=st["content_sha256"], target_pre_sha256=st["target_pre_sha256"])
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/src/file_tools.py", line 409, in apply_staged
+    self.fault_injector("apply_start")
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_phase4_file_tools.py", line 691, in swap_before_backup
+    import _winapi
+ModuleNotFoundError: No module named '_winapi'
+
+======================================================================
+ERROR: test_junction_workspace_root_rejected (test_phase4_file_tools.TestPhase4FileLoop.test_junction_workspace_root_rejected)
+R1: a junction passed as workspace_root is rejected before resolve().
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_phase4_file_tools.py", line 589, in test_junction_workspace_root_rejected
+    import _winapi
+ModuleNotFoundError: No module named '_winapi'
+
+======================================================================
+FAIL: test_codex_cli_health (test_adapters.TestModelAdapters.test_codex_cli_health)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_adapters.py", line 83, in test_codex_cli_health
+    self.assertTrue(health["healthy"])
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true
+
+======================================================================
+FAIL: test_wrong_workdir_refused (test_jh006_capture_binding.TestCaptureBindingTruth.test_wrong_workdir_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/src/capture_binding.py", line 185, in _register_locked
+    return _bind_verified(
+        storage, task_id, delivery_id=delivery_id, archive_dir=archive_dir,
+        thread_id=thread_id, item_id=item_id, call_id=call_id,
+        expected_argv=expected_argv, expected_call_input=expected_call_input)
+  File "/workspace/work/h12-base/src/capture_binding.py", line 433, in _bind_verified
+    bindings = verify_desktop_binding(
+        selected, call, expected_argv=expected_argv,
+    ...<2 lines>...
+        expected_marker=snapshot["check"]["marker"] or None,
+        expected_call_input=expected_call_input)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+The above exception was the direct cause of the following exception:
+
+src.capture_binding.BindingRefused: expectation-malformed: absolute workdir and exact call script are mandatory
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 408, in test_wrong_workdir_refused
+    with self.assertRaisesRegex(BindingRefused, "cwd-mismatch"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: "cwd-mismatch" does not match "expectation-malformed: absolute workdir and exact call script are mandatory"
+
+======================================================================
+FAIL: test_entry_mutation_detected_and_local_import_hits_mutation (test_jh006_guard_harness.TestHarnessAliasBinding.test_entry_mutation_detected_and_local_import_hits_mutation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_guard_harness.py", line 76, in test_entry_mutation_detected_and_local_import_hits_mutation
+    self.assertEqual(result["errors"], 0, result["detail"])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1 != 0 : ======================================================================
+ERROR: test_register_persists_binding_and_event (test_jh006_host_entry.TestHostEntryRegister.test_register_persists_binding_and_event)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh006_guard_harness.py", line 58, in wrapper
+    return orig(self)
+  File "/workspace/work/h12-base/tests/test_jh006_host_entry.py", line 131, in test_register_persists_binding_and_event
+    archive, _, _, _ = self._archive_for(tid, delivery, live_store=store)
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_jh006_capture_binding.py", line 113, in _archive_for
+    bindings = verify_desktop_binding(
+        selected, call_rec, expected_argv=list(FIXED_ARGV) if argv is None else argv,
+        expected_workdir=ws, expected_exit=exit_code,
+        expected_marker="PASS" if "PASS" in output else None,
+        expected_call_input=call_script)
+  File "/workspace/work/h12-base/src/host_capture.py", line 323, in verify_desktop_binding
+    raise CaptureError("expectation-malformed: absolute workdir and exact call script are mandatory")
+src.host_capture.CaptureError: expectation-malformed: absolute workdir and exact call script are mandatory
+
+----------------------------------------------------------------------
+Ran 1 test in 0.190s
+
+FAILED (errors=1)
+
+
+======================================================================
+FAIL: test_draft_execution_request_is_refused (test_jh019_gui_http.TestGuiEndpoints.test_draft_execution_request_is_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh019_gui_http.py", line 164, in test_draft_execution_request_is_refused
+    self.assertEqual(status, 409)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+AssertionError: 404 != 409
+
+======================================================================
+FAIL: test_draft_round_trip_is_marked_and_inert (test_jh019_gui_http.TestGuiEndpoints.test_draft_round_trip_is_marked_and_inert)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh019_gui_http.py", line 153, in test_draft_round_trip_is_marked_and_inert
+    self.assertEqual(status, 201)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+AssertionError: 404 != 201
+
+======================================================================
+FAIL: test_all_three_layers_are_served (test_jh019_gui_http.TestGuiOpensLocally.test_all_three_layers_are_served)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh019_gui_http.py", line 101, in test_all_three_layers_are_served
+    self.assertEqual(status, 200, name)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+AssertionError: 404 != 200 : data_access.js
+
+======================================================================
+FAIL: test_index_page_is_served (test_jh019_gui_http.TestGuiOpensLocally.test_index_page_is_served)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh019_gui_http.py", line 90, in test_index_page_is_served
+    self.assertEqual(status, 200)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+AssertionError: 404 != 200
+
+======================================================================
+FAIL: test_unknown_path_is_a_json_404 (test_jh019_gui_http.TestGuiOpensLocally.test_unknown_path_is_a_json_404)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh019_gui_http.py", line 112, in test_unknown_path_is_a_json_404
+    self.assertIn("application/json", ctype)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'application/json' not found in 'text/plain; charset=utf-8'
+
+======================================================================
+FAIL: test_index_still_opens (test_jh019_gui_http.TestMissingDatabaseIsShownHonestly.test_index_still_opens)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh019_gui_http.py", line 280, in test_index_still_opens
+    self.assertEqual(self.get("/")[0], 200)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 404 != 200
+
+======================================================================
+FAIL: test_explicitly_configured_extra_root_is_allowed (test_jh020_run_history_api.TestEvidenceBoundary.test_explicitly_configured_extra_root_is_allowed)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh020_run_history_api.py", line 374, in test_explicitly_configured_extra_root_is_allowed
+    self.assertEqual(api.list_agent_runs()["runs"][0]["evidence"]["state"], "verified")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'outside_root' != 'verified'
+- outside_root
++ verified
+
+
+======================================================================
+FAIL: test_inside_root_verifies_and_reads_once (test_jh020_run_history_api.TestEvidenceBoundary.test_inside_root_verifies_and_reads_once)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh020_run_history_api.py", line 308, in test_inside_root_verifies_and_reads_once
+    self.assertEqual(len(reads), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_invalid_utf8_inside_root_is_structured (test_jh020_run_history_api.TestEvidenceBoundary.test_invalid_utf8_inside_root_is_structured)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh020_run_history_api.py", line 357, in test_invalid_utf8_inside_root_is_structured
+    self.assertEqual(state["state"], "invalid_content")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'outside_root' != 'invalid_content'
+- outside_root
++ invalid_content
+
+
+======================================================================
+FAIL: test_legacy_wrapper_keeps_the_two_tuple_contract (test_jh020_run_history_api.TestEvidenceBoundary.test_legacy_wrapper_keeps_the_two_tuple_contract)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh020_run_history_api.py", line 412, in test_legacy_wrapper_keeps_the_two_tuple_contract
+    self.assertIs(ok, True)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: False is not True
+
+======================================================================
+FAIL: test_mismatch_on_altered_bytes (test_jh020_run_history_api.TestEvidenceClassification.test_mismatch_on_altered_bytes)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh020_run_history_api.py", line 198, in test_mismatch_on_altered_bytes
+    self.assertEqual(self._run_with(raw)["state"], "mismatch")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'outside_root' != 'mismatch'
+- outside_root
++ mismatch
+
+
+======================================================================
+FAIL: test_mismatch_on_frame_count (test_jh020_run_history_api.TestEvidenceClassification.test_mismatch_on_frame_count)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh020_run_history_api.py", line 202, in test_mismatch_on_frame_count
+    self.assertEqual(self._run_with({**raw, "frames": raw["frames"] + 1})["state"], "mismatch")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'outside_root' != 'mismatch'
+- outside_root
++ mismatch
+
+
+======================================================================
+FAIL: test_unverifiable_when_unreadable (test_jh020_run_history_api.TestEvidenceClassification.test_unverifiable_when_unreadable)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh020_run_history_api.py", line 207, in test_unverifiable_when_unreadable
+    self.assertEqual(self._run_with(raw)["state"], "unverifiable")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'outside_root' != 'unverifiable'
+- outside_root
++ unverifiable
+
+
+======================================================================
+FAIL: test_verified_digest (test_jh020_run_history_api.TestEvidenceClassification.test_verified_digest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh020_run_history_api.py", line 189, in test_verified_digest
+    self.assertEqual(state["state"], "verified")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'outside_root' != 'verified'
+- outside_root
++ verified
+
+
+======================================================================
+FAIL: test_ok_state_lists_runs_with_the_display_fields (test_jh020_run_history_api.TestRunHistoryStates.test_ok_state_lists_runs_with_the_display_fields)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_jh020_run_history_api.py", line 127, in test_ok_state_lists_runs_with_the_display_fields
+    self.assertEqual(run["evidence"]["state"], "verified")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'outside_root' != 'verified'
+- outside_root
++ verified
+
+
+======================================================================
+FAIL: test_approval_and_event_commit_together (test_phase2_hardening.TestPhase2Hardening.test_approval_and_event_commit_together)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_phase2_hardening.py", line 380, in test_approval_and_event_commit_together
+    orch, tid, _ = self.run_path("D:/another-project/notes.md")
+                   ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_phase2_hardening.py", line 133, in run_path
+    self.assertEqual(len(orch.tool_executor.executed_requests), 0)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1 != 0
+
+======================================================================
+FAIL: test_opt_09_planning_is_not_permission (test_phase2_hardening.TestPhase2Hardening.test_opt_09_planning_is_not_permission)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_phase2_hardening.py", line 126, in test_opt_09_planning_is_not_permission
+    self.assertEqual(orch.policy_engine.evaluate_tool_request(forbidden).action, "deny_and_fail")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'hold_for_approval' != 'deny_and_fail'
+- hold_for_approval
++ deny_and_fail
+
+
+======================================================================
+FAIL: test_opt_10_declared_read_only_delete (test_phase2_hardening.TestPhase2Hardening.test_opt_10_declared_read_only_delete)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_phase2_hardening.py", line 138, in test_opt_10_declared_read_only_delete
+    self.assertEqual(result["status"], "failed")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'awaiting_approval' != 'failed'
+- awaiting_approval
++ failed
+
+
+======================================================================
+FAIL: test_opt_11_model_approval_flag_ignored (test_phase2_hardening.TestPhase2Hardening.test_opt_11_model_approval_flag_ignored)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_phase2_hardening.py", line 141, in test_opt_11_model_approval_flag_ignored
+    _, _, result = self.run_path("D:/another-project/notes.md")
+                   ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_phase2_hardening.py", line 133, in run_path
+    self.assertEqual(len(orch.tool_executor.executed_requests), 0)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1 != 0
+
+======================================================================
+FAIL: test_opt_12_sibling_prefix (test_phase2_hardening.TestPhase2Hardening.test_opt_12_sibling_prefix)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_phase2_hardening.py", line 145, in test_opt_12_sibling_prefix
+    _, _, result = self.run_path("D:/JH-Agent OS-archive/notes.md")
+                   ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_phase2_hardening.py", line 133, in run_path
+    self.assertEqual(len(orch.tool_executor.executed_requests), 0)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1 != 0
+
+======================================================================
+FAIL: test_opt_15_changed_approved_action (test_phase2_hardening.TestPhase2Hardening.test_opt_15_changed_approved_action)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_phase2_hardening.py", line 157, in test_opt_15_changed_approved_action
+    orch, tid, _ = self.run_path("D:/another-project/notes.md")
+                   ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_phase2_hardening.py", line 133, in run_path
+    self.assertEqual(len(orch.tool_executor.executed_requests), 0)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1 != 0
+
+======================================================================
+FAIL: test_restart_does_not_reset_deadline_or_approval (test_phase2_hardening.TestPhase2Hardening.test_restart_does_not_reset_deadline_or_approval)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_phase2_hardening.py", line 397, in test_restart_does_not_reset_deadline_or_approval
+    orch, tid, _ = self.run_path("D:/another-project/notes.md")
+                   ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/work/h12-base/tests/test_phase2_hardening.py", line 133, in run_path
+    self.assertEqual(len(orch.tool_executor.executed_requests), 0)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1 != 0
+
+======================================================================
+FAIL: test_drive_and_case_and_prefix (test_phase4_file_tools.TestFileToolExecutor.test_drive_and_case_and_prefix)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_phase4_file_tools.py", line 191, in test_drive_and_case_and_prefix
+    self.assertTrue((self.ws / "out" / "casefile.txt").exists())  # same file, folded
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true
+
+======================================================================
+FAIL: test_out_of_bounds_paths_refused (test_phase4_file_tools.TestFileToolExecutor.test_out_of_bounds_paths_refused) (bad='..\\evil.txt')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/work/h12-base/tests/test_phase4_file_tools.py", line 166, in test_out_of_bounds_paths_refused
+    self.assertEqual(result["status"], "denied_by_policy", bad)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'success' != 'denied_by_policy'
+- success
++ denied_by_policy
+ : ..\evil.txt
+
+----------------------------------------------------------------------
+Ran 736 tests in 96.362s
+
+FAILED (failures=27, errors=78, skipped=2)
+{"captured": false, "reason": "source-untrusted: require a file in the observed desktop session store: [Errno 2] No such file or directory: '/home/sandbox/.codex'"}
+exit=1
