@@ -1,0 +1,15 @@
+test_threads_synchronised_in_version_probe_dispatch_once (h12.TestR1SharedRegistry.test_threads_synchronised_in_version_probe_dispatch_once) ... ok
+test_two_adapters_same_root_dispatch_once (h12.TestR1SharedRegistry.test_two_adapters_same_root_dispatch_once) ... ok
+test_bad_shapes_are_diagnosed_not_raised (h12.TestR2Observation.test_bad_shapes_are_diagnosed_not_raised) ... ok
+test_chat_record_first_line_shapes (h12.TestR2Observation.test_chat_record_first_line_shapes) ... ok
+test_tool_status_shapes_do_not_confirm_denial (h12.TestR2Observation.test_tool_status_shapes_do_not_confirm_denial) ... ok
+test_valid_delivery_keeps_raw_bytes (h12.TestR2Observation.test_valid_delivery_keeps_raw_bytes) ... ok
+test_reencoding_reproduces_captured_native_bytes (h12.TestR3Fixture.test_reencoding_reproduces_captured_native_bytes) ... ok
+test_windows_workspace_string_replays_as_valid_json (h12.TestR3Fixture.test_windows_workspace_string_replays_as_valid_json) ... ok
+test_classifier_windows_and_posix_forms (h12.TestR3Paths.test_classifier_windows_and_posix_forms) ... ok
+test_valid_delivery_is_declared_not_succeeded (h11.TestValidDelivery.test_valid_delivery_is_declared_not_succeeded) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 3.339s
+
+OK

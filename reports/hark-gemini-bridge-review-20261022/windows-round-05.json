@@ -1,0 +1,421 @@
+{
+  "candidate": "7a41ac1673adb5cf202b12a25c6c83ae8fdbb659",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.14.7 (tags/v3.14.7:823f032, Aug  5 2026, 10:51:32) [MSC v.1944 64 bit (AMD64)]",
+  "external_processes": 0,
+  "network_calls": 0,
+  "real_models": 0,
+  "template_sha256": "505e1c69d26d958b8b5f7800aa837657c6b914e1da3fcfc6c0ebea24e8227b9d",
+  "cases": [
+    {
+      "state": "declared_complete",
+      "declared_status": "success",
+      "unverified": [
+        "adapter observation only; independent review decides success",
+        "native turn ids: not exposed by stream-json; turn count unknown"
+      ],
+      "workspace_unchanged": true,
+      "denied": [
+        "write_file",
+        "run_shell_command"
+      ],
+      "case": "positive",
+      "launches": 1
+    },
+    {
+      "first": "gemini-run-f15ce4801e22",
+      "second": "gemini-run-9c79f4ef86ee",
+      "same_run": false,
+      "case": "two_instances_same_source_same_key",
+      "launches": 2
+    },
+    {
+      "same_run": true,
+      "state": "unknown",
+      "case": "reopen_after_dispatch_control",
+      "launches": 1
+    },
+    {
+      "same_run": false,
+      "case": "same_instance_two_threads_same_key",
+      "launches": 2
+    },
+    {
+      "blocked": "RegistryUnavailable",
+      "case": "registry_bad_json_control",
+      "launches": 0
+    },
+    {
+      "blocked": null,
+      "case": "registry_bad_json_after_initialization",
+      "launches": 1
+    },
+    {
+      "new_launches": 1,
+      "blocked": null,
+      "registry_problem": null,
+      "case": "registry_missing_app_kind",
+      "launches": 2
+    },
+    {
+      "new_launches": 1,
+      "blocked": null,
+      "registry_problem": null,
+      "case": "registry_missing_instance_id",
+      "launches": 2
+    },
+    {
+      "new_launches": 1,
+      "blocked": null,
+      "registry_problem": null,
+      "case": "registry_missing_session_id",
+      "launches": 2
+    },
+    {
+      "new_launches": 1,
+      "blocked": null,
+      "registry_problem": null,
+      "case": "registry_missing_task_id",
+      "launches": 2
+    },
+    {
+      "new_launches": 1,
+      "blocked": null,
+      "registry_problem": null,
+      "case": "registry_missing_attempt",
+      "launches": 2
+    },
+    {
+      "new_launches": 1,
+      "blocked": null,
+      "registry_problem": null,
+      "case": "registry_missing_request_snapshot",
+      "launches": 2
+    },
+    {
+      "new_launches": 1,
+      "blocked": null,
+      "registry_problem": null,
+      "case": "registry_missing_request_fingerprint",
+      "launches": 2
+    },
+    {
+      "new_launches": 1,
+      "blocked": null,
+      "registry_problem": null,
+      "case": "registry_missing_native_session_id",
+      "launches": 2
+    },
+    {
+      "new_launches": 1,
+      "blocked": null,
+      "registry_problem": null,
+      "case": "registry_missing_event",
+      "launches": 2
+    },
+    {
+      "new_launches": 1,
+      "blocked": null,
+      "registry_problem": null,
+      "case": "registry_missing_idempotency_key",
+      "launches": 2
+    },
+    {
+      "new_launches": 1,
+      "blocked": null,
+      "registry_problem": null,
+      "case": "registry_wrong_attempt",
+      "launches": 2
+    },
+    {
+      "new_launches": 1,
+      "blocked": null,
+      "registry_problem": null,
+      "case": "registry_wrong_workspace",
+      "launches": 2
+    },
+    {
+      "new_launches": 1,
+      "blocked": null,
+      "registry_problem": null,
+      "case": "registry_wrong_run_id",
+      "launches": 2
+    },
+    {
+      "new_launches": 1,
+      "blocked": null,
+      "registry_problem": null,
+      "case": "registry_wrong_event",
+      "launches": 2
+    },
+    {
+      "new_launches": 1,
+      "blocked": null,
+      "registry_problem": null,
+      "case": "registry_wrong_state",
+      "launches": 2
+    },
+    {
+      "new_launches": 1,
+      "blocked": null,
+      "registry_problem": null,
+      "case": "registry_wrong_request_snapshot",
+      "launches": 2
+    },
+    {
+      "new_launches": 1,
+      "blocked": null,
+      "registry_problem": null,
+      "case": "registry_wrong_request_fingerprint",
+      "launches": 2
+    },
+    {
+      "new_launches": 0,
+      "blocked": "RegistryUnavailable",
+      "registry_problem": "registry unreadable: registry record without run_id",
+      "case": "registry_nonobject_control",
+      "launches": 1
+    },
+    {
+      "new_launches": 1,
+      "blocked": null,
+      "registry_problem": null,
+      "case": "registry_contradicted_binding",
+      "launches": 2
+    },
+    {
+      "new_launches": 1,
+      "blocked": null,
+      "registry_problem": null,
+      "case": "registry_reversed_events",
+      "launches": 2
+    },
+    {
+      "state": "declared_complete",
+      "declared_status": "success",
+      "unverified": [
+        "adapter observation only; independent review decides success",
+        "native turn ids: not exposed by stream-json; turn count unknown"
+      ],
+      "workspace_unchanged": true,
+      "denied": [
+        "write_file",
+        "run_shell_command"
+      ],
+      "before_manifest": {},
+      "case": "enumerate_root_both",
+      "launches": 1
+    },
+    {
+      "state": "failed",
+      "declared_status": "success",
+      "unverified": [
+        "adapter observation only; independent review decides success",
+        "native turn ids: not exposed by stream-json; turn count unknown",
+        "workspace modified (or unprovable) during the run"
+      ],
+      "workspace_unchanged": false,
+      "denied": [
+        "write_file",
+        "run_shell_command"
+      ],
+      "before_manifest": {
+        "hidden": {
+          "kind": "dir"
+        },
+        "hidden/real.txt": {
+          "kind": "file",
+          "sha256": "40256081e57301cfa24f31c8e17d2a6cbb5b09a61786567fc68cc17a84c8a679",
+          "size": 9
+        },
+        "src": {
+          "kind": "dir"
+        },
+        "src/agent_session.py": {
+          "kind": "file",
+          "sha256": "5992a9e470dbab4605b85df11bf3e87a2f08bf8a8d4180a0fd4f8e38e247779d",
+          "size": 280
+        }
+      },
+      "case": "enumerate_root_after_only",
+      "launches": 1
+    },
+    {
+      "state": "declared_complete",
+      "declared_status": "success",
+      "unverified": [
+        "adapter observation only; independent review decides success",
+        "native turn ids: not exposed by stream-json; turn count unknown"
+      ],
+      "workspace_unchanged": true,
+      "denied": [
+        "write_file",
+        "run_shell_command"
+      ],
+      "before_manifest": {
+        "hidden": {
+          "kind": "dir"
+        },
+        "src": {
+          "kind": "dir"
+        },
+        "src/agent_session.py": {
+          "kind": "file",
+          "sha256": "5992a9e470dbab4605b85df11bf3e87a2f08bf8a8d4180a0fd4f8e38e247779d",
+          "size": 280
+        }
+      },
+      "case": "enumerate_child_both",
+      "launches": 1
+    },
+    {
+      "state": "failed",
+      "declared_status": "success",
+      "unverified": [
+        "adapter observation only; independent review decides success",
+        "native turn ids: not exposed by stream-json; turn count unknown",
+        "workspace modified (or unprovable) during the run"
+      ],
+      "workspace_unchanged": false,
+      "denied": [
+        "write_file",
+        "run_shell_command"
+      ],
+      "before_manifest": {
+        "hidden": {
+          "kind": "dir"
+        },
+        "hidden/real.txt": {
+          "kind": "file",
+          "sha256": "40256081e57301cfa24f31c8e17d2a6cbb5b09a61786567fc68cc17a84c8a679",
+          "size": 9
+        },
+        "src": {
+          "kind": "dir"
+        },
+        "src/agent_session.py": {
+          "kind": "file",
+          "sha256": "5992a9e470dbab4605b85df11bf3e87a2f08bf8a8d4180a0fd4f8e38e247779d",
+          "size": 280
+        }
+      },
+      "case": "enumerate_child_after_only",
+      "launches": 1
+    },
+    {
+      "state": "declared_complete",
+      "declared_status": "success",
+      "unverified": [
+        "adapter observation only; independent review decides success",
+        "native turn ids: not exposed by stream-json; turn count unknown"
+      ],
+      "workspace_unchanged": true,
+      "denied": [
+        "write_file",
+        "run_shell_command"
+      ],
+      "case": "tool_result_status_missing",
+      "launches": 1
+    },
+    {
+      "state": "declared_complete",
+      "declared_status": "success",
+      "unverified": [
+        "adapter observation only; independent review decides success",
+        "native turn ids: not exposed by stream-json; turn count unknown"
+      ],
+      "workspace_unchanged": true,
+      "denied": [
+        "write_file",
+        "run_shell_command"
+      ],
+      "case": "tool_result_status_null",
+      "launches": 1
+    },
+    {
+      "state": "declared_complete",
+      "declared_status": "success",
+      "unverified": [
+        "adapter observation only; independent review decides success",
+        "native turn ids: not exposed by stream-json; turn count unknown"
+      ],
+      "workspace_unchanged": true,
+      "denied": [
+        "write_file",
+        "run_shell_command"
+      ],
+      "case": "tool_result_status_unknown",
+      "launches": 1
+    },
+    {
+      "state": "declared_complete",
+      "declared_status": "success",
+      "unverified": [
+        "adapter observation only; independent review decides success",
+        "native turn ids: not exposed by stream-json; turn count unknown"
+      ],
+      "workspace_unchanged": true,
+      "denied": [
+        "write_file",
+        "run_shell_command"
+      ],
+      "case": "tool_result_status_array",
+      "launches": 1
+    },
+    {
+      "exception": "TypeError",
+      "message": "cannot use 'list' as a dict key (unhashable type: 'list')",
+      "case": "stream_tool_id_array",
+      "launches": 1
+    },
+    {
+      "exception": "TypeError",
+      "message": "cannot use 'list' as a set element (unhashable type: 'list')",
+      "case": "stream_type_array",
+      "launches": 1
+    },
+    {
+      "exception": "AttributeError",
+      "message": "'list' object has no attribute 'get'",
+      "case": "chat_first_array",
+      "launches": 1
+    },
+    {
+      "exception": "AttributeError",
+      "message": "'NoneType' object has no attribute 'get'",
+      "case": "chat_first_null",
+      "launches": 1
+    },
+    {
+      "exception": "AttributeError",
+      "message": "'str' object has no attribute 'get'",
+      "case": "chat_first_string",
+      "launches": 1
+    },
+    {
+      "exception": "AttributeError",
+      "message": "'int' object has no attribute 'get'",
+      "case": "chat_first_number",
+      "launches": 1
+    },
+    {
+      "exception": "AttributeError",
+      "message": "'bool' object has no attribute 'get'",
+      "case": "chat_first_bool",
+      "launches": 1
+    },
+    {
+      "all_lines_parse": false,
+      "exception": "JSONDecodeError",
+      "message": "Invalid \\escape: line 1 column 161 (char 160)",
+      "case": "windows_fixture_substitution",
+      "launches": 0
+    },
+    {
+      "submitted": true,
+      "registered_workspace": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\data\\hark11-independent-review-20261022\\round-05\\existing_relative_workspace\\ws",
+      "case": "existing_relative_workspace",
+      "launches": 1
+    }
+  ]
+}

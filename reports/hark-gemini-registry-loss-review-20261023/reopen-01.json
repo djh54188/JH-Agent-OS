@@ -1,0 +1,68 @@
+{
+  "real_processes": 0,
+  "model_calls": 0,
+  "cases": [
+    {
+      "case": "normal",
+      "first_run_id": "gemini-run-cd0f6b6e6b87",
+      "retained_run_dirs": [
+        "gemini-run-cd0f6b6e6b87"
+      ],
+      "second_run_id": "gemini-run-cd0f6b6e6b87",
+      "same_run": true,
+      "state": "unknown",
+      "new_launches_after_reopen": 0
+    },
+    {
+      "case": "bad-json",
+      "first_run_id": "gemini-run-2f3fc659fbb6",
+      "retained_run_dirs": [
+        "gemini-run-2f3fc659fbb6"
+      ],
+      "exception": "RegistryUnavailable",
+      "message": "refusing to dispatch: registry unreadable: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)",
+      "new_launches_after_reopen": 0
+    },
+    {
+      "case": "truncate-empty",
+      "first_run_id": "gemini-run-b692c4b93e5f",
+      "retained_run_dirs": [
+        "gemini-run-b692c4b93e5f"
+      ],
+      "exception": "RegistryUnavailable",
+      "message": "refusing to dispatch: registry does not account for existing run evidence; refusing: run evidence 'gemini-run-b692c4b93e5f' has no registry record (registry incomplete)",
+      "new_launches_after_reopen": 0
+    },
+    {
+      "case": "delete",
+      "first_run_id": "gemini-run-83aaaba03b6b",
+      "retained_run_dirs": [
+        "gemini-run-83aaaba03b6b"
+      ],
+      "exception": "RegistryUnavailable",
+      "message": "refusing to dispatch: registry does not account for existing run evidence; refusing: run evidence 'gemini-run-83aaaba03b6b' has no registry record (registry incomplete)",
+      "new_launches_after_reopen": 0
+    },
+    {
+      "case": "whitespace",
+      "first_run_id": "gemini-run-2e11100e4c5e",
+      "retained_run_dirs": [
+        "gemini-run-2e11100e4c5e"
+      ],
+      "exception": "RegistryUnavailable",
+      "message": "refusing to dispatch: registry unreadable: registry contains blank or whitespace-only lines",
+      "new_launches_after_reopen": 0
+    },
+    {
+      "case": "reserved-only",
+      "first_run_id": "gemini-run-c0cacae05ff3",
+      "retained_run_dirs": [
+        "gemini-run-c0cacae05ff3"
+      ],
+      "second_run_id": "gemini-run-c0cacae05ff3",
+      "same_run": true,
+      "state": "unknown",
+      "new_launches_after_reopen": 0
+    }
+  ]
+}

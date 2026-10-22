@@ -1,0 +1,292 @@
+{
+  "commit": "750b81673ee5b3d68bcab6c2ac85d87a32b94d72",
+  "base": "29e00201f85063f60cc23213262fc82cf430d7ee",
+  "source_and_tests_unchanged": true,
+  "ledger": [
+    {
+      "case": "node22-boundary1",
+      "run_id": "gemini-run-37d5f23c57bf",
+      "state": "declared_complete",
+      "exit_code": 0,
+      "assertion": false,
+      "synthetic_requests": 6,
+      "synthetic_tokens": 108,
+      "non_json": [],
+      "registry_sha256": "c408c76708281ddadab5befda8daffa0f62c13a6187db98725c69951461b8271"
+    },
+    {
+      "case": "node22-boundary2",
+      "run_id": "gemini-run-25b5522f22f1",
+      "state": "declared_complete",
+      "exit_code": 0,
+      "assertion": false,
+      "synthetic_requests": 6,
+      "synthetic_tokens": 108,
+      "non_json": [],
+      "registry_sha256": "7045848b6225f0c03f5e0434a13b7d85b1c4d8fbf7baacbb6b2aa1dfcbc3e2bb"
+    },
+    {
+      "case": "node22-run1",
+      "run_id": "gemini-run-92dc87c4d59a",
+      "state": "failed",
+      "exit_code": 0,
+      "assertion": false,
+      "synthetic_requests": 5,
+      "synthetic_tokens": 90,
+      "non_json": [
+        {
+          "line": 1,
+          "raw": "Rename failed with EPERM, retrying in 50ms (attempt 1/5)..."
+        }
+      ],
+      "registry_sha256": "fcc6c9703bf61e3c285fdd158c620672746305e6a24f8f32b88cabbb7ef4feb4"
+    },
+    {
+      "case": "node22-run2",
+      "run_id": "gemini-run-294177c4271c",
+      "state": "declared_complete",
+      "exit_code": 0,
+      "assertion": false,
+      "synthetic_requests": 5,
+      "synthetic_tokens": 90,
+      "non_json": [],
+      "registry_sha256": "80c10c378e58db33e05283ffd831f9cb2b0b28bf163607a793416a74b2603633"
+    },
+    {
+      "case": "node22-run3",
+      "run_id": "gemini-run-b60c9383b4b4",
+      "state": "declared_complete",
+      "exit_code": 0,
+      "assertion": false,
+      "synthetic_requests": 5,
+      "synthetic_tokens": 90,
+      "non_json": [],
+      "registry_sha256": "983fb000fb9da22bf74590646e6eaca1f24932ad3102b4e796373862f28bbcd3"
+    },
+    {
+      "case": "node24-control",
+      "run_id": "gemini-run-ec7ed8623ca7",
+      "state": "failed",
+      "exit_code": 3221226505,
+      "assertion": true,
+      "synthetic_requests": 5,
+      "synthetic_tokens": 90,
+      "non_json": [
+        {
+          "line": 1,
+          "raw": "Rename failed with EPERM, retrying in 50ms (attempt 1/5)..."
+        }
+      ],
+      "registry_sha256": "f8faae68c38d2d4ca0a7655aa7774af8efb9f9633300cb0315ce4a2ec91921fc"
+    },
+    {
+      "case": "node24-control2",
+      "run_id": "gemini-run-d444e0a573be",
+      "state": "failed",
+      "exit_code": 3221226505,
+      "assertion": true,
+      "synthetic_requests": 5,
+      "synthetic_tokens": 90,
+      "non_json": [
+        {
+          "line": 1,
+          "raw": "Rename failed with EPERM, retrying in 50ms (attempt 1/5)..."
+        }
+      ],
+      "registry_sha256": "9964ef4e3b5c01fcd0ee749a11a7e7c16244a5e750f71c68d85122afd1165c83"
+    },
+    {
+      "case": "node24-control3",
+      "run_id": "gemini-run-e383e59f836f",
+      "state": "failed",
+      "exit_code": 3221226505,
+      "assertion": true,
+      "synthetic_requests": 5,
+      "synthetic_tokens": 90,
+      "non_json": [
+        {
+          "line": 1,
+          "raw": "Rename failed with EPERM, retrying in 50ms (attempt 1/5)..."
+        }
+      ],
+      "registry_sha256": "da022036fc03d880ab0b3ed369296b9df444b96d7d80470be567fea08b3db44f"
+    },
+    {
+      "case": "pair-node22-warm",
+      "run_id": "gemini-run-50459e04aa6d",
+      "state": "declared_complete",
+      "exit_code": 0,
+      "assertion": false,
+      "synthetic_requests": 5,
+      "synthetic_tokens": 90,
+      "non_json": [],
+      "registry_sha256": "419867160da2a1b46182cc2d8ed46a8a563fa0cf725f609d108d3b746d282f8e"
+    },
+    {
+      "case": "pair-node24-warm",
+      "run_id": "gemini-run-369dd604d953",
+      "state": "failed",
+      "exit_code": 3221226505,
+      "assertion": true,
+      "synthetic_requests": 5,
+      "synthetic_tokens": 90,
+      "non_json": [],
+      "registry_sha256": "2db3865dba7e83881ec268cb36f55199fddd645693d8cf6d30cd3f164ec52309"
+    }
+  ],
+  "synthetic_requests": 52,
+  "synthetic_tokens": 936,
+  "evidence_file_matches": 30,
+  "public_input_probe": [
+    {
+      "case": "relative-existing",
+      "exception": "HostRestrictionUnavailable",
+      "message": "workspace must be an absolute path (relative input refused)",
+      "before": {
+        "versions": 0,
+        "launches": 0
+      },
+      "after": {
+        "versions": 0,
+        "launches": 0
+      }
+    },
+    {
+      "case": "relative-missing",
+      "exception": "HostRestrictionUnavailable",
+      "message": "workspace must be an absolute path (relative input refused)",
+      "before": {
+        "versions": 0,
+        "launches": 0
+      },
+      "after": {
+        "versions": 0,
+        "launches": 0
+      }
+    },
+    {
+      "case": "root-relative-existing",
+      "exception": "HostRestrictionUnavailable",
+      "message": "workspace must be an absolute path (Windows root-relative input refused)",
+      "before": {
+        "versions": 0,
+        "launches": 0
+      },
+      "after": {
+        "versions": 0,
+        "launches": 0
+      }
+    },
+    {
+      "case": "root-relative-missing",
+      "exception": "HostRestrictionUnavailable",
+      "message": "workspace must be an absolute path (Windows root-relative input refused)",
+      "before": {
+        "versions": 0,
+        "launches": 0
+      },
+      "after": {
+        "versions": 0,
+        "launches": 0
+      }
+    },
+    {
+      "case": "drive-relative-existing",
+      "exception": "HostRestrictionUnavailable",
+      "message": "workspace must be an absolute path (Windows drive-relative input refused)",
+      "before": {
+        "versions": 0,
+        "launches": 0
+      },
+      "after": {
+        "versions": 0,
+        "launches": 0
+      }
+    },
+    {
+      "case": "drive-relative-missing",
+      "exception": "HostRestrictionUnavailable",
+      "message": "workspace must be an absolute path (Windows drive-relative input refused)",
+      "before": {
+        "versions": 0,
+        "launches": 0
+      },
+      "after": {
+        "versions": 0,
+        "launches": 0
+      }
+    },
+    {
+      "case": "chinese-missing-public-submit",
+      "exception": "HostRestrictionUnavailable",
+      "message": "workspace 'D:\\\\JH-Agent OS\\\\data\\\\worktrees\\\\n1-artifact-entry\\\\data\\\\execution09-independent-review-20261023\\\\input-probe-01\\\\inputs\\\\中文不存在' is not a directory",
+      "launches": 0
+    },
+    {
+      "case": "chinese-existing-preflight",
+      "accepted": true,
+      "real_cli_execution": false
+    }
+  ],
+  "parser_baseline": [
+    {
+      "case": "clean",
+      "events": 12,
+      "problems": []
+    },
+    {
+      "case": "known-preamble",
+      "events": 12,
+      "problems": [
+        "line 1: not JSON"
+      ]
+    },
+    {
+      "case": "unknown-preamble",
+      "events": 12,
+      "problems": [
+        "line 1: not JSON"
+      ]
+    },
+    {
+      "case": "same-text-midstream",
+      "events": 12,
+      "problems": [
+        "line 2: not JSON"
+      ]
+    },
+    {
+      "case": "same-text-after-result",
+      "events": 12,
+      "problems": [
+        "line 13: not JSON"
+      ]
+    },
+    {
+      "case": "damaged-json",
+      "events": 12,
+      "problems": [
+        "line 1: not JSON"
+      ]
+    },
+    {
+      "case": "bad-utf8",
+      "events": 0,
+      "problems": [
+        "stream is not UTF-8: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte"
+      ]
+    },
+    {
+      "case": "json-string-not-event",
+      "events": 12,
+      "problems": [
+        "line 1: not a native stream-json event (str)"
+      ]
+    }
+  ],
+  "provided_audit_recorded_head": "29e00201f85063f60cc23213262fc82cf430d7ee",
+  "provided_audit_sha256": "836fdd7de8dbe64f8401ca6d731ebe566cac1b74ac185e52cbcbc04c299cb761",
+  "review_real_cli_processes": 0,
+  "review_model_calls": 0,
+  "review_full_suite_runs": 0
+}

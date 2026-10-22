@@ -1,0 +1,108 @@
+{
+  "cases": [
+    {
+      "exception": "RegistryUnavailable",
+      "message": "refusing to dispatch: registry does not account for existing run evidence; refusing: run evidence directory cannot be inspected: independent lstat injection",
+      "new_launches": 0,
+      "case": "lstat-intact",
+      "bytes_unchanged": true
+    },
+    {
+      "exception": "RegistryUnavailable",
+      "message": "refusing to dispatch: registry does not account for existing run evidence; refusing: run evidence directory cannot be inspected: independent lstat injection",
+      "new_launches": 0,
+      "case": "lstat-missing",
+      "bytes_unchanged": true
+    },
+    {
+      "exception": "RegistryUnavailable",
+      "message": "refusing to dispatch: registry does not account for existing run evidence; refusing: run evidence directory unreadable: independent scandir injection",
+      "new_launches": 0,
+      "case": "scandir-intact",
+      "bytes_unchanged": true
+    },
+    {
+      "exception": "RegistryUnavailable",
+      "message": "refusing to dispatch: registry does not account for existing run evidence; refusing: run evidence directory unreadable: independent scandir injection",
+      "new_launches": 0,
+      "case": "scandir-missing",
+      "bytes_unchanged": true
+    },
+    {
+      "exception": "RegistryUnavailable",
+      "message": "refusing to dispatch: registry does not account for existing run evidence; refusing: run evidence directory unreadable: independent entry inspection injection",
+      "new_launches": 0,
+      "case": "entry_is_dir-intact",
+      "bytes_unchanged": true
+    },
+    {
+      "exception": "RegistryUnavailable",
+      "message": "refusing to dispatch: registry does not account for existing run evidence; refusing: run evidence directory unreadable: independent entry inspection injection",
+      "new_launches": 0,
+      "case": "entry_is_dir-missing",
+      "bytes_unchanged": true
+    },
+    {
+      "exception": "RegistryUnavailable",
+      "case": "failed-reservation-owner",
+      "initial_exception": "RegistryUnavailable",
+      "total_launches": 0,
+      "bytes_unchanged": true
+    },
+    {
+      "exception": "RegistryUnavailable",
+      "case": "failed-reservation-new-object",
+      "initial_exception": "RegistryUnavailable",
+      "total_launches": 0,
+      "bytes_unchanged": true
+    },
+    {
+      "state": "unknown",
+      "run_id": "gemini-run-c0aa15c6ac78",
+      "new_launches": 0,
+      "case": "restart-intact",
+      "exit_code": 0,
+      "same_run": true,
+      "bytes_unchanged": true
+    },
+    {
+      "exception": "RegistryUnavailable",
+      "message": "refusing to dispatch: registry does not account for existing run evidence; refusing: run evidence 'gemini-run-762f271a4efb' has no registry record (registry incomplete)",
+      "new_launches": 0,
+      "case": "restart-delete",
+      "exit_code": 0,
+      "same_run": false,
+      "bytes_unchanged": true
+    },
+    {
+      "exception": "RegistryUnavailable",
+      "message": "refusing to dispatch: registry does not account for existing run evidence; refusing: run evidence 'gemini-run-63d6ca7c02b3' has no registry record (registry incomplete)",
+      "new_launches": 0,
+      "case": "restart-zero",
+      "exit_code": 0,
+      "same_run": false,
+      "bytes_unchanged": true
+    },
+    {
+      "exception": "RegistryUnavailable",
+      "message": "refusing to dispatch: registry unreadable: registry contains blank or whitespace-only lines",
+      "new_launches": 0,
+      "case": "restart-blank",
+      "exit_code": 0,
+      "same_run": false,
+      "bytes_unchanged": true
+    },
+    {
+      "exception": "RegistryUnavailable",
+      "message": "refusing to dispatch: registry does not account for existing run evidence; refusing: run evidence 'gemini-run-5af4cec2ca44' has no registry record (registry incomplete)",
+      "new_launches": 0,
+      "case": "restart-tail",
+      "exit_code": 0,
+      "same_run": false,
+      "bytes_unchanged": true
+    }
+  ],
+  "python_child_processes": 5,
+  "real_gemini_processes": 0,
+  "model_calls": 0
+}

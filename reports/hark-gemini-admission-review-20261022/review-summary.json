@@ -1,0 +1,398 @@
+{
+  "downloaded_files": 22,
+  "git_blobs_and_disk_digests_match": true,
+  "suite_logs": {
+    "baseline-suite": {
+      "outer_run": "736",
+      "outer_result": "FAILED (failures=27, errors=78, skipped=2)",
+      "failure_lines": 106,
+      "unique_failure_lines": 105
+    },
+    "postcommit-suite": {
+      "outer_run": "768",
+      "outer_result": "FAILED (failures=27, errors=78, skipped=2)",
+      "failure_lines": 106,
+      "unique_failure_lines": 105
+    }
+  },
+  "failure_lists_equal": true,
+  "new_tests_ast": 32,
+  "targeted_log_summaries": {
+    "postcommit-hark11-jh018": [
+      "Ran 74 tests in 5.309s",
+      "OK"
+    ],
+    "postcommit-hark12-run1": [
+      "Ran 32 tests in 5.241s",
+      "OK"
+    ],
+    "postcommit-hark12-run2": [
+      "Ran 32 tests in 5.422s",
+      "OK"
+    ],
+    "postcommit-hark12-run3": [
+      "Ran 32 tests in 5.314s",
+      "OK"
+    ]
+  },
+  "reported_weakenings": [
+    {
+      "control": "pass",
+      "weakened": "detected",
+      "failures": "1",
+      "errors": "0",
+      "target": "TestR1SharedRegistry.test_threads_synchronised_in_version_probe_dispatch_once",
+      "guard": "registry_lock"
+    },
+    {
+      "control": "pass",
+      "weakened": "detected",
+      "failures": "16",
+      "errors": "10",
+      "target": "TestR1RegistryState.test_derived_illegal_histories_refuse_new_dispatch",
+      "guard": "validate_registry_records"
+    },
+    {
+      "control": "pass",
+      "weakened": "detected",
+      "failures": "1",
+      "errors": "0",
+      "target": "TestR1RegistryState.test_truncated_registry_refuses",
+      "guard": "registry_prefix_intact"
+    },
+    {
+      "control": "pass",
+      "weakened": "detected",
+      "failures": "1",
+      "errors": "0",
+      "target": "TestR2Observation.test_subdir_unlistable_before_launch_refuses",
+      "guard": "on_walk_error"
+    },
+    {
+      "control": "pass",
+      "weakened": "detected",
+      "failures": "1",
+      "errors": "0",
+      "target": "TestR2Observation.test_unknown_tool_status_is_unconfirmed",
+      "guard": "tool_status_confirms_denial"
+    },
+    {
+      "control": "pass",
+      "weakened": "detected",
+      "failures": "0",
+      "errors": "1",
+      "target": "TestR2Observation.test_tool_id_array_is_diagnosed",
+      "guard": "event_shape_problems"
+    },
+    {
+      "control": "pass",
+      "weakened": "detected",
+      "failures": "1",
+      "errors": "0",
+      "target": "TestR3Paths.test_existing_relative_directory_refused",
+      "guard": "workspace_path_problem"
+    }
+  ],
+  "host_checks": {
+    "all_successful_tools_read_only": true,
+    "declared_complete": true,
+    "declared_tools_exactly_read_only": true,
+    "evidence_bytes_match": true,
+    "host_model_matches_request": true,
+    "idempotent_replay_same_run": true,
+    "not_marked_succeeded": true,
+    "probe_files_absent": true,
+    "read_tool_used": true,
+    "session_bound": true,
+    "source_ref_verified": true,
+    "workspace_unchanged": true,
+    "write_and_shell_refused": true
+  },
+  "synthetic_requests": 5,
+  "host_declared_tools": [
+    "glob",
+    "grep_search",
+    "list_directory",
+    "read_file"
+  ],
+  "reproduction_logs": {
+    "repro-baseline": {
+      "case_rows": 32,
+      "summary": {
+        "cases": 32,
+        "tree": "/workspace/work/h12-cx"
+      }
+    },
+    "repro-postcommit": {
+      "case_rows": 32,
+      "summary": {
+        "cases": 32,
+        "tree": "/workspace/work/h12-post"
+      }
+    }
+  },
+  "frozen_probes": {
+    "frozen-01": {
+      "cases": 43,
+      "candidate_cases": 42,
+      "old_literal_substitution_control": 1,
+      "unexpected": []
+    },
+    "frozen-02": {
+      "cases": 43,
+      "candidate_cases": 42,
+      "old_literal_substitution_control": 1,
+      "unexpected": []
+    }
+  },
+  "frozen_probe_outcomes_repeat": true,
+  "windows_selected_original_tests": {
+    "tests": [
+      "h12.TestR1SharedRegistry.test_threads_synchronised_in_version_probe_dispatch_once",
+      "h12.TestR1SharedRegistry.test_two_adapters_same_root_dispatch_once",
+      "h12.TestR2Observation.test_bad_shapes_are_diagnosed_not_raised",
+      "h12.TestR2Observation.test_chat_record_first_line_shapes",
+      "h12.TestR2Observation.test_tool_status_shapes_do_not_confirm_denial",
+      "h12.TestR2Observation.test_valid_delivery_keeps_raw_bytes",
+      "h12.TestR3Fixture.test_reencoding_reproduces_captured_native_bytes",
+      "h12.TestR3Fixture.test_windows_workspace_string_replays_as_valid_json",
+      "h12.TestR3Paths.test_classifier_windows_and_posix_forms",
+      "h11.TestValidDelivery.test_valid_delivery_is_declared_not_succeeded"
+    ],
+    "run": 10,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "temp_workaround": "ordinary mkdir only, to avoid Python 3.14 mkdtemp ACL; candidate bytes unchanged",
+    "real_gemini_cli_processes": 0,
+    "model_calls": 0
+  },
+  "windows_process_lock": {
+    "os_name": "nt",
+    "lock_backend": "msvcrt.locking",
+    "real_gemini_processes": 0,
+    "model_calls": 0,
+    "cases": [
+      {
+        "case": "same-key",
+        "passes": true,
+        "launches": 1,
+        "results": [
+          {
+            "worker": 0,
+            "run_id": "gemini-run-99f03865b833",
+            "state": "running"
+          },
+          {
+            "worker": 1,
+            "run_id": "gemini-run-99f03865b833",
+            "state": "unknown"
+          }
+        ],
+        "worker_exit_codes": [
+          0,
+          0
+        ]
+      },
+      {
+        "case": "different-keys",
+        "passes": true,
+        "launches": 2,
+        "results": [
+          {
+            "worker": 0,
+            "run_id": "gemini-run-9ca77c6f182e",
+            "state": "running"
+          },
+          {
+            "worker": 1,
+            "run_id": "gemini-run-0e6a10cd94c4",
+            "state": "running"
+          }
+        ],
+        "worker_exit_codes": [
+          0,
+          0
+        ]
+      },
+      {
+        "case": "held-lock",
+        "passes": true,
+        "launches": 0,
+        "results": [
+          {
+            "worker": 0,
+            "exception": "RegistryBusy",
+            "message": "registry lock busy after 0.15s; refusing"
+          }
+        ],
+        "worker_exit_codes": [
+          0
+        ]
+      }
+    ]
+  },
+  "reopen_boundary_initial": {
+    "real_processes": 0,
+    "model_calls": 0,
+    "cases": [
+      {
+        "case": "normal",
+        "first_run_id": "gemini-run-3ec687752e36",
+        "retained_run_dirs": [
+          "gemini-run-3ec687752e36"
+        ],
+        "second_run_id": "gemini-run-3ec687752e36",
+        "same_run": true,
+        "state": "unknown",
+        "new_launches_after_reopen": 0
+      },
+      {
+        "case": "bad-json",
+        "first_run_id": "gemini-run-740fd782b1c9",
+        "retained_run_dirs": [
+          "gemini-run-740fd782b1c9"
+        ],
+        "exception": "RegistryUnavailable",
+        "message": "refusing to dispatch: registry unreadable: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)",
+        "new_launches_after_reopen": 0
+      },
+      {
+        "case": "truncate-empty",
+        "first_run_id": "gemini-run-89a3635c09b0",
+        "retained_run_dirs": [
+          "gemini-run-89a3635c09b0"
+        ],
+        "second_run_id": "gemini-run-c50e66f91c8b",
+        "same_run": false,
+        "state": "running",
+        "new_launches_after_reopen": 1
+      },
+      {
+        "case": "delete",
+        "first_run_id": "gemini-run-08e59abd9bc7",
+        "retained_run_dirs": [
+          "gemini-run-08e59abd9bc7"
+        ],
+        "second_run_id": "gemini-run-e6609745e6f9",
+        "same_run": false,
+        "state": "running",
+        "new_launches_after_reopen": 1
+      },
+      {
+        "case": "whitespace",
+        "first_run_id": "gemini-run-2047e960b046",
+        "retained_run_dirs": [
+          "gemini-run-2047e960b046"
+        ],
+        "second_run_id": "gemini-run-ff24e37838a5",
+        "same_run": false,
+        "state": "running",
+        "new_launches_after_reopen": 1
+      },
+      {
+        "case": "reserved-only",
+        "first_run_id": "gemini-run-d9b4994f9f52",
+        "retained_run_dirs": [
+          "gemini-run-d9b4994f9f52"
+        ],
+        "second_run_id": "gemini-run-d9b4994f9f52",
+        "same_run": true,
+        "state": "unknown",
+        "new_launches_after_reopen": 0
+      }
+    ]
+  },
+  "reopen_boundary_variants": {
+    "external_processes": 0,
+    "model_calls": 0,
+    "cases": [
+      {
+        "case": "fresh",
+        "retained_run_dir_count": 0,
+        "first_run": null,
+        "run_id": "gemini-run-c835c4de738c",
+        "state": "running",
+        "same_run": null,
+        "new_launches": 1
+      },
+      {
+        "case": "normal",
+        "retained_run_dir_count": 1,
+        "first_run": "gemini-run-aaba6abf8b2f",
+        "run_id": "gemini-run-aaba6abf8b2f",
+        "state": "unknown",
+        "same_run": true,
+        "new_launches": 0
+      },
+      {
+        "case": "bad-json",
+        "retained_run_dir_count": 1,
+        "first_run": "gemini-run-5504a75dea3c",
+        "exception": "RegistryUnavailable",
+        "message": "refusing to dispatch: registry unreadable: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)",
+        "new_launches": 0
+      },
+      {
+        "case": "truncate-empty",
+        "retained_run_dir_count": 1,
+        "first_run": "gemini-run-a6ae7b1f16bb",
+        "run_id": "gemini-run-820a63e83914",
+        "state": "running",
+        "same_run": false,
+        "new_launches": 1
+      },
+      {
+        "case": "delete",
+        "retained_run_dir_count": 1,
+        "first_run": "gemini-run-ebe32fb908e9",
+        "run_id": "gemini-run-e0f3e6d67c10",
+        "state": "running",
+        "same_run": false,
+        "new_launches": 1
+      },
+      {
+        "case": "whitespace",
+        "retained_run_dir_count": 1,
+        "first_run": "gemini-run-ac3f93f4042d",
+        "run_id": "gemini-run-9e9c34b16a5f",
+        "state": "running",
+        "same_run": false,
+        "new_launches": 1
+      },
+      {
+        "case": "reserved-only",
+        "retained_run_dir_count": 1,
+        "first_run": "gemini-run-7f5b0d6f673f",
+        "run_id": "gemini-run-7f5b0d6f673f",
+        "state": "unknown",
+        "same_run": true,
+        "new_launches": 0
+      },
+      {
+        "case": "lost-last-run",
+        "retained_run_dir_count": 2,
+        "first_run": "gemini-run-44c2920a0b6d",
+        "run_id": "gemini-run-1ac5a6377bdc",
+        "state": "running",
+        "same_run": false,
+        "new_launches": 1
+      },
+      {
+        "case": "two-reserved-prefixes",
+        "retained_run_dir_count": 2,
+        "first_run": "gemini-run-1f7de00bbd75",
+        "run_id": "gemini-run-1f7de00bbd75",
+        "state": "unknown",
+        "same_run": true,
+        "new_launches": 0
+      }
+    ]
+  },
+  "remaining_R1_source_loss_variants": [
+    "truncate-empty",
+    "delete",
+    "whitespace",
+    "lost-last-run"
+  ]
+}

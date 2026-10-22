@@ -1,0 +1,65 @@
+{
+  "verified_remote_files": 24,
+  "suites": [
+    {
+      "file": "baseline-suite.txt",
+      "outer_run": 768,
+      "all_run_summaries": [
+        "1",
+        "768"
+      ],
+      "result": "FAILED (failures=27, errors=78, skipped=2)",
+      "failure_lines": 106,
+      "failure_unique": 105
+    },
+    {
+      "file": "postcommit-suite.txt",
+      "outer_run": 787,
+      "all_run_summaries": [
+        "1",
+        "787"
+      ],
+      "result": "FAILED (failures=27, errors=78, skipped=2)",
+      "failure_lines": 106,
+      "failure_unique": 105
+    }
+  ],
+  "failure_sets_identical": true,
+  "same_failure_set_as_hark12": true,
+  "targeted": [
+    {
+      "file": "hark13-run1.txt",
+      "run": 18,
+      "result": "OK"
+    },
+    {
+      "file": "hark13-run2.txt",
+      "run": 18,
+      "result": "OK"
+    },
+    {
+      "file": "hark13-run3.txt",
+      "run": 18,
+      "result": "OK"
+    },
+    {
+      "file": "h12-h11-jh018.txt",
+      "run": 107,
+      "result": "OK"
+    }
+  ],
+  "h13_test_methods": 18,
+  "h13_repro_cases": 11,
+  "h13_repro_loss_cases": 7,
+  "h12_repro_unchanged_cases": 32,
+  "offline_host_checks": 13,
+  "synthetic_requests": 5,
+  "raw_evidence_verified": [
+    "host-chat-record.jsonl",
+    "stderr.txt",
+    "stdout.jsonl"
+  ],
+  "frozen_probe_sha256": "a325cc541ea8ecc1dd0af128990e0ebb162abde96abf6dad6ad651f0f95e3e4f",
+  "review_model_calls": 0,
+  "review_full_suite_runs": 0
+}

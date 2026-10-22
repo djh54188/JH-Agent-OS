@@ -1,0 +1,21 @@
+test_valid_delivery_is_declared_not_succeeded (hark11_original.TestValidDelivery.test_valid_delivery_is_declared_not_succeeded) ... FAIL
+test_workspace_host_config_refused (hark11_original.TestReadOnly.test_workspace_host_config_refused) ... ok
+test_contract_consumers_are_real_adapters (hark11_contract_original.TestCoreHoldsNoConcreteAdapter.test_contract_consumers_are_real_adapters) ... ok
+test_the_real_adapter_is_flagged (hark11_contract_original.TestCoreHoldsNoConcreteAdapter.test_the_real_adapter_is_flagged) ... ok
+
+======================================================================
+FAIL: test_valid_delivery_is_declared_not_succeeded (hark11_original.TestValidDelivery.test_valid_delivery_is_declared_not_succeeded)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\data\hark11-independent-review-20261022\candidate\tests\test_hark11_gemini_session.py", line 100, in test_valid_delivery_is_declared_not_succeeded
+    self.assertEqual(status.state, RunState.DECLARED_COMPLETE)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'failed' != 'declared_complete'
+- failed
++ declared_complete
+
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.239s
+
+FAILED (failures=1)

@@ -1,0 +1,65 @@
+{
+  "os_name": "nt",
+  "lock_backend": "msvcrt.locking",
+  "real_gemini_processes": 0,
+  "model_calls": 0,
+  "cases": [
+    {
+      "case": "same-key",
+      "passes": true,
+      "launches": 1,
+      "results": [
+        {
+          "worker": 0,
+          "run_id": "gemini-run-99f03865b833",
+          "state": "running"
+        },
+        {
+          "worker": 1,
+          "run_id": "gemini-run-99f03865b833",
+          "state": "unknown"
+        }
+      ],
+      "worker_exit_codes": [
+        0,
+        0
+      ]
+    },
+    {
+      "case": "different-keys",
+      "passes": true,
+      "launches": 2,
+      "results": [
+        {
+          "worker": 0,
+          "run_id": "gemini-run-9ca77c6f182e",
+          "state": "running"
+        },
+        {
+          "worker": 1,
+          "run_id": "gemini-run-0e6a10cd94c4",
+          "state": "running"
+        }
+      ],
+      "worker_exit_codes": [
+        0,
+        0
+      ]
+    },
+    {
+      "case": "held-lock",
+      "passes": true,
+      "launches": 0,
+      "results": [
+        {
+          "worker": 0,
+          "exception": "RegistryBusy",
+          "message": "registry lock busy after 0.15s; refusing"
+        }
+      ],
+      "worker_exit_codes": [
+        0
+      ]
+    }
+  ]
+}

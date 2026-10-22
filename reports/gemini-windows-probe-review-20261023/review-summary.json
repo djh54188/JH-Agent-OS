@@ -1,0 +1,378 @@
+{
+  "execution_commit": "fdec9c6876e5def7432fe5e8c1e9ec99f425431d",
+  "actual_parent": "03d9a0224fd93917ed3a1b9d514e465dfc996825",
+  "requested_baseline": "29e00201f85063f60cc23213262fc82cf430d7ee",
+  "file_comparisons": [
+    {
+      "path": "docs/gemini-cli-adapter.md",
+      "local_sha256": "a1447f4d6ed7f50fc42c9c97fb8e668c70c6c0da16495ffd40a5f3e825aca7fa",
+      "reference_available": true,
+      "reference_sha256": "a1447f4d6ed7f50fc42c9c97fb8e668c70c6c0da16495ffd40a5f3e825aca7fa",
+      "same_as_pinned": true
+    },
+    {
+      "path": "reports/gemini-windows-probe-20261023.md",
+      "local_sha256": "d64d0b7049c2f3b6b317e5c1e43efa78b507f15725e9aa498798b588c22f18e2",
+      "reference_available": false,
+      "reference_sha256": null,
+      "same_as_pinned": null
+    },
+    {
+      "path": "scripts/repro_hark12_counterexamples.py",
+      "local_sha256": "72ee842f330f0eeda498832a7855e8e4a97d358f83963bcec35b3c693f923b81",
+      "reference_available": true,
+      "reference_sha256": "72ee842f330f0eeda498832a7855e8e4a97d358f83963bcec35b3c693f923b81",
+      "same_as_pinned": true
+    },
+    {
+      "path": "scripts/repro_hark13_registry_loss.py",
+      "local_sha256": "27967a8d1524a3dbd9b6167955042f28315fc25241a4691f80ecc3018f5939c6",
+      "reference_available": true,
+      "reference_sha256": "27967a8d1524a3dbd9b6167955042f28315fc25241a4691f80ecc3018f5939c6",
+      "same_as_pinned": true
+    },
+    {
+      "path": "scripts/verify_hark11_gemini_bridge.py",
+      "local_sha256": "8dca3804c9eceabf73b091ec490794f20f9567e0a84aea760e91137027d82e80",
+      "reference_available": true,
+      "reference_sha256": "8dca3804c9eceabf73b091ec490794f20f9567e0a84aea760e91137027d82e80",
+      "same_as_pinned": true
+    },
+    {
+      "path": "src/agent_session_gemini.py",
+      "local_sha256": "b7d57bc9af50c0454009f9958bd069de3180c3729c16a6f8df294df24e90158d",
+      "reference_available": true,
+      "reference_sha256": "b7d57bc9af50c0454009f9958bd069de3180c3729c16a6f8df294df24e90158d",
+      "same_as_pinned": true
+    },
+    {
+      "path": "tests/fixtures/gemini_cli/fake_cli.py",
+      "local_sha256": "4092ff202b32914baa7abc0192e77cda5e6d8908849c4bf5129e44a0dae9237e",
+      "reference_available": true,
+      "reference_sha256": "4092ff202b32914baa7abc0192e77cda5e6d8908849c4bf5129e44a0dae9237e",
+      "same_as_pinned": true
+    },
+    {
+      "path": "tests/fixtures/gemini_cli/h13_restart.py",
+      "local_sha256": "b04e4c5f659cf21690748e0026662b81c15a6a88210a5f09cc9d749c828444ce",
+      "reference_available": true,
+      "reference_sha256": "b04e4c5f659cf21690748e0026662b81c15a6a88210a5f09cc9d749c828444ce",
+      "same_as_pinned": true
+    },
+    {
+      "path": "tests/fixtures/gemini_cli/host_probe_stream.template.jsonl",
+      "local_sha256": "505e1c69d26d958b8b5f7800aa837657c6b914e1da3fcfc6c0ebea24e8227b9d",
+      "reference_available": true,
+      "reference_sha256": "505e1c69d26d958b8b5f7800aa837657c6b914e1da3fcfc6c0ebea24e8227b9d",
+      "same_as_pinned": true
+    },
+    {
+      "path": "tests/fixtures/gemini_cli/mp_submit.py",
+      "local_sha256": "06f897bf486dae1348fde2f736460566d64286129212aa4902c8236d5837fb25",
+      "reference_available": true,
+      "reference_sha256": "06f897bf486dae1348fde2f736460566d64286129212aa4902c8236d5837fb25",
+      "same_as_pinned": true
+    },
+    {
+      "path": "tests/fixtures/gemini_cli/synthetic_endpoint.py",
+      "local_sha256": "db6c182bed63c4fffbf5d3476ffe748601fc9b6af2e4ee4b61ac9d5cd0a00cfe",
+      "reference_available": true,
+      "reference_sha256": "db6c182bed63c4fffbf5d3476ffe748601fc9b6af2e4ee4b61ac9d5cd0a00cfe",
+      "same_as_pinned": true
+    },
+    {
+      "path": "tests/test_hark11_gemini_session.py",
+      "local_sha256": "4b99225c86502d59c24ec886d3afedf2f24b9772cd4013e3ee3792d974457265",
+      "reference_available": true,
+      "reference_sha256": "4b99225c86502d59c24ec886d3afedf2f24b9772cd4013e3ee3792d974457265",
+      "same_as_pinned": true
+    },
+    {
+      "path": "tests/test_hark12_gemini_admission.py",
+      "local_sha256": "788d9e967e98b9f8103a9bba2b25b8102705300b2d255e0ab728446d16eabf25",
+      "reference_available": true,
+      "reference_sha256": "788d9e967e98b9f8103a9bba2b25b8102705300b2d255e0ab728446d16eabf25",
+      "same_as_pinned": true
+    },
+    {
+      "path": "tests/test_hark13_registry_loss.py",
+      "local_sha256": "86bf174ec9ed25398301f13e489e01a8373890d7936b3ae5641f01d302f7712c",
+      "reference_available": true,
+      "reference_sha256": "86bf174ec9ed25398301f13e489e01a8373890d7936b3ae5641f01d302f7712c",
+      "same_as_pinned": true
+    },
+    {
+      "path": "tests/test_jh018_agent_session_contract.py",
+      "local_sha256": "7075549bf4c7aaf942be95561769b1af35e990ee3d343f654cb8975bcfe1a015",
+      "reference_available": true,
+      "reference_sha256": "bc42c429b34a0d5f2735ce3ab019b11c5b6096ff8f65f1cab0ac9042e06d97d7",
+      "same_as_pinned": false
+    }
+  ],
+  "contract_source_identical": true,
+  "inheritance_guard_probe": [
+    {
+      "source": "accepted",
+      "mode": "control",
+      "run": 1,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "source": "accepted",
+      "mode": "gemini_is_plain_object",
+      "run": 1,
+      "failures": 1,
+      "errors": 0
+    },
+    {
+      "source": "execution08",
+      "mode": "control",
+      "run": 1,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "source": "execution08",
+      "mode": "gemini_is_plain_object",
+      "run": 1,
+      "failures": 0,
+      "errors": 0
+    }
+  ],
+  "cases": [
+    {
+      "case": "evidence/first_host_probe",
+      "run_id": "gemini-run-b3bc1e958599",
+      "workspace": "D:/JH-Agent OS/data/worktrees/gemini-windows-probe-20261023",
+      "synthetic_requests": 5,
+      "events": 12,
+      "state": "failed",
+      "declared_status": "success",
+      "exit_decimal": 3221226505,
+      "exit_hex": "0xc0000409",
+      "tools_advertised": [
+        "glob",
+        "grep_search",
+        "list_directory",
+        "read_file"
+      ],
+      "tool_results": [
+        {
+          "name": "grep_search",
+          "parameters": {
+            "pattern": "^class RunState"
+          },
+          "status": "success",
+          "error_type": null
+        },
+        {
+          "name": "read_file",
+          "parameters": {
+            "file_path": "D:/JH-Agent OS/data/worktrees/gemini-windows-probe-20261023/src/agent_session.py",
+            "start_line": 94,
+            "end_line": 106
+          },
+          "status": "success",
+          "error_type": null
+        },
+        {
+          "name": "write_file",
+          "parameters": {
+            "file_path": "D:/JH-Agent OS/data/worktrees/gemini-windows-probe-20261023/HARK11_SHOULD_NOT_EXIST.txt",
+            "content": "x"
+          },
+          "status": "error",
+          "error_type": "tool_not_registered"
+        },
+        {
+          "name": "run_shell_command",
+          "parameters": {
+            "command": "touch D:/JH-Agent OS/data/worktrees/gemini-windows-probe-20261023/HARK11_SHELL_SHOULD_NOT_EXIST"
+          },
+          "status": "error",
+          "error_type": "tool_not_registered"
+        }
+      ],
+      "raw_evidence_matches": {
+        "host-chat-record.jsonl": true,
+        "stderr.txt": true,
+        "stdout.jsonl": true
+      },
+      "workspace_manifest_sha256": "85d047d8cbec0c2184870bf8414c585149fba828800db60a8247d8b9cd009411",
+      "source_hashes": {
+        "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\evidence\\first_host_probe\\bridge\\runs\\gemini-run-b3bc1e958599\\host-chat-record.jsonl": "19a3e353167db811cfe721019543112172d176b2675708377fb8a8ea7ab65cdb",
+        "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\evidence\\first_host_probe\\bridge\\runs\\gemini-run-b3bc1e958599\\stderr.txt": "176d41b9e5f024afacdd148f61029b1ebcc9b261a8c7e1027c4d763f6a971317",
+        "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\evidence\\first_host_probe\\bridge\\runs\\gemini-run-b3bc1e958599\\stdout.jsonl": "51d8460d5c77f3f8950d0501d2f62adc7c54a243cece55e478d89c9f1fd9bb22",
+        "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\evidence\\first_host_probe\\bridge\\runs\\gemini-run-b3bc1e958599\\workspace-before.json": "85d047d8cbec0c2184870bf8414c585149fba828800db60a8247d8b9cd009411",
+        "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\evidence\\first_host_probe\\bridge\\runs\\gemini-run-b3bc1e958599\\workspace-after.json": "85d047d8cbec0c2184870bf8414c585149fba828800db60a8247d8b9cd009411",
+        "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\evidence\\first_host_probe\\bridge\\registry.jsonl": "034d4502d1802950dbefc1a03f656c0fe25246c5cacd82f6e886b3aefc601ab9",
+        "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\evidence\\first_host_probe\\synthetic-requests.jsonl": "24a81751c50016f9ba3c06be5ee2c44f03f389fda37d3ff5ba04ab181b77b2a8"
+      }
+    },
+    {
+      "case": "evidence/second_host_probe",
+      "run_id": "gemini-run-c01050081e82",
+      "workspace": "D:/JH-Agent OS/data/worktrees/gemini-windows-probe-20261023",
+      "synthetic_requests": 5,
+      "events": 12,
+      "state": "failed",
+      "declared_status": "success",
+      "exit_decimal": 3221226505,
+      "exit_hex": "0xc0000409",
+      "tools_advertised": [
+        "glob",
+        "grep_search",
+        "list_directory",
+        "read_file"
+      ],
+      "tool_results": [
+        {
+          "name": "grep_search",
+          "parameters": {
+            "pattern": "^class RunState"
+          },
+          "status": "success",
+          "error_type": null
+        },
+        {
+          "name": "read_file",
+          "parameters": {
+            "file_path": "D:/JH-Agent OS/data/worktrees/gemini-windows-probe-20261023/src/agent_session.py",
+            "start_line": 94,
+            "end_line": 106
+          },
+          "status": "success",
+          "error_type": null
+        },
+        {
+          "name": "write_file",
+          "parameters": {
+            "file_path": "D:/JH-Agent OS/data/worktrees/gemini-windows-probe-20261023/HARK11_SHOULD_NOT_EXIST.txt",
+            "content": "x"
+          },
+          "status": "error",
+          "error_type": "tool_not_registered"
+        },
+        {
+          "name": "run_shell_command",
+          "parameters": {
+            "command": "touch D:/JH-Agent OS/data/worktrees/gemini-windows-probe-20261023/HARK11_SHELL_SHOULD_NOT_EXIST"
+          },
+          "status": "error",
+          "error_type": "tool_not_registered"
+        }
+      ],
+      "raw_evidence_matches": {
+        "host-chat-record.jsonl": true,
+        "stderr.txt": true,
+        "stdout.jsonl": true
+      },
+      "workspace_manifest_sha256": "85d047d8cbec0c2184870bf8414c585149fba828800db60a8247d8b9cd009411",
+      "source_hashes": {
+        "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\evidence\\second_host_probe\\bridge\\runs\\gemini-run-c01050081e82\\host-chat-record.jsonl": "a94dc6b7d1eb00c2b70cb582ff655643ad57de90992d81db817a01df78066cfa",
+        "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\evidence\\second_host_probe\\bridge\\runs\\gemini-run-c01050081e82\\stderr.txt": "d85ae5a5950da75ee7dacc876c03ea8a0f11f723be8dbd12eac32950487a0621",
+        "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\evidence\\second_host_probe\\bridge\\runs\\gemini-run-c01050081e82\\stdout.jsonl": "5f0ced0ba4a649b666162b1898e35cbf04f27b3b77d3d9a4f2dbcda1c1aedd92",
+        "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\evidence\\second_host_probe\\bridge\\runs\\gemini-run-c01050081e82\\workspace-before.json": "85d047d8cbec0c2184870bf8414c585149fba828800db60a8247d8b9cd009411",
+        "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\evidence\\second_host_probe\\bridge\\runs\\gemini-run-c01050081e82\\workspace-after.json": "85d047d8cbec0c2184870bf8414c585149fba828800db60a8247d8b9cd009411",
+        "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\evidence\\second_host_probe\\bridge\\registry.jsonl": "c6f16fb42ff1f82bd38c1e57a1f7918d36621eaa4f0a42add59da1108addcd23",
+        "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\evidence\\second_host_probe\\synthetic-requests.jsonl": "5deeff5a6ac6aa31f2ed4e46ee398b1c4b1181aad24f81d5da7b5f3db46e5fd3"
+      }
+    },
+    {
+      "case": "boundary_tests/evidence_fd13f80c",
+      "run_id": "gemini-run-b05235d3a72c",
+      "workspace": "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\boundary_tests\\ws_normal",
+      "synthetic_requests": 6,
+      "events": 14,
+      "state": "failed",
+      "declared_status": "success",
+      "exit_decimal": 3221226505,
+      "exit_hex": "0xc0000409",
+      "tools_advertised": [
+        "glob",
+        "grep_search",
+        "list_directory",
+        "read_file"
+      ],
+      "tool_results": [
+        {
+          "name": "read_file",
+          "parameters": {
+            "file_path": "D:/JH-Agent OS/data/gemini-windows-probe-20261023/boundary_tests/outside/secret.txt"
+          },
+          "status": "error",
+          "error_type": "invalid_tool_params"
+        },
+        {
+          "name": "read_file",
+          "parameters": {
+            "file_path": "D:/JH-Agent OS/data/gemini-windows-probe-20261023/boundary_tests/ws_normal/link_to_outside/secret.txt"
+          },
+          "status": "error",
+          "error_type": "invalid_tool_params"
+        },
+        {
+          "name": "read_file",
+          "parameters": {
+            "file_path": "../outside/secret.txt"
+          },
+          "status": "error",
+          "error_type": "invalid_tool_params"
+        },
+        {
+          "name": "write_file",
+          "parameters": {
+            "file_path": "D:/JH-Agent OS/data/gemini-windows-probe-20261023/boundary_tests/ws_normal/forbidden.txt",
+            "content": "bad"
+          },
+          "status": "error",
+          "error_type": "tool_not_registered"
+        },
+        {
+          "name": "run_shell_command",
+          "parameters": {
+            "command": "echo bad"
+          },
+          "status": "error",
+          "error_type": "tool_not_registered"
+        }
+      ],
+      "raw_evidence_matches": {
+        "host-chat-record.jsonl": true,
+        "stderr.txt": true,
+        "stdout.jsonl": true
+      },
+      "workspace_manifest_sha256": "7fbb2aa44bb16d7634a49e9362600082157af194c20d13fbe6c9e28e3549d100",
+      "source_hashes": {
+        "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\boundary_tests\\evidence_fd13f80c\\bridge\\runs\\gemini-run-b05235d3a72c\\host-chat-record.jsonl": "afc02ab2907705931a4c3ffc1f941c7c32a832a55baf98879e8e0da8400dd7b0",
+        "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\boundary_tests\\evidence_fd13f80c\\bridge\\runs\\gemini-run-b05235d3a72c\\stderr.txt": "7b52cc8d56cf5ca8d4e9723399d3e4e09cc75b38c6875d127a5264d7e30d4c67",
+        "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\boundary_tests\\evidence_fd13f80c\\bridge\\runs\\gemini-run-b05235d3a72c\\stdout.jsonl": "8651b0c813a468632914438a769373d347d2cb5d3576abcddf577ef9fd953a6e",
+        "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\boundary_tests\\evidence_fd13f80c\\bridge\\runs\\gemini-run-b05235d3a72c\\workspace-before.json": "7fbb2aa44bb16d7634a49e9362600082157af194c20d13fbe6c9e28e3549d100",
+        "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\boundary_tests\\evidence_fd13f80c\\bridge\\runs\\gemini-run-b05235d3a72c\\workspace-after.json": "7fbb2aa44bb16d7634a49e9362600082157af194c20d13fbe6c9e28e3549d100",
+        "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\boundary_tests\\evidence_fd13f80c\\bridge\\registry.jsonl": "21b68699a4eff8d51e993cdb8738867a3902b7f09c4126200a89ea1e0c9d53ad",
+        "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\boundary_tests\\evidence_fd13f80c\\requests.jsonl": "8dd45586619f81e56a91dc5683a4f2457b755b941c253abafb28614fffe50664"
+      }
+    }
+  ],
+  "junction_now": {
+    "path": "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\boundary_tests\\ws_normal\\link_to_outside",
+    "isjunction": true,
+    "resolved_target": "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\boundary_tests\\outside"
+  },
+  "audited_complete_run_synthetic_requests": 16,
+  "all_attempts_count_complete": false,
+  "cli_version": "0.65.0",
+  "cli_node_engines": {
+    "node": ">=20"
+  },
+  "cli_hashes": {
+    "package.json": "ea3543b010281115990c43095124eb27a6a0428bc6aa41349261f52675378058",
+    "bundle/gemini.js": "41847af2158ced805c4a3e098a05b9a2c26fb1a49b12583009b2eaf6a4059a59",
+    "bundle/chunk-DKZARV6U.js": "4d9cf6435503e5280ecb0f55078793531c8041fe435f60fa8dfce92317c8a28e",
+    "bundle/gemini-GLQ4MVLB.js": "1c5053102d2204335a96a71f930a0419d2b153cd6d17e1d1ee96753b5272fd9f"
+  },
+  "review_real_cli_processes": 0,
+  "review_model_calls": 0,
+  "review_full_suite_runs": 0
+}

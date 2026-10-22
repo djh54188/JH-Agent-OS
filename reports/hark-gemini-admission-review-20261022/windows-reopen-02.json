@@ -1,0 +1,86 @@
+{
+  "external_processes": 0,
+  "model_calls": 0,
+  "cases": [
+    {
+      "case": "fresh",
+      "retained_run_dir_count": 0,
+      "first_run": null,
+      "run_id": "gemini-run-c835c4de738c",
+      "state": "running",
+      "same_run": null,
+      "new_launches": 1
+    },
+    {
+      "case": "normal",
+      "retained_run_dir_count": 1,
+      "first_run": "gemini-run-aaba6abf8b2f",
+      "run_id": "gemini-run-aaba6abf8b2f",
+      "state": "unknown",
+      "same_run": true,
+      "new_launches": 0
+    },
+    {
+      "case": "bad-json",
+      "retained_run_dir_count": 1,
+      "first_run": "gemini-run-5504a75dea3c",
+      "exception": "RegistryUnavailable",
+      "message": "refusing to dispatch: registry unreadable: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)",
+      "new_launches": 0
+    },
+    {
+      "case": "truncate-empty",
+      "retained_run_dir_count": 1,
+      "first_run": "gemini-run-a6ae7b1f16bb",
+      "run_id": "gemini-run-820a63e83914",
+      "state": "running",
+      "same_run": false,
+      "new_launches": 1
+    },
+    {
+      "case": "delete",
+      "retained_run_dir_count": 1,
+      "first_run": "gemini-run-ebe32fb908e9",
+      "run_id": "gemini-run-e0f3e6d67c10",
+      "state": "running",
+      "same_run": false,
+      "new_launches": 1
+    },
+    {
+      "case": "whitespace",
+      "retained_run_dir_count": 1,
+      "first_run": "gemini-run-ac3f93f4042d",
+      "run_id": "gemini-run-9e9c34b16a5f",
+      "state": "running",
+      "same_run": false,
+      "new_launches": 1
+    },
+    {
+      "case": "reserved-only",
+      "retained_run_dir_count": 1,
+      "first_run": "gemini-run-7f5b0d6f673f",
+      "run_id": "gemini-run-7f5b0d6f673f",
+      "state": "unknown",
+      "same_run": true,
+      "new_launches": 0
+    },
+    {
+      "case": "lost-last-run",
+      "retained_run_dir_count": 2,
+      "first_run": "gemini-run-44c2920a0b6d",
+      "run_id": "gemini-run-1ac5a6377bdc",
+      "state": "running",
+      "same_run": false,
+      "new_launches": 1
+    },
+    {
+      "case": "two-reserved-prefixes",
+      "retained_run_dir_count": 2,
+      "first_run": "gemini-run-1f7de00bbd75",
+      "run_id": "gemini-run-1f7de00bbd75",
+      "state": "unknown",
+      "same_run": true,
+      "new_launches": 0
+    }
+  ]
+}

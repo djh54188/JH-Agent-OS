@@ -1,0 +1,593 @@
+{
+  "schema": "jh-workflow-handoff-sources/v1",
+  "status": "evidence_archive_not_product_release",
+  "source_refs": {
+    "local_n1": "03d9a0224fd93917ed3a1b9d514e465dfc996825",
+    "exec08": "fdec9c6876e5def7432fe5e8c1e9ec99f425431d",
+    "exec09": "750b81673ee5b3d68bcab6c2ac85d87a32b94d72",
+    "cloud_base": "29e00201f85063f60cc23213262fc82cf430d7ee"
+  },
+  "excluded": [
+    "original_80979f3_WIP",
+    "docs/review-backlog",
+    "CLI_Node_packages",
+    "home_credentials_keys_proxy_configs",
+    "local_GUI_03_or_08_history"
+  ],
+  "duplicate_exec08_fixtures": {
+    "files": 9,
+    "bytes": 356061,
+    "all_identical_to_cloud29": true,
+    "action": "retain_locally_no_upload"
+  },
+  "historical_prompts": "Do not execute; implementation role replaced by Hark; task10 future authority revoked; prior completed work preserved.",
+  "origins": [
+    {
+      "path": "reports/hark-gemini-bridge-independent-review-20261022.md",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-bridge-independent-review-20261022.md",
+      "kind": "architect_review_or_decision",
+      "bytes": 10135,
+      "sha256": "0faf23b61c3c3bd1fb00cba850c9380b97f9eff2e865812d2d2682e99319e759"
+    },
+    {
+      "path": "reports/hark-gemini-bridge-review-20261022/audit-summary.json",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-bridge-review-20261022\\audit-summary.json",
+      "kind": "architect_review_or_decision",
+      "bytes": 4890,
+      "sha256": "18604f0bcb710cf42037c3de4b8750a717c588fd010f9ff43f9963f7fa44d0f8"
+    },
+    {
+      "path": "reports/hark-gemini-bridge-review-20261022/audit_evidence.py",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-bridge-review-20261022\\audit_evidence.py",
+      "kind": "architect_review_or_decision",
+      "bytes": 5911,
+      "sha256": "3cddc71684db4b4b0971e46c3795e567ecabcffd97dce45b211be46ea9e5fb7c"
+    },
+    {
+      "path": "reports/hark-gemini-bridge-review-20261022/download-manifest.jsonl",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-bridge-review-20261022\\download-manifest.jsonl",
+      "kind": "architect_review_or_decision",
+      "bytes": 5004,
+      "sha256": "3f273eb8dc2f5f01900205d62b510a442a901867c1fccee81aa0e08ce1a9ab26"
+    },
+    {
+      "path": "reports/hark-gemini-bridge-review-20261022/hark-task-12.txt",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-bridge-review-20261022\\hark-task-12.txt",
+      "kind": "architect_review_or_decision",
+      "bytes": 6751,
+      "sha256": "9beb475e7af5b20fa4af2523b72cbe123a5b8aa9ed78646102562b89812c6315"
+    },
+    {
+      "path": "reports/hark-gemini-bridge-review-20261022/probe_boundaries.py",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-bridge-review-20261022\\probe_boundaries.py",
+      "kind": "architect_review_or_decision",
+      "bytes": 11805,
+      "sha256": "a325cc541ea8ecc1dd0af128990e0ebb162abde96abf6dad6ad651f0f95e3e4f"
+    },
+    {
+      "path": "reports/hark-gemini-bridge-review-20261022/README.md",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-bridge-review-20261022\\README.md",
+      "kind": "architect_review_or_decision",
+      "bytes": 2854,
+      "sha256": "01c6c783720deb86cc0bfb3c669fd88a5bf8f59d7ea8e41d05c336badb02f6ec"
+    },
+    {
+      "path": "reports/hark-gemini-bridge-review-20261022/windows-round-04.json",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-bridge-review-20261022\\windows-round-04.json",
+      "kind": "architect_review_or_decision",
+      "bytes": 11271,
+      "sha256": "9e2fd07f44f212de5840af4caa91f8289de8b6984410e87b00c25a5f76148cfc"
+    },
+    {
+      "path": "reports/hark-gemini-bridge-review-20261022/windows-round-05.json",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-bridge-review-20261022\\windows-round-05.json",
+      "kind": "architect_review_or_decision",
+      "bytes": 11271,
+      "sha256": "ac61680d5a64aa1fac37eb2f1ef851e89075292f0396cee5efd53652d45d49d8"
+    },
+    {
+      "path": "reports/hark-gemini-bridge-review-20261022/windows-selected-original-tests.txt",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-bridge-review-20261022\\windows-selected-original-tests.txt",
+      "kind": "architect_review_or_decision",
+      "bytes": 1359,
+      "sha256": "cda97190d538a0ce4a23bd8ef2785b7ec7c736aa0e6552d22fb10f684bd0c7d2"
+    },
+    {
+      "path": "reports/hark-gemini-admission-independent-review-20261022.md",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-admission-independent-review-20261022.md",
+      "kind": "architect_review_or_decision",
+      "bytes": 9891,
+      "sha256": "614b5fde49c8bdca36ff6f7f2cffdce5af42fa0738b324c078b68342cceb377b"
+    },
+    {
+      "path": "reports/hark-gemini-admission-review-20261022/audit_review.py",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-admission-review-20261022\\audit_review.py",
+      "kind": "architect_review_or_decision",
+      "bytes": 6168,
+      "sha256": "6e884f34a28734e4a177df25fcc57c905034b3f4a983b2e58227d4d257c27b68"
+    },
+    {
+      "path": "reports/hark-gemini-admission-review-20261022/download-manifest.jsonl",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-admission-review-20261022\\download-manifest.jsonl",
+      "kind": "architect_review_or_decision",
+      "bytes": 4599,
+      "sha256": "29e51936f07cf7f9bc7ff522bee8774e3171c3244321241717bc450b8c3dce2f"
+    },
+    {
+      "path": "reports/hark-gemini-admission-review-20261022/frozen_probe_boundaries.py",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-admission-review-20261022\\frozen_probe_boundaries.py",
+      "kind": "architect_review_or_decision",
+      "bytes": 11805,
+      "sha256": "a325cc541ea8ecc1dd0af128990e0ebb162abde96abf6dad6ad651f0f95e3e4f"
+    },
+    {
+      "path": "reports/hark-gemini-admission-review-20261022/hark-task-13.txt",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-admission-review-20261022\\hark-task-13.txt",
+      "kind": "architect_review_or_decision",
+      "bytes": 5900,
+      "sha256": "3337d21bbdd7967f56aef373126d4bb233c2de0b15ed1e7b1d822d6d4afea7af"
+    },
+    {
+      "path": "reports/hark-gemini-admission-review-20261022/probe_process_lock.py",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-admission-review-20261022\\probe_process_lock.py",
+      "kind": "architect_review_or_decision",
+      "bytes": 4846,
+      "sha256": "7bf6bf383a70345765e225bd982ecef58cfbe08dc25a1e5cbc4ca6675513913a"
+    },
+    {
+      "path": "reports/hark-gemini-admission-review-20261022/probe_reopen_boundary.py",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-admission-review-20261022\\probe_reopen_boundary.py",
+      "kind": "architect_review_or_decision",
+      "bytes": 2011,
+      "sha256": "23c1b334ef07cdc3c177cea5abe1cd86089b131125e98f90352e1c69078cb7ed"
+    },
+    {
+      "path": "reports/hark-gemini-admission-review-20261022/probe_reopen_variants.py",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-admission-review-20261022\\probe_reopen_variants.py",
+      "kind": "architect_review_or_decision",
+      "bytes": 2560,
+      "sha256": "79f7af530a7fbc0e6731af57f9a02392e3f46906cbbf7285ef428b1eef4a77ec"
+    },
+    {
+      "path": "reports/hark-gemini-admission-review-20261022/README.md",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-admission-review-20261022\\README.md",
+      "kind": "architect_review_or_decision",
+      "bytes": 2888,
+      "sha256": "a4c99b5b21284777213f294288a70aecdf9a7dc6a6f6d12aaf1d7ae47e0c0be1"
+    },
+    {
+      "path": "reports/hark-gemini-admission-review-20261022/review-summary.json",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-admission-review-20261022\\review-summary.json",
+      "kind": "architect_review_or_decision",
+      "bytes": 10980,
+      "sha256": "28aee4099f7184dde510355a026517a17fca22b382b894e09dd03e8879fba652"
+    },
+    {
+      "path": "reports/hark-gemini-admission-review-20261022/windows-process-lock.json",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-admission-review-20261022\\windows-process-lock.json",
+      "kind": "architect_review_or_decision",
+      "bytes": 1248,
+      "sha256": "aa7e28803079e96324192b6613245e1cb5ace239a4db33457c920369e50e1653"
+    },
+    {
+      "path": "reports/hark-gemini-admission-review-20261022/windows-reopen-01.json",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-admission-review-20261022\\windows-reopen-01.json",
+      "kind": "architect_review_or_decision",
+      "bytes": 1937,
+      "sha256": "60d8a2fc6f1aee0d2da4e49018451ca2c9e6a6a7e8c0f76254321ebb1f4bce7d"
+    },
+    {
+      "path": "reports/hark-gemini-admission-review-20261022/windows-reopen-02.json",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-admission-review-20261022\\windows-reopen-02.json",
+      "kind": "architect_review_or_decision",
+      "bytes": 2294,
+      "sha256": "80c0d599b41774a622fd05888ae52a5690cc91ce591e832ac98ad34222940ee6"
+    },
+    {
+      "path": "reports/hark-gemini-admission-review-20261022/windows-selected-original-tests.txt",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-admission-review-20261022\\windows-selected-original-tests.txt",
+      "kind": "architect_review_or_decision",
+      "bytes": 1289,
+      "sha256": "5e2c0d7093339c0107cb26d6255959db6882cb9a374d1fae2d32391bbbb3e2e3"
+    },
+    {
+      "path": "reports/hark-gemini-registry-loss-independent-review-20261023.md",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-registry-loss-independent-review-20261023.md",
+      "kind": "architect_review_or_decision",
+      "bytes": 8247,
+      "sha256": "8977553c72dc1d632324b154b348dc6558b8003f65d67becae558b5ff371c06f"
+    },
+    {
+      "path": "reports/hark-gemini-registry-loss-review-20261023/admission-01.json",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-registry-loss-review-20261023\\admission-01.json",
+      "kind": "architect_review_or_decision",
+      "bytes": 4178,
+      "sha256": "c2ab2a382c6f4ea8e0965b2a3dd1d9c34b80ef3549b384218800a66d11936c9c"
+    },
+    {
+      "path": "reports/hark-gemini-registry-loss-review-20261023/audit_review.py",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-registry-loss-review-20261023\\audit_review.py",
+      "kind": "architect_review_or_decision",
+      "bytes": 5293,
+      "sha256": "fb40ff15af80723586e04b809d2da0f63bf64b7e689297a76435da853ddffeff"
+    },
+    {
+      "path": "reports/hark-gemini-registry-loss-review-20261023/bundle-manifest.json",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-registry-loss-review-20261023\\bundle-manifest.json",
+      "kind": "architect_review_or_decision",
+      "bytes": 2534,
+      "sha256": "6534dcb3c3baea45756236ccc7106796c5246bdd2ec74df4ab9cc52ff1d17f70"
+    },
+    {
+      "path": "reports/hark-gemini-registry-loss-review-20261023/execution-task-08.txt",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-registry-loss-review-20261023\\execution-task-08.txt",
+      "kind": "architect_review_or_decision",
+      "bytes": 8578,
+      "sha256": "86fdc170bc52b8bffa1018611c0e33da01b7dbb67c4c3062625e800b8d0a8bea"
+    },
+    {
+      "path": "reports/hark-gemini-registry-loss-review-20261023/frozen_probe_boundaries.py",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-registry-loss-review-20261023\\frozen_probe_boundaries.py",
+      "kind": "architect_review_or_decision",
+      "bytes": 11805,
+      "sha256": "a325cc541ea8ecc1dd0af128990e0ebb162abde96abf6dad6ad651f0f95e3e4f"
+    },
+    {
+      "path": "reports/hark-gemini-registry-loss-review-20261023/mutation-targets.json",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-registry-loss-review-20261023\\mutation-targets.json",
+      "kind": "architect_review_or_decision",
+      "bytes": 1261,
+      "sha256": "6ff0f236b2ab243a934a11743c3751a025fd31f9932fbcc9633e94a3c5c7a505"
+    },
+    {
+      "path": "reports/hark-gemini-registry-loss-review-20261023/mutation-targets.txt",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-registry-loss-review-20261023\\mutation-targets.txt",
+      "kind": "architect_review_or_decision",
+      "bytes": 3854,
+      "sha256": "e8c27f8997d51edcda8be19c9bf2ffcddae9d5523ba2eaa0ff68ee4abdf8e382"
+    },
+    {
+      "path": "reports/hark-gemini-registry-loss-review-20261023/probe_admission.py",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-registry-loss-review-20261023\\probe_admission.py",
+      "kind": "architect_review_or_decision",
+      "bytes": 6732,
+      "sha256": "99d5d61933d11a76abc07e0260e1d81e3cc2a30ba7c5d1c3f1f07d6eb8337ef1"
+    },
+    {
+      "path": "reports/hark-gemini-registry-loss-review-20261023/probe_process_lock.py",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-registry-loss-review-20261023\\probe_process_lock.py",
+      "kind": "architect_review_or_decision",
+      "bytes": 4846,
+      "sha256": "7bf6bf383a70345765e225bd982ecef58cfbe08dc25a1e5cbc4ca6675513913a"
+    },
+    {
+      "path": "reports/hark-gemini-registry-loss-review-20261023/probe_reopen_boundary.py",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-registry-loss-review-20261023\\probe_reopen_boundary.py",
+      "kind": "architect_review_or_decision",
+      "bytes": 2011,
+      "sha256": "23c1b334ef07cdc3c177cea5abe1cd86089b131125e98f90352e1c69078cb7ed"
+    },
+    {
+      "path": "reports/hark-gemini-registry-loss-review-20261023/probe_reopen_variants.py",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-registry-loss-review-20261023\\probe_reopen_variants.py",
+      "kind": "architect_review_or_decision",
+      "bytes": 2560,
+      "sha256": "79f7af530a7fbc0e6731af57f9a02392e3f46906cbbf7285ef428b1eef4a77ec"
+    },
+    {
+      "path": "reports/hark-gemini-registry-loss-review-20261023/process-lock.json",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-registry-loss-review-20261023\\process-lock.json",
+      "kind": "architect_review_or_decision",
+      "bytes": 1248,
+      "sha256": "3b6e7ac4e10a825214ed3b0d1de8341104b0dc88ce82cc63cc96316152e57444"
+    },
+    {
+      "path": "reports/hark-gemini-registry-loss-review-20261023/README.md",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-registry-loss-review-20261023\\README.md",
+      "kind": "architect_review_or_decision",
+      "bytes": 1399,
+      "sha256": "6143b5ba3721b50ee77f65c21e9ddcdc3323da4917c9ac9570b421ed1f641fca"
+    },
+    {
+      "path": "reports/hark-gemini-registry-loss-review-20261023/remote-manifest.jsonl",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-registry-loss-review-20261023\\remote-manifest.jsonl",
+      "kind": "architect_review_or_decision",
+      "bytes": 6537,
+      "sha256": "e9546f687d5a3c9522373af9b4d74fc79e139850d715f5ad86b1f60b8ab6d7b1"
+    },
+    {
+      "path": "reports/hark-gemini-registry-loss-review-20261023/reopen-01.json",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-registry-loss-review-20261023\\reopen-01.json",
+      "kind": "architect_review_or_decision",
+      "bytes": 2250,
+      "sha256": "3fdd722abc921f7c410845f55f6e48b2a6821fc035063b4b7a89c88ac7908c3f"
+    },
+    {
+      "path": "reports/hark-gemini-registry-loss-review-20261023/reopen-02.json",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-registry-loss-review-20261023\\reopen-02.json",
+      "kind": "architect_review_or_decision",
+      "bytes": 2765,
+      "sha256": "698f5634355a9f5e9abe396a13e98e1d714bca7cd0edb472ff88730bba267ab1"
+    },
+    {
+      "path": "reports/hark-gemini-registry-loss-review-20261023/review-summary.json",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-registry-loss-review-20261023\\review-summary.json",
+      "kind": "architect_review_or_decision",
+      "bytes": 1483,
+      "sha256": "1abbdf1573960eb47e2cbc3dee2b8a197836fec2f9b6fffa1b93c526280fcc48"
+    },
+    {
+      "path": "reports/hark-gemini-registry-loss-review-20261023/review_mutations.py",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\hark-gemini-registry-loss-review-20261023\\review_mutations.py",
+      "kind": "architect_review_or_decision",
+      "bytes": 3374,
+      "sha256": "71f2cc392c7132a027581363491830b0383123740a1d509c3dd1b7a54dd0b120"
+    },
+    {
+      "path": "reports/gemini-windows-readiness-20261022.md",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\gemini-windows-readiness-20261022.md",
+      "kind": "architect_review_or_decision",
+      "bytes": 8950,
+      "sha256": "84128b6684760fbd7e18e0b7b2ffd7df55831a1030b6bd0777cb4d1777c4c65f"
+    },
+    {
+      "path": "reports/gemini-windows-probe-independent-review-20261023.md",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\gemini-windows-probe-independent-review-20261023.md",
+      "kind": "architect_review_or_decision",
+      "bytes": 7305,
+      "sha256": "dcdfdf6df6e979b4024b82243c8915e4c26446f3b0b91ebcdecf1575c8171844"
+    },
+    {
+      "path": "reports/gemini-windows-probe-review-20261023/audit_execution08.py",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\gemini-windows-probe-review-20261023\\audit_execution08.py",
+      "kind": "architect_review_or_decision",
+      "bytes": 6994,
+      "sha256": "8cb8380f44b12fe5e24444cfeb418d54a597e825b99e3f4627546aab348d7845"
+    },
+    {
+      "path": "reports/gemini-windows-probe-review-20261023/bundle-manifest.json",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\gemini-windows-probe-review-20261023\\bundle-manifest.json",
+      "kind": "architect_review_or_decision",
+      "bytes": 593,
+      "sha256": "5875f49701ec699145a117e96ac81373351ad243e500562b78128f4e9c43f499"
+    },
+    {
+      "path": "reports/gemini-windows-probe-review-20261023/execution-task-09.txt",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\gemini-windows-probe-review-20261023\\execution-task-09.txt",
+      "kind": "architect_review_or_decision",
+      "bytes": 6652,
+      "sha256": "1bb68412f06eafa18dd460028bef157e72519411294b20f462405b529832b200"
+    },
+    {
+      "path": "reports/gemini-windows-probe-review-20261023/README.md",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\gemini-windows-probe-review-20261023\\README.md",
+      "kind": "architect_review_or_decision",
+      "bytes": 1136,
+      "sha256": "9353effbbeecf006338f08520978b24929254d714c2d4e4fa7f1558eccf3d1e4"
+    },
+    {
+      "path": "reports/gemini-windows-probe-review-20261023/review-summary.json",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\gemini-windows-probe-review-20261023\\review-summary.json",
+      "kind": "architect_review_or_decision",
+      "bytes": 17190,
+      "sha256": "7936a791b4364b75ddf4ea2ad5e814e4d629dd11591bc41a6ac4e7fe8ec2b7c9"
+    },
+    {
+      "path": "reports/gemini-node22-independent-review-20261023.md",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\gemini-node22-independent-review-20261023.md",
+      "kind": "architect_review_or_decision",
+      "bytes": 9292,
+      "sha256": "c9cac80b0c1ecff046aaee96d4e1e0f7869ab4bca52547bef418fa14d457a872"
+    },
+    {
+      "path": "reports/gemini-node22-review-20261023/bundle-manifest.json",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\gemini-node22-review-20261023\\bundle-manifest.json",
+      "kind": "architect_review_or_decision",
+      "bytes": 737,
+      "sha256": "daf56705a212cd9babc38503e07c7a628950d15234ffebc9b69c4b6ada80e0b5"
+    },
+    {
+      "path": "reports/gemini-node22-review-20261023/execution-task-10.txt",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\gemini-node22-review-20261023\\execution-task-10.txt",
+      "kind": "architect_review_or_decision",
+      "bytes": 6092,
+      "sha256": "6aee2560df80d6594c62f51d3f8cca9b61fbee15f16be0c84224a6ba5fd2535a"
+    },
+    {
+      "path": "reports/gemini-node22-review-20261023/metadata-review.json",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\gemini-node22-review-20261023\\metadata-review.json",
+      "kind": "architect_review_or_decision",
+      "bytes": 2368,
+      "sha256": "6aa7604f52c88d9b608766f5d678bc171d653582e532397b3f9300788789f215"
+    },
+    {
+      "path": "reports/gemini-node22-review-20261023/probe_review.py",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\gemini-node22-review-20261023\\probe_review.py",
+      "kind": "architect_review_or_decision",
+      "bytes": 7654,
+      "sha256": "6bb7f6117d76f1ec749a559f57fa60ab7325a33c258d2341811a87b784232e66"
+    },
+    {
+      "path": "reports/gemini-node22-review-20261023/README.md",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\gemini-node22-review-20261023\\README.md",
+      "kind": "architect_review_or_decision",
+      "bytes": 1020,
+      "sha256": "5c09a2e16e8bfabfb8f35145ba35e0acc47abe8bf941c4b8dee2c1cfaef15269"
+    },
+    {
+      "path": "reports/gemini-node22-review-20261023/review-summary.json",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\gemini-node22-review-20261023\\review-summary.json",
+      "kind": "architect_review_or_decision",
+      "bytes": 8299,
+      "sha256": "95041d6d58b651ce6939b7425788192d06cca792ad780c5f6d8fce65cd265814"
+    },
+    {
+      "path": "reports/jh020-gemini-agent-bridge-slice-20261021.md",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\jh020-gemini-agent-bridge-slice-20261021.md",
+      "kind": "architect_review_or_decision",
+      "bytes": 7878,
+      "sha256": "cad68f9f977cd1add2da0c2373a2f8a49a526228eee98aef9bcf86889ec7f745"
+    },
+    {
+      "path": "reports/workflow-transition-decision-20261023.md",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\reports\\workflow-transition-decision-20261023.md",
+      "kind": "architect_review_or_decision",
+      "bytes": 8063,
+      "sha256": "4e1de86cf5f850176d63039c95206c9e9735c5f86d571968e1435b0f721444f9"
+    },
+    {
+      "path": "reports/local-handoff-sync-20261023/architect-current-local.md",
+      "source": "D:\\JH-Agent OS\\data\\worktrees\\n1-artifact-entry\\docs\\handoffs\\architect-current.md",
+      "kind": "historical_handoff_snapshot",
+      "bytes": 68519,
+      "sha256": "271afe2922ab530dcf6c3308cf7e0f85bc12788a75aaa460c1679adb78ba8cc9"
+    },
+    {
+      "path": "reports/local-handoff-sync-20261023/exec08/report.md",
+      "source": "git:fdec9c6876e5def7432fe5e8c1e9ec99f425431d:reports/gemini-windows-probe-20261023.md",
+      "kind": "historical_executor_report_unaccepted_batch",
+      "bytes": 5120,
+      "sha256": "d64d0b7049c2f3b6b317e5c1e43efa78b507f15725e9aa498798b588c22f18e2"
+    },
+    {
+      "path": "reports/local-handoff-sync-20261023/exec08/first_host_probe/registry.jsonl",
+      "source": "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\evidence\\first_host_probe\\bridge\\registry.jsonl",
+      "kind": "historical_windows_cli_evidence",
+      "bytes": 8303,
+      "sha256": "034d4502d1802950dbefc1a03f656c0fe25246c5cacd82f6e886b3aefc601ab9"
+    },
+    {
+      "path": "reports/local-handoff-sync-20261023/exec08/first_host_probe/gemini-run-b3bc1e958599/stdout.jsonl",
+      "source": "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\evidence\\first_host_probe\\bridge\\runs\\gemini-run-b3bc1e958599\\stdout.jsonl",
+      "kind": "historical_windows_cli_evidence",
+      "bytes": 3155,
+      "sha256": "51d8460d5c77f3f8950d0501d2f62adc7c54a243cece55e478d89c9f1fd9bb22"
+    },
+    {
+      "path": "reports/local-handoff-sync-20261023/exec08/first_host_probe/gemini-run-b3bc1e958599/stderr.txt",
+      "source": "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\evidence\\first_host_probe\\bridge\\runs\\gemini-run-b3bc1e958599\\stderr.txt",
+      "kind": "historical_windows_cli_evidence",
+      "bytes": 791,
+      "sha256": "176d41b9e5f024afacdd148f61029b1ebcc9b261a8c7e1027c4d763f6a971317"
+    },
+    {
+      "path": "reports/local-handoff-sync-20261023/exec08/first_host_probe/gemini-run-b3bc1e958599/host-chat-record.jsonl",
+      "source": "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\evidence\\first_host_probe\\bridge\\runs\\gemini-run-b3bc1e958599\\host-chat-record.jsonl",
+      "kind": "historical_windows_cli_evidence",
+      "bytes": 27975,
+      "sha256": "19a3e353167db811cfe721019543112172d176b2675708377fb8a8ea7ab65cdb"
+    },
+    {
+      "path": "reports/local-handoff-sync-20261023/exec08/first_host_probe/gemini-run-b3bc1e958599/workspace-before.json",
+      "source": "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\evidence\\first_host_probe\\bridge\\runs\\gemini-run-b3bc1e958599\\workspace-before.json",
+      "kind": "historical_windows_cli_evidence",
+      "bytes": 110811,
+      "sha256": "85d047d8cbec0c2184870bf8414c585149fba828800db60a8247d8b9cd009411"
+    },
+    {
+      "path": "reports/local-handoff-sync-20261023/exec08/first_host_probe/gemini-run-b3bc1e958599/workspace-after.json",
+      "source": "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\evidence\\first_host_probe\\bridge\\runs\\gemini-run-b3bc1e958599\\workspace-after.json",
+      "kind": "historical_windows_cli_evidence",
+      "bytes": 110811,
+      "sha256": "85d047d8cbec0c2184870bf8414c585149fba828800db60a8247d8b9cd009411"
+    },
+    {
+      "path": "reports/local-handoff-sync-20261023/exec08/first_host_probe/summary.json",
+      "source": "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\evidence\\first_host_probe\\summary.json",
+      "kind": "historical_windows_cli_evidence",
+      "bytes": 1540,
+      "sha256": "cf08c33b51429ccbc6001c000342d3bb0ad577d8168380aec08666ee6310c83a"
+    },
+    {
+      "path": "reports/local-handoff-sync-20261023/exec08/second_host_probe/registry.jsonl",
+      "source": "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\evidence\\second_host_probe\\bridge\\registry.jsonl",
+      "kind": "historical_windows_cli_evidence",
+      "bytes": 8313,
+      "sha256": "c6f16fb42ff1f82bd38c1e57a1f7918d36621eaa4f0a42add59da1108addcd23"
+    },
+    {
+      "path": "reports/local-handoff-sync-20261023/exec08/second_host_probe/gemini-run-c01050081e82/stdout.jsonl",
+      "source": "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\evidence\\second_host_probe\\bridge\\runs\\gemini-run-c01050081e82\\stdout.jsonl",
+      "kind": "historical_windows_cli_evidence",
+      "bytes": 3155,
+      "sha256": "5f0ced0ba4a649b666162b1898e35cbf04f27b3b77d3d9a4f2dbcda1c1aedd92"
+    },
+    {
+      "path": "reports/local-handoff-sync-20261023/exec08/second_host_probe/gemini-run-c01050081e82/stderr.txt",
+      "source": "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\evidence\\second_host_probe\\bridge\\runs\\gemini-run-c01050081e82\\stderr.txt",
+      "kind": "historical_windows_cli_evidence",
+      "bytes": 792,
+      "sha256": "d85ae5a5950da75ee7dacc876c03ea8a0f11f723be8dbd12eac32950487a0621"
+    },
+    {
+      "path": "reports/local-handoff-sync-20261023/exec08/second_host_probe/gemini-run-c01050081e82/host-chat-record.jsonl",
+      "source": "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\evidence\\second_host_probe\\bridge\\runs\\gemini-run-c01050081e82\\host-chat-record.jsonl",
+      "kind": "historical_windows_cli_evidence",
+      "bytes": 27975,
+      "sha256": "a94dc6b7d1eb00c2b70cb582ff655643ad57de90992d81db817a01df78066cfa"
+    },
+    {
+      "path": "reports/local-handoff-sync-20261023/exec08/second_host_probe/gemini-run-c01050081e82/workspace-before.json",
+      "source": "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\evidence\\second_host_probe\\bridge\\runs\\gemini-run-c01050081e82\\workspace-before.json",
+      "kind": "historical_windows_cli_evidence",
+      "bytes": 110811,
+      "sha256": "85d047d8cbec0c2184870bf8414c585149fba828800db60a8247d8b9cd009411"
+    },
+    {
+      "path": "reports/local-handoff-sync-20261023/exec08/second_host_probe/gemini-run-c01050081e82/workspace-after.json",
+      "source": "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\evidence\\second_host_probe\\bridge\\runs\\gemini-run-c01050081e82\\workspace-after.json",
+      "kind": "historical_windows_cli_evidence",
+      "bytes": 110811,
+      "sha256": "85d047d8cbec0c2184870bf8414c585149fba828800db60a8247d8b9cd009411"
+    },
+    {
+      "path": "reports/local-handoff-sync-20261023/exec08/second_host_probe/summary.json",
+      "source": "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\evidence\\second_host_probe\\summary.json",
+      "kind": "historical_windows_cli_evidence",
+      "bytes": 1540,
+      "sha256": "7fedc9ba1f4df081ae23a4c579b7e97e6122d5b8e8063e0ee38b06cb10c8f087"
+    },
+    {
+      "path": "reports/local-handoff-sync-20261023/exec08/boundary/registry.jsonl",
+      "source": "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\boundary_tests\\evidence_fd13f80c\\bridge\\registry.jsonl",
+      "kind": "historical_windows_cli_evidence",
+      "bytes": 10499,
+      "sha256": "21b68699a4eff8d51e993cdb8738867a3902b7f09c4126200a89ea1e0c9d53ad"
+    },
+    {
+      "path": "reports/local-handoff-sync-20261023/exec08/boundary/gemini-run-b05235d3a72c/stdout.jsonl",
+      "source": "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\boundary_tests\\evidence_fd13f80c\\bridge\\runs\\gemini-run-b05235d3a72c\\stdout.jsonl",
+      "kind": "historical_windows_cli_evidence",
+      "bytes": 5619,
+      "sha256": "8651b0c813a468632914438a769373d347d2cb5d3576abcddf577ef9fd953a6e"
+    },
+    {
+      "path": "reports/local-handoff-sync-20261023/exec08/boundary/gemini-run-b05235d3a72c/stderr.txt",
+      "source": "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\boundary_tests\\evidence_fd13f80c\\bridge\\runs\\gemini-run-b05235d3a72c\\stderr.txt",
+      "kind": "historical_windows_cli_evidence",
+      "bytes": 1713,
+      "sha256": "7b52cc8d56cf5ca8d4e9723399d3e4e09cc75b38c6875d127a5264d7e30d4c67"
+    },
+    {
+      "path": "reports/local-handoff-sync-20261023/exec08/boundary/gemini-run-b05235d3a72c/host-chat-record.jsonl",
+      "source": "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\boundary_tests\\evidence_fd13f80c\\bridge\\runs\\gemini-run-b05235d3a72c\\host-chat-record.jsonl",
+      "kind": "historical_windows_cli_evidence",
+      "bytes": 13255,
+      "sha256": "afc02ab2907705931a4c3ffc1f941c7c32a832a55baf98879e8e0da8400dd7b0"
+    },
+    {
+      "path": "reports/local-handoff-sync-20261023/exec08/boundary/gemini-run-b05235d3a72c/workspace-before.json",
+      "source": "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\boundary_tests\\evidence_fd13f80c\\bridge\\runs\\gemini-run-b05235d3a72c\\workspace-before.json",
+      "kind": "historical_windows_cli_evidence",
+      "bytes": 280,
+      "sha256": "7fbb2aa44bb16d7634a49e9362600082157af194c20d13fbe6c9e28e3549d100"
+    },
+    {
+      "path": "reports/local-handoff-sync-20261023/exec08/boundary/gemini-run-b05235d3a72c/workspace-after.json",
+      "source": "D:\\JH-Agent OS\\data\\gemini-windows-probe-20261023\\boundary_tests\\evidence_fd13f80c\\bridge\\runs\\gemini-run-b05235d3a72c\\workspace-after.json",
+      "kind": "historical_windows_cli_evidence",
+      "bytes": 280,
+      "sha256": "7fbb2aa44bb16d7634a49e9362600082157af194c20d13fbe6c9e28e3549d100"
+    }
+  ]
+}

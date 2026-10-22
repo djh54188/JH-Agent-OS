@@ -1,0 +1,87 @@
+[
+  {
+    "path": "admission-01.json",
+    "bytes": 4178,
+    "sha256": "c2ab2a382c6f4ea8e0965b2a3dd1d9c34b80ef3549b384218800a66d11936c9c"
+  },
+  {
+    "path": "audit_review.py",
+    "bytes": 5293,
+    "sha256": "fb40ff15af80723586e04b809d2da0f63bf64b7e689297a76435da853ddffeff"
+  },
+  {
+    "path": "execution-task-08.txt",
+    "bytes": 8578,
+    "sha256": "86fdc170bc52b8bffa1018611c0e33da01b7dbb67c4c3062625e800b8d0a8bea"
+  },
+  {
+    "path": "frozen_probe_boundaries.py",
+    "bytes": 11805,
+    "sha256": "a325cc541ea8ecc1dd0af128990e0ebb162abde96abf6dad6ad651f0f95e3e4f"
+  },
+  {
+    "path": "mutation-targets.json",
+    "bytes": 1261,
+    "sha256": "6ff0f236b2ab243a934a11743c3751a025fd31f9932fbcc9633e94a3c5c7a505"
+  },
+  {
+    "path": "mutation-targets.txt",
+    "bytes": 3854,
+    "sha256": "e8c27f8997d51edcda8be19c9bf2ffcddae9d5523ba2eaa0ff68ee4abdf8e382"
+  },
+  {
+    "path": "probe_admission.py",
+    "bytes": 6732,
+    "sha256": "99d5d61933d11a76abc07e0260e1d81e3cc2a30ba7c5d1c3f1f07d6eb8337ef1"
+  },
+  {
+    "path": "probe_process_lock.py",
+    "bytes": 4846,
+    "sha256": "7bf6bf383a70345765e225bd982ecef58cfbe08dc25a1e5cbc4ca6675513913a"
+  },
+  {
+    "path": "probe_reopen_boundary.py",
+    "bytes": 2011,
+    "sha256": "23c1b334ef07cdc3c177cea5abe1cd86089b131125e98f90352e1c69078cb7ed"
+  },
+  {
+    "path": "probe_reopen_variants.py",
+    "bytes": 2560,
+    "sha256": "79f7af530a7fbc0e6731af57f9a02392e3f46906cbbf7285ef428b1eef4a77ec"
+  },
+  {
+    "path": "process-lock.json",
+    "bytes": 1248,
+    "sha256": "3b6e7ac4e10a825214ed3b0d1de8341104b0dc88ce82cc63cc96316152e57444"
+  },
+  {
+    "path": "README.md",
+    "bytes": 1399,
+    "sha256": "6143b5ba3721b50ee77f65c21e9ddcdc3323da4917c9ac9570b421ed1f641fca"
+  },
+  {
+    "path": "remote-manifest.jsonl",
+    "bytes": 6537,
+    "sha256": "e9546f687d5a3c9522373af9b4d74fc79e139850d715f5ad86b1f60b8ab6d7b1"
+  },
+  {
+    "path": "reopen-01.json",
+    "bytes": 2250,
+    "sha256": "3fdd722abc921f7c410845f55f6e48b2a6821fc035063b4b7a89c88ac7908c3f"
+  },
+  {
+    "path": "reopen-02.json",
+    "bytes": 2765,
+    "sha256": "698f5634355a9f5e9abe396a13e98e1d714bca7cd0edb472ff88730bba267ab1"
+  },
+  {
+    "path": "review-summary.json",
+    "bytes": 1483,
+    "sha256": "1abbdf1573960eb47e2cbc3dee2b8a197836fec2f9b6fffa1b93c526280fcc48"
+  },
+  {
+    "path": "review_mutations.py",
+    "bytes": 3374,
+    "sha256": "71f2cc392c7132a027581363491830b0383123740a1d509c3dd1b7a54dd0b120"
+  }
+]

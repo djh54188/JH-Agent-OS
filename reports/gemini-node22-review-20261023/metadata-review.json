@@ -1,0 +1,51 @@
+{
+  "test_method_counts": {
+    "test_hark11_gemini_session.py": 32,
+    "test_hark12_gemini_admission.py": 33,
+    "test_hark13_registry_loss.py": 18,
+    "test_jh018_agent_session_contract.py": 42
+  },
+  "logs": {
+    "relevant-tests3.stderr.txt": {
+      "sha256": "4e7a17875cf61255e442870f5129a1e34388f2179fb1c0575c84012b91d4adad",
+      "ran": [
+        "125"
+      ],
+      "result": [
+        "FAILED (failures=3, errors=1, skipped=5)"
+      ],
+      "error_entries": [
+        "ERROR: test_stray_entries_refused (tests.test_hark13_registry_loss.TestUnjudgeableRunEvidence.test_stray_entries_refused) (kind='symlink')",
+        "FAIL: test_committed_h11_registries_are_legal (tests.test_hark12_gemini_admission.TestR1RegistryState.test_committed_h11_registries_are_legal) (path='reports\\\\hark-gemini-bridge-20261021\\\\host-probe\\\\bridge\\\\registry.jsonl')",
+        "FAIL: test_committed_h11_registries_are_legal (tests.test_hark12_gemini_admission.TestR1RegistryState.test_committed_h11_registries_are_legal) (path='reports\\\\hark-gemini-bridge-20261021\\\\host-probe-postcommit\\\\registry.jsonl')",
+        "FAIL: test_reencoding_reproduces_captured_native_bytes (tests.test_hark12_gemini_admission.TestR3Fixture.test_reencoding_reproduces_captured_native_bytes)"
+      ]
+    },
+    "h11-jh018-rerun.stderr.txt": {
+      "sha256": "317aa70030dbdee2bd386e8abc6cfdbe1902f369d700c24481f47da640645724",
+      "ran": [
+        "74"
+      ],
+      "result": [
+        "OK"
+      ],
+      "error_entries": []
+    }
+  },
+  "fixture_checkout": {
+    "blob_bytes": 2987,
+    "blob_sha256": "505e1c69d26d958b8b5f7800aa837657c6b914e1da3fcfc6c0ebea24e8227b9d",
+    "disk_bytes": 2999,
+    "disk_sha256": "2796032230b097a450b7e368618c356e2be845bc0ef85e4919cc53efe9457790",
+    "only_crlf_conversion": true
+  },
+  "executionAGENTS_crlf_sha256": "578a977f5e05f76d291efed1e93e3e7305b8a264df1fc2b3d732f6fc9e440db1",
+  "captured_stdout_checkout": {
+    "path": "reports/hark-gemini-bridge-20261021/host-probe/bridge/runs/gemini-run-e4d091ccdd29/stdout.jsonl",
+    "blob_bytes": 3056,
+    "blob_sha256": "be3ed400936c425654f1407371e60447c624d937967716e8f337f210fd899b97",
+    "disk_bytes": 3068,
+    "disk_sha256": "652cd128539dd0b05eca2a2afef1f4b1c655be27a76c056ea4586c5cd6e5b119",
+    "only_crlf_conversion": true
+  }
+}

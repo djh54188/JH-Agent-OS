@@ -1,0 +1,71 @@
+{
+  "real_processes": 0,
+  "model_calls": 0,
+  "cases": [
+    {
+      "case": "normal",
+      "first_run_id": "gemini-run-3ec687752e36",
+      "retained_run_dirs": [
+        "gemini-run-3ec687752e36"
+      ],
+      "second_run_id": "gemini-run-3ec687752e36",
+      "same_run": true,
+      "state": "unknown",
+      "new_launches_after_reopen": 0
+    },
+    {
+      "case": "bad-json",
+      "first_run_id": "gemini-run-740fd782b1c9",
+      "retained_run_dirs": [
+        "gemini-run-740fd782b1c9"
+      ],
+      "exception": "RegistryUnavailable",
+      "message": "refusing to dispatch: registry unreadable: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)",
+      "new_launches_after_reopen": 0
+    },
+    {
+      "case": "truncate-empty",
+      "first_run_id": "gemini-run-89a3635c09b0",
+      "retained_run_dirs": [
+        "gemini-run-89a3635c09b0"
+      ],
+      "second_run_id": "gemini-run-c50e66f91c8b",
+      "same_run": false,
+      "state": "running",
+      "new_launches_after_reopen": 1
+    },
+    {
+      "case": "delete",
+      "first_run_id": "gemini-run-08e59abd9bc7",
+      "retained_run_dirs": [
+        "gemini-run-08e59abd9bc7"
+      ],
+      "second_run_id": "gemini-run-e6609745e6f9",
+      "same_run": false,
+      "state": "running",
+      "new_launches_after_reopen": 1
+    },
+    {
+      "case": "whitespace",
+      "first_run_id": "gemini-run-2047e960b046",
+      "retained_run_dirs": [
+        "gemini-run-2047e960b046"
+      ],
+      "second_run_id": "gemini-run-ff24e37838a5",
+      "same_run": false,
+      "state": "running",
+      "new_launches_after_reopen": 1
+    },
+    {
+      "case": "reserved-only",
+      "first_run_id": "gemini-run-d9b4994f9f52",
+      "retained_run_dirs": [
+        "gemini-run-d9b4994f9f52"
+      ],
+      "second_run_id": "gemini-run-d9b4994f9f52",
+      "same_run": true,
+      "state": "unknown",
+      "new_launches_after_reopen": 0
+    }
+  ]
+}

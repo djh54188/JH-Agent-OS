@@ -1,0 +1,82 @@
+{
+  "external_processes": 0,
+  "model_calls": 0,
+  "cases": [
+    {
+      "case": "fresh",
+      "retained_run_dir_count": 0,
+      "first_run": null,
+      "run_id": "gemini-run-bc8f7aca755a",
+      "state": "running",
+      "same_run": null,
+      "new_launches": 1
+    },
+    {
+      "case": "normal",
+      "retained_run_dir_count": 1,
+      "first_run": "gemini-run-dbbff0f082b0",
+      "run_id": "gemini-run-dbbff0f082b0",
+      "state": "unknown",
+      "same_run": true,
+      "new_launches": 0
+    },
+    {
+      "case": "bad-json",
+      "retained_run_dir_count": 1,
+      "first_run": "gemini-run-bef9fb370090",
+      "exception": "RegistryUnavailable",
+      "message": "refusing to dispatch: registry unreadable: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)",
+      "new_launches": 0
+    },
+    {
+      "case": "truncate-empty",
+      "retained_run_dir_count": 1,
+      "first_run": "gemini-run-1ddc70872f91",
+      "exception": "RegistryUnavailable",
+      "message": "refusing to dispatch: registry does not account for existing run evidence; refusing: run evidence 'gemini-run-1ddc70872f91' has no registry record (registry incomplete)",
+      "new_launches": 0
+    },
+    {
+      "case": "delete",
+      "retained_run_dir_count": 1,
+      "first_run": "gemini-run-43477a3563cd",
+      "exception": "RegistryUnavailable",
+      "message": "refusing to dispatch: registry does not account for existing run evidence; refusing: run evidence 'gemini-run-43477a3563cd' has no registry record (registry incomplete)",
+      "new_launches": 0
+    },
+    {
+      "case": "whitespace",
+      "retained_run_dir_count": 1,
+      "first_run": "gemini-run-05e163648a77",
+      "exception": "RegistryUnavailable",
+      "message": "refusing to dispatch: registry unreadable: registry contains blank or whitespace-only lines",
+      "new_launches": 0
+    },
+    {
+      "case": "reserved-only",
+      "retained_run_dir_count": 1,
+      "first_run": "gemini-run-51579039d0ff",
+      "run_id": "gemini-run-51579039d0ff",
+      "state": "unknown",
+      "same_run": true,
+      "new_launches": 0
+    },
+    {
+      "case": "lost-last-run",
+      "retained_run_dir_count": 2,
+      "first_run": "gemini-run-decb55822e6c",
+      "exception": "RegistryUnavailable",
+      "message": "refusing to dispatch: registry does not account for existing run evidence; refusing: run evidence 'gemini-run-decb55822e6c' has no registry record (registry incomplete)",
+      "new_launches": 0
+    },
+    {
+      "case": "two-reserved-prefixes",
+      "retained_run_dir_count": 2,
+      "first_run": "gemini-run-55f15ce2991b",
+      "run_id": "gemini-run-55f15ce2991b",
+      "state": "unknown",
+      "same_run": true,
+      "new_launches": 0
+    }
+  ]
+}

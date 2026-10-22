@@ -1,0 +1,1 @@
+{"inside.txt":{"kind":"file","sha256":"e4f21fe93ab3bc6a56f254a71ab7f5dbf8a58e618fade858becefc30903c5677","size":19},"link_to_outside":{"kind":"dir"},"link_to_outside/secret.txt":{"kind":"file","sha256":"af7fe8eb5cc830c453f83e294ce89b74285982c4fbf3d616dda9c0e5aec9676e","size":18}}

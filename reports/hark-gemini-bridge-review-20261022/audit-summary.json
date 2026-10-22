@@ -1,0 +1,165 @@
+{
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.14.7 (tags/v3.14.7:823f032, Aug  5 2026, 10:51:32) [MSC v.1944 64 bit (AMD64)]",
+  "downloaded_blobs": 24,
+  "all_blobs_match": true,
+  "suite_logs": {
+    "baseline-suite": {
+      "summary_lines": [
+        "Ran 1 test in 0.199s",
+        "FAILED (errors=1)",
+        "Ran 704 tests in 90.389s",
+        "FAILED (failures=27, errors=78, skipped=2)"
+      ],
+      "failure_lines": 106,
+      "unique_failure_lines": 105
+    },
+    "precommit-suite": {
+      "summary_lines": [
+        "Ran 1 test in 0.188s",
+        "FAILED (errors=1)",
+        "Ran 736 tests in 95.272s",
+        "FAILED (failures=27, errors=78, skipped=2)"
+      ],
+      "failure_lines": 106,
+      "unique_failure_lines": 105
+    },
+    "postcommit-suite": {
+      "summary_lines": [
+        "Ran 1 test in 0.218s",
+        "FAILED (errors=1)",
+        "Ran 736 tests in 96.039s",
+        "FAILED (failures=27, errors=78, skipped=2)"
+      ],
+      "failure_lines": 106,
+      "unique_failure_lines": 105
+    }
+  },
+  "failure_sets_equal": true,
+  "new_test_methods_ast": 32,
+  "new_test_log": [
+    "Ran 32 tests in 5.111s",
+    "OK"
+  ],
+  "host_probe_checks": {
+    "host-probe": {
+      "all_successful_tools_read_only": true,
+      "declared_complete": true,
+      "declared_tools_exactly_read_only": true,
+      "evidence_bytes_match": true,
+      "host_model_matches_request": true,
+      "idempotent_replay_same_run": true,
+      "not_marked_succeeded": true,
+      "probe_files_absent": true,
+      "read_tool_used": true,
+      "session_bound": true,
+      "source_ref_verified": true,
+      "workspace_unchanged": true,
+      "write_and_shell_refused": true
+    },
+    "host-probe-postcommit": {
+      "all_successful_tools_read_only": true,
+      "declared_complete": true,
+      "declared_tools_exactly_read_only": true,
+      "evidence_bytes_match": true,
+      "host_model_matches_request": true,
+      "idempotent_replay_same_run": true,
+      "not_marked_succeeded": true,
+      "probe_files_absent": true,
+      "read_tool_used": true,
+      "session_bound": true,
+      "source_ref_verified": true,
+      "workspace_unchanged": true,
+      "write_and_shell_refused": true
+    }
+  },
+  "native_template_exact_after_declared_replacements": true,
+  "host_probe_D": {
+    "request_kinds": [
+      "generate",
+      "generate",
+      "generate",
+      "generate",
+      "generate"
+    ],
+    "declared_tools": [
+      "glob",
+      "grep_search",
+      "list_directory",
+      "read_file"
+    ],
+    "function_responses": [
+      {
+        "name": "read_file",
+        "response": {
+          "error": "Path not in workspace: Attempted path \"/etc/hostname\" resolves outside the allowed workspace directories: /workspace/work/h11-probe/wt or the project temp directory: /workspace/work/h11-probe/home-D/.gemini/tmp/wt"
+        }
+      },
+      {
+        "name": "grep_search",
+        "response": {
+          "error": "Path not in workspace: Attempted path \"/etc\" resolves outside the allowed workspace directories: /workspace/work/h11-probe/wt or the project temp directory: /workspace/work/h11-probe/home-D/.gemini/tmp/wt"
+        }
+      },
+      {
+        "name": "list_directory",
+        "response": {
+          "error": "Path not in workspace: Attempted path \"/workspace/work/h11-probe\" resolves outside the allowed workspace directories: /workspace/work/h11-probe/wt or the project temp directory: /workspace/work/h11-probe/home-D/.gemini/tmp/wt"
+        }
+      }
+    ]
+  },
+  "host_probe_E": {
+    "request_kinds": [
+      "generate",
+      "generate",
+      "generate",
+      "generate",
+      "generate"
+    ],
+    "declared_tools": [
+      "glob",
+      "grep_search",
+      "list_directory",
+      "read_file"
+    ],
+    "function_responses": [
+      {
+        "name": "grep_search",
+        "response": {
+          "output": "Found 1 match for pattern \"def foo\" in path \".\":\n---\nFile: a.py\nL1: def foo(): return 1\n---"
+        }
+      },
+      {
+        "name": "read_file",
+        "response": {
+          "output": "def foo(): return 1\n"
+        }
+      },
+      {
+        "name": "write_file",
+        "response": {
+          "error": "Tool \"write_file\" not found. Did you mean one of: \"read_file\", \"grep_search\", \"glob\"?"
+        }
+      },
+      {
+        "name": "run_shell_command",
+        "response": {
+          "error": "Tool \"run_shell_command\" not found. Did you mean one of: \"grep_search\", \"read_file\", \"glob\"?"
+        }
+      }
+    ]
+  },
+  "probe_case_count_each_round": [
+    43,
+    43
+  ],
+  "probe_outcomes_repeat": true,
+  "selected_original_tests": {
+    "run": 4,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "selected_test_workaround": "ordinary mkdir in review-owned temp instead of inaccessible Python 3.14 mkdtemp(mode=0700); candidate bytes unchanged"
+}

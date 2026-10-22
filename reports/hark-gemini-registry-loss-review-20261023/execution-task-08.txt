@@ -1,0 +1,65 @@
+派单编号：执行AI-派单-08
+替代关系：无；08首次发行，承接Hark11–13离线验收，不重发Hark，不恢复作废派单10。
+最终版：本提示词完整、唯一，不拼接旧指令；生成不代表已经发送。
+
+规则：先读 D:\AGENTS.md 及其完整规则，再读候选 AGENTS.md v2 → docs/collaboration-rules.md v2、docs/templates/execution-task.md；读取真正工作树 docs/handoffs/architect-current.md 最新条目。
+AGENTS.md SHA-256：edc9846b33c908ee6f16597cd2dd920f1c0564489271713a027bbe7e24ea74b3。
+环境：Windows 本地，Asia/Shanghai。你是执行角色，负责完整验证与自己的提交；架构师独立验收。
+
+代码基线：29e00201f85063f60cc23213262fc82cf430d7ee，其中功能 a086195f8568f81d20ad95c2584cad5e27854e4d，父 d9cbbf7df5033663470a9912ba3b13f15157a21a。
+来源：GitHub djh54188/JH-Agent-OS，hark-gemini-subagent-20261021。先核对固定提交、树及实际远端头，不能只看分支名。
+真正产品树：D:\JH-Agent OS\data\worktrees\n1-artifact-entry，HEAD应仍为03d9a0224fd93917ed3a1b9d514e465dfc996825。先只读核对 HEAD/status/diff；其中 docs/review-backlog/、未提交架构报告与交接全部保留，不提交进去。
+原树 D:\JH-Agent OS 的80979f3旧失败WIP不重置、不清理、不混入。
+在固定候选上新建独立验证worktree及分支 gemini-windows-probe-20261023；建议 worktree 为 D:\JH-Agent OS\data\worktrees\gemini-windows-probe-20261023。
+CLI安装、缓存、隔离home、合成端点与原始证据放在目标worktree之外的项目受控D盘目录；建议 D:\JH-Agent OS\data\gemini-windows-probe-20261023。实际路径先核对不重叠、不覆盖既有目录。分支名不含斜杠。
+
+承接裁决：
+本地 reports/hark-gemini-registry-loss-independent-review-20261023.md 为最新独立裁决；其同名 review 目录含冻结结果和本提示词。
+派单11–13的薄桥按离线范围已接受，R1–R3关闭；不再泛化扫描或重做Linux完整套件来证明Windows。
+Hark13偏离①–⑤已专项裁决；旧测试方法保持，新增测试和削弱目标合理，未拆提交记流程偏离，后续仍按规则处理。
+declared_status保留宿主原文；failed/unverified不抹掉，关联无效才unattributed。宿主success、declared_complete和合成端点都不等于独立任务成功。
+070004f消费者白名单最小增量继续接受，不再放宽。
+Hark09三尾项冻结；旧GUI、其它已验收能力不重做。
+
+本批只做一个能力：
+验证固定候选在Windows上能否以官方Gemini CLI 0.65.0作为受限只读宿主，完成零真实模型的派发/收集，并给出真实任务前的就绪或阻塞证据。
+可隔离安装官方固定包、运行无需模型的help/version、使用本批自建且全程可记录的固定合成端点。禁止使用latest或全局安装；记录包来源、版本、锁定依赖及完整性依据。
+已有Node D:\node_global\node.exe曾实查v24.19.0，Python默认3.14.7及 D:\Python312\python.exe 3.12.10；以本轮现场为准，不自动改系统PATH或项目全局解释器。
+
+必须保持的不变量：
+- 真实模型调用0。不登录、不探查/读取/复制认证缓存，不读取、申请或上传用户key；不读取普通用户home中的凭据。
+- 只为CLI子进程构造必要的隔离环境，隔离home、配置及npm缓存；不打印继承环境值，不改用户或系统配置。
+- 仅允许本批新建并记录的合成回环端点承接模型协议；不连接用户既有localhost代理，不继承用户代理做替代证据。合成请求与真实模型请求分别计数，不把“一次submit”写成“一次API调用”。
+- Gemini工具仍限read_file、list_directory、glob、grep_search；限制由真实宿主执行，不能只写提示词或在适配器事后判失败。执行AI自身可用Shell/Python进行安装和验证，Gemini不能获得Shell/测试命令工具。
+- target worktree与CLI home、证据不重叠；先后字节清单、Git状态和宿主原始事件均保存，读取失败不得当作空或未修改。
+- 同键未知不重放；任一工具、路径或宿主限制未证实即报告，不能以“worktree等于沙箱”放行。
+
+反例与范围：
+优先复用候选 scripts/verify_hark11_gemini_bridge.py 的host-probe方法和原生证据，不调用real模式或其授权开关。
+按本批风险覆盖：Windows绝对路径及空格/中文；存在与不存在的相对、根相对、驱动器相对路径拒绝；读取/搜索的真实cwd与源码位置；同键重放和登记丢失重开；读目录失败时拒绝；宿主写入和Shell请求确实被阻止。
+对读取越界至少验证直接外部路径及Windows junction/reparse指向外部的相关变体，使用自建无敏感内容的外部诱饵；保存真实请求/响应及文件清单。无法建立场景就列未覆盖，不能用Linux结果或分类器代替。
+架构师的msvcrt同键/异键/锁占用及登记四种丢失已补小型Windows Python证据，可沿用；按真实CLI宿主的剩余风险验证，不机械重跑所有探针。
+本批允许新增独立验证入口、夹具、证据及文档；若验证入口需Windows兼容调整，单列差异，不改判据。发现产品适配器缺陷时先冻结最小复现并报告，停止受影响宿主路径，不现场扩大成新的功能整改批。
+
+完成判据：
+1. 固定官方CLI版本、来源、实际Node/Windows版本、隔离目录和有效配置已核对；无需模型探测有原始输出。目标worktree绑定没有cwd重复拼接。
+2. 通过AgentSession的capabilities/submit/status/collect驱动真实CLI到合成端点，实际搜索和读文件，交付可核对path:line；原生session/model、工具请求与结果、最终交付、原始字节、用量及缺失项可对应。工作区未改的结论有完整观测，不只是Git clean。
+3. 宿主工具集合与权限、Windows越界/junction、写入/Shell拒绝及相对路径拒绝有直接证据；拒绝/未知不自动重试，不修复登记或重新认领原会话。
+4. 一般回归按实际变动选用必要范围，完整记录错误、跳过、环境失败及未覆盖。已知Python3.14临时ACL、multiprocessing.Queue命名管道限制可在验证runner隔离处理，但不得改产品判据或伪称原测试通过。新关键守卫若有则控制先有效并定向削弱；仅新增探针不制造守卫数量里程碑。
+5. 验证通过或遇停止条件后，回传一个明确结论：Windows离线宿主已就绪 / 某项未通过或未覆盖。为下一次真实任务列出尚需用户确认的认证方式、账户可用模型/额度和真实调用授权，仅列条件，不发起登录或读取凭据。
+6. 原始日志、独立提取入口、平台版本、沿用证据源提交和提交后复验齐全；真实模型、GUI及独立验收层分别写未做/待复核。
+
+本批不做：
+真实模型或有价值真实任务先不执行；不复用ModelAdapter/API代理冒充工具会话。
+不做continue/cancel、GUI/Muse/指定审查接线、自动整改、文件应用、通用Runtime/调度平台；production complete和FileToolExecutor自动应用仍关闭。
+不改AgentSession公共契约、Codex适配器、JH018、核心门、已验收业务测试/守卫或规则。若确需偏离，单独提交并等裁决，不能混入。
+不合并main/n1/Hark/PR#1，不将候选覆盖本地GUI，不把全部本地历史上传，不改写已推送历史。
+
+停止条件：
+基线/并行工作或路径归属冲突、包版本来源不匹配、需要凭据或真实调用、不能将模型协议限定到合成端点、宿主限制失败或需要改产品契约/适配器时，停止相关动作并回报。其余独立已授权验证可完成；不盲重试、不改成功门、不把未知报告成通过。
+
+提交/发布：
+只在新验证分支提交自己本批的验证入口/夹具/报告，原始大证据按项目现有归档方式存D盘；不提交CLI包、node_modules、home、凭据或无关文件。允许本地提交，不推送、不合并或发布，待架构师验收后再单独同步。若只有报告也只提交本批报告；每次提交后按实际影响复验并核对数字。
+
+回传：来源：执行AI｜执行AI-派单-08｜类型：交付报告。
+按模板回传范围理解、实现/离线/真实路径/独立验收分级、完整SHA及父提交/文件、原始日志与独立提取命令、偏离、故障类覆盖、未做和阻塞，附完整转发给架构师块。

@@ -1,0 +1,7 @@
+Warning: 256-color support not detected. Using a terminal with at least 256-color support is recommended for a better visual experience.
+Ripgrep is not available. Falling back to GrepTool.
+(node:18872) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Error executing tool write_file: Tool "write_file" not found. Did you mean one of: "read_file", "grep_search", "glob"?
+Error executing tool run_shell_command: Tool "run_shell_command" not found. Did you mean one of: "grep_search", "read_file", "glob"?
+Assertion failed: !(handle->flags & UV_HANDLE_CLOSING), file src\win\async.c, line 94

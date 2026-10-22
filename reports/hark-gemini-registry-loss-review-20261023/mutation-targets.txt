@@ -1,0 +1,65 @@
+test_tail_cut_registry_refuses_reader (h12.TestR1RegistryState.test_tail_cut_registry_refuses_reader) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.128s
+
+OK
+test_tail_cut_registry_refuses_reader (h12.TestR1RegistryState.test_tail_cut_registry_refuses_reader) ... FAIL
+
+======================================================================
+FAIL: test_tail_cut_registry_refuses_reader (h12.TestR1RegistryState.test_tail_cut_registry_refuses_reader)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\data\hark13-independent-review-20261023\candidate\tests\test_hark12_gemini_admission.py", line 264, in test_tail_cut_registry_refuses_reader
+    with self.assertRaises(gem.RegistryUnavailable):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: RegistryUnavailable not raised
+
+----------------------------------------------------------------------
+Ran 1 test in 0.114s
+
+FAILED (failures=1)
+test_registry_deleted (h13.TestLostRegistryNewObject.test_registry_deleted) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.058s
+
+OK
+test_registry_deleted (h13.TestLostRegistryNewObject.test_registry_deleted) ... 
+  test_registry_deleted (h13.TestLostRegistryNewObject.test_registry_deleted) (root=1) ... FAIL
+  test_registry_deleted (h13.TestLostRegistryNewObject.test_registry_deleted) (root=2) ... FAIL
+
+======================================================================
+FAIL: test_registry_deleted (h13.TestLostRegistryNewObject.test_registry_deleted) (root=1)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\data\hark13-independent-review-20261023\candidate\tests\test_hark13_registry_loss.py", line 156, in test_registry_deleted
+    self._one_layout("delete")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\data\hark13-independent-review-20261023\candidate\tests\test_hark13_registry_loss.py", line 148, in _one_layout
+    self.assert_refused(s, b, s.req())
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\data\hark13-independent-review-20261023\candidate\tests\test_hark13_registry_loss.py", line 133, in assert_refused
+    with self.assertRaises(gem.RegistryUnavailable):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: RegistryUnavailable not raised
+
+======================================================================
+FAIL: test_registry_deleted (h13.TestLostRegistryNewObject.test_registry_deleted) (root=2)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\data\hark13-independent-review-20261023\candidate\tests\test_hark13_registry_loss.py", line 156, in test_registry_deleted
+    self._one_layout("delete")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\data\hark13-independent-review-20261023\candidate\tests\test_hark13_registry_loss.py", line 148, in _one_layout
+    self.assert_refused(s, b, s.req())
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\JH-Agent OS\data\worktrees\n1-artifact-entry\data\hark13-independent-review-20261023\candidate\tests\test_hark13_registry_loss.py", line 133, in assert_refused
+    with self.assertRaises(gem.RegistryUnavailable):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: RegistryUnavailable not raised
+
+----------------------------------------------------------------------
+Ran 1 test in 0.084s
+
+FAILED (failures=2)
