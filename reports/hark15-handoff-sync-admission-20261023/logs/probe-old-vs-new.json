@@ -1,0 +1,120 @@
+{
+  "old_script": "1102105 + injection snippet before push",
+  "new_script": "scripts/win/hark14-handoff-sync.ps1",
+  "r1": [
+    {
+      "case": "ancestor-A",
+      "script": "old",
+      "exit": 0,
+      "push_exit": 0,
+      "final_targets_match": true,
+      "existing_different_refs_moved": 1,
+      "other_new_target_left": [
+        "refs/heads/handoff-local-gemini-20261023"
+      ]
+    },
+    {
+      "case": "ancestor-A",
+      "script": "new",
+      "exit": 1,
+      "push_exit": 1,
+      "final_targets_match": false,
+      "existing_different_refs_moved": 0,
+      "other_new_target_left": []
+    },
+    {
+      "case": "ancestor-B",
+      "script": "old",
+      "exit": 0,
+      "push_exit": 0,
+      "final_targets_match": true,
+      "existing_different_refs_moved": 1,
+      "other_new_target_left": [
+        "refs/heads/win-evidence-exec09-20261023"
+      ]
+    },
+    {
+      "case": "ancestor-B",
+      "script": "new",
+      "exit": 1,
+      "push_exit": 1,
+      "final_targets_match": false,
+      "existing_different_refs_moved": 0,
+      "other_new_target_left": []
+    },
+    {
+      "case": "ancestor-both",
+      "script": "old",
+      "exit": 0,
+      "push_exit": 0,
+      "final_targets_match": true,
+      "existing_different_refs_moved": 2,
+      "other_new_target_left": []
+    },
+    {
+      "case": "ancestor-both",
+      "script": "new",
+      "exit": 1,
+      "push_exit": 1,
+      "final_targets_match": false,
+      "existing_different_refs_moved": 0,
+      "other_new_target_left": []
+    }
+  ],
+  "r2": [
+    {
+      "url": "https://127.0.0.1:9/x.git",
+      "script": "old",
+      "exit": 1,
+      "reached_git_transport": true,
+      "refused_before_transport": false
+    },
+    {
+      "url": "https://127.0.0.1:9/x.git",
+      "script": "new",
+      "exit": 1,
+      "reached_git_transport": false,
+      "refused_before_transport": true
+    },
+    {
+      "url": "ssh://git@127.0.0.1:1/x.git",
+      "script": "old",
+      "exit": 1,
+      "reached_git_transport": true,
+      "refused_before_transport": false
+    },
+    {
+      "url": "ssh://git@127.0.0.1:1/x.git",
+      "script": "new",
+      "exit": 1,
+      "reached_git_transport": false,
+      "refused_before_transport": true
+    },
+    {
+      "url": "git@127.0.0.1:x.git",
+      "script": "old",
+      "exit": 1,
+      "reached_git_transport": true,
+      "refused_before_transport": false
+    },
+    {
+      "url": "git@127.0.0.1:x.git",
+      "script": "new",
+      "exit": 1,
+      "reached_git_transport": false,
+      "refused_before_transport": true
+    }
+  ],
+  "r3": {
+    "old": {
+      "helper_result_for_skipped_case": true,
+      "counted_as_control_pass": true,
+      "would_report_detected": false
+    },
+    "new": {
+      "helper_result_for_skipped_case": "skip",
+      "counted_as_control_pass": false,
+      "would_report_detected": false
+    }
+  }
+}

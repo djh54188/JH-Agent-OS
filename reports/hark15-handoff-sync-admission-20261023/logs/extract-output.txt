@@ -1,0 +1,18 @@
+run1: ran=35 result=OK guards=8 control={'pass': 8, 'skipped': 0} weakened={'detected': 8, 'MISSED': 0, 'skipped': 0, 'not-run': 0}
+run2: ran=35 result=OK guards=8 control={'pass': 8, 'skipped': 0} weakened={'detected': 8, 'MISSED': 0, 'skipped': 0, 'not-run': 0}
+run3: ran=35 result=OK guards=8 control={'pass': 8, 'skipped': 0} weakened={'detected': 8, 'MISSED': 0, 'skipped': 0, 'not-run': 0}
+no-pwsh: 35 OK (skipped=32)
+R1 ancestor-A old exit 0 final_match True moved 1 left ['refs/heads/handoff-local-gemini-20261023']
+R1 ancestor-A new exit 1 final_match False moved 0 left []
+R1 ancestor-B old exit 0 final_match True moved 1 left ['refs/heads/win-evidence-exec09-20261023']
+R1 ancestor-B new exit 1 final_match False moved 0 left []
+R1 ancestor-both old exit 0 final_match True moved 2 left []
+R1 ancestor-both new exit 1 final_match False moved 0 left []
+R2 https://127.0.0.1:9/x.git old transport_reached True refused_before False
+R2 https://127.0.0.1:9/x.git new transport_reached False refused_before True
+R2 ssh://git@127.0.0.1:1/x.git old transport_reached True refused_before False
+R2 ssh://git@127.0.0.1:1/x.git new transport_reached False refused_before True
+R2 git@127.0.0.1:x.git old transport_reached True refused_before False
+R2 git@127.0.0.1:x.git new transport_reached False refused_before True
+R3 old {'helper_result_for_skipped_case': True, 'counted_as_control_pass': True, 'would_report_detected': False}
+R3 new {'helper_result_for_skipped_case': 'skip', 'counted_as_control_pass': False, 'would_report_detected': False}
