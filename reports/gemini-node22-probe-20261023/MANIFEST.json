@@ -1,0 +1,209 @@
+{
+ "description": "Selected copies of the Node22 probe runtime evidence; originals remain at source paths.",
+ "files": [
+  {
+   "copy": "evidence/pair-node22-warm/summary.json",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\pair-node22-warm\\summary.json",
+   "bytes": 1550,
+   "sha256": "bc6c1d17f3245865c8c68c9aac771d2635b9200bfc8231d9d3bf10a0ca68b057"
+  },
+  {
+   "copy": "evidence/pair-node22-warm/synthetic-script.json",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\pair-node22-warm\\synthetic-script.json",
+   "bytes": 939,
+   "sha256": "c14768a6e0742b9d1719c56f951a31cb373f2945eb3f9d17d6e49325f4c1557c"
+  },
+  {
+   "copy": "evidence/pair-node22-warm/home-copy-before.json",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\pair-node22-warm\\home-copy-before.json",
+   "bytes": 1396,
+   "sha256": "b60ca8a74dd10c3c325ac081ab1f16637198c7f499a61adb52d64018cfea6b01"
+  },
+  {
+   "copy": "evidence/pair-node22-warm/registry.jsonl",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\pair-node22-warm\\bridge\\registry.jsonl",
+   "bytes": 8302,
+   "sha256": "419867160da2a1b46182cc2d8ed46a8a563fa0cf725f609d108d3b746d282f8e"
+  },
+  {
+   "copy": "evidence/pair-node22-warm/stdout.jsonl",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\pair-node22-warm\\bridge\\runs\\gemini-run-50459e04aa6d\\stdout.jsonl",
+   "bytes": 3152,
+   "sha256": "23da0c76537c273bad94a8af84cb60db6f90a94cef55ecd1a17bd9049dc59967"
+  },
+  {
+   "copy": "evidence/pair-node22-warm/stderr.txt",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\pair-node22-warm\\bridge\\runs\\gemini-run-50459e04aa6d\\stderr.txt",
+   "bytes": 441,
+   "sha256": "27abbcb9d35e15548b439eca3575f1d50d6b8096751b8f3730222ab478834730"
+  },
+  {
+   "copy": "evidence/pair-node22-warm/workspace-before.json",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\pair-node22-warm\\bridge\\runs\\gemini-run-50459e04aa6d\\workspace-before.json",
+   "bytes": 136587,
+   "sha256": "44061f8b9eb82f920abf52338f9da5506a5a5294a06494b0e3051395a3488714"
+  },
+  {
+   "copy": "evidence/pair-node22-warm/workspace-after.json",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\pair-node22-warm\\bridge\\runs\\gemini-run-50459e04aa6d\\workspace-after.json",
+   "bytes": 136587,
+   "sha256": "44061f8b9eb82f920abf52338f9da5506a5a5294a06494b0e3051395a3488714"
+  },
+  {
+   "copy": "evidence/pair-node24-warm/summary.json",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\pair-node24-warm\\summary.json",
+   "bytes": 1540,
+   "sha256": "4af49d17c113d493c03de63afb639eca3948865c4bbb41d0ab619071b5865d53"
+  },
+  {
+   "copy": "evidence/pair-node24-warm/synthetic-script.json",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\pair-node24-warm\\synthetic-script.json",
+   "bytes": 939,
+   "sha256": "c14768a6e0742b9d1719c56f951a31cb373f2945eb3f9d17d6e49325f4c1557c"
+  },
+  {
+   "copy": "evidence/pair-node24-warm/home-copy-before.json",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\pair-node24-warm\\home-copy-before.json",
+   "bytes": 1396,
+   "sha256": "bc5b9dab46c8fb7b58c8fdf11432cccc3e29eb74b1dcf48f8165a459ebe6cfb8"
+  },
+  {
+   "copy": "evidence/pair-node24-warm/registry.jsonl",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\pair-node24-warm\\bridge\\registry.jsonl",
+   "bytes": 8309,
+   "sha256": "2db3865dba7e83881ec268cb36f55199fddd645693d8cf6d30cd3f164ec52309"
+  },
+  {
+   "copy": "evidence/pair-node24-warm/stdout.jsonl",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\pair-node24-warm\\bridge\\runs\\gemini-run-369dd604d953\\stdout.jsonl",
+   "bytes": 3152,
+   "sha256": "682c486f91aba8f99f7c16b950bc0caaa3bfa99ada4911bbd89a9afd526f35c9"
+  },
+  {
+   "copy": "evidence/pair-node24-warm/stderr.txt",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\pair-node24-warm\\bridge\\runs\\gemini-run-369dd604d953\\stderr.txt",
+   "bytes": 991,
+   "sha256": "b6106b469bdf7548b35078e684fd0b3223108993c73fe10529c48436c0bb02a9"
+  },
+  {
+   "copy": "evidence/pair-node24-warm/workspace-before.json",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\pair-node24-warm\\bridge\\runs\\gemini-run-369dd604d953\\workspace-before.json",
+   "bytes": 136587,
+   "sha256": "44061f8b9eb82f920abf52338f9da5506a5a5294a06494b0e3051395a3488714"
+  },
+  {
+   "copy": "evidence/pair-node24-warm/workspace-after.json",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\pair-node24-warm\\bridge\\runs\\gemini-run-369dd604d953\\workspace-after.json",
+   "bytes": 136587,
+   "sha256": "44061f8b9eb82f920abf52338f9da5506a5a5294a06494b0e3051395a3488714"
+  },
+  {
+   "copy": "evidence/node22-boundary2/summary.json",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\node22-boundary2\\summary.json",
+   "bytes": 3323,
+   "sha256": "965dc11954e4b17e67e666ed1bd8d5ab508be08e8ce6369845ad91ee09bb2ae7"
+  },
+  {
+   "copy": "evidence/node22-boundary2/junction.json",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\node22-boundary2\\junction.json",
+   "bytes": 911,
+   "sha256": "cf4ca78746e329118a2ef109e388c4e4c0d32a20d034ff9479e984b7bdfe6455"
+  },
+  {
+   "copy": "evidence/node22-boundary2/registry.jsonl",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\node22-boundary2\\bridge\\registry.jsonl",
+   "bytes": 11158,
+   "sha256": "7045848b6225f0c03f5e0434a13b7d85b1c4d8fbf7baacbb6b2aa1dfcbc3e2bb"
+  },
+  {
+   "copy": "evidence/node22-boundary2/stdout.jsonl",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\node22-boundary2\\bridge\\runs\\gemini-run-25b5522f22f1\\stdout.jsonl",
+   "bytes": 6138,
+   "sha256": "06c1dc6b3af0b21fd736b0b6a65e1f981c0f522ad347e8ea526ddbce94404220"
+  },
+  {
+   "copy": "evidence/node22-boundary2/stderr.txt",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\node22-boundary2\\bridge\\runs\\gemini-run-25b5522f22f1\\stderr.txt",
+   "bytes": 1815,
+   "sha256": "0fbdb7587f593df1932d4fb2e4fe6fa5e1b5074bd1fe5cdb813d3ae7dedc03cc"
+  },
+  {
+   "copy": "evidence/node22-boundary2/outside-secret.txt",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\node22-boundary2\\fixtures\\outside\\secret.txt",
+   "bytes": 18,
+   "sha256": "af7fe8eb5cc830c453f83e294ce89b74285982c4fbf3d616dda9c0e5aec9676e"
+  },
+  {
+   "copy": "evidence/node22-boundary2/workspace-inside.txt",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\node22-boundary2\\fixtures\\workspace\\inside.txt",
+   "bytes": 19,
+   "sha256": "e4f21fe93ab3bc6a56f254a71ab7f5dbf8a58e618fade858becefc30903c5677"
+  },
+  {
+   "copy": "evidence/workspace-inputs1-summary.json",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\workspace-inputs1\\summary.json",
+   "bytes": 5592,
+   "sha256": "eee5a56e3d45506f59960085e6c925f246a4c5bdc02e63fa1d8cfb8d605a6c75"
+  },
+  {
+   "copy": "evidence/audit-result.json",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\audit-result.json",
+   "bytes": 71567,
+   "sha256": "836fdd7de8dbe64f8401ca6d731ebe566cac1b74ac185e52cbcbc04c299cb761"
+  },
+  {
+   "copy": "logs/relevant-tests3.stderr.txt",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\logs\\relevant-tests3.stderr.txt",
+   "bytes": 6739,
+   "sha256": "4e7a17875cf61255e442870f5129a1e34388f2179fb1c0575c84012b91d4adad"
+  },
+  {
+   "copy": "logs/relevant-tests3.command.txt",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\logs\\relevant-tests3.command.txt",
+   "bytes": 321,
+   "sha256": "761dcac33cf93d749107b99507570ed65363fbf81a223acae1bee5cbd9a367b4"
+  },
+  {
+   "copy": "logs/h11-jh018-74-ok.stderr.txt",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\logs\\jh018-h11.stderr.txt",
+   "bytes": 1054,
+   "sha256": "f4294e44f7769b534faddc5c25678599c1dfa679b579b10cc4fc365dd93f654e"
+  },
+  {
+   "copy": "logs/h11-jh018-74-ok.exitcode.txt",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\logs\\jh018-h11.exitcode.txt",
+   "bytes": 7,
+   "sha256": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061"
+  },
+  {
+   "copy": "logs/inheritance-1-ok.stdout.txt",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\logs\\inheritance-test.stdout.txt",
+   "bytes": 267,
+   "sha256": "300f00293f68eedd7addbad71cfcf8d0fc2667c7343f0b7b6a56fc2afde61df4"
+  },
+  {
+   "copy": "logs/ast-relevant.txt",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\logs\\ast-relevant.txt",
+   "bytes": 725,
+   "sha256": "3e5fc01d6f8c716f06e081cd2782f57147f6a3e887aaaac3eb5638fc204b041b"
+  },
+  {
+   "copy": "logs/audit-command.txt",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\logs\\audit-command.txt",
+   "bytes": 368,
+   "sha256": "1b7db9b7729322c185705e4785b4ab89103b818aafbb045acc46ef1aaf3c2648"
+  },
+  {
+   "copy": "logs/h11-jh018-rerun.stderr.txt",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\logs\\h11-jh018-rerun.stderr.txt",
+   "bytes": 1054,
+   "sha256": "317aa70030dbdee2bd386e8abc6cfdbe1902f369d700c24481f47da640645724"
+  },
+  {
+   "copy": "logs/h11-jh018-rerun.command.txt",
+   "source": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\logs\\h11-jh018-rerun.command.txt",
+   "bytes": 214,
+   "sha256": "63577d5661b0a1075a925f833114b001d9042c1e5e6a0e6245356e9cf9b58a87"
+  }
+ ]
+}

@@ -3,3 +3,6 @@ tests/fixtures/n2/** -text
 
 # Preserve rejected candidate evidence byte-for-byte.
 reports/jh006-host-review-20261016/submitted/** -text
+
+# Node22 probe evidence and logs are byte-pinned; never apply EOL conversion.
+reports/gemini-node22-probe-20261023/** -text

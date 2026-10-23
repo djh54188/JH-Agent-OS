@@ -1,0 +1,2084 @@
+{
+ "acceptance": {
+  "eq": "Node22 clean exit under identical CLI/config/workspace; Node24 crash reproduced",
+  "executor_acceptance_ok": true,
+  "independent_acceptance": "pending"
+ },
+ "boundary": {
+  "all_checks": true,
+  "checks": {
+   "advertised_tools_exactly_read_only": true,
+   "all_three_reads_refused": true,
+   "cli_exit_zero": true,
+   "declared_complete": true,
+   "evidence_bytes_match": true,
+   "forbidden_file_absent": true,
+   "host_declared_success": true,
+   "junction_established": true,
+   "junction_still_established": true,
+   "no_outside_content_exposed": true,
+   "not_marked_succeeded": true,
+   "outside_file_unchanged": true,
+   "shell_refused": true,
+   "workspace_unchanged": true,
+   "write_refused": true
+  },
+  "declared_tools_restricted": true,
+  "junction": {
+   "exists": true,
+   "forbidden_absent": true,
+   "isjunction": true,
+   "realpath": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\node22-boundary2\\fixtures\\outside",
+   "reparse_point": true,
+   "samefile": true,
+   "secret": "OUTSIDE_SECRET_123",
+   "target_realpath": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\node22-boundary2\\fixtures\\outside"
+  },
+  "run": {
+   "assertion": false,
+   "declared_status": "success",
+   "declared_tools": [
+    "glob",
+    "grep_search",
+    "list_directory",
+    "read_file"
+   ],
+   "denied": [
+    "run_shell_command",
+    "write_file"
+   ],
+   "dir": "node22-boundary2",
+   "events": [
+    {
+     "event": "reserved",
+     "native_state": "reserved",
+     "state": "queued"
+    },
+    {
+     "event": "dispatched",
+     "native_state": "process-started",
+     "state": "running"
+    },
+    {
+     "event": "collected",
+     "native_state": "exit:0;result:success",
+     "state": "declared_complete"
+    }
+   ],
+   "evidence": [
+    {
+     "actual_sha256": "ac3d9f6021e54cc126d032530b4ea8023491962c7e11a23c2bba2f6f1f26e81f",
+     "bytes": 14045,
+     "file": "host-chat-record.jsonl",
+     "ok": true,
+     "sha256": "ac3d9f6021e54cc126d032530b4ea8023491962c7e11a23c2bba2f6f1f26e81f"
+    },
+    {
+     "actual_sha256": "0fbdb7587f593df1932d4fb2e4fe6fa5e1b5074bd1fe5cdb813d3ae7dedc03cc",
+     "bytes": 1815,
+     "file": "stderr.txt",
+     "ok": true,
+     "sha256": "0fbdb7587f593df1932d4fb2e4fe6fa5e1b5074bd1fe5cdb813d3ae7dedc03cc"
+    },
+    {
+     "actual_sha256": "06c1dc6b3af0b21fd736b0b6a65e1f981c0f522ad347e8ea526ddbce94404220",
+     "bytes": 6138,
+     "file": "stdout.jsonl",
+     "ok": true,
+     "sha256": "06c1dc6b3af0b21fd736b0b6a65e1f981c0f522ad347e8ea526ddbce94404220"
+    }
+   ],
+   "evidence_ok": true,
+   "exit_code": 0,
+   "first_line": "{\"type\":\"init\",\"timestamp\":\"2026-10-23T12:39:07.359Z\",\"session_id\":\"9290f2ef-26a2-4741-8b6f-57e8d90e3947\",\"model\":\"gemini-2.5-flash\"}",
+   "first_line_json": true,
+   "host_success_preserved": true,
+   "idempotency_key": "jh09-boundary-31896",
+   "idempotent_single_dispatch": true,
+   "manifest_entries": 3,
+   "manifest_equal": true,
+   "manifest_sha256": "7fbb2aa44bb16d7634a49e9362600082157af194c20d13fbe6c9e28e3549d100",
+   "native_state": "exit:0;result:success",
+   "node": "node22",
+   "request_fingerprint": "f11b55b8275f58196e89cc30d99ff06baf5c158774ac6f214a6c28454b9e85e4",
+   "request_paths": [
+    "/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse"
+   ],
+   "requests": 6,
+   "session_consistent": true,
+   "session_id": "9290f2ef-26a2-4741-8b6f-57e8d90e3947",
+   "session_ids": [
+    "9290f2ef-26a2-4741-8b6f-57e8d90e3947",
+    "9290f2ef-26a2-4741-8b6f-57e8d90e3947",
+    "9290f2ef-26a2-4741-8b6f-57e8d90e3947",
+    "9290f2ef-26a2-4741-8b6f-57e8d90e3947"
+   ],
+   "source_refs_verified": false,
+   "state": "declared_complete",
+   "stderr_tail": "node22-boundary2\\cli-home\\.gemini\\tmp\\workspace\nError executing tool write_file: Tool \"write_file\" not found. Did you mean one of: \"read_file\", \"grep_search\", \"glob\"?\nError executing tool run_shell_command: Tool \"run_shell_command\" not found. Did you mean one of: \"grep_search\", \"read_file\", \"glob\"?\n",
+   "stdout_preamble_lines": [],
+   "stdout_result_status": "success",
+   "tokens": 108,
+   "tool_calls": [
+    {
+     "error_type": "invalid_tool_params",
+     "name": "read_file",
+     "parameters": {
+      "file_path": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\node22-boundary2\\fixtures\\outside/secret.txt"
+     },
+     "status": "error"
+    },
+    {
+     "error_type": "invalid_tool_params",
+     "name": "read_file",
+     "parameters": {
+      "file_path": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\node22-boundary2\\fixtures\\workspace\\link_to_outside/secret.txt"
+     },
+     "status": "error"
+    },
+    {
+     "error_type": "invalid_tool_params",
+     "name": "read_file",
+     "parameters": {
+      "file_path": "../outside/secret.txt"
+     },
+     "status": "error"
+    },
+    {
+     "error_type": "tool_not_registered",
+     "name": "write_file",
+     "parameters": {
+      "content": "bad",
+      "file_path": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\node22-boundary2\\fixtures\\workspace/forbidden.txt"
+     },
+     "status": "error"
+    },
+    {
+     "error_type": "tool_not_registered",
+     "name": "run_shell_command",
+     "parameters": {
+      "command": "echo bad"
+     },
+     "status": "error"
+    }
+   ],
+   "usage": {
+    "cached": 0,
+    "duration_ms": 119,
+    "input_tokens": 66,
+    "models": {
+     "synthetic-endpoint": {
+      "cached": 0,
+      "input": 66,
+      "input_tokens": 66,
+      "output_tokens": 42,
+      "total_tokens": 108
+     }
+    },
+    "output_tokens": 42,
+    "source": "stream-json result.stats (session cumulative for this invocation)",
+    "tool_calls": 5,
+    "total_tokens": 108
+   }
+  },
+  "shell_refused": true,
+  "three_reads_refused": true,
+  "write_refused": true
+ },
+ "boundary1_attempt": {
+  "driver_stderr": "Exception in thread Thread-1 (_readerthread):\nTraceback (most recent call last):\n  File \"C:\\Python314\\Lib\\threading.py\", line 1082, in _bootstrap_inner\n    self._context.run(self.run)\n    ~~~~~~~~~~~~~~~~~^^^^^^^^^^\n  File \"C:\\Python314\\Lib\\threading.py\", line 1024, in run\n    self._target(*self._args, **self._kwargs)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Python314\\Lib\\subprocess.py\", line 1614, in _readerthread\n    buffer.append(fh.read())\n                  ~~~~~~~^^\n  File \"<frozen codecs>\", line 325, in decode\nUnicodeDecodeError: 'utf-8' codec can't decode byte 0xb4 in position 213: invalid start byte\n",
+  "note": "retained failed observation attempt; not used for acceptance",
+  "run": {
+   "assertion": false,
+   "declared_status": "success",
+   "declared_tools": [
+    "glob",
+    "grep_search",
+    "list_directory",
+    "read_file"
+   ],
+   "denied": [
+    "run_shell_command",
+    "write_file"
+   ],
+   "dir": "node22-boundary1",
+   "events": [
+    {
+     "event": "reserved",
+     "native_state": "reserved",
+     "state": "queued"
+    },
+    {
+     "event": "dispatched",
+     "native_state": "process-started",
+     "state": "running"
+    },
+    {
+     "event": "collected",
+     "native_state": "exit:0;result:success",
+     "state": "declared_complete"
+    }
+   ],
+   "evidence": [
+    {
+     "actual_sha256": "65741bf2dff7f90393e252dbda66d1b72442216d31f5f71c8206eb2aa092d424",
+     "bytes": 14045,
+     "file": "host-chat-record.jsonl",
+     "ok": true,
+     "sha256": "65741bf2dff7f90393e252dbda66d1b72442216d31f5f71c8206eb2aa092d424"
+    },
+    {
+     "actual_sha256": "e0f0ff3ca8bef1b8b1e7f39deeb9699e53e179554e44879ec69c8d84e1e25a2d",
+     "bytes": 2014,
+     "file": "stderr.txt",
+     "ok": true,
+     "sha256": "e0f0ff3ca8bef1b8b1e7f39deeb9699e53e179554e44879ec69c8d84e1e25a2d"
+    },
+    {
+     "actual_sha256": "ba3846dd9ba59cf5aea7ff5c8fffd09d0f08bd516b8d73c2d340656f3c57f0d0",
+     "bytes": 6138,
+     "file": "stdout.jsonl",
+     "ok": true,
+     "sha256": "ba3846dd9ba59cf5aea7ff5c8fffd09d0f08bd516b8d73c2d340656f3c57f0d0"
+    }
+   ],
+   "evidence_ok": true,
+   "exit_code": 0,
+   "first_line": "{\"type\":\"init\",\"timestamp\":\"2026-10-23T12:38:31.413Z\",\"session_id\":\"b14ffff1-9fb4-4b91-9747-419e917f3094\",\"model\":\"gemini-2.5-flash\"}",
+   "first_line_json": true,
+   "host_success_preserved": true,
+   "idempotency_key": "jh09-boundary-19648",
+   "idempotent_single_dispatch": true,
+   "manifest_entries": 3,
+   "manifest_equal": true,
+   "manifest_sha256": "7fbb2aa44bb16d7634a49e9362600082157af194c20d13fbe6c9e28e3549d100",
+   "native_state": "exit:0;result:success",
+   "node": "node22",
+   "request_fingerprint": "90580e8e35c0043cd5382ee9039cf8d7146f72ad7299c6ceb0586db9b32da6f5",
+   "request_paths": [
+    "/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse"
+   ],
+   "requests": 6,
+   "session_consistent": true,
+   "session_id": "b14ffff1-9fb4-4b91-9747-419e917f3094",
+   "session_ids": [
+    "b14ffff1-9fb4-4b91-9747-419e917f3094",
+    "b14ffff1-9fb4-4b91-9747-419e917f3094",
+    "b14ffff1-9fb4-4b91-9747-419e917f3094",
+    "b14ffff1-9fb4-4b91-9747-419e917f3094"
+   ],
+   "source_refs_verified": false,
+   "state": "declared_complete",
+   "stderr_tail": "node22-boundary1\\cli-home\\.gemini\\tmp\\workspace\nError executing tool write_file: Tool \"write_file\" not found. Did you mean one of: \"read_file\", \"grep_search\", \"glob\"?\nError executing tool run_shell_command: Tool \"run_shell_command\" not found. Did you mean one of: \"grep_search\", \"read_file\", \"glob\"?\n",
+   "stdout_preamble_lines": [],
+   "stdout_result_status": "success",
+   "tokens": 108,
+   "tool_calls": [
+    {
+     "error_type": "invalid_tool_params",
+     "name": "read_file",
+     "parameters": {
+      "file_path": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\node22-boundary1\\fixtures\\outside/secret.txt"
+     },
+     "status": "error"
+    },
+    {
+     "error_type": "invalid_tool_params",
+     "name": "read_file",
+     "parameters": {
+      "file_path": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\node22-boundary1\\fixtures\\workspace\\link_to_outside/secret.txt"
+     },
+     "status": "error"
+    },
+    {
+     "error_type": "invalid_tool_params",
+     "name": "read_file",
+     "parameters": {
+      "file_path": "../outside/secret.txt"
+     },
+     "status": "error"
+    },
+    {
+     "error_type": "tool_not_registered",
+     "name": "write_file",
+     "parameters": {
+      "content": "bad",
+      "file_path": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\node22-boundary1\\fixtures\\workspace/forbidden.txt"
+     },
+     "status": "error"
+    },
+    {
+     "error_type": "tool_not_registered",
+     "name": "run_shell_command",
+     "parameters": {
+      "command": "echo bad"
+     },
+     "status": "error"
+    }
+   ],
+   "usage": {
+    "cached": 0,
+    "duration_ms": 122,
+    "input_tokens": 66,
+    "models": {
+     "synthetic-endpoint": {
+      "cached": 0,
+      "input": 66,
+      "input_tokens": 66,
+      "output_tokens": 42,
+      "total_tokens": 108
+     }
+    },
+    "output_tokens": 42,
+    "source": "stream-json result.stats (session cumulative for this invocation)",
+    "tool_calls": 5,
+    "total_tokens": 108
+   }
+  }
+ },
+ "credential_files": [],
+ "failures": [],
+ "install": {
+  "cli": {
+   "node_modules/@google/gemini-cli/bundle/chunk-DKZARV6U.js": {
+    "actual": "4d9cf6435503e5280ecb0f55078793531c8041fe435f60fa8dfce92317c8a28e",
+    "expected": "4d9cf6435503e5280ecb0f55078793531c8041fe435f60fa8dfce92317c8a28e",
+    "ok": true
+   },
+   "node_modules/@google/gemini-cli/bundle/gemini-GLQ4MVLB.js": {
+    "actual": "1c5053102d2204335a96a71f930a0419d2b153cd6d17e1d1ee96753b5272fd9f",
+    "expected": "1c5053102d2204335a96a71f930a0419d2b153cd6d17e1d1ee96753b5272fd9f",
+    "ok": true
+   },
+   "node_modules/@google/gemini-cli/bundle/gemini.js": {
+    "actual": "41847af2158ced805c4a3e098a05b9a2c26fb1a49b12583009b2eaf6a4059a59",
+    "expected": "41847af2158ced805c4a3e098a05b9a2c26fb1a49b12583009b2eaf6a4059a59",
+    "ok": true
+   },
+   "node_modules/@google/gemini-cli/package.json": {
+    "actual": "ea3543b010281115990c43095124eb27a6a0428bc6aa41349261f52675378058",
+    "expected": "ea3543b010281115990c43095124eb27a6a0428bc6aa41349261f52675378058",
+    "ok": true
+   }
+  },
+  "cli_version": "0.65.0",
+  "node22_exe_sha256": "dccc52de28d8df2ee22d2062424f8c563070d95d8ad70c54c4bf01d590dec14f",
+  "node22_version": "v22.23.4",
+  "node22_zip_sha256": "cbc74b5e0982c9dbb41525fd8fb5dcd32fbee237863f7829072f4639a1ce5f20",
+  "node24_exe_sha256": "3602f2bb1a10f2cbab4c36886218a33c1ab3db87290e73b033c46c77147d0237",
+  "node24_path": "D:\\node_global\\node.exe",
+  "node24_version": "v24.19.0",
+  "official_zip_sha256": "cbc74b5e0982c9dbb41525fd8fb5dcd32fbee237863f7829072f4639a1ce5f20",
+  "ok": true,
+  "shasums": "c219410bea0aed08ecfa5847a3d8aca4e45dd494a094f86c0d8721138360a9c9  node-v22.23.4-aix-ppc64.tar.gz\n49edbb15812c13efa061c2c76b06944425f3711454845e78b625a8e865a45327  node-v22.23.4-arm64.msi\nc9e1dbc748b33ed2d14f42445191ecaf14c56259c7a9a26d0042c49ec2b66428  node-v22.23.4-darwin-arm64.tar.gz\n037650d0839f457747396f052073fb48333d31bf5abd3c98b74da20d89ebb1ad  node-v22.23.4-darwin-arm64.tar.xz\nefcc2b0db6f94bf53eddb038fe2b370277a042bd29e4f19b8f8e23598795b819  node-v22.23.4-darwin-x64.tar.gz\nf42abca7aaac61efc57d49fb42ea84fc53bbeba9a749cb03a291ce6e4e7a69c1  node-v22.23.4-darwin-x64.tar.xz\ndc4028dc105e27e5295119dd9da076fca71d5216113e097813f0fb30f59241a5  node-v22.23.4-headers.tar.gz\n00615892b14ca159775ccb96d5696fdfeeea9804740fc8c5c1064eac09456a0e  node-v22.23.4-headers.tar.xz\nf7a1e486dbc8b286847815b477d4fb5e9fb963ed4489c3e1588853d685f589f9  node-v22.23.4-linux-arm64.tar.gz\n6287aa46b6c375d816e63ae66d024fbbfd70404825aabdfdf898a970871d2f4b  node-v22.23.4-linux-arm64.tar.xz\n4318e0c68f62e18583dae85eb645f55c7f2b8a2e8d1fffe91a2e8abd046880ab  node-v22.23.4-linux-armv7l.tar.gz\nc9057c6a3b8fbb9651ed115c1e96d4a7281b7b9c9ca89fa05865c98ed7ffd437  node-v22.23.4-linux-armv7l.tar.xz\n6684903ee2795aafe639dc07203e8a51ed20ae161cf21b6da7c213c8abfed442  node-v22.23.4-linux-ppc64le.tar.gz\ne4732f45e0cad787d6ba70c4eb6db45dbdb3f286f67dee429dbc6b4ff36eac43  node-v22.23.4-linux-ppc64le.tar.xz\n0bdc80fa27331e7f416d1d8553b9aabbc3c158709dc32859e4e85724ac1ac302  node-v22.23.4-linux-s390x.tar.gz\n07ae074fc218fc42e24c939df0dc0209443fb08eb5b2ed6d26b1bf6757781fff  node-v22.23.4-linux-s390x.tar.xz\n63189402eaa222aabf51b4983e512592131cd2d4a9efc3ad9bf291fe74e3e4de  node-v22.23.4-linux-x64-musl.tar.gz\n38355b952f0392b91703d38a0d9af84eb0ff77d69828ca4bc8cc3bc3af80a720  node-v22.23.4-linux-x64-musl.tar.xz\nb8492284c76a54baf58d61668dd0e41ee0fc98adabf9503d30f05d08f55b4406  node-v22.23.4-linux-x64.tar.gz\n1805bcd35e6815559bd2eb97db438d3fdb0eb3a5e6a977b7c1badca76337e9ce  node-v22.23.4-linux-x64.tar.xz\n2095e4e478f01cfc1cd3784482bbb5bc67feab9bb21336b8934718bfc0f3b435  node-v22.23.4.pkg\n4dd79de8cdc85d65cb32f48a75aee1067bf00bf94b96ecc8e4c2f82f6f0272c2  node-v22.23.4.tar.gz\n7b9adc82d612d0a2a863d96c46de2292552e250cee51956ebbe0146c42aacae9  node-v22.23.4.tar.xz\na31b4be40d29f457dcd818563f2a3cf77f1ca35a15d3477cab38b3cc6d3a426a  node-v22.23.4-win-arm64.7z\na8b8cd79cbbb3062435f449591d98dd63730bbbf30ce2d7cc3a6376c236cb111  node-v22.23.4-win-arm64.zip\n010e51ccdd453d747ca67bfe8dda2c5da82540fa896ce2527f286d549574f975  node-v22.23.4-win-x64.7z\ncbc74b5e0982c9dbb41525fd8fb5dcd32fbee237863f7829072f4639a1ce5f20  node-v22.23.4-win-x64.zip\nb393001b81f7d478863394692bb57d28c0afe399fabbab3bce6016bb1cfa181f  node-v22.23.4-win-x86.7z\n7d6c4dce2ecccca46e3c4b3e43c8bebbd1969bd616fdb4fda1e8269171d9ccea  node-v22.23.4-win-x86.zip\nca9303d3a12e8bec6de829fcb7812fc776930e0ce5c030328a24984ef928427e  node-v22.23.4-x64.msi\nc2a76d76eda52b7930b51fd490264c2fe34a094c04ae721bb71893f3fd6cd1d0  node-v22.23.4-x86.msi\n64d9f6e69b4703870e8cd30a3477127df8b683ea04feb03660e439396549042a  win-arm64/node.exe\n5378f5bad777b4929d1cd4f58974e0ef03815ce5c159863f1875c4b434460c27  win-arm64/node.lib\n8ad8a3ad402d8cf3bc760bf8ad03c85996ae6676a93407b6f06320ef5e981387  win-arm64/node_pdb.7z\n4f94c9c8ab6a3ca4003e41ae226f191cb9ae837312d1390c14db94771a5abc94  win-arm64/node_pdb.zip\ndccc52de28d8df2ee22d2062424f8c563070d95d8ad70c54c4bf01d590dec14f  win-x64/node.exe\nc243185f2347870cadb637c909bf123fc703dc65dbfa769b17ec45a4b661d782  win-x64/node.lib\nc8496e103ee832fb8daf21af22b418c88558956457b9d850e95f78baf7f779cd  win-x64/node_pdb.7z\n426d3e46b15a918c561a15c2c99610d8edac752a406cf0b573809add0ff96f5d  win-x64/node_pdb.zip\naa39a7741f62832ea50daba0113c8f8b12ccde226abca931326832d5bc47d31f  win-x86/node.exe\neff47cc18fe2d3e40886cd49f04a85134681657d8b0f2afc55f363743cf6ddd7  win-x86/node.lib\n2f5fcf07c631cff056ba53d4d8fb71d33d6302e243b7b267bfe3e226a3d76193  win-x86/node_pdb.7z\n8aff266913d43a87103ebe02a4631148491b987ac2f70c6f3c95cf7e160de264  win-x86/node_pdb.zip\n",
+  "signature_verified": true
+ },
+ "mode": "node22-probe-audit",
+ "ok": true,
+ "pair": {
+  "cli_versions_equal": true,
+  "home_copies_identical": true,
+  "node22_exit_zero": true,
+  "node22_normal": true,
+  "node24_crash_exit": true,
+  "node24_crashed": true,
+  "node_exe_different": true,
+  "normalized_requests_identical": true,
+  "request_fingerprints_equal": true,
+  "script_identical": true
+ },
+ "preamble_attempt": {
+  "assertion": false,
+  "declared_status": "success",
+  "declared_tools": [
+   "glob",
+   "grep_search",
+   "list_directory",
+   "read_file"
+  ],
+  "denied": [
+   "run_shell_command",
+   "write_file"
+  ],
+  "dir": "node22-run1",
+  "events": [
+   {
+    "event": "reserved",
+    "native_state": "reserved",
+    "state": "queued"
+   },
+   {
+    "event": "dispatched",
+    "native_state": "process-started",
+    "state": "running"
+   },
+   {
+    "event": "collected",
+    "native_state": "exit:0;result:success",
+    "state": "failed"
+   }
+  ],
+  "evidence": [
+   {
+    "actual_sha256": "ecb43a47b750964a1d77d348552f8577ead1f38b553e9463f72bc947ed6721e8",
+    "bytes": 27927,
+    "file": "host-chat-record.jsonl",
+    "ok": true,
+    "sha256": "ecb43a47b750964a1d77d348552f8577ead1f38b553e9463f72bc947ed6721e8"
+   },
+   {
+    "actual_sha256": "27abbcb9d35e15548b439eca3575f1d50d6b8096751b8f3730222ab478834730",
+    "bytes": 441,
+    "file": "stderr.txt",
+    "ok": true,
+    "sha256": "27abbcb9d35e15548b439eca3575f1d50d6b8096751b8f3730222ab478834730"
+   },
+   {
+    "actual_sha256": "4f8effca4110d539f64bf06a90cb830b593f706ec82a4e3a65a28c8a67ffa4aa",
+    "bytes": 3212,
+    "file": "stdout.jsonl",
+    "ok": true,
+    "sha256": "4f8effca4110d539f64bf06a90cb830b593f706ec82a4e3a65a28c8a67ffa4aa"
+   }
+  ],
+  "evidence_ok": true,
+  "exit_code": 0,
+  "first_line": "Rename failed with EPERM, retrying in 50ms (attempt 1/5)...",
+  "first_line_json": false,
+  "host_success_preserved": true,
+  "idempotency_key": "hark11-verify-host-probe",
+  "idempotent_single_dispatch": true,
+  "manifest_entries": 904,
+  "manifest_equal": true,
+  "manifest_sha256": "be35e3b4570ca2c6b3f4b7c818716e271d9dffb7bc62deb410162c9a462bc780",
+  "native_state": "exit:0;result:success",
+  "node": "node22",
+  "request_fingerprint": "c83f53ce7ed064ecd19542adaac3180d1232506e514f536ace8fb14460d0db9c",
+  "request_paths": [
+   "/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse"
+  ],
+  "requests": 5,
+  "session_consistent": true,
+  "session_id": "8911e128-a644-4360-8412-de5b2606d832",
+  "session_ids": [
+   "8911e128-a644-4360-8412-de5b2606d832",
+   "8911e128-a644-4360-8412-de5b2606d832",
+   "8911e128-a644-4360-8412-de5b2606d832",
+   "8911e128-a644-4360-8412-de5b2606d832"
+  ],
+  "source_refs_verified": true,
+  "state": "failed",
+  "stderr_tail": "rep is not available. Falling back to GrepTool.\nError executing tool write_file: Tool \"write_file\" not found. Did you mean one of: \"read_file\", \"grep_search\", \"glob\"?\nError executing tool run_shell_command: Tool \"run_shell_command\" not found. Did you mean one of: \"grep_search\", \"read_file\", \"glob\"?\n",
+  "stdout_preamble_lines": [
+   "Rename failed with EPERM, retrying in 50ms (attempt 1/5)..."
+  ],
+  "stdout_result_status": "success",
+  "tokens": 90,
+  "tool_calls": [
+   {
+    "error_type": null,
+    "name": "grep_search",
+    "parameters": {
+     "pattern": "^class RunState"
+    },
+    "status": "success"
+   },
+   {
+    "error_type": null,
+    "name": "read_file",
+    "parameters": {
+     "end_line": 106,
+     "file_path": "D:/JH-Agent OS/data/worktrees/gemini-node22-probe-20261023/src/agent_session.py",
+     "start_line": 94
+    },
+    "status": "success"
+   },
+   {
+    "error_type": "tool_not_registered",
+    "name": "write_file",
+    "parameters": {
+     "content": "x",
+     "file_path": "D:/JH-Agent OS/data/worktrees/gemini-node22-probe-20261023/HARK11_SHOULD_NOT_EXIST.txt"
+    },
+    "status": "error"
+   },
+   {
+    "error_type": "tool_not_registered",
+    "name": "run_shell_command",
+    "parameters": {
+     "command": "touch D:/JH-Agent OS/data/worktrees/gemini-node22-probe-20261023/HARK11_SHELL_SHOULD_NOT_EXIST"
+    },
+    "status": "error"
+   }
+  ],
+  "usage": {
+   "cached": 0,
+   "duration_ms": 257,
+   "input_tokens": 55,
+   "models": {
+    "synthetic-endpoint": {
+     "cached": 0,
+     "input": 55,
+     "input_tokens": 55,
+     "output_tokens": 35,
+     "total_tokens": 90
+    }
+   },
+   "output_tokens": 35,
+   "source": "stream-json result.stats (session cumulative for this invocation)",
+   "tool_calls": 4,
+   "total_tokens": 90
+  }
+ },
+ "real_model_calls": 0,
+ "runs": {
+  "node22-boundary1": {
+   "assertion": false,
+   "declared_status": "success",
+   "declared_tools": [
+    "glob",
+    "grep_search",
+    "list_directory",
+    "read_file"
+   ],
+   "denied": [
+    "run_shell_command",
+    "write_file"
+   ],
+   "dir": "node22-boundary1",
+   "events": [
+    {
+     "event": "reserved",
+     "native_state": "reserved",
+     "state": "queued"
+    },
+    {
+     "event": "dispatched",
+     "native_state": "process-started",
+     "state": "running"
+    },
+    {
+     "event": "collected",
+     "native_state": "exit:0;result:success",
+     "state": "declared_complete"
+    }
+   ],
+   "evidence": [
+    {
+     "actual_sha256": "65741bf2dff7f90393e252dbda66d1b72442216d31f5f71c8206eb2aa092d424",
+     "bytes": 14045,
+     "file": "host-chat-record.jsonl",
+     "ok": true,
+     "sha256": "65741bf2dff7f90393e252dbda66d1b72442216d31f5f71c8206eb2aa092d424"
+    },
+    {
+     "actual_sha256": "e0f0ff3ca8bef1b8b1e7f39deeb9699e53e179554e44879ec69c8d84e1e25a2d",
+     "bytes": 2014,
+     "file": "stderr.txt",
+     "ok": true,
+     "sha256": "e0f0ff3ca8bef1b8b1e7f39deeb9699e53e179554e44879ec69c8d84e1e25a2d"
+    },
+    {
+     "actual_sha256": "ba3846dd9ba59cf5aea7ff5c8fffd09d0f08bd516b8d73c2d340656f3c57f0d0",
+     "bytes": 6138,
+     "file": "stdout.jsonl",
+     "ok": true,
+     "sha256": "ba3846dd9ba59cf5aea7ff5c8fffd09d0f08bd516b8d73c2d340656f3c57f0d0"
+    }
+   ],
+   "evidence_ok": true,
+   "exit_code": 0,
+   "first_line": "{\"type\":\"init\",\"timestamp\":\"2026-10-23T12:38:31.413Z\",\"session_id\":\"b14ffff1-9fb4-4b91-9747-419e917f3094\",\"model\":\"gemini-2.5-flash\"}",
+   "first_line_json": true,
+   "host_success_preserved": true,
+   "idempotency_key": "jh09-boundary-19648",
+   "idempotent_single_dispatch": true,
+   "manifest_entries": 3,
+   "manifest_equal": true,
+   "manifest_sha256": "7fbb2aa44bb16d7634a49e9362600082157af194c20d13fbe6c9e28e3549d100",
+   "native_state": "exit:0;result:success",
+   "node": "node22",
+   "request_fingerprint": "90580e8e35c0043cd5382ee9039cf8d7146f72ad7299c6ceb0586db9b32da6f5",
+   "request_paths": [
+    "/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse"
+   ],
+   "requests": 6,
+   "session_consistent": true,
+   "session_id": "b14ffff1-9fb4-4b91-9747-419e917f3094",
+   "session_ids": [
+    "b14ffff1-9fb4-4b91-9747-419e917f3094",
+    "b14ffff1-9fb4-4b91-9747-419e917f3094",
+    "b14ffff1-9fb4-4b91-9747-419e917f3094",
+    "b14ffff1-9fb4-4b91-9747-419e917f3094"
+   ],
+   "source_refs_verified": false,
+   "state": "declared_complete",
+   "stderr_tail": "node22-boundary1\\cli-home\\.gemini\\tmp\\workspace\nError executing tool write_file: Tool \"write_file\" not found. Did you mean one of: \"read_file\", \"grep_search\", \"glob\"?\nError executing tool run_shell_command: Tool \"run_shell_command\" not found. Did you mean one of: \"grep_search\", \"read_file\", \"glob\"?\n",
+   "stdout_preamble_lines": [],
+   "stdout_result_status": "success",
+   "tokens": 108,
+   "tool_calls": [
+    {
+     "error_type": "invalid_tool_params",
+     "name": "read_file",
+     "parameters": {
+      "file_path": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\node22-boundary1\\fixtures\\outside/secret.txt"
+     },
+     "status": "error"
+    },
+    {
+     "error_type": "invalid_tool_params",
+     "name": "read_file",
+     "parameters": {
+      "file_path": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\node22-boundary1\\fixtures\\workspace\\link_to_outside/secret.txt"
+     },
+     "status": "error"
+    },
+    {
+     "error_type": "invalid_tool_params",
+     "name": "read_file",
+     "parameters": {
+      "file_path": "../outside/secret.txt"
+     },
+     "status": "error"
+    },
+    {
+     "error_type": "tool_not_registered",
+     "name": "write_file",
+     "parameters": {
+      "content": "bad",
+      "file_path": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\node22-boundary1\\fixtures\\workspace/forbidden.txt"
+     },
+     "status": "error"
+    },
+    {
+     "error_type": "tool_not_registered",
+     "name": "run_shell_command",
+     "parameters": {
+      "command": "echo bad"
+     },
+     "status": "error"
+    }
+   ],
+   "usage": {
+    "cached": 0,
+    "duration_ms": 122,
+    "input_tokens": 66,
+    "models": {
+     "synthetic-endpoint": {
+      "cached": 0,
+      "input": 66,
+      "input_tokens": 66,
+      "output_tokens": 42,
+      "total_tokens": 108
+     }
+    },
+    "output_tokens": 42,
+    "source": "stream-json result.stats (session cumulative for this invocation)",
+    "tool_calls": 5,
+    "total_tokens": 108
+   }
+  },
+  "node22-boundary2": {
+   "assertion": false,
+   "declared_status": "success",
+   "declared_tools": [
+    "glob",
+    "grep_search",
+    "list_directory",
+    "read_file"
+   ],
+   "denied": [
+    "run_shell_command",
+    "write_file"
+   ],
+   "dir": "node22-boundary2",
+   "events": [
+    {
+     "event": "reserved",
+     "native_state": "reserved",
+     "state": "queued"
+    },
+    {
+     "event": "dispatched",
+     "native_state": "process-started",
+     "state": "running"
+    },
+    {
+     "event": "collected",
+     "native_state": "exit:0;result:success",
+     "state": "declared_complete"
+    }
+   ],
+   "evidence": [
+    {
+     "actual_sha256": "ac3d9f6021e54cc126d032530b4ea8023491962c7e11a23c2bba2f6f1f26e81f",
+     "bytes": 14045,
+     "file": "host-chat-record.jsonl",
+     "ok": true,
+     "sha256": "ac3d9f6021e54cc126d032530b4ea8023491962c7e11a23c2bba2f6f1f26e81f"
+    },
+    {
+     "actual_sha256": "0fbdb7587f593df1932d4fb2e4fe6fa5e1b5074bd1fe5cdb813d3ae7dedc03cc",
+     "bytes": 1815,
+     "file": "stderr.txt",
+     "ok": true,
+     "sha256": "0fbdb7587f593df1932d4fb2e4fe6fa5e1b5074bd1fe5cdb813d3ae7dedc03cc"
+    },
+    {
+     "actual_sha256": "06c1dc6b3af0b21fd736b0b6a65e1f981c0f522ad347e8ea526ddbce94404220",
+     "bytes": 6138,
+     "file": "stdout.jsonl",
+     "ok": true,
+     "sha256": "06c1dc6b3af0b21fd736b0b6a65e1f981c0f522ad347e8ea526ddbce94404220"
+    }
+   ],
+   "evidence_ok": true,
+   "exit_code": 0,
+   "first_line": "{\"type\":\"init\",\"timestamp\":\"2026-10-23T12:39:07.359Z\",\"session_id\":\"9290f2ef-26a2-4741-8b6f-57e8d90e3947\",\"model\":\"gemini-2.5-flash\"}",
+   "first_line_json": true,
+   "host_success_preserved": true,
+   "idempotency_key": "jh09-boundary-31896",
+   "idempotent_single_dispatch": true,
+   "manifest_entries": 3,
+   "manifest_equal": true,
+   "manifest_sha256": "7fbb2aa44bb16d7634a49e9362600082157af194c20d13fbe6c9e28e3549d100",
+   "native_state": "exit:0;result:success",
+   "node": "node22",
+   "request_fingerprint": "f11b55b8275f58196e89cc30d99ff06baf5c158774ac6f214a6c28454b9e85e4",
+   "request_paths": [
+    "/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse"
+   ],
+   "requests": 6,
+   "session_consistent": true,
+   "session_id": "9290f2ef-26a2-4741-8b6f-57e8d90e3947",
+   "session_ids": [
+    "9290f2ef-26a2-4741-8b6f-57e8d90e3947",
+    "9290f2ef-26a2-4741-8b6f-57e8d90e3947",
+    "9290f2ef-26a2-4741-8b6f-57e8d90e3947",
+    "9290f2ef-26a2-4741-8b6f-57e8d90e3947"
+   ],
+   "source_refs_verified": false,
+   "state": "declared_complete",
+   "stderr_tail": "node22-boundary2\\cli-home\\.gemini\\tmp\\workspace\nError executing tool write_file: Tool \"write_file\" not found. Did you mean one of: \"read_file\", \"grep_search\", \"glob\"?\nError executing tool run_shell_command: Tool \"run_shell_command\" not found. Did you mean one of: \"grep_search\", \"read_file\", \"glob\"?\n",
+   "stdout_preamble_lines": [],
+   "stdout_result_status": "success",
+   "tokens": 108,
+   "tool_calls": [
+    {
+     "error_type": "invalid_tool_params",
+     "name": "read_file",
+     "parameters": {
+      "file_path": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\node22-boundary2\\fixtures\\outside/secret.txt"
+     },
+     "status": "error"
+    },
+    {
+     "error_type": "invalid_tool_params",
+     "name": "read_file",
+     "parameters": {
+      "file_path": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\node22-boundary2\\fixtures\\workspace\\link_to_outside/secret.txt"
+     },
+     "status": "error"
+    },
+    {
+     "error_type": "invalid_tool_params",
+     "name": "read_file",
+     "parameters": {
+      "file_path": "../outside/secret.txt"
+     },
+     "status": "error"
+    },
+    {
+     "error_type": "tool_not_registered",
+     "name": "write_file",
+     "parameters": {
+      "content": "bad",
+      "file_path": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\node22-boundary2\\fixtures\\workspace/forbidden.txt"
+     },
+     "status": "error"
+    },
+    {
+     "error_type": "tool_not_registered",
+     "name": "run_shell_command",
+     "parameters": {
+      "command": "echo bad"
+     },
+     "status": "error"
+    }
+   ],
+   "usage": {
+    "cached": 0,
+    "duration_ms": 119,
+    "input_tokens": 66,
+    "models": {
+     "synthetic-endpoint": {
+      "cached": 0,
+      "input": 66,
+      "input_tokens": 66,
+      "output_tokens": 42,
+      "total_tokens": 108
+     }
+    },
+    "output_tokens": 42,
+    "source": "stream-json result.stats (session cumulative for this invocation)",
+    "tool_calls": 5,
+    "total_tokens": 108
+   }
+  },
+  "node22-run1": {
+   "assertion": false,
+   "declared_status": "success",
+   "declared_tools": [
+    "glob",
+    "grep_search",
+    "list_directory",
+    "read_file"
+   ],
+   "denied": [
+    "run_shell_command",
+    "write_file"
+   ],
+   "dir": "node22-run1",
+   "events": [
+    {
+     "event": "reserved",
+     "native_state": "reserved",
+     "state": "queued"
+    },
+    {
+     "event": "dispatched",
+     "native_state": "process-started",
+     "state": "running"
+    },
+    {
+     "event": "collected",
+     "native_state": "exit:0;result:success",
+     "state": "failed"
+    }
+   ],
+   "evidence": [
+    {
+     "actual_sha256": "ecb43a47b750964a1d77d348552f8577ead1f38b553e9463f72bc947ed6721e8",
+     "bytes": 27927,
+     "file": "host-chat-record.jsonl",
+     "ok": true,
+     "sha256": "ecb43a47b750964a1d77d348552f8577ead1f38b553e9463f72bc947ed6721e8"
+    },
+    {
+     "actual_sha256": "27abbcb9d35e15548b439eca3575f1d50d6b8096751b8f3730222ab478834730",
+     "bytes": 441,
+     "file": "stderr.txt",
+     "ok": true,
+     "sha256": "27abbcb9d35e15548b439eca3575f1d50d6b8096751b8f3730222ab478834730"
+    },
+    {
+     "actual_sha256": "4f8effca4110d539f64bf06a90cb830b593f706ec82a4e3a65a28c8a67ffa4aa",
+     "bytes": 3212,
+     "file": "stdout.jsonl",
+     "ok": true,
+     "sha256": "4f8effca4110d539f64bf06a90cb830b593f706ec82a4e3a65a28c8a67ffa4aa"
+    }
+   ],
+   "evidence_ok": true,
+   "exit_code": 0,
+   "first_line": "Rename failed with EPERM, retrying in 50ms (attempt 1/5)...",
+   "first_line_json": false,
+   "host_success_preserved": true,
+   "idempotency_key": "hark11-verify-host-probe",
+   "idempotent_single_dispatch": true,
+   "manifest_entries": 904,
+   "manifest_equal": true,
+   "manifest_sha256": "be35e3b4570ca2c6b3f4b7c818716e271d9dffb7bc62deb410162c9a462bc780",
+   "native_state": "exit:0;result:success",
+   "node": "node22",
+   "request_fingerprint": "c83f53ce7ed064ecd19542adaac3180d1232506e514f536ace8fb14460d0db9c",
+   "request_paths": [
+    "/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse"
+   ],
+   "requests": 5,
+   "session_consistent": true,
+   "session_id": "8911e128-a644-4360-8412-de5b2606d832",
+   "session_ids": [
+    "8911e128-a644-4360-8412-de5b2606d832",
+    "8911e128-a644-4360-8412-de5b2606d832",
+    "8911e128-a644-4360-8412-de5b2606d832",
+    "8911e128-a644-4360-8412-de5b2606d832"
+   ],
+   "source_refs_verified": true,
+   "state": "failed",
+   "stderr_tail": "rep is not available. Falling back to GrepTool.\nError executing tool write_file: Tool \"write_file\" not found. Did you mean one of: \"read_file\", \"grep_search\", \"glob\"?\nError executing tool run_shell_command: Tool \"run_shell_command\" not found. Did you mean one of: \"grep_search\", \"read_file\", \"glob\"?\n",
+   "stdout_preamble_lines": [
+    "Rename failed with EPERM, retrying in 50ms (attempt 1/5)..."
+   ],
+   "stdout_result_status": "success",
+   "tokens": 90,
+   "tool_calls": [
+    {
+     "error_type": null,
+     "name": "grep_search",
+     "parameters": {
+      "pattern": "^class RunState"
+     },
+     "status": "success"
+    },
+    {
+     "error_type": null,
+     "name": "read_file",
+     "parameters": {
+      "end_line": 106,
+      "file_path": "D:/JH-Agent OS/data/worktrees/gemini-node22-probe-20261023/src/agent_session.py",
+      "start_line": 94
+     },
+     "status": "success"
+    },
+    {
+     "error_type": "tool_not_registered",
+     "name": "write_file",
+     "parameters": {
+      "content": "x",
+      "file_path": "D:/JH-Agent OS/data/worktrees/gemini-node22-probe-20261023/HARK11_SHOULD_NOT_EXIST.txt"
+     },
+     "status": "error"
+    },
+    {
+     "error_type": "tool_not_registered",
+     "name": "run_shell_command",
+     "parameters": {
+      "command": "touch D:/JH-Agent OS/data/worktrees/gemini-node22-probe-20261023/HARK11_SHELL_SHOULD_NOT_EXIST"
+     },
+     "status": "error"
+    }
+   ],
+   "usage": {
+    "cached": 0,
+    "duration_ms": 257,
+    "input_tokens": 55,
+    "models": {
+     "synthetic-endpoint": {
+      "cached": 0,
+      "input": 55,
+      "input_tokens": 55,
+      "output_tokens": 35,
+      "total_tokens": 90
+     }
+    },
+    "output_tokens": 35,
+    "source": "stream-json result.stats (session cumulative for this invocation)",
+    "tool_calls": 4,
+    "total_tokens": 90
+   }
+  },
+  "node22-run2": {
+   "assertion": false,
+   "declared_status": "success",
+   "declared_tools": [
+    "glob",
+    "grep_search",
+    "list_directory",
+    "read_file"
+   ],
+   "denied": [
+    "run_shell_command",
+    "write_file"
+   ],
+   "dir": "node22-run2",
+   "events": [
+    {
+     "event": "reserved",
+     "native_state": "reserved",
+     "state": "queued"
+    },
+    {
+     "event": "dispatched",
+     "native_state": "process-started",
+     "state": "running"
+    },
+    {
+     "event": "collected",
+     "native_state": "exit:0;result:success",
+     "state": "declared_complete"
+    }
+   ],
+   "evidence": [
+    {
+     "actual_sha256": "cdc1c1913ff15fe4c6fbc42a54ac879d969d4290d2ae8503633625016a782fdf",
+     "bytes": 27927,
+     "file": "host-chat-record.jsonl",
+     "ok": true,
+     "sha256": "cdc1c1913ff15fe4c6fbc42a54ac879d969d4290d2ae8503633625016a782fdf"
+    },
+    {
+     "actual_sha256": "b2702c2e59cfbba7c15c77c60eda4f79b44493ea10c2ef253e509c4057fccfc9",
+     "bytes": 640,
+     "file": "stderr.txt",
+     "ok": true,
+     "sha256": "b2702c2e59cfbba7c15c77c60eda4f79b44493ea10c2ef253e509c4057fccfc9"
+    },
+    {
+     "actual_sha256": "75ebe110e11374b6fffc56a930cb6d68f9ef242e3ae1949bc8365d713a3c6438",
+     "bytes": 3152,
+     "file": "stdout.jsonl",
+     "ok": true,
+     "sha256": "75ebe110e11374b6fffc56a930cb6d68f9ef242e3ae1949bc8365d713a3c6438"
+    }
+   ],
+   "evidence_ok": true,
+   "exit_code": 0,
+   "first_line": "{\"type\":\"init\",\"timestamp\":\"2026-10-23T12:35:48.614Z\",\"session_id\":\"3f5ac465-46df-48bb-a3c2-add6754e6265\",\"model\":\"gemini-2.5-flash\"}",
+   "first_line_json": true,
+   "host_success_preserved": true,
+   "idempotency_key": "hark11-verify-host-probe",
+   "idempotent_single_dispatch": true,
+   "manifest_entries": 904,
+   "manifest_equal": true,
+   "manifest_sha256": "be35e3b4570ca2c6b3f4b7c818716e271d9dffb7bc62deb410162c9a462bc780",
+   "native_state": "exit:0;result:success",
+   "node": "node22",
+   "request_fingerprint": "c83f53ce7ed064ecd19542adaac3180d1232506e514f536ace8fb14460d0db9c",
+   "request_paths": [
+    "/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse"
+   ],
+   "requests": 5,
+   "session_consistent": true,
+   "session_id": "3f5ac465-46df-48bb-a3c2-add6754e6265",
+   "session_ids": [
+    "3f5ac465-46df-48bb-a3c2-add6754e6265",
+    "3f5ac465-46df-48bb-a3c2-add6754e6265",
+    "3f5ac465-46df-48bb-a3c2-add6754e6265",
+    "3f5ac465-46df-48bb-a3c2-add6754e6265"
+   ],
+   "source_refs_verified": true,
+   "state": "declared_complete",
+   "stderr_tail": "ops:start' not found (likely cleared by reset).\nError executing tool write_file: Tool \"write_file\" not found. Did you mean one of: \"read_file\", \"grep_search\", \"glob\"?\nError executing tool run_shell_command: Tool \"run_shell_command\" not found. Did you mean one of: \"grep_search\", \"read_file\", \"glob\"?\n",
+   "stdout_preamble_lines": [],
+   "stdout_result_status": "success",
+   "tokens": 90,
+   "tool_calls": [
+    {
+     "error_type": null,
+     "name": "grep_search",
+     "parameters": {
+      "pattern": "^class RunState"
+     },
+     "status": "success"
+    },
+    {
+     "error_type": null,
+     "name": "read_file",
+     "parameters": {
+      "end_line": 106,
+      "file_path": "D:/JH-Agent OS/data/worktrees/gemini-node22-probe-20261023/src/agent_session.py",
+      "start_line": 94
+     },
+     "status": "success"
+    },
+    {
+     "error_type": "tool_not_registered",
+     "name": "write_file",
+     "parameters": {
+      "content": "x",
+      "file_path": "D:/JH-Agent OS/data/worktrees/gemini-node22-probe-20261023/HARK11_SHOULD_NOT_EXIST.txt"
+     },
+     "status": "error"
+    },
+    {
+     "error_type": "tool_not_registered",
+     "name": "run_shell_command",
+     "parameters": {
+      "command": "touch D:/JH-Agent OS/data/worktrees/gemini-node22-probe-20261023/HARK11_SHELL_SHOULD_NOT_EXIST"
+     },
+     "status": "error"
+    }
+   ],
+   "usage": {
+    "cached": 0,
+    "duration_ms": 236,
+    "input_tokens": 55,
+    "models": {
+     "synthetic-endpoint": {
+      "cached": 0,
+      "input": 55,
+      "input_tokens": 55,
+      "output_tokens": 35,
+      "total_tokens": 90
+     }
+    },
+    "output_tokens": 35,
+    "source": "stream-json result.stats (session cumulative for this invocation)",
+    "tool_calls": 4,
+    "total_tokens": 90
+   }
+  },
+  "node22-run3": {
+   "assertion": false,
+   "declared_status": "success",
+   "declared_tools": [
+    "glob",
+    "grep_search",
+    "list_directory",
+    "read_file"
+   ],
+   "denied": [
+    "run_shell_command",
+    "write_file"
+   ],
+   "dir": "node22-run3",
+   "events": [
+    {
+     "event": "reserved",
+     "native_state": "reserved",
+     "state": "queued"
+    },
+    {
+     "event": "dispatched",
+     "native_state": "process-started",
+     "state": "running"
+    },
+    {
+     "event": "collected",
+     "native_state": "exit:0;result:success",
+     "state": "declared_complete"
+    }
+   ],
+   "evidence": [
+    {
+     "actual_sha256": "a4c5f4d3ced10a5ff03337564a41381d4d824372b7a7f725cd37c07cb3407985",
+     "bytes": 27927,
+     "file": "host-chat-record.jsonl",
+     "ok": true,
+     "sha256": "a4c5f4d3ced10a5ff03337564a41381d4d824372b7a7f725cd37c07cb3407985"
+    },
+    {
+     "actual_sha256": "27abbcb9d35e15548b439eca3575f1d50d6b8096751b8f3730222ab478834730",
+     "bytes": 441,
+     "file": "stderr.txt",
+     "ok": true,
+     "sha256": "27abbcb9d35e15548b439eca3575f1d50d6b8096751b8f3730222ab478834730"
+    },
+    {
+     "actual_sha256": "96ea5c84fd95a93926bfefbf66cf461cf3e3e365c1323392653513e1b8a032f4",
+     "bytes": 3152,
+     "file": "stdout.jsonl",
+     "ok": true,
+     "sha256": "96ea5c84fd95a93926bfefbf66cf461cf3e3e365c1323392653513e1b8a032f4"
+    }
+   ],
+   "evidence_ok": true,
+   "exit_code": 0,
+   "first_line": "{\"type\":\"init\",\"timestamp\":\"2026-10-23T12:36:24.654Z\",\"session_id\":\"fd84b55f-e4ca-47ef-b6ed-19684ed5b138\",\"model\":\"gemini-2.5-flash\"}",
+   "first_line_json": true,
+   "host_success_preserved": true,
+   "idempotency_key": "hark11-verify-host-probe",
+   "idempotent_single_dispatch": true,
+   "manifest_entries": 904,
+   "manifest_equal": true,
+   "manifest_sha256": "be35e3b4570ca2c6b3f4b7c818716e271d9dffb7bc62deb410162c9a462bc780",
+   "native_state": "exit:0;result:success",
+   "node": "node22",
+   "request_fingerprint": "c83f53ce7ed064ecd19542adaac3180d1232506e514f536ace8fb14460d0db9c",
+   "request_paths": [
+    "/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse"
+   ],
+   "requests": 5,
+   "session_consistent": true,
+   "session_id": "fd84b55f-e4ca-47ef-b6ed-19684ed5b138",
+   "session_ids": [
+    "fd84b55f-e4ca-47ef-b6ed-19684ed5b138",
+    "fd84b55f-e4ca-47ef-b6ed-19684ed5b138",
+    "fd84b55f-e4ca-47ef-b6ed-19684ed5b138",
+    "fd84b55f-e4ca-47ef-b6ed-19684ed5b138"
+   ],
+   "source_refs_verified": true,
+   "state": "declared_complete",
+   "stderr_tail": "rep is not available. Falling back to GrepTool.\nError executing tool write_file: Tool \"write_file\" not found. Did you mean one of: \"read_file\", \"grep_search\", \"glob\"?\nError executing tool run_shell_command: Tool \"run_shell_command\" not found. Did you mean one of: \"grep_search\", \"read_file\", \"glob\"?\n",
+   "stdout_preamble_lines": [],
+   "stdout_result_status": "success",
+   "tokens": 90,
+   "tool_calls": [
+    {
+     "error_type": null,
+     "name": "grep_search",
+     "parameters": {
+      "pattern": "^class RunState"
+     },
+     "status": "success"
+    },
+    {
+     "error_type": null,
+     "name": "read_file",
+     "parameters": {
+      "end_line": 106,
+      "file_path": "D:/JH-Agent OS/data/worktrees/gemini-node22-probe-20261023/src/agent_session.py",
+      "start_line": 94
+     },
+     "status": "success"
+    },
+    {
+     "error_type": "tool_not_registered",
+     "name": "write_file",
+     "parameters": {
+      "content": "x",
+      "file_path": "D:/JH-Agent OS/data/worktrees/gemini-node22-probe-20261023/HARK11_SHOULD_NOT_EXIST.txt"
+     },
+     "status": "error"
+    },
+    {
+     "error_type": "tool_not_registered",
+     "name": "run_shell_command",
+     "parameters": {
+      "command": "touch D:/JH-Agent OS/data/worktrees/gemini-node22-probe-20261023/HARK11_SHELL_SHOULD_NOT_EXIST"
+     },
+     "status": "error"
+    }
+   ],
+   "usage": {
+    "cached": 0,
+    "duration_ms": 286,
+    "input_tokens": 55,
+    "models": {
+     "synthetic-endpoint": {
+      "cached": 0,
+      "input": 55,
+      "input_tokens": 55,
+      "output_tokens": 35,
+      "total_tokens": 90
+     }
+    },
+    "output_tokens": 35,
+    "source": "stream-json result.stats (session cumulative for this invocation)",
+    "tool_calls": 4,
+    "total_tokens": 90
+   }
+  },
+  "node24-control": {
+   "assertion": true,
+   "declared_status": "success",
+   "declared_tools": [
+    "glob",
+    "grep_search",
+    "list_directory",
+    "read_file"
+   ],
+   "denied": [
+    "run_shell_command",
+    "write_file"
+   ],
+   "dir": "node24-control",
+   "events": [
+    {
+     "event": "reserved",
+     "native_state": "reserved",
+     "state": "queued"
+    },
+    {
+     "event": "dispatched",
+     "native_state": "process-started",
+     "state": "running"
+    },
+    {
+     "event": "collected",
+     "native_state": "exit:3221226505;result:success",
+     "state": "failed"
+    }
+   ],
+   "evidence": [
+    {
+     "actual_sha256": "d11ff37c7081926be531e0177ce224d6ad335dae27e99c446f118122ffd6874f",
+     "bytes": 27930,
+     "file": "host-chat-record.jsonl",
+     "ok": true,
+     "sha256": "d11ff37c7081926be531e0177ce224d6ad335dae27e99c446f118122ffd6874f"
+    },
+    {
+     "actual_sha256": "47777cf414fac189ff1b2f437f83499a98d2d1498d1ab52cf4058965a1454dc0",
+     "bytes": 792,
+     "file": "stderr.txt",
+     "ok": true,
+     "sha256": "47777cf414fac189ff1b2f437f83499a98d2d1498d1ab52cf4058965a1454dc0"
+    },
+    {
+     "actual_sha256": "55a455c7e8130f6f050d4dc82fb9358d5240d0e6a705abe6c03d2716521aae41",
+     "bytes": 3212,
+     "file": "stdout.jsonl",
+     "ok": true,
+     "sha256": "55a455c7e8130f6f050d4dc82fb9358d5240d0e6a705abe6c03d2716521aae41"
+    }
+   ],
+   "evidence_ok": true,
+   "exit_code": 3221226505,
+   "first_line": "Rename failed with EPERM, retrying in 50ms (attempt 1/5)...",
+   "first_line_json": false,
+   "host_success_preserved": true,
+   "idempotency_key": "hark11-verify-host-probe",
+   "idempotent_single_dispatch": true,
+   "manifest_entries": 904,
+   "manifest_equal": true,
+   "manifest_sha256": "be35e3b4570ca2c6b3f4b7c818716e271d9dffb7bc62deb410162c9a462bc780",
+   "native_state": "exit:3221226505;result:success",
+   "node": "node24",
+   "request_fingerprint": "c83f53ce7ed064ecd19542adaac3180d1232506e514f536ace8fb14460d0db9c",
+   "request_paths": [
+    "/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse"
+   ],
+   "requests": 5,
+   "session_consistent": true,
+   "session_id": "5cd579b6-b318-456e-aa63-7dfd4b6b047a",
+   "session_ids": [
+    "5cd579b6-b318-456e-aa63-7dfd4b6b047a",
+    "5cd579b6-b318-456e-aa63-7dfd4b6b047a",
+    "5cd579b6-b318-456e-aa63-7dfd4b6b047a",
+    "5cd579b6-b318-456e-aa63-7dfd4b6b047a"
+   ],
+   "source_refs_verified": true,
+   "state": "failed",
+   "stderr_tail": "\"write_file\" not found. Did you mean one of: \"read_file\", \"grep_search\", \"glob\"?\nError executing tool run_shell_command: Tool \"run_shell_command\" not found. Did you mean one of: \"grep_search\", \"read_file\", \"glob\"?\nAssertion failed: !(handle->flags & UV_HANDLE_CLOSING), file src\\win\\async.c, line 94\n",
+   "stdout_preamble_lines": [
+    "Rename failed with EPERM, retrying in 50ms (attempt 1/5)..."
+   ],
+   "stdout_result_status": "success",
+   "tokens": 90,
+   "tool_calls": [
+    {
+     "error_type": null,
+     "name": "grep_search",
+     "parameters": {
+      "pattern": "^class RunState"
+     },
+     "status": "success"
+    },
+    {
+     "error_type": null,
+     "name": "read_file",
+     "parameters": {
+      "end_line": 106,
+      "file_path": "D:/JH-Agent OS/data/worktrees/gemini-node22-probe-20261023/src/agent_session.py",
+      "start_line": 94
+     },
+     "status": "success"
+    },
+    {
+     "error_type": "tool_not_registered",
+     "name": "write_file",
+     "parameters": {
+      "content": "x",
+      "file_path": "D:/JH-Agent OS/data/worktrees/gemini-node22-probe-20261023/HARK11_SHOULD_NOT_EXIST.txt"
+     },
+     "status": "error"
+    },
+    {
+     "error_type": "tool_not_registered",
+     "name": "run_shell_command",
+     "parameters": {
+      "command": "touch D:/JH-Agent OS/data/worktrees/gemini-node22-probe-20261023/HARK11_SHELL_SHOULD_NOT_EXIST"
+     },
+     "status": "error"
+    }
+   ],
+   "usage": {
+    "cached": 0,
+    "duration_ms": 203,
+    "input_tokens": 55,
+    "models": {
+     "synthetic-endpoint": {
+      "cached": 0,
+      "input": 55,
+      "input_tokens": 55,
+      "output_tokens": 35,
+      "total_tokens": 90
+     }
+    },
+    "output_tokens": 35,
+    "source": "stream-json result.stats (session cumulative for this invocation)",
+    "tool_calls": 4,
+    "total_tokens": 90
+   }
+  },
+  "node24-control2": {
+   "assertion": true,
+   "declared_status": "success",
+   "declared_tools": [
+    "glob",
+    "grep_search",
+    "list_directory",
+    "read_file"
+   ],
+   "denied": [
+    "run_shell_command",
+    "write_file"
+   ],
+   "dir": "node24-control2",
+   "events": [
+    {
+     "event": "reserved",
+     "native_state": "reserved",
+     "state": "queued"
+    },
+    {
+     "event": "dispatched",
+     "native_state": "process-started",
+     "state": "running"
+    },
+    {
+     "event": "collected",
+     "native_state": "exit:3221226505;result:success",
+     "state": "failed"
+    }
+   ],
+   "evidence": [
+    {
+     "actual_sha256": "7010564be0ca45601e22c627e964898f12d770e09c694ed72eb2148fb2c11e41",
+     "bytes": 27936,
+     "file": "host-chat-record.jsonl",
+     "ok": true,
+     "sha256": "7010564be0ca45601e22c627e964898f12d770e09c694ed72eb2148fb2c11e41"
+    },
+    {
+     "actual_sha256": "33c3c0fffa3c4b4e28f1cbfe3e21409bd08db3f0cc12ce54f3318281167dea58",
+     "bytes": 792,
+     "file": "stderr.txt",
+     "ok": true,
+     "sha256": "33c3c0fffa3c4b4e28f1cbfe3e21409bd08db3f0cc12ce54f3318281167dea58"
+    },
+    {
+     "actual_sha256": "174deb0d9827d0287fb16eb88d7f54f92f3803d006aa0f23997894268c1dcb59",
+     "bytes": 3212,
+     "file": "stdout.jsonl",
+     "ok": true,
+     "sha256": "174deb0d9827d0287fb16eb88d7f54f92f3803d006aa0f23997894268c1dcb59"
+    }
+   ],
+   "evidence_ok": true,
+   "exit_code": 3221226505,
+   "first_line": "Rename failed with EPERM, retrying in 50ms (attempt 1/5)...",
+   "first_line_json": false,
+   "host_success_preserved": true,
+   "idempotency_key": "hark11-verify-host-probe",
+   "idempotent_single_dispatch": true,
+   "manifest_entries": 916,
+   "manifest_equal": true,
+   "manifest_sha256": "44061f8b9eb82f920abf52338f9da5506a5a5294a06494b0e3051395a3488714",
+   "native_state": "exit:3221226505;result:success",
+   "node": "node24",
+   "request_fingerprint": "c83f53ce7ed064ecd19542adaac3180d1232506e514f536ace8fb14460d0db9c",
+   "request_paths": [
+    "/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse"
+   ],
+   "requests": 5,
+   "session_consistent": true,
+   "session_id": "2c7efbdc-62c4-4a7e-95ac-d55885dcdd7b",
+   "session_ids": [
+    "2c7efbdc-62c4-4a7e-95ac-d55885dcdd7b",
+    "2c7efbdc-62c4-4a7e-95ac-d55885dcdd7b",
+    "2c7efbdc-62c4-4a7e-95ac-d55885dcdd7b",
+    "2c7efbdc-62c4-4a7e-95ac-d55885dcdd7b"
+   ],
+   "source_refs_verified": true,
+   "state": "failed",
+   "stderr_tail": "\"write_file\" not found. Did you mean one of: \"read_file\", \"grep_search\", \"glob\"?\nError executing tool run_shell_command: Tool \"run_shell_command\" not found. Did you mean one of: \"grep_search\", \"read_file\", \"glob\"?\nAssertion failed: !(handle->flags & UV_HANDLE_CLOSING), file src\\win\\async.c, line 94\n",
+   "stdout_preamble_lines": [
+    "Rename failed with EPERM, retrying in 50ms (attempt 1/5)..."
+   ],
+   "stdout_result_status": "success",
+   "tokens": 90,
+   "tool_calls": [
+    {
+     "error_type": null,
+     "name": "grep_search",
+     "parameters": {
+      "pattern": "^class RunState"
+     },
+     "status": "success"
+    },
+    {
+     "error_type": null,
+     "name": "read_file",
+     "parameters": {
+      "end_line": 106,
+      "file_path": "D:/JH-Agent OS/data/worktrees/gemini-node22-probe-20261023/src/agent_session.py",
+      "start_line": 94
+     },
+     "status": "success"
+    },
+    {
+     "error_type": "tool_not_registered",
+     "name": "write_file",
+     "parameters": {
+      "content": "x",
+      "file_path": "D:/JH-Agent OS/data/worktrees/gemini-node22-probe-20261023/HARK11_SHOULD_NOT_EXIST.txt"
+     },
+     "status": "error"
+    },
+    {
+     "error_type": "tool_not_registered",
+     "name": "run_shell_command",
+     "parameters": {
+      "command": "touch D:/JH-Agent OS/data/worktrees/gemini-node22-probe-20261023/HARK11_SHELL_SHOULD_NOT_EXIST"
+     },
+     "status": "error"
+    }
+   ],
+   "usage": {
+    "cached": 0,
+    "duration_ms": 195,
+    "input_tokens": 55,
+    "models": {
+     "synthetic-endpoint": {
+      "cached": 0,
+      "input": 55,
+      "input_tokens": 55,
+      "output_tokens": 35,
+      "total_tokens": 90
+     }
+    },
+    "output_tokens": 35,
+    "source": "stream-json result.stats (session cumulative for this invocation)",
+    "tool_calls": 4,
+    "total_tokens": 90
+   }
+  },
+  "node24-control3": {
+   "assertion": true,
+   "declared_status": "success",
+   "declared_tools": [
+    "glob",
+    "grep_search",
+    "list_directory",
+    "read_file"
+   ],
+   "denied": [
+    "run_shell_command",
+    "write_file"
+   ],
+   "dir": "node24-control3",
+   "events": [
+    {
+     "event": "reserved",
+     "native_state": "reserved",
+     "state": "queued"
+    },
+    {
+     "event": "dispatched",
+     "native_state": "process-started",
+     "state": "running"
+    },
+    {
+     "event": "collected",
+     "native_state": "exit:3221226505;result:success",
+     "state": "failed"
+    }
+   ],
+   "evidence": [
+    {
+     "actual_sha256": "c5989592f45a021827f9f1fdae0439119625b85c893a1e0b2b20d71b7cd33284",
+     "bytes": 27936,
+     "file": "host-chat-record.jsonl",
+     "ok": true,
+     "sha256": "c5989592f45a021827f9f1fdae0439119625b85c893a1e0b2b20d71b7cd33284"
+    },
+    {
+     "actual_sha256": "d3dcc58b0c7765533166d61d3b933fdc80b76434f6483c30aed50fd3035ecba7",
+     "bytes": 792,
+     "file": "stderr.txt",
+     "ok": true,
+     "sha256": "d3dcc58b0c7765533166d61d3b933fdc80b76434f6483c30aed50fd3035ecba7"
+    },
+    {
+     "actual_sha256": "5c17a8f25a7c6727d9577cdaa3e1040ec8a926d3839dcbbd5e65b1b992c737d5",
+     "bytes": 3212,
+     "file": "stdout.jsonl",
+     "ok": true,
+     "sha256": "5c17a8f25a7c6727d9577cdaa3e1040ec8a926d3839dcbbd5e65b1b992c737d5"
+    }
+   ],
+   "evidence_ok": true,
+   "exit_code": 3221226505,
+   "first_line": "Rename failed with EPERM, retrying in 50ms (attempt 1/5)...",
+   "first_line_json": false,
+   "host_success_preserved": true,
+   "idempotency_key": "hark11-verify-host-probe",
+   "idempotent_single_dispatch": true,
+   "manifest_entries": 916,
+   "manifest_equal": true,
+   "manifest_sha256": "44061f8b9eb82f920abf52338f9da5506a5a5294a06494b0e3051395a3488714",
+   "native_state": "exit:3221226505;result:success",
+   "node": "node24",
+   "request_fingerprint": "c83f53ce7ed064ecd19542adaac3180d1232506e514f536ace8fb14460d0db9c",
+   "request_paths": [
+    "/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse"
+   ],
+   "requests": 5,
+   "session_consistent": true,
+   "session_id": "8fe2b097-4709-4c0d-892b-8128ec343bc5",
+   "session_ids": [
+    "8fe2b097-4709-4c0d-892b-8128ec343bc5",
+    "8fe2b097-4709-4c0d-892b-8128ec343bc5",
+    "8fe2b097-4709-4c0d-892b-8128ec343bc5",
+    "8fe2b097-4709-4c0d-892b-8128ec343bc5"
+   ],
+   "source_refs_verified": true,
+   "state": "failed",
+   "stderr_tail": "\"write_file\" not found. Did you mean one of: \"read_file\", \"grep_search\", \"glob\"?\nError executing tool run_shell_command: Tool \"run_shell_command\" not found. Did you mean one of: \"grep_search\", \"read_file\", \"glob\"?\nAssertion failed: !(handle->flags & UV_HANDLE_CLOSING), file src\\win\\async.c, line 94\n",
+   "stdout_preamble_lines": [
+    "Rename failed with EPERM, retrying in 50ms (attempt 1/5)..."
+   ],
+   "stdout_result_status": "success",
+   "tokens": 90,
+   "tool_calls": [
+    {
+     "error_type": null,
+     "name": "grep_search",
+     "parameters": {
+      "pattern": "^class RunState"
+     },
+     "status": "success"
+    },
+    {
+     "error_type": null,
+     "name": "read_file",
+     "parameters": {
+      "end_line": 106,
+      "file_path": "D:/JH-Agent OS/data/worktrees/gemini-node22-probe-20261023/src/agent_session.py",
+      "start_line": 94
+     },
+     "status": "success"
+    },
+    {
+     "error_type": "tool_not_registered",
+     "name": "write_file",
+     "parameters": {
+      "content": "x",
+      "file_path": "D:/JH-Agent OS/data/worktrees/gemini-node22-probe-20261023/HARK11_SHOULD_NOT_EXIST.txt"
+     },
+     "status": "error"
+    },
+    {
+     "error_type": "tool_not_registered",
+     "name": "run_shell_command",
+     "parameters": {
+      "command": "touch D:/JH-Agent OS/data/worktrees/gemini-node22-probe-20261023/HARK11_SHELL_SHOULD_NOT_EXIST"
+     },
+     "status": "error"
+    }
+   ],
+   "usage": {
+    "cached": 0,
+    "duration_ms": 198,
+    "input_tokens": 55,
+    "models": {
+     "synthetic-endpoint": {
+      "cached": 0,
+      "input": 55,
+      "input_tokens": 55,
+      "output_tokens": 35,
+      "total_tokens": 90
+     }
+    },
+    "output_tokens": 35,
+    "source": "stream-json result.stats (session cumulative for this invocation)",
+    "tool_calls": 4,
+    "total_tokens": 90
+   }
+  },
+  "pair-node22-warm": {
+   "assertion": false,
+   "declared_status": "success",
+   "declared_tools": [
+    "glob",
+    "grep_search",
+    "list_directory",
+    "read_file"
+   ],
+   "denied": [
+    "run_shell_command",
+    "write_file"
+   ],
+   "dir": "pair-node22-warm",
+   "events": [
+    {
+     "event": "reserved",
+     "native_state": "reserved",
+     "state": "queued"
+    },
+    {
+     "event": "dispatched",
+     "native_state": "process-started",
+     "state": "running"
+    },
+    {
+     "event": "collected",
+     "native_state": "exit:0;result:success",
+     "state": "declared_complete"
+    }
+   ],
+   "evidence": [
+    {
+     "actual_sha256": "5e9ee976664f988e7a0702b2f43979b9235fd9549c1d534ff5533d6897a74e28",
+     "bytes": 27937,
+     "file": "host-chat-record.jsonl",
+     "ok": true,
+     "sha256": "5e9ee976664f988e7a0702b2f43979b9235fd9549c1d534ff5533d6897a74e28"
+    },
+    {
+     "actual_sha256": "27abbcb9d35e15548b439eca3575f1d50d6b8096751b8f3730222ab478834730",
+     "bytes": 441,
+     "file": "stderr.txt",
+     "ok": true,
+     "sha256": "27abbcb9d35e15548b439eca3575f1d50d6b8096751b8f3730222ab478834730"
+    },
+    {
+     "actual_sha256": "23da0c76537c273bad94a8af84cb60db6f90a94cef55ecd1a17bd9049dc59967",
+     "bytes": 3152,
+     "file": "stdout.jsonl",
+     "ok": true,
+     "sha256": "23da0c76537c273bad94a8af84cb60db6f90a94cef55ecd1a17bd9049dc59967"
+    }
+   ],
+   "evidence_ok": true,
+   "exit_code": 0,
+   "first_line": "{\"type\":\"init\",\"timestamp\":\"2026-10-23T12:49:32.591Z\",\"session_id\":\"c349f04f-e586-4013-b8bd-26b50e356ff5\",\"model\":\"gemini-2.5-flash\"}",
+   "first_line_json": true,
+   "host_success_preserved": true,
+   "idempotency_key": "hark11-verify-host-probe",
+   "idempotent_single_dispatch": true,
+   "manifest_entries": 916,
+   "manifest_equal": true,
+   "manifest_sha256": "44061f8b9eb82f920abf52338f9da5506a5a5294a06494b0e3051395a3488714",
+   "native_state": "exit:0;result:success",
+   "node": "node22",
+   "request_fingerprint": "c83f53ce7ed064ecd19542adaac3180d1232506e514f536ace8fb14460d0db9c",
+   "request_paths": [
+    "/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse"
+   ],
+   "requests": 5,
+   "session_consistent": true,
+   "session_id": "c349f04f-e586-4013-b8bd-26b50e356ff5",
+   "session_ids": [
+    "c349f04f-e586-4013-b8bd-26b50e356ff5",
+    "c349f04f-e586-4013-b8bd-26b50e356ff5",
+    "c349f04f-e586-4013-b8bd-26b50e356ff5",
+    "c349f04f-e586-4013-b8bd-26b50e356ff5"
+   ],
+   "source_refs_verified": true,
+   "state": "declared_complete",
+   "stderr_tail": "rep is not available. Falling back to GrepTool.\nError executing tool write_file: Tool \"write_file\" not found. Did you mean one of: \"read_file\", \"grep_search\", \"glob\"?\nError executing tool run_shell_command: Tool \"run_shell_command\" not found. Did you mean one of: \"grep_search\", \"read_file\", \"glob\"?\n",
+   "stdout_preamble_lines": [],
+   "stdout_result_status": "success",
+   "tokens": 90,
+   "tool_calls": [
+    {
+     "error_type": null,
+     "name": "grep_search",
+     "parameters": {
+      "pattern": "^class RunState"
+     },
+     "status": "success"
+    },
+    {
+     "error_type": null,
+     "name": "read_file",
+     "parameters": {
+      "end_line": 106,
+      "file_path": "D:/JH-Agent OS/data/worktrees/gemini-node22-probe-20261023/src/agent_session.py",
+      "start_line": 94
+     },
+     "status": "success"
+    },
+    {
+     "error_type": "tool_not_registered",
+     "name": "write_file",
+     "parameters": {
+      "content": "x",
+      "file_path": "D:/JH-Agent OS/data/worktrees/gemini-node22-probe-20261023/HARK11_SHOULD_NOT_EXIST.txt"
+     },
+     "status": "error"
+    },
+    {
+     "error_type": "tool_not_registered",
+     "name": "run_shell_command",
+     "parameters": {
+      "command": "touch D:/JH-Agent OS/data/worktrees/gemini-node22-probe-20261023/HARK11_SHELL_SHOULD_NOT_EXIST"
+     },
+     "status": "error"
+    }
+   ],
+   "usage": {
+    "cached": 0,
+    "duration_ms": 235,
+    "input_tokens": 55,
+    "models": {
+     "synthetic-endpoint": {
+      "cached": 0,
+      "input": 55,
+      "input_tokens": 55,
+      "output_tokens": 35,
+      "total_tokens": 90
+     }
+    },
+    "output_tokens": 35,
+    "source": "stream-json result.stats (session cumulative for this invocation)",
+    "tool_calls": 4,
+    "total_tokens": 90
+   }
+  },
+  "pair-node24-warm": {
+   "assertion": true,
+   "declared_status": "success",
+   "declared_tools": [
+    "glob",
+    "grep_search",
+    "list_directory",
+    "read_file"
+   ],
+   "denied": [
+    "run_shell_command",
+    "write_file"
+   ],
+   "dir": "pair-node24-warm",
+   "events": [
+    {
+     "event": "reserved",
+     "native_state": "reserved",
+     "state": "queued"
+    },
+    {
+     "event": "dispatched",
+     "native_state": "process-started",
+     "state": "running"
+    },
+    {
+     "event": "collected",
+     "native_state": "exit:3221226505;result:success",
+     "state": "failed"
+    }
+   ],
+   "evidence": [
+    {
+     "actual_sha256": "675d29233181e5027973d6bf9e7688e2c58007abee2598b5c03f3c529f577b31",
+     "bytes": 27937,
+     "file": "host-chat-record.jsonl",
+     "ok": true,
+     "sha256": "675d29233181e5027973d6bf9e7688e2c58007abee2598b5c03f3c529f577b31"
+    },
+    {
+     "actual_sha256": "b6106b469bdf7548b35078e684fd0b3223108993c73fe10529c48436c0bb02a9",
+     "bytes": 991,
+     "file": "stderr.txt",
+     "ok": true,
+     "sha256": "b6106b469bdf7548b35078e684fd0b3223108993c73fe10529c48436c0bb02a9"
+    },
+    {
+     "actual_sha256": "682c486f91aba8f99f7c16b950bc0caaa3bfa99ada4911bbd89a9afd526f35c9",
+     "bytes": 3152,
+     "file": "stdout.jsonl",
+     "ok": true,
+     "sha256": "682c486f91aba8f99f7c16b950bc0caaa3bfa99ada4911bbd89a9afd526f35c9"
+    }
+   ],
+   "evidence_ok": true,
+   "exit_code": 3221226505,
+   "first_line": "{\"type\":\"init\",\"timestamp\":\"2026-10-23T12:49:12.699Z\",\"session_id\":\"f6dd4e25-3246-40b5-a799-23a5439e1fa9\",\"model\":\"gemini-2.5-flash\"}",
+   "first_line_json": true,
+   "host_success_preserved": true,
+   "idempotency_key": "hark11-verify-host-probe",
+   "idempotent_single_dispatch": true,
+   "manifest_entries": 916,
+   "manifest_equal": true,
+   "manifest_sha256": "44061f8b9eb82f920abf52338f9da5506a5a5294a06494b0e3051395a3488714",
+   "native_state": "exit:3221226505;result:success",
+   "node": "node24",
+   "request_fingerprint": "c83f53ce7ed064ecd19542adaac3180d1232506e514f536ace8fb14460d0db9c",
+   "request_paths": [
+    "/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse"
+   ],
+   "requests": 5,
+   "session_consistent": true,
+   "session_id": "f6dd4e25-3246-40b5-a799-23a5439e1fa9",
+   "session_ids": [
+    "f6dd4e25-3246-40b5-a799-23a5439e1fa9",
+    "f6dd4e25-3246-40b5-a799-23a5439e1fa9",
+    "f6dd4e25-3246-40b5-a799-23a5439e1fa9",
+    "f6dd4e25-3246-40b5-a799-23a5439e1fa9"
+   ],
+   "source_refs_verified": true,
+   "state": "failed",
+   "stderr_tail": "\"write_file\" not found. Did you mean one of: \"read_file\", \"grep_search\", \"glob\"?\nError executing tool run_shell_command: Tool \"run_shell_command\" not found. Did you mean one of: \"grep_search\", \"read_file\", \"glob\"?\nAssertion failed: !(handle->flags & UV_HANDLE_CLOSING), file src\\win\\async.c, line 94\n",
+   "stdout_preamble_lines": [],
+   "stdout_result_status": "success",
+   "tokens": 90,
+   "tool_calls": [
+    {
+     "error_type": null,
+     "name": "grep_search",
+     "parameters": {
+      "pattern": "^class RunState"
+     },
+     "status": "success"
+    },
+    {
+     "error_type": null,
+     "name": "read_file",
+     "parameters": {
+      "end_line": 106,
+      "file_path": "D:/JH-Agent OS/data/worktrees/gemini-node22-probe-20261023/src/agent_session.py",
+      "start_line": 94
+     },
+     "status": "success"
+    },
+    {
+     "error_type": "tool_not_registered",
+     "name": "write_file",
+     "parameters": {
+      "content": "x",
+      "file_path": "D:/JH-Agent OS/data/worktrees/gemini-node22-probe-20261023/HARK11_SHOULD_NOT_EXIST.txt"
+     },
+     "status": "error"
+    },
+    {
+     "error_type": "tool_not_registered",
+     "name": "run_shell_command",
+     "parameters": {
+      "command": "touch D:/JH-Agent OS/data/worktrees/gemini-node22-probe-20261023/HARK11_SHELL_SHOULD_NOT_EXIST"
+     },
+     "status": "error"
+    }
+   ],
+   "usage": {
+    "cached": 0,
+    "duration_ms": 204,
+    "input_tokens": 55,
+    "models": {
+     "synthetic-endpoint": {
+      "cached": 0,
+      "input": 55,
+      "input_tokens": 55,
+      "output_tokens": 35,
+      "total_tokens": 90
+     }
+    },
+    "output_tokens": 35,
+    "source": "stream-json result.stats (session cumulative for this invocation)",
+    "tool_calls": 4,
+    "total_tokens": 90
+   }
+  }
+ },
+ "source": {
+  "accepted_070004f_is_ancestor": true,
+  "accepted_a086195_is_ancestor": true,
+  "branch": "gemini-node22-probe-20261023",
+  "branch_is_fixed": true,
+  "fdec9c6_is_not_ancestor": true,
+  "fetch_head": "29e00201f85063f60cc23213262fc82cf430d7ee\t\tbranch 'hark-gemini-subagent-20261021' of https://github.com/djh54188/JH-Agent-OS",
+  "fetch_head_matches": true,
+  "head": "29e00201f85063f60cc23213262fc82cf430d7ee",
+  "head_is_fixed": true,
+  "parent": "a086195f8568f81d20ad95c2584cad5e27854e4d",
+  "parent_is_fixed": true,
+  "tree": "df45ad170b378366641ad6e62ad6c631846fc220",
+  "tree_is_fixed": true
+ },
+ "totals": {
+  "node22_runs": 6,
+  "node24_runs": 4,
+  "synthetic_requests": 52,
+  "synthetic_tokens": 936
+ },
+ "workspace_inputs": {
+  "all_recomputed": true,
+  "dispatch": 0,
+  "guard_path_created": false,
+  "recomputed": [
+   {
+    "category": "relative-existing",
+    "expected": "workspace must be an absolute path (relative input refused)",
+    "input": "../target",
+    "ok": true,
+    "preflight": [
+     "workspace must be an absolute path (relative input refused)"
+    ],
+    "problem": "workspace must be an absolute path (relative input refused)"
+   },
+   {
+    "category": "relative-missing",
+    "expected": "workspace must be an absolute path (relative input refused)",
+    "input": "../absent",
+    "ok": true,
+    "preflight": [
+     "workspace must be an absolute path (relative input refused)"
+    ],
+    "problem": "workspace must be an absolute path (relative input refused)"
+   },
+   {
+    "category": "root-relative-existing",
+    "expected": "workspace must be an absolute path (Windows root-relative input refused)",
+    "input": "\\JH-Agent OS/data/gemini-node22-probe-20261023/evidence/workspace-inputs1/inputs/root/target",
+    "ok": true,
+    "preflight": [
+     "workspace must be an absolute path (Windows root-relative input refused)"
+    ],
+    "problem": "workspace must be an absolute path (Windows root-relative input refused)"
+   },
+   {
+    "category": "root-relative-missing",
+    "expected": "workspace must be an absolute path (Windows root-relative input refused)",
+    "input": "\\JH-Agent OS/data/gemini-node22-probe-20261023/evidence/workspace-inputs1/inputs/root/absent",
+    "ok": true,
+    "preflight": [
+     "workspace must be an absolute path (Windows root-relative input refused)"
+    ],
+    "problem": "workspace must be an absolute path (Windows root-relative input refused)"
+   },
+   {
+    "category": "drive-relative-existing",
+    "expected": "workspace must be an absolute path (Windows drive-relative input refused)",
+    "input": "D:target",
+    "ok": true,
+    "preflight": [
+     "workspace must be an absolute path (Windows drive-relative input refused)"
+    ],
+    "problem": "workspace must be an absolute path (Windows drive-relative input refused)"
+   },
+   {
+    "category": "drive-relative-missing",
+    "expected": "workspace must be an absolute path (Windows drive-relative input refused)",
+    "input": "D:absent",
+    "ok": true,
+    "preflight": [
+     "workspace must be an absolute path (Windows drive-relative input refused)"
+    ],
+    "problem": "workspace must be an absolute path (Windows drive-relative input refused)"
+   },
+   {
+    "category": "chinese-existing",
+    "expected": "accepted",
+    "input": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\workspace-inputs1\\inputs\\中文目录\\工作区",
+    "ok": true,
+    "preflight": [],
+    "problem": null
+   },
+   {
+    "category": "chinese-missing",
+    "expected": "not a directory",
+    "input": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\workspace-inputs1\\inputs\\中文目录\\不存在",
+    "ok": true,
+    "preflight": [
+     "workspace 'D:\\\\JH-Agent OS\\\\data\\\\gemini-node22-probe-20261023\\\\evidence\\\\workspace-inputs1\\\\inputs\\\\中文目录\\\\不存在' is not a directory"
+    ],
+    "problem": null
+   }
+  ],
+  "summary_all": true,
+  "summary_checks": {
+   "chinese-existing": true,
+   "chinese-missing": true,
+   "drive-relative-existing": true,
+   "drive-relative-missing": true,
+   "no_dispatch_state_created": true,
+   "relative-existing": true,
+   "relative-missing": true,
+   "root-relative-existing": true,
+   "root-relative-missing": true
+  }
+ }
+}

@@ -1,0 +1,5 @@
+cwd=D:\JH-Agent OS\data\worktrees\gemini-node22-probe-20261023
+python scripts/audit_gemini_node22_probe.py --worktree . --runtime "D:/JH-Agent OS/data/gemini-node22-probe-20261023" --cli-prefix "D:/JH-Agent OS/data/gemini-windows-probe-20261023/cli/prefix" --out "D:/JH-Agent OS/data/gemini-node22-probe-20261023/evidence/audit-result.json"
+exit=0
+ok=true
+failures=[]

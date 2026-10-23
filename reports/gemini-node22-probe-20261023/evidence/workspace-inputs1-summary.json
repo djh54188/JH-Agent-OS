@@ -1,0 +1,142 @@
+{
+ "cases": [
+  {
+   "adapter_validate": {
+    "message": "workspace must be an absolute path (relative input refused)",
+    "raised": "HostRestrictionUnavailable"
+   },
+   "category": "relative-existing",
+   "expected": "workspace must be an absolute path (relative input refused)",
+   "input": "../target",
+   "pass": true,
+   "path_problem": "workspace must be an absolute path (relative input refused)",
+   "preflight": [
+    "workspace must be an absolute path (relative input refused)"
+   ],
+   "resolved": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\workspace-inputs1\\inputs\\existing\\target",
+   "resolved_exists": true
+  },
+  {
+   "adapter_validate": {
+    "message": "workspace must be an absolute path (relative input refused)",
+    "raised": "HostRestrictionUnavailable"
+   },
+   "category": "relative-missing",
+   "expected": "workspace must be an absolute path (relative input refused)",
+   "input": "../absent",
+   "pass": true,
+   "path_problem": "workspace must be an absolute path (relative input refused)",
+   "preflight": [
+    "workspace must be an absolute path (relative input refused)"
+   ],
+   "resolved": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\workspace-inputs1\\inputs\\existing\\absent",
+   "resolved_exists": false
+  },
+  {
+   "adapter_validate": {
+    "message": "workspace must be an absolute path (Windows root-relative input refused)",
+    "raised": "HostRestrictionUnavailable"
+   },
+   "category": "root-relative-existing",
+   "expected": "workspace must be an absolute path (Windows root-relative input refused)",
+   "input": "\\JH-Agent OS/data/gemini-node22-probe-20261023/evidence/workspace-inputs1/inputs/root/target",
+   "pass": true,
+   "path_problem": "workspace must be an absolute path (Windows root-relative input refused)",
+   "preflight": [
+    "workspace must be an absolute path (Windows root-relative input refused)"
+   ],
+   "resolved": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\workspace-inputs1\\inputs\\root\\target",
+   "resolved_exists": true
+  },
+  {
+   "adapter_validate": {
+    "message": "workspace must be an absolute path (Windows root-relative input refused)",
+    "raised": "HostRestrictionUnavailable"
+   },
+   "category": "root-relative-missing",
+   "expected": "workspace must be an absolute path (Windows root-relative input refused)",
+   "input": "\\JH-Agent OS/data/gemini-node22-probe-20261023/evidence/workspace-inputs1/inputs/root/absent",
+   "pass": true,
+   "path_problem": "workspace must be an absolute path (Windows root-relative input refused)",
+   "preflight": [
+    "workspace must be an absolute path (Windows root-relative input refused)"
+   ],
+   "resolved": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\workspace-inputs1\\inputs\\root\\absent",
+   "resolved_exists": false
+  },
+  {
+   "adapter_validate": {
+    "message": "workspace must be an absolute path (Windows drive-relative input refused)",
+    "raised": "HostRestrictionUnavailable"
+   },
+   "category": "drive-relative-existing",
+   "expected": "workspace must be an absolute path (Windows drive-relative input refused)",
+   "input": "D:target",
+   "pass": true,
+   "path_problem": "workspace must be an absolute path (Windows drive-relative input refused)",
+   "preflight": [
+    "workspace must be an absolute path (Windows drive-relative input refused)"
+   ],
+   "resolved": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\workspace-inputs1\\inputs\\drive\\target",
+   "resolved_exists": true
+  },
+  {
+   "adapter_validate": {
+    "message": "workspace must be an absolute path (Windows drive-relative input refused)",
+    "raised": "HostRestrictionUnavailable"
+   },
+   "category": "drive-relative-missing",
+   "expected": "workspace must be an absolute path (Windows drive-relative input refused)",
+   "input": "D:absent",
+   "pass": true,
+   "path_problem": "workspace must be an absolute path (Windows drive-relative input refused)",
+   "preflight": [
+    "workspace must be an absolute path (Windows drive-relative input refused)"
+   ],
+   "resolved": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\workspace-inputs1\\inputs\\drive\\absent",
+   "resolved_exists": false
+  },
+  {
+   "adapter_validate": {
+    "message": null,
+    "raised": null
+   },
+   "category": "chinese-existing",
+   "expected": "accepted",
+   "input": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\workspace-inputs1\\inputs\\中文目录\\工作区",
+   "pass": true,
+   "path_problem": null,
+   "preflight": []
+  },
+  {
+   "adapter_validate": {
+    "message": null,
+    "raised": null
+   },
+   "category": "chinese-missing",
+   "expected": "not a directory",
+   "input": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\workspace-inputs1\\inputs\\中文目录\\不存在",
+   "pass": true,
+   "path_problem": null,
+   "preflight": [
+    "workspace 'D:\\\\JH-Agent OS\\\\data\\\\gemini-node22-probe-20261023\\\\evidence\\\\workspace-inputs1\\\\inputs\\\\中文目录\\\\不存在' is not a directory"
+   ]
+  }
+ ],
+ "checks": {
+  "chinese-existing": true,
+  "chinese-missing": true,
+  "drive-relative-existing": true,
+  "drive-relative-missing": true,
+  "no_dispatch_state_created": true,
+  "relative-existing": true,
+  "relative-missing": true,
+  "root-relative-existing": true,
+  "root-relative-missing": true
+ },
+ "dispatch": 0,
+ "guard_path_created": false,
+ "mode": "workspace-input-probe",
+ "platform": "win32",
+ "python": "3.14.7 (tags/v3.14.7:823f032, Aug  5 2026, 10:51:32) [MSC v.1944 64 bit (AMD64)]"
+}

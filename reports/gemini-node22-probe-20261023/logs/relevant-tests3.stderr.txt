@@ -1,0 +1,83 @@
+............C:\Python314\Lib\subprocess.py:1139: ResourceWarning: subprocess 2732 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+C:\Python314\Lib\subprocess.py:1139: ResourceWarning: subprocess 17964 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+C:\Python314\Lib\subprocess.py:1139: ResourceWarning: subprocess 23516 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+..............C:\Python314\Lib\subprocess.py:1139: ResourceWarning: subprocess 26228 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+......C:\Python314\Lib\subprocess.py:1139: ResourceWarning: subprocess 28596 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+D:\JH-Agent OS\data\worktrees\gemini-node22-probe-20261023\tests\test_hark12_gemini_admission.py:261: ResourceWarning: unclosed file <_io.BufferedReader name='C:\\Users\\a\\AppData\\Local\\Temp\\hark12-v011b52h\\evidence\\registry.jsonl'>
+  lines = open(self.h.registry, "rb").read().splitlines(keepends=True)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+D:\JH-Agent OS\data\worktrees\gemini-node22-probe-20261023\tests\test_hark12_gemini_admission.py:261: ResourceWarning: unclosed file <_io.BufferedReader name='C:\\Users\\a\\AppData\\Local\\Temp\\hark12-u882k24q\\evidence\\registry.jsonl'>
+  lines = open(self.h.registry, "rb").read().splitlines(keepends=True)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+C:\Python314\Lib\subprocess.py:1139: ResourceWarning: subprocess 29940 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+C:\Python314\Lib\subprocess.py:1139: ResourceWarning: subprocess 4784 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+.FF......D:\JH-Agent OS\data\worktrees\gemini-node22-probe-20261023\tests\test_hark12_gemini_admission.py:261: ResourceWarning: unclosed file <_io.BufferedReader name='C:\\Users\\a\\AppData\\Local\\Temp\\hark12-s4x1u9o1\\evidence\\registry.jsonl'>
+  lines = open(self.h.registry, "rb").read().splitlines(keepends=True)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+..s.....ss.........F..................ss.E...........................................
+======================================================================
+ERROR: test_stray_entries_refused (tests.test_hark13_registry_loss.TestUnjudgeableRunEvidence.test_stray_entries_refused) (kind='symlink')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\gemini-node22-probe-20261023\tests\test_hark13_registry_loss.py", line 257, in test_stray_entries_refused
+    os.symlink(target, os.path.join(s.runs_dir, "gemini-run-0123456789ab"))
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [WinError 1314] 客户端没有所需的特权。: 'C:\\Users\\a\\AppData\\Local\\Temp\\hark13-sq0h8kw4\\elsewhere' -> 'C:\\Users\\a\\AppData\\Local\\Temp\\hark13-sq0h8kw4\\evidence\\runs\\gemini-run-0123456789ab'
+
+======================================================================
+FAIL: test_committed_h11_registries_are_legal (tests.test_hark12_gemini_admission.TestR1RegistryState.test_committed_h11_registries_are_legal) (path='reports\\hark-gemini-bridge-20261021\\host-probe\\bridge\\registry.jsonl')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\gemini-node22-probe-20261023\tests\test_hark12_gemini_admission.py", line 368, in test_committed_h11_registries_are_legal
+    self.assertEqual(gem.validate_registry_records(records), [])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: ["registry record 1 (reserved 'gemini-run-[548 chars]one"] != []
+
+First list contains 5 additional elements.
+First extra element 0:
+"registry record 1 (reserved 'gemini-run-e4d091ccdd29'): workspace must be an absolute path (Windows root-relative input refused)"
+
+Diff is 645 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_committed_h11_registries_are_legal (tests.test_hark12_gemini_admission.TestR1RegistryState.test_committed_h11_registries_are_legal) (path='reports\\hark-gemini-bridge-20261021\\host-probe-postcommit\\registry.jsonl')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\gemini-node22-probe-20261023\tests\test_hark12_gemini_admission.py", line 368, in test_committed_h11_registries_are_legal
+    self.assertEqual(gem.validate_registry_records(records), [])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: ["registry record 1 (reserved 'gemini-run-[548 chars]one"] != []
+
+First list contains 5 additional elements.
+First extra element 0:
+"registry record 1 (reserved 'gemini-run-542e413b7757'): workspace must be an absolute path (Windows root-relative input refused)"
+
+Diff is 645 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_reencoding_reproduces_captured_native_bytes (tests.test_hark12_gemini_admission.TestR3Fixture.test_reencoding_reproduces_captured_native_bytes)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\JH-Agent OS\data\worktrees\gemini-node22-probe-20261023\tests\test_hark12_gemini_admission.py", line 599, in test_reencoding_reproduces_captured_native_bytes
+    self.assertEqual(rebuilt.encode("utf-8"), raw)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: b'{"t[126 chars]sh"}\n{"type":"message","timestamp":"2026-10-2[2924 chars]}}\n' != b'{"t[126 chars]sh"}\r\n{"type":"message","timestamp":"2026-10[2948 chars]\r\n'
+
+----------------------------------------------------------------------
+Ran 125 tests in 16.076s
+
+FAILED (failures=3, errors=1, skipped=5)

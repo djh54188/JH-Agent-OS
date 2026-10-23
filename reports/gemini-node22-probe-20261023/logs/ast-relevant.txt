@@ -1,0 +1,17 @@
+cwd=D:\JH-Agent OS\data\worktrees\gemini-node22-probe-20261023
+python - <<'PY'
+import ast,pathlib
+mods=['test_hark11_gemini_session.py','test_hark12_gemini_admission.py','test_hark13_registry_loss.py','test_jh018_agent_session_contract.py']
+total=0
+for name in mods:
+    p=pathlib.Path('tests')/name
+    tree=ast.parse(p.read_text(encoding='utf-8-sig'))
+    n=sum(1 for c in ast.walk(tree) if isinstance(c,ast.ClassDef) for f in c.body if isinstance(f,(ast.FunctionDef,ast.AsyncFunctionDef)) and f.name.startswith('test'))
+    print(name,n); total+=n
+print('total',total)
+PY
+test_hark11_gemini_session.py 32
+test_hark12_gemini_admission.py 33
+test_hark13_registry_loss.py 18
+test_jh018_agent_session_contract.py 42
+total 125

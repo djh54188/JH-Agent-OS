@@ -1,0 +1,69 @@
+{
+ "backend_models": [
+  "synthetic-endpoint"
+ ],
+ "checks": {
+  "all_successful_tools_read_only": true,
+  "declared_complete": false,
+  "declared_tools_exactly_read_only": true,
+  "evidence_bytes_match": true,
+  "host_model_matches_request": true,
+  "idempotent_replay_same_run": true,
+  "not_marked_succeeded": true,
+  "probe_files_absent": true,
+  "read_tool_used": true,
+  "session_bound": true,
+  "source_ref_verified": true,
+  "workspace_unchanged": true,
+  "write_and_shell_refused": true
+ },
+ "declared_status": "success",
+ "evidence": {
+  "files": {
+   "host-chat-record.jsonl": "match",
+   "stderr.txt": "match",
+   "stdout.jsonl": "match"
+  },
+  "ok": true
+ },
+ "host_reported_model": "gemini-2.5-flash",
+ "mode": "host-probe",
+ "run_id": "gemini-run-369dd604d953",
+ "source_refs": [
+  {
+   "end_line": null,
+   "line": 94,
+   "path": "src/agent_session.py",
+   "verified": true
+  }
+ ],
+ "state": "failed",
+ "tools_used": [
+  "grep_search",
+  "read_file",
+  "write_file",
+  "run_shell_command"
+ ],
+ "unverified": [
+  "adapter observation only; independent review decides success",
+  "native turn ids: not exposed by stream-json; turn count unknown"
+ ],
+ "usage": {
+  "cached": 0,
+  "duration_ms": 204,
+  "input_tokens": 55,
+  "models": {
+   "synthetic-endpoint": {
+    "cached": 0,
+    "input": 55,
+    "input_tokens": 55,
+    "output_tokens": 35,
+    "total_tokens": 90
+   }
+  },
+  "output_tokens": 35,
+  "source": "stream-json result.stats (session cumulative for this invocation)",
+  "tool_calls": 4,
+  "total_tokens": 90
+ }
+}

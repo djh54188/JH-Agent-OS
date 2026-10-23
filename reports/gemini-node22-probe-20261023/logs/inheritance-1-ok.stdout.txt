@@ -1,0 +1,6 @@
+test_contract_consumers_are_real_adapters (tests.test_jh018_agent_session_contract.TestCoreHoldsNoConcreteAdapter.test_contract_consumers_are_real_adapters) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.012s
+
+OK

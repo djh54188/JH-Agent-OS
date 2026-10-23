@@ -1,0 +1,5 @@
+cwd=D:\JH-Agent OS\data\worktrees\gemini-node22-probe-20261023
+PYTHONDONTWRITEBYTECODE=1 python -m unittest tests.test_hark11_gemini_session tests.test_hark12_gemini_admission tests.test_hark13_registry_loss tests.test_jh018_agent_session_contract
+exit=1
+Ran 125 tests in 16.076s
+FAILED (failures=3, errors=1, skipped=5)

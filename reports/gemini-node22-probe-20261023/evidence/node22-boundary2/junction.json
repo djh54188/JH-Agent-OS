@@ -1,0 +1,17 @@
+{
+ "command": [
+  "cmd",
+  "/c",
+  "mklink",
+  "/J",
+  "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\node22-boundary2\\fixtures\\workspace\\link_to_outside",
+  "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\node22-boundary2\\fixtures\\outside"
+ ],
+ "isjunction": true,
+ "realpath": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\node22-boundary2\\fixtures\\outside",
+ "returncode": 0,
+ "secret_visible": true,
+ "stderr": "",
+ "stdout": "\u03aa D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\node22-boundary2\\fixtures\\workspace\\link_to_outside <<===>> D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\node22-boundary2\\fixtures\\outside \ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\r\n",
+ "target_realpath": "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\node22-boundary2\\fixtures\\outside"
+}

@@ -1,0 +1,41 @@
+{
+ "copy": "pair-node24-warm\\cli-home",
+ "files": [
+  {
+   "bytes": 58,
+   "path": ".gemini/history/gemini-node22-probe-20261023/.project_root",
+   "sha256": "c3328cf172eaf54efc35d2cd77f9bd6a262f0318da4c3e26adff549165c967fb"
+  },
+  {
+   "bytes": 124,
+   "path": ".gemini/projects.json",
+   "sha256": "679afe176307ff5dbf9dcdd23298d6096f20396a83c5eeb18531747c6d8c0aba"
+  },
+  {
+   "bytes": 629,
+   "path": ".gemini/settings.json",
+   "sha256": "237048737379df3e5dc3fb664c1089daaf69e71c3581bfb369d50794b2ca1422"
+  },
+  {
+   "bytes": 58,
+   "path": ".gemini/tmp/gemini-node22-probe-20261023/.project_root",
+   "sha256": "c3328cf172eaf54efc35d2cd77f9bd6a262f0318da4c3e26adff549165c967fb"
+  },
+  {
+   "bytes": 27927,
+   "path": ".gemini/tmp/gemini-node22-probe-20261023/chats/session-2026-10-23T12-34-8911e128.jsonl",
+   "sha256": "ecb43a47b750964a1d77d348552f8577ead1f38b553e9463f72bc947ed6721e8"
+  },
+  {
+   "bytes": 27927,
+   "path": ".gemini/tmp/gemini-node22-probe-20261023/chats/session-2026-10-23T12-35-3f5ac465.jsonl",
+   "sha256": "cdc1c1913ff15fe4c6fbc42a54ac879d969d4290d2ae8503633625016a782fdf"
+  },
+  {
+   "bytes": 27927,
+   "path": ".gemini/tmp/gemini-node22-probe-20261023/chats/session-2026-10-23T12-36-fd84b55f.jsonl",
+   "sha256": "a4c5f4d3ced10a5ff03337564a41381d4d824372b7a7f725cd37c07cb3407985"
+  }
+ ],
+ "source": "node22-run1/cli-home"
+}
