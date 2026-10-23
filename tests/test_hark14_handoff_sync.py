@@ -52,6 +52,7 @@ class Fixture:
                         XDG_CONFIG_HOME=str(self.home / ".config"))
         self.remote = self.tmp / "remote.git"
         git(self.tmp, "init", "--bare", "-q", str(self.remote), env=self.env)
+        (self.remote / "hark14-test-fixture").write_text("local temporary test fixture\n")
         self.source = self.tmp / "source"
         git(self.tmp, "init", "-q", str(self.source), env=self.env)
         (self.source / "docs").mkdir()
@@ -95,11 +96,12 @@ class Fixture:
         cfg.update(over)
         self.config_path.write_text(json.dumps(cfg))
 
-    def run(self, publish=False, script=SCRIPT, remote=None):
+    def run(self, publish=False, script=SCRIPT, remote=None, test_config=True):
         args = [PWSH, "-NoProfile", "-NonInteractive", "-File", str(script),
                 "-PackageDir", str(self.package), "-SourceRepo", str(self.source),
-                "-WorkRoot", str(self.workroot), "-RemoteUrl", str(remote or self.remote),
-                "-TestConfig", str(self.config_path)]
+                "-WorkRoot", str(self.workroot), "-RemoteUrl", str(remote or self.remote)]
+        if test_config:
+            args += ["-TestConfig", str(self.config_path)]
         if publish:
             args.append("-Publish")
         r = subprocess.run(args, capture_output=True, env=self.env, timeout=300)
@@ -283,13 +285,65 @@ class TestPackageRefusals(_Base):
         f.write_package(); f.write_config()
         self.assert_refused(f, check="target.paths_new_in_base")
 
-    def test_production_remote_with_test_config_refused(self):
-        f = self.fixture()
+
+
+class TestR2TestModeRemote(_Base):
+    """R2: in test mode only a marked local temporary bare fixture is accepted, before any git transport."""
+
+    def _refused_before_transport(self, f, remote, test_config=True, expect="refused before any git transport"):
         before = f.remote_refs()
-        code, out, _ = f.run(publish=True, remote="https://github.com/djh54188/JH-Agent-OS.git")
+        code, out, result = f.run(publish=True, remote=remote, test_config=test_config)
         self.assertEqual(code, EXIT_FAIL, out)
-        self.assertIn("production remote", out)
+        self.assertIn(expect, out)
+        self.assertNotIn("remote.base_fetchable", out)          # no fetch / ls-remote / push was reached
+        self.assertIsNone(result)                                # refused before the run directory exists
         self.assertEqual(f.remote_refs(), before)
+
+    def test_network_and_alias_urls_refused(self):
+        for url in ("https://github.com/djh54188/JH-Agent-OS.git", "https://github.com/djh54188/JH-Agent-OS",
+                    "https://GitHub.com/djh54188/jh-agent-os.git/", "http://127.0.0.1:9/x.git",
+                    "https://example.invalid/x.git", "ssh://git@127.0.0.1:1/x.git", "git://127.0.0.1/x.git",
+                    "git@github.com:djh54188/JH-Agent-OS.git", "github.com:djh54188/JH-Agent-OS.git",
+                    "ext::sh -c touch% /tmp/hark14-ext", "//server/share/x.git", "\\\\server\\share\\x.git"):
+            with self.subTest(url=url):
+                f = self.fixture()
+                self._refused_before_transport(f, url)
+
+    def test_file_url_and_relative_path_refused(self):
+        f = self.fixture()
+        self._refused_before_transport(f, "file://" + str(f.remote))
+        self._refused_before_transport(f, "remote.git")
+
+    def test_unmarked_local_repo_refused(self):
+        f = self.fixture()
+        other = f.tmp / "real-receiver.git"
+        git(f.tmp, "init", "--bare", "-q", str(other), env=f.env)
+        before = git(other, "for-each-ref", env=f.env)
+        self._refused_before_transport(f, str(other))
+        self.assertEqual(git(other, "for-each-ref", env=f.env), before)
+
+    def test_marked_repo_outside_temp_refused(self):
+        f = self.fixture()
+        outside = Path(os.environ.get("HARK14_OUTSIDE_DIR", str(ROOT.parent))) / f"hark14-outside-{os.getpid()}.git"
+        self.addCleanup(shutil.rmtree, outside, True)
+        git(f.tmp, "init", "--bare", "-q", str(outside), env=f.env)
+        (outside / "hark14-test-fixture").write_text("x")
+        self._refused_before_transport(f, str(outside))
+
+    def test_non_production_remote_without_test_config_refused(self):
+        f = self.fixture()
+        self._refused_before_transport(f, str(f.remote), test_config=False, expect="requires -TestConfig")
+
+    def test_protocol_layer_blocks_network_even_if_guard_weakened(self):
+        """Second layer: git itself only allows the file transport in test mode."""
+        f = self.fixture()
+        weak = f.tmp / "weak-testremote.ps1"
+        weak.write_text(re.sub(GUARDS["testremote"][0], lambda m: GUARDS["testremote"][1], SCRIPT.read_text(encoding="utf-8"),
+                               count=1, flags=re.S), encoding="utf-8")
+        code, out, result = f.run(publish=True, script=weak, remote="https://127.0.0.1:9/x.git")
+        self.assertEqual(code, EXIT_FAIL, out)
+        self.assertIn("remote.base_fetchable", failed_checks(result))
+        self.assertIn("not allowed", out)                       # transport 'https' not allowed
 
 
 class TestSourceAndRefs(_Base):
@@ -340,6 +394,78 @@ class TestSourceAndRefs(_Base):
         self.assertEqual(result["verdict"], "PARTIAL_OR_MISMATCH")
 
 
+class TestR1CreateOnly(_Base):
+    """R1: a ref that appears after the check (ancestor, diverged or exact) is never moved by this run."""
+
+    def _side_commit(self, f):
+        git(f.source, "checkout", "-q", "-b", "side", f.base, env=f.env)
+        (f.source / "reports" / "side.md").write_text("side\n")
+        git(f.source, "add", ".", env=f.env); git(f.source, "commit", "-q", "-m", "side", env=f.env)
+        side = git(f.source, "rev-parse", "HEAD", env=f.env)
+        git(f.source, "checkout", "-q", "-", env=f.env)
+        git(f.source, "push", "-q", str(f.remote), f"{side}:refs/heads/other-owner", env=f.env)
+        return side
+
+    def _race(self, f, injected, script=SCRIPT):
+        f.write_config(inject_before_push=[{"ref": r, "sha": s} for r, s in injected.items()])
+        code, out, result = f.run(publish=True, script=script)
+        refs = f.remote_refs()
+        return code, out, result, refs
+
+    def _assert_nothing_moved(self, f, injected, code, out, result, refs):
+        self.assertEqual(code, EXIT_FAIL, out)
+        for r, s in injected.items():
+            self.assertEqual(refs.get(r), s, f"{r} must keep the value someone else gave it")
+        for r in (REF_A, REF_B):
+            if r not in injected:
+                self.assertNotIn(r, refs, f"{r} must not be left behind")
+        self.assertNotEqual(result["push"]["exit"], 0)
+        self.assertEqual(result["push"]["updated_lines"], [])
+
+    def test_ancestor_race_a(self):
+        f = self.fixture(); inj = {REF_A: f.base}
+        self._assert_nothing_moved(f, inj, *self._race(f, inj))
+
+    def test_ancestor_race_b(self):
+        f = self.fixture(); inj = {REF_B: f.base}
+        self._assert_nothing_moved(f, inj, *self._race(f, inj))
+
+    def test_ancestor_race_both(self):
+        f = self.fixture(); inj = {REF_A: f.base, REF_B: f.base}
+        self._assert_nothing_moved(f, inj, *self._race(f, inj))
+
+    def test_diverged_race(self):
+        f = self.fixture(); side = self._side_commit(f)
+        for inj in ({REF_A: side}, {REF_B: side}, {REF_A: side, REF_B: side}):
+            with self.subTest(refs=list(inj)):
+                g = self.fixture(); side_g = self._side_commit(g)
+                inj_g = {r: side_g for r in inj}
+                self._assert_nothing_moved(g, inj_g, *self._race(g, inj_g))
+
+    def test_exact_target_race_is_up_to_date_not_moved(self):
+        f = self.fixture()
+        git(f.source, "push", "-q", str(f.remote), f"{f.evidence}:refs/heads/carrier", env=f.env)
+        inj = {REF_A: f.evidence}
+        code, out, result, refs = self._race(f, inj)
+        # someone created A at exactly the target: git reports it up to date ("="), nothing is moved, B is created
+        self.assertEqual(code, EXIT_PUBLISHED, out)
+        self.assertEqual(refs[REF_A], f.evidence)
+        lines = result["push"]["output"].splitlines()
+        self.assertTrue(any(l.startswith("=\t") and REF_A in l for l in lines), lines)
+        self.assertTrue(any(l.startswith("*\t") and REF_B in l for l in lines), lines)
+        f.write_config()
+        code2, out2, result2 = f.run(publish=True)                # re-run: idempotent, nothing pushed
+        self.assertEqual(code2, EXIT_PUBLISHED, out2)
+        self.assertEqual(result2["push"]["refspecs"], [])
+
+    def test_no_race_still_publishes(self):
+        f = self.fixture()
+        f.write_config(inject_before_push=[])
+        code, out, result = f.run(publish=True)
+        self.assertEqual(code, EXIT_PUBLISHED, out)
+        self.assertEqual(f.remote_refs()[REF_A], f.evidence)
+
+
 GUARDS = {
     "digest": (r"function Test-ManifestDigest\(\[string\]\$actual\) \{ return \(.*?\) \}",
                "function Test-ManifestDigest([string]$actual) { return $true }",
@@ -359,6 +485,12 @@ GUARDS = {
     "postverify": (r"function Test-RemoteBlob\(.*?\n.*?function Test-RemoteRefExact\(.*?\n",
                    "function Test-RemoteBlob([string]$a, [string]$b) { return $true }\nfunction Test-RemoteRefExact([string]$a, [string]$b) { return $true }\n",
                    "TestSourceAndRefs.test_remote_differs_after_push_is_not_pass"),
+    "createonly": (r"function Get-CreateOnlyLeaseArgs\(\[string\[\]\]\$refs\) \{.*?\n\}",
+                   "function Get-CreateOnlyLeaseArgs([string[]]$refs) {\n    return @()\n}",
+                   "TestR1CreateOnly.test_ancestor_race_b"),
+    "testremote": (r"function Test-LocalFixtureRemote\(\[string\]\$u\) \{",
+                   "function Test-LocalFixtureRemote([string]$u) { return $null",
+                   "TestR2TestModeRemote.test_unmarked_local_repo_refused"),
 }
 
 
@@ -379,7 +511,7 @@ class TestGuardWeakening(unittest.TestCase):
                 f.entries = entries; f.write_config()
                 before = f.remote_refs()
                 code, out, result = f.run(publish=True, script=script)
-                return code == EXIT_FAIL and f.remote_refs() == before
+                return "pass" if (code == EXIT_FAIL and f.remote_refs() == before) else "fail"
             finally:
                 f.close()
         cls, method = target.split(".")
@@ -388,14 +520,17 @@ class TestGuardWeakening(unittest.TestCase):
         res = unittest.TestResult()
         original = Fixture.run
 
-        def patched(self_, publish=False, script=SCRIPT, remote=None):
-            return original(self_, publish=publish, script=test.run_script, remote=remote)
+        def patched(self_, publish=False, script=SCRIPT, remote=None, test_config=True):
+            return original(self_, publish=publish, script=test.run_script, remote=remote, test_config=test_config)
         Fixture.run = patched
         try:
             test.run(res)
         finally:
             Fixture.run = original
-        return res.wasSuccessful()
+        # R3: a skipped (or not run) case is neither a passing control nor a detection.
+        if res.skipped or res.testsRun == 0:
+            return "skip"
+        return "pass" if res.wasSuccessful() else "fail"
 
     def test_each_weakened_guard_is_detected(self):
         text = SCRIPT.read_text(encoding="utf-8")
@@ -404,17 +539,45 @@ class TestGuardWeakening(unittest.TestCase):
         lines = []
         for name, (pattern, replacement, target) in GUARDS.items():
             with self.subTest(guard=name):
-                self.assertTrue(self._run_case(target, SCRIPT), f"control for {name} must pass")
                 weak, n = re.subn(pattern, lambda m: replacement, text, count=1, flags=re.S)
                 self.assertEqual(n, 1, f"pattern for {name} not found")
+                control = self._run_case(target, SCRIPT)
+                if control == "skip":                     # platform condition missing: not a valid control
+                    lines.append(f"{name}\tcontrol=skipped\tweakened=not-run\t{target}")
+                    continue
+                self.assertEqual(control, "pass", f"control for {name} must pass")
                 weak_path = tmp / f"weak-{name}.ps1"
                 weak_path.write_text(weak, encoding="utf-8")
-                detected = not self._run_case(target, weak_path)
-                lines.append(f"{name}\tcontrol=pass\tweakened={'detected' if detected else 'MISSED'}\t{target}")
-                self.assertTrue(detected, f"weakening {name} went undetected")
+                weakened = self._run_case(target, weak_path)
+                state = {"fail": "detected", "pass": "MISSED", "skip": "skipped"}[weakened]
+                lines.append(f"{name}\tcontrol=pass\tweakened={state}\t{target}")
+                self.assertEqual(weakened, "fail", f"weakening {name}: {state}")
         out = os.environ.get("HARK14_WEAKENING_LOG")
         if out:
             Path(out).write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+class TestR3SkipAccounting(unittest.TestCase):
+    """R3: the weakening helper reports skip / pass / fail separately (no PowerShell or Git needed)."""
+
+    def _helper_result(self, body):
+        class Stand(unittest.TestCase):
+            pass
+        Stand.test_x = body
+        globals()["_R3Stand"] = Stand                             # visible to the helper, not to discovery
+        try:
+            return TestGuardWeakening("test_each_weakened_guard_is_detected")._run_case("_R3Stand.test_x", SCRIPT)
+        finally:
+            del globals()["_R3Stand"]
+
+    def test_skip_is_not_pass(self):
+        self.assertEqual(self._helper_result(unittest.skip("platform condition missing")(lambda self: None)), "skip")
+
+    def test_fail_is_fail(self):
+        self.assertEqual(self._helper_result(lambda self: self.fail("control failure")), "fail")
+
+    def test_pass_is_pass(self):
+        self.assertEqual(self._helper_result(lambda self: None), "pass")
 
 
 if __name__ == "__main__":

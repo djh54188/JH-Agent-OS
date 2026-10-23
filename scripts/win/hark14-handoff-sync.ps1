@@ -10,7 +10,10 @@ Two targets only, repository fixed to djh54188/JH-Agent-OS:
      reports/local-handoff-sync-20261023/MANIFEST.json.
 
 Default = prepare and check only; nothing is pushed. Only -Publish pushes, and only when every
-check passed. Never force-pushes, never touches the source trees (read-only git commands only),
+check passed. Creation is conditional on the server: each ref is pushed with a create-only lease
+(--force-with-lease=<ref>: with an empty expected value = "must not exist"), together with
+--atomic, so an existing ref of any value is never updated and a rejection leaves neither new
+target behind. No plain or unconditional force push. Never touches the source trees (read-only git commands only),
 never changes global git config, never reads credentials (git uses the machine's own auth).
 All work happens in a NEW directory under -WorkRoot. Output: PASS/FAIL lines, result.json, log.
 
@@ -91,9 +94,11 @@ function Finish([string]$verdict, [int]$code) {
 
 # ------------------------------------------------------------------ git helper (no global config)
 $script:GitDir = $null
+$script:AllowedProtocol = 'https'     # test mode: 'file' only (local fixture); every other transport is refused by git itself
 function Invoke-Git {
     param([string[]]$GitArgs, [string]$Dir = $script:GitDir, [switch]$AllowFail)
-    $all = @('-c', 'core.quotepath=false', '-c', 'core.autocrlf=false', '-c', 'core.safecrlf=false')
+    $all = @('-c', 'core.quotepath=false', '-c', 'core.autocrlf=false', '-c', 'core.safecrlf=false',
+             '-c', 'protocol.allow=never', '-c', ('protocol.{0}.allow=always' -f $script:AllowedProtocol))
     if ($Dir) { $all += @('--git-dir', $Dir) }
     $all += $GitArgs
     $prev = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
@@ -141,6 +146,24 @@ function Test-RemoteRefAllowed([string]$remoteSha, [string]$wanted) {   # GUARD:
     if ($remoteSha -eq $wanted) { return 'same' }
     return 'conflict'
 }
+function Test-LocalFixtureRemote([string]$u) {   # GUARD:testremote  (test mode only; returns a reason or $null)
+    if ([string]::IsNullOrEmpty($u)) { return 'empty remote' }
+    if ($u -match '^[A-Za-z][A-Za-z0-9+.-]*://') { return 'URL scheme (network or file://) not allowed in test mode' }
+    if ($u.StartsWith('\\') -or $u.StartsWith('//')) { return 'UNC / network path not allowed' }
+    if ($u -match '^[^/\\]+:' -and $u -notmatch '^[A-Za-z]:[\\/]') { return 'scp-style host:path not allowed' }
+    if (-not [IO.Path]::IsPathRooted($u)) { return 'not an absolute local path' }
+    $full = [IO.Path]::GetFullPath($u).TrimEnd('\', '/')
+    $tmp = [IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd('\', '/')
+    if (-not $full.StartsWith($tmp + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) { return 'not under the temp directory ' + $tmp }
+    if (-not (Test-Path -LiteralPath $full -PathType Container)) { return 'not an existing directory' }
+    $it = Get-Item -LiteralPath $full -Force
+    if ($it.Attributes -band [IO.FileAttributes]::ReparsePoint) { return 'remote path is a link' }
+    foreach ($need in 'HEAD', 'objects', 'refs', 'hark14-test-fixture') { if (-not (Test-Path -LiteralPath (Join-Path $full $need))) { return 'not a marked bare test fixture (missing ' + $need + ')' } }
+    return $null
+}
+function Get-CreateOnlyLeaseArgs([string[]]$refs) {   # GUARD:createonly
+    return @($refs | ForEach-Object { '--force-with-lease={0}:' -f $_ })
+}
 function Test-RemoteBlob([string]$remoteBlob, [string]$expectedBlob) { return ($remoteBlob -eq $expectedBlob) }   # GUARD:postverify
 function Test-RemoteRefExact([string]$remoteSha, [string]$expected) { return ((-not [string]::IsNullOrEmpty($remoteSha)) -and $remoteSha -eq $expected) }   # GUARD:postverify-ref
 
@@ -151,9 +174,12 @@ trap {
 }
 
 # ================================================================== 0. setup
-Write-Log ("Hark-dispatch-14 handoff sync :: mode={0} test={1}" -f $Result.mode, $IsTest)
-if ($IsTest -and $RemoteUrl -eq $ProductionRemote) { Write-Log 'FAIL test config may not target the production remote'; exit 1 }
-if (-not $IsTest -and $RemoteUrl -ne $ProductionRemote) { Write-Log 'FAIL a non-production remote requires -TestConfig'; exit 1 }
+Write-Log ("Hark-dispatch-14/15 handoff sync :: mode={0} test={1}" -f $Result.mode, $IsTest)
+if ($IsTest) {
+    $why = Test-LocalFixtureRemote $RemoteUrl
+    if ($why) { Write-Log ('FAIL test mode remote refused before any git transport: ' + $why); exit 1 }
+    $script:AllowedProtocol = 'file'
+} elseif ($RemoteUrl -cne $ProductionRemote) { Write-Log 'FAIL a non-production remote requires -TestConfig'; exit 1 }
 $gv = Invoke-Git -GitArgs @('--version') -Dir $null -AllowFail
 $Result.git = $gv.Text
 if ($gv.Code -ne 0) { Write-Log 'FAIL git not available'; exit 1 }
@@ -342,8 +368,15 @@ $specs = @()
 if ($stateA -eq 'absent') { $specs += ('{0}:{1}' -f $Cfg.evidence_sha, $Cfg.ref_a) }
 if ($stateB -eq 'absent') { $specs += ('{0}:{1}' -f $archive, $Cfg.ref_b) }
 if ($specs.Count -gt 0) {
+    if ($IsTest -and $Cfg.ContainsKey('inject_before_push')) {      # test-only deterministic race injection on the local fixture
+        foreach ($inj in @($Cfg.inject_before_push)) {
+            Invoke-Git -GitArgs @('update-ref', $inj.ref, $inj.sha) -Dir $RemoteUrl | Out-Null
+            Write-Log ("TEST injected {0} -> {1} on the fixture after the check" -f $inj.ref, $inj.sha)
+        }
+    }
+    $leaseRefs = @(); foreach ($sp in $specs) { $leaseRefs += $sp.Split(':')[1] }
     $script:PushAttempted = $true
-    $push = Invoke-Git -GitArgs (@('push', '--atomic', '--porcelain', 'origin') + $specs) -AllowFail
+    $push = Invoke-Git -GitArgs (@('push', '--atomic', '--porcelain') + (Get-CreateOnlyLeaseArgs $leaseRefs) + @('origin') + $specs) -AllowFail
     $Result.push = [ordered]@{ refspecs = $specs; exit = $push.Code; output = $push.Text }
     Write-Log ("push exit {0}" -f $push.Code)
 } else {
@@ -380,8 +413,9 @@ if ($rb) {
     Add-Check 'after.remote_blobs_equal_package_bytes' ($bad.Count -eq 0) ($(if ($bad.Count) { ($bad | Select-Object -First 5) -join ', ' } else { '{0} blobs re-read from the remote match the package bytes (re-hashed now)' -f $files.Count }))
 }
 if (-not $script:Failed) { Finish 'PUBLISHED_VERIFIED' 0 }
-if ($null -eq $Result.push -or $Result.push.exit -ne 0) {
-    $same = ($ra -eq $Result.remote_before.ref_a) -and ($rb -eq $Result.remote_before.ref_b)
-    if ($same) { Write-Log 'push failed; remote refs unchanged from before this run'; Finish 'FAIL' 1 }
+if ($null -ne $Result.push -and $Result.push.exit -ne 0) {
+    $updated = @($Result.push.output.Split("`n") | Where-Object { $_ -match '^[\* +]\t' })
+    $Result.push.updated_lines = $updated
+    if ($updated.Count -eq 0) { Write-Log 'push rejected as a whole; this run updated no remote ref (remote_after shows what others left)'; Finish 'FAIL' 1 }
 }
 Finish 'PARTIAL_OR_MISMATCH' 2
