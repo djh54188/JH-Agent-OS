@@ -1,0 +1,44 @@
+{
+  "tools": {
+    "core": [
+      "read_file",
+      "grep_search",
+      "glob",
+      "list_directory"
+    ]
+  },
+  "admin": {
+    "mcp": {
+      "enabled": false
+    },
+    "extensions": {
+      "enabled": false
+    },
+    "skills": {
+      "enabled": false
+    }
+  },
+  "hooksConfig": {
+    "enabled": false
+  },
+  "skills": {
+    "enabled": false
+  },
+  "advanced": {
+    "ignoreLocalEnv": true
+  },
+  "privacy": {
+    "usageStatisticsEnabled": false
+  },
+  "telemetry": {
+    "enabled": false
+  },
+  "model": {
+    "maxSessionTurns": 40
+  },
+  "security": {
+    "auth": {
+      "selectedType": "gemini-api-key"
+    }
+  }
+}

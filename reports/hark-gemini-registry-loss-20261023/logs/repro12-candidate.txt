@@ -1,0 +1,33 @@
+{"case": "R1 two adapters, one evidence_root, same key", "expected": "launches <= 1", "observed": {"launches": 1}}
+{"case": "R1 one adapter, two threads met in version_probe", "expected": "launches <= 1", "observed": {"errors": [], "launches": 1}}
+{"case": "R1 two processes, same key", "expected": "launches <= 1", "observed": {"launches": 1, "results": ["ok:gemini-run-b1b8c882b774", "ok:gemini-run-b1b8c882b774"]}}
+{"case": "R1 registry corrupted after construction", "expected": "refused, launches 0", "observed": {"launches": 0, "raised": "RegistryUnavailable", "submit": "raised"}}
+{"case": "R1 derived history: missing native_session_id", "expected": "refused, new_launches 0", "observed": {"new_launches": 0, "raised": "RegistryUnavailable", "submit": "raised"}}
+{"case": "R1 derived history: missing instance_id", "expected": "refused, new_launches 0", "observed": {"new_launches": 0, "raised": "RegistryUnavailable", "submit": "raised"}}
+{"case": "R1 derived history: missing request_snapshot", "expected": "refused, new_launches 0", "observed": {"new_launches": 0, "raised": "RegistryUnavailable", "submit": "raised"}}
+{"case": "R1 derived history: attempt as string", "expected": "refused, new_launches 0", "observed": {"new_launches": 0, "raised": "RegistryUnavailable", "submit": "raised"}}
+{"case": "R1 derived history: empty run_id", "expected": "refused, new_launches 0", "observed": {"new_launches": 0, "raised": "RegistryUnavailable", "submit": "raised"}}
+{"case": "R1 derived history: run_id int", "expected": "refused, new_launches 0", "observed": {"new_launches": 0, "raised": "RegistryUnavailable", "submit": "raised"}}
+{"case": "R1 derived history: unknown event", "expected": "refused, new_launches 0", "observed": {"new_launches": 0, "raised": "RegistryUnavailable", "submit": "raised"}}
+{"case": "R1 derived history: illegal state", "expected": "refused, new_launches 0", "observed": {"new_launches": 0, "raised": "RegistryUnavailable", "submit": "raised"}}
+{"case": "R1 derived history: fingerprint != snapshot", "expected": "refused, new_launches 0", "observed": {"new_launches": 0, "raised": "RegistryUnavailable", "submit": "raised"}}
+{"case": "R1 derived history: snapshot edited", "expected": "refused, new_launches 0", "observed": {"new_launches": 0, "raised": "RegistryUnavailable", "submit": "raised"}}
+{"case": "R1 derived history: native binding contradiction", "expected": "refused, new_launches 0", "observed": {"new_launches": 0, "raised": "RegistryUnavailable", "submit": "raised"}}
+{"case": "R1 derived history: events reversed", "expected": "refused, new_launches 0", "observed": {"new_launches": 0, "raised": "RegistryUnavailable", "submit": "raised"}}
+{"case": "R1 control: legal reserved/dispatched prefix, reopen, same key", "expected": "replay, new_launches 0", "observed": {"new_launches": 0, "replayed_same_run": true}}
+{"case": "R2 scandir PermissionError on root before launch AND at collect", "expected": "refused before launch (launches 0)", "observed": {"launches": 0, "raised": "WorkspaceUnobservable", "state": null, "submit": "raised", "workspace_unchanged": null}}
+{"case": "R2 scandir PermissionError on subdir src before launch AND at collect", "expected": "refused before launch (launches 0)", "observed": {"launches": 0, "raised": "WorkspaceUnobservable", "state": null, "submit": "raised", "workspace_unchanged": null}}
+{"case": "R2 write_file tool_result.status missing", "expected": "not clean, write_file not listed as denied", "observed": {"declared": "unattributed", "denied": ["run_shell_command"]}}
+{"case": "R2 write_file tool_result.status null", "expected": "not clean, write_file not listed as denied", "observed": {"declared": "unattributed", "denied": ["run_shell_command"]}}
+{"case": "R2 write_file tool_result.status unknown string", "expected": "not clean, write_file not listed as denied", "observed": {"declared": "unattributed", "denied": ["run_shell_command"]}}
+{"case": "R2 write_file tool_result.status array", "expected": "not clean, write_file not listed as denied", "observed": {"declared": "unattributed", "denied": ["run_shell_command"]}}
+{"case": "R2 tool_result.tool_id array", "expected": "returned, failed with diagnostic", "observed": {"collect": "returned", "declared": "unattributed", "raised": null, "state": "failed"}}
+{"case": "R2 event type array", "expected": "returned, failed with diagnostic", "observed": {"collect": "returned", "declared": "success", "raised": null, "state": "failed"}}
+{"case": "R2 chat record first line []", "expected": "returned with diagnostic", "observed": {"collect": "returned", "raised": null}}
+{"case": "R2 chat record first line null", "expected": "returned with diagnostic", "observed": {"collect": "returned", "raised": null}}
+{"case": "R2 chat record first line \"s\"", "expected": "returned with diagnostic", "observed": {"collect": "returned", "raised": null}}
+{"case": "R2 chat record first line 3", "expected": "returned with diagnostic", "observed": {"collect": "returned", "raised": null}}
+{"case": "R2 chat record first line true", "expected": "returned with diagnostic", "observed": {"collect": "returned", "raised": null}}
+{"case": "R3 existing relative directory 'ws'", "expected": "refused, launches 0", "observed": {"launches": 0, "raised": "HostRestrictionUnavailable", "submit": "raised"}}
+{"case": "R3 fake_cli replay with a backslash in the workspace path", "expected": "success (valid JSON replay)", "observed": {"cli_stderr_invalid_escape": false, "declared": "success", "json_problems": []}}
+{"cases": 32, "tree": "/workspace/work/h13-post"}

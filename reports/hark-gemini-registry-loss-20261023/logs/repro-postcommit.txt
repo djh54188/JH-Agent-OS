@@ -1,0 +1,12 @@
+{"case": "loss: registry delete (fresh root #1)", "expected": "new_launches 0 (refused)", "observed": {"first_run_id_kept": true, "new_launches": 0, "outcome": "raised", "same_run_as_first": false, "type": "RegistryUnavailable"}}
+{"case": "loss: registry delete (fresh root #2)", "expected": "new_launches 0 (refused)", "observed": {"first_run_id_kept": true, "new_launches": 0, "outcome": "raised", "same_run_as_first": false, "type": "RegistryUnavailable"}}
+{"case": "loss: registry zero (fresh root #1)", "expected": "new_launches 0 (refused)", "observed": {"first_run_id_kept": true, "new_launches": 0, "outcome": "raised", "same_run_as_first": false, "type": "RegistryUnavailable"}}
+{"case": "loss: registry zero (fresh root #2)", "expected": "new_launches 0 (refused)", "observed": {"first_run_id_kept": true, "new_launches": 0, "outcome": "raised", "same_run_as_first": false, "type": "RegistryUnavailable"}}
+{"case": "loss: registry blank (fresh root #1)", "expected": "new_launches 0 (refused)", "observed": {"first_run_id_kept": true, "new_launches": 0, "outcome": "raised", "same_run_as_first": false, "type": "RegistryUnavailable"}}
+{"case": "loss: registry blank (fresh root #2)", "expected": "new_launches 0 (refused)", "observed": {"first_run_id_kept": true, "new_launches": 0, "outcome": "raised", "same_run_as_first": false, "type": "RegistryUnavailable"}}
+{"case": "loss: non-empty tail lost (K1 kept, K2 cut)", "expected": "new_launches 0 (refused)", "observed": {"new_launches": 0, "outcome": "raised", "run_dirs": 2, "type": "RegistryUnavailable"}}
+{"case": "control: truly fresh store", "expected": "new_launches 1", "observed": {"new_launches": 1, "outcome": "returned", "run_id": "gemini-run-f61a2c0c7156", "state": "running"}}
+{"case": "control: complete registry reopened, same key", "expected": "replay same run, unknown, new_launches 0", "observed": {"new_launches": 0, "outcome": "returned", "run_id": "gemini-run-4e9bb04e0a40", "same_run_as_first": true, "state": "unknown"}}
+{"case": "control: reserved-only prefix, same key", "expected": "replay same run, unknown, new_launches 0", "observed": {"new_launches": 0, "outcome": "returned", "run_id": "gemini-run-8c61ef0d8be8", "same_run_as_first": true, "state": "unknown"}}
+{"case": "control: two runs each with only reserved, both keys", "expected": "both replay, unknown, new_launches 0", "observed": {"K1_same": true, "K2_same": true, "new_launches": 0, "states": ["unknown", "unknown"]}}
+{"cases": 11, "tree": "/workspace/work/h13-post"}
