@@ -1,0 +1,6 @@
+parse errors: 0
+non-ascii lines: 0
+1c61141130db3d990eb595086a67157c29b3e8ae75a84a14ea36f9ba5ec0e206  scripts/win/hark14-handoff-sync.ps1
+PowerShell 7.4.6
+git version 2.47.3
+Python 3.12.15

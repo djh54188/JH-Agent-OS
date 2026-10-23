@@ -1,0 +1,26 @@
+test_each_weakened_guard_is_detected (tests.test_hark14_handoff_sync.TestGuardWeakening.test_each_weakened_guard_is_detected) ... ok
+test_one_ref_already_present_pushes_only_the_other (tests.test_hark14_handoff_sync.TestNormal.test_one_ref_already_present_pushes_only_the_other) ... ok
+test_prepare_only_does_not_publish (tests.test_hark14_handoff_sync.TestNormal.test_prepare_only_does_not_publish) ... ok
+test_publish_then_rerun_idempotent (tests.test_hark14_handoff_sync.TestNormal.test_publish_then_rerun_idempotent) ... ok
+test_case_insensitive_duplicate (tests.test_hark14_handoff_sync.TestPackageRefusals.test_case_insensitive_duplicate) ... ok
+test_extra_file_in_package (tests.test_hark14_handoff_sync.TestPackageRefusals.test_extra_file_in_package) ... ok
+test_links_refused (tests.test_hark14_handoff_sync.TestPackageRefusals.test_links_refused) ... ok
+test_manifest_count_and_bytes_fixed (tests.test_hark14_handoff_sync.TestPackageRefusals.test_manifest_count_and_bytes_fixed) ... ok
+test_manifest_digest_mismatch (tests.test_hark14_handoff_sync.TestPackageRefusals.test_manifest_digest_mismatch) ... ok
+test_missing_payload_file (tests.test_hark14_handoff_sync.TestPackageRefusals.test_missing_payload_file) ... ok
+test_path_escapes (tests.test_hark14_handoff_sync.TestPackageRefusals.test_path_escapes) ... ok
+test_production_remote_with_test_config_refused (tests.test_hark14_handoff_sync.TestPackageRefusals.test_production_remote_with_test_config_refused) ... ok
+test_schema_mismatch_reports_keys (tests.test_hark14_handoff_sync.TestPackageRefusals.test_schema_mismatch_reports_keys) ... ok
+test_tampered_payload_byte (tests.test_hark14_handoff_sync.TestPackageRefusals.test_tampered_payload_byte) ... ok
+test_target_exists_in_base (tests.test_hark14_handoff_sync.TestPackageRefusals.test_target_exists_in_base) ... ok
+test_evidence_commit_missing (tests.test_hark14_handoff_sync.TestSourceAndRefs.test_evidence_commit_missing) ... ok
+test_evidence_parent_not_base (tests.test_hark14_handoff_sync.TestSourceAndRefs.test_evidence_parent_not_base) ... ok
+test_push_rejected_is_atomic (tests.test_hark14_handoff_sync.TestSourceAndRefs.test_push_rejected_is_atomic) ... ok
+test_ref_a_conflict_stops_both (tests.test_hark14_handoff_sync.TestSourceAndRefs.test_ref_a_conflict_stops_both) ... ok
+test_ref_b_conflict_stops_both (tests.test_hark14_handoff_sync.TestSourceAndRefs.test_ref_b_conflict_stops_both) ... ok
+test_remote_differs_after_push_is_not_pass (tests.test_hark14_handoff_sync.TestSourceAndRefs.test_remote_differs_after_push_is_not_pass) ... ok
+
+----------------------------------------------------------------------
+Ran 21 tests in 51.287s
+
+OK
