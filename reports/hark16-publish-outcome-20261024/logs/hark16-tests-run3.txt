@@ -1,0 +1,54 @@
+test_each_weakened_guard_is_detected (tests.test_hark14_handoff_sync.TestGuardWeakening.test_each_weakened_guard_is_detected) ... ok
+test_one_ref_already_present_pushes_only_the_other (tests.test_hark14_handoff_sync.TestNormal.test_one_ref_already_present_pushes_only_the_other) ... ok
+test_prepare_only_does_not_publish (tests.test_hark14_handoff_sync.TestNormal.test_prepare_only_does_not_publish) ... ok
+test_publish_then_rerun_idempotent (tests.test_hark14_handoff_sync.TestNormal.test_publish_then_rerun_idempotent) ... ok
+test_case_insensitive_duplicate (tests.test_hark14_handoff_sync.TestPackageRefusals.test_case_insensitive_duplicate) ... ok
+test_extra_file_in_package (tests.test_hark14_handoff_sync.TestPackageRefusals.test_extra_file_in_package) ... ok
+test_links_refused (tests.test_hark14_handoff_sync.TestPackageRefusals.test_links_refused) ... ok
+test_manifest_count_and_bytes_fixed (tests.test_hark14_handoff_sync.TestPackageRefusals.test_manifest_count_and_bytes_fixed) ... ok
+test_manifest_digest_mismatch (tests.test_hark14_handoff_sync.TestPackageRefusals.test_manifest_digest_mismatch) ... ok
+test_missing_payload_file (tests.test_hark14_handoff_sync.TestPackageRefusals.test_missing_payload_file) ... ok
+test_path_escapes (tests.test_hark14_handoff_sync.TestPackageRefusals.test_path_escapes) ... ok
+test_schema_mismatch_reports_keys (tests.test_hark14_handoff_sync.TestPackageRefusals.test_schema_mismatch_reports_keys) ... ok
+test_tampered_payload_byte (tests.test_hark14_handoff_sync.TestPackageRefusals.test_tampered_payload_byte) ... ok
+test_target_exists_in_base (tests.test_hark14_handoff_sync.TestPackageRefusals.test_target_exists_in_base) ... ok
+test_ancestor_race_a (tests.test_hark14_handoff_sync.TestR1CreateOnly.test_ancestor_race_a) ... ok
+test_ancestor_race_b (tests.test_hark14_handoff_sync.TestR1CreateOnly.test_ancestor_race_b) ... ok
+test_ancestor_race_both (tests.test_hark14_handoff_sync.TestR1CreateOnly.test_ancestor_race_both) ... ok
+test_diverged_race (tests.test_hark14_handoff_sync.TestR1CreateOnly.test_diverged_race) ... ok
+test_exact_target_race_is_up_to_date_not_moved (tests.test_hark14_handoff_sync.TestR1CreateOnly.test_exact_target_race_is_up_to_date_not_moved) ... ok
+test_no_race_still_publishes (tests.test_hark14_handoff_sync.TestR1CreateOnly.test_no_race_still_publishes) ... ok
+test_file_url_and_relative_path_refused (tests.test_hark14_handoff_sync.TestR2TestModeRemote.test_file_url_and_relative_path_refused) ... ok
+test_marked_repo_outside_temp_refused (tests.test_hark14_handoff_sync.TestR2TestModeRemote.test_marked_repo_outside_temp_refused) ... ok
+test_network_and_alias_urls_refused (tests.test_hark14_handoff_sync.TestR2TestModeRemote.test_network_and_alias_urls_refused) ... ok
+test_non_production_remote_without_test_config_refused (tests.test_hark14_handoff_sync.TestR2TestModeRemote.test_non_production_remote_without_test_config_refused) ... ok
+test_protocol_layer_blocks_network_even_if_guard_weakened (tests.test_hark14_handoff_sync.TestR2TestModeRemote.test_protocol_layer_blocks_network_even_if_guard_weakened)
+Second layer: git itself only allows the file transport in test mode. ... ok
+test_unmarked_local_repo_refused (tests.test_hark14_handoff_sync.TestR2TestModeRemote.test_unmarked_local_repo_refused) ... ok
+test_fail_is_fail (tests.test_hark14_handoff_sync.TestR3SkipAccounting.test_fail_is_fail) ... ok
+test_pass_is_pass (tests.test_hark14_handoff_sync.TestR3SkipAccounting.test_pass_is_pass) ... ok
+test_skip_is_not_pass (tests.test_hark14_handoff_sync.TestR3SkipAccounting.test_skip_is_not_pass) ... ok
+test_committed_receipt_lost_reread_complete_targets_verified (tests.test_hark14_handoff_sync.TestR4Outcome.test_committed_receipt_lost_reread_complete_targets_verified) ... ok
+test_committed_receipt_lost_reread_unavailable (tests.test_hark14_handoff_sync.TestR4Outcome.test_committed_receipt_lost_reread_unavailable) ... ok
+test_complete_rejection_but_reread_unavailable_is_uncertain (tests.test_hark14_handoff_sync.TestR4Outcome.test_complete_rejection_but_reread_unavailable_is_uncertain) ... ok
+test_complete_rejection_verified (tests.test_hark14_handoff_sync.TestR4Outcome.test_complete_rejection_verified) ... ok
+test_garbled_rejection_receipt_is_not_proof (tests.test_hark14_handoff_sync.TestR4Outcome.test_garbled_rejection_receipt_is_not_proof) ... ok
+test_not_committed_receipt_lost_reread_complete_is_uncertain (tests.test_hark14_handoff_sync.TestR4Outcome.test_not_committed_receipt_lost_reread_complete_is_uncertain) ... ok
+test_not_committed_receipt_lost_reread_unavailable (tests.test_hark14_handoff_sync.TestR4Outcome.test_not_committed_receipt_lost_reread_unavailable) ... ok
+test_one_reread_fails (tests.test_hark14_handoff_sync.TestR4Outcome.test_one_reread_fails) ... ok
+test_one_reread_mismatch_after_failed_push (tests.test_hark14_handoff_sync.TestR4Outcome.test_one_reread_mismatch_after_failed_push) ... ok
+test_one_reread_mismatch_after_successful_push (tests.test_hark14_handoff_sync.TestR4Outcome.test_one_reread_mismatch_after_successful_push) ... ok
+test_partial_success_receipt (tests.test_hark14_handoff_sync.TestR4Outcome.test_partial_success_receipt) ... ok
+test_prepare_never_attempts (tests.test_hark14_handoff_sync.TestR4Outcome.test_prepare_never_attempts) ... ok
+test_same_observation_same_verdict (tests.test_hark14_handoff_sync.TestR4Outcome.test_same_observation_same_verdict) ... ok
+test_evidence_commit_missing (tests.test_hark14_handoff_sync.TestSourceAndRefs.test_evidence_commit_missing) ... ok
+test_evidence_parent_not_base (tests.test_hark14_handoff_sync.TestSourceAndRefs.test_evidence_parent_not_base) ... ok
+test_push_rejected_is_atomic (tests.test_hark14_handoff_sync.TestSourceAndRefs.test_push_rejected_is_atomic) ... ok
+test_ref_a_conflict_stops_both (tests.test_hark14_handoff_sync.TestSourceAndRefs.test_ref_a_conflict_stops_both) ... ok
+test_ref_b_conflict_stops_both (tests.test_hark14_handoff_sync.TestSourceAndRefs.test_ref_b_conflict_stops_both) ... ok
+test_remote_differs_after_push_is_not_pass (tests.test_hark14_handoff_sync.TestSourceAndRefs.test_remote_differs_after_push_is_not_pass) ... ok
+
+----------------------------------------------------------------------
+Ran 48 tests in 120.854s
+
+OK

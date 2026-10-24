@@ -1,0 +1,15 @@
+run1: ran=48 result=OK guards=10 control_pass=10 control_skipped=0 detected=10 missed=0
+  R4 tests: 13 ok=13
+run2: ran=48 result=OK guards=10 control_pass=10 control_skipped=0 detected=10 missed=0
+  R4 tests: 13 ok=13
+run3: ran=48 result=OK guards=10 control_pass=10 control_skipped=0 detected=10 missed=0
+  R4 tests: 13 ok=13
+no-pwsh: 48 OK (skipped=45)
+probe {'case': 'committed_receipt_lost_reread_unavailable', 'script': 'old', 'exit': 1, 'verdict': 'FAIL', 'claims_no_update': True, 'fixture_really_written': True}
+probe {'case': 'committed_receipt_lost_reread_unavailable', 'script': 'new', 'exit': 2, 'verdict': 'PUBLISH_OUTCOME_UNCERTAIN', 'claims_no_update': False, 'fixture_really_written': True}
+probe {'case': 'not_committed_receipt_lost_reread_unavailable', 'script': 'old', 'exit': 1, 'verdict': 'FAIL', 'claims_no_update': True, 'fixture_really_written': False}
+probe {'case': 'not_committed_receipt_lost_reread_unavailable', 'script': 'new', 'exit': 2, 'verdict': 'PUBLISH_OUTCOME_UNCERTAIN', 'claims_no_update': False, 'fixture_really_written': False}
+probe {'case': 'committed_receipt_lost_reread_complete', 'script': 'old', 'exit': 0, 'verdict': 'PUBLISHED_VERIFIED', 'claims_no_update': False, 'fixture_really_written': True}
+probe {'case': 'committed_receipt_lost_reread_complete', 'script': 'new', 'exit': 2, 'verdict': 'TARGETS_VERIFIED_PUSH_UNCONFIRMED', 'claims_no_update': False, 'fixture_really_written': True}
+probe {'case': 'complete_atomic_rejection', 'script': 'old', 'exit': 1, 'verdict': 'FAIL', 'claims_no_update': True, 'fixture_really_written': False}
+probe {'case': 'complete_atomic_rejection', 'script': 'new', 'exit': 1, 'verdict': 'REJECTED_VERIFIED', 'claims_no_update': True, 'fixture_really_written': False}

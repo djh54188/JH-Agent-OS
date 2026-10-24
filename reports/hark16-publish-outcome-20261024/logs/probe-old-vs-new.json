@@ -1,0 +1,70 @@
+{
+  "old_script": "f032a6a864ceb9c32e7620160f084e7800180b6f + identical test hooks",
+  "new_script": "scripts/win/hark14-handoff-sync.ps1",
+  "cases": [
+    {
+      "case": "committed_receipt_lost_reread_unavailable",
+      "script": "old",
+      "exit": 1,
+      "verdict": "FAIL",
+      "claims_no_update": true,
+      "fixture_really_written": true
+    },
+    {
+      "case": "committed_receipt_lost_reread_unavailable",
+      "script": "new",
+      "exit": 2,
+      "verdict": "PUBLISH_OUTCOME_UNCERTAIN",
+      "claims_no_update": false,
+      "fixture_really_written": true
+    },
+    {
+      "case": "not_committed_receipt_lost_reread_unavailable",
+      "script": "old",
+      "exit": 1,
+      "verdict": "FAIL",
+      "claims_no_update": true,
+      "fixture_really_written": false
+    },
+    {
+      "case": "not_committed_receipt_lost_reread_unavailable",
+      "script": "new",
+      "exit": 2,
+      "verdict": "PUBLISH_OUTCOME_UNCERTAIN",
+      "claims_no_update": false,
+      "fixture_really_written": false
+    },
+    {
+      "case": "committed_receipt_lost_reread_complete",
+      "script": "old",
+      "exit": 0,
+      "verdict": "PUBLISHED_VERIFIED",
+      "claims_no_update": false,
+      "fixture_really_written": true
+    },
+    {
+      "case": "committed_receipt_lost_reread_complete",
+      "script": "new",
+      "exit": 2,
+      "verdict": "TARGETS_VERIFIED_PUSH_UNCONFIRMED",
+      "claims_no_update": false,
+      "fixture_really_written": true
+    },
+    {
+      "case": "complete_atomic_rejection",
+      "script": "old",
+      "exit": 1,
+      "verdict": "FAIL",
+      "claims_no_update": true,
+      "fixture_really_written": false
+    },
+    {
+      "case": "complete_atomic_rejection",
+      "script": "new",
+      "exit": 1,
+      "verdict": "REJECTED_VERIFIED",
+      "claims_no_update": true,
+      "fixture_really_written": false
+    }
+  ]
+}
