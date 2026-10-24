@@ -17,9 +17,18 @@ target behind. No plain or unconditional force push. Never touches the source tr
 never changes global git config, never reads credentials (git uses the machine's own auth).
 All work happens in a NEW directory under -WorkRoot. Output: PASS/FAIL lines, result.json, log.
 
-Exit codes: 0 published and re-verified from the remote | 10 prepared, all checks PASS, not
-published | 1 a check failed, nothing published by this run | 2 publish attempted but the remote
-does not show exactly the expected state (see result.json).
+Exit codes / verdicts:
+  0  PUBLISHED_VERIFIED       push exit 0 and the complete independent re-read matches exactly
+  10 PREPARED_NOT_PUBLISHED   prepare mode, all checks PASS, nothing sent
+  1  FAIL                     a check failed before any push was attempted
+  1  REJECTED_VERIFIED        push attempted; complete atomic rejection receipt for every refspec
+                              AND the complete re-read shows none of the pushed values
+  2  PUBLISH_OUTCOME_UNCERTAIN push attempted; the receipt and/or the re-read cannot prove what
+                              happened. The remote MAY have been updated. Do not retry; forward.
+  2  TARGETS_VERIFIED_PUSH_UNCONFIRMED  re-read shows both targets exact, but push exited non-zero:
+                              targets usable, this run is not confirmed to have created them
+  2  PARTIAL_OR_MISMATCH      push exit 0 but the complete re-read differs from the expected state
+No exit-2 path retries, overwrites, rolls back or cleans up anything.
 #>
 [CmdletBinding()]
 param(
@@ -104,9 +113,10 @@ function Invoke-Git {
     $prev = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
     try { $out = & git @all 2>&1; $code = $LASTEXITCODE } finally { $ErrorActionPreference = $prev }
     $text = (@($out) | ForEach-Object { "$_" }) -join "`n"
+    $stdout = (@($out) | Where-Object { $_ -isnot [System.Management.Automation.ErrorRecord] } | ForEach-Object { "$_" }) -join "`n"
     if ($script:LogPath) { [IO.File]::AppendAllText($script:LogPath, ("  git {0} -> {1}`n" -f ($GitArgs -join ' '), $code), (New-Object System.Text.UTF8Encoding($false))) }
     if ($code -ne 0 -and -not $AllowFail) { throw ("git {0} failed ({1}): {2}" -f ($GitArgs -join ' '), $code, $text) }
-    return [pscustomobject]@{ Code = $code; Text = $text.Trim() }
+    return [pscustomobject]@{ Code = $code; Text = $text.Trim(); StdOut = $stdout.Trim() }
 }
 
 # ------------------------------------------------------------------ byte helpers
@@ -164,17 +174,45 @@ function Test-LocalFixtureRemote([string]$u) {   # GUARD:testremote  (test mode 
 function Get-CreateOnlyLeaseArgs([string[]]$refs) {   # GUARD:createonly
     return @($refs | ForEach-Object { '--force-with-lease={0}:' -f $_ })
 }
+function Test-CompleteAtomicRejection([string]$receipt, [string[]]$specs) {   # GUARD:rejectreceipt
+    # A rejection is only "complete" when every requested refspec has its own '!' line, there is no
+    # success/forced line, and the receipt ends with git's 'Done' terminator. Anything else is not proof.
+    $lines = @($receipt.Split("`n") | ForEach-Object { $_.TrimEnd("`r") })
+    if ($lines.Count -eq 0 -or $lines[-1] -ne 'Done') { return $false }
+    if (@($lines | Where-Object { $_ -match '^[\* +=-]\t' }).Count -gt 0) { return $false }
+    foreach ($sp in $specs) { if (@($lines | Where-Object { $_.StartsWith("!`t" + $sp + "`t") }).Count -ne 1) { return $false } }
+    return $true
+}
+function Invoke-PublishPush([string[]]$pushArgs) {
+    # Test mode only: 'fake_push' replaces the receipt the script sees (deterministic lost/garbled receipt).
+    $fp = $null; if ($IsTest -and $Cfg.ContainsKey('fake_push')) { $fp = $Cfg.fake_push }
+    if ($null -ne $fp -and $fp.mode -eq 'nocommit_hide') {
+        Write-Log 'TEST fake push: nothing sent to the fixture; receipt replaced'
+        return [pscustomobject]@{ Code = [int]$fp.exit; Text = [string]$fp.output; StdOut = [string]$fp.output }
+    }
+    $real = Invoke-Git -GitArgs $pushArgs -AllowFail
+    if ($null -ne $fp -and $fp.mode -eq 'commit_hide') {
+        Write-Log ("TEST fake push: sent to the fixture (real exit {0}); receipt replaced" -f $real.Code)
+        return [pscustomobject]@{ Code = [int]$fp.exit; Text = [string]$fp.output; StdOut = [string]$fp.output }
+    }
+    if ($null -ne $fp -and $fp.mode -eq 'truncate') {
+        Write-Log ("TEST fake push: sent to the fixture (real exit {0}); receipt truncated to {1} lines" -f $real.Code, $fp.keep)
+        $kept = @($real.StdOut.Split("`n") | Select-Object -First ([int]$fp.keep)) -join "`n"
+        return [pscustomobject]@{ Code = [int]$fp.exit; Text = $kept; StdOut = $kept }
+    }
+    return $real
+}
 function Test-RemoteBlob([string]$remoteBlob, [string]$expectedBlob) { return ($remoteBlob -eq $expectedBlob) }   # GUARD:postverify
 function Test-RemoteRefExact([string]$remoteSha, [string]$expected) { return ((-not [string]::IsNullOrEmpty($remoteSha)) -and $remoteSha -eq $expected) }   # GUARD:postverify-ref
 
 $script:PushAttempted = $false
 trap {
     Write-Log ("ERROR unexpected: {0}" -f $_)
-    if ($script:PushAttempted) { Finish 'PARTIAL_OR_MISMATCH' 2 } else { Finish 'FAIL' 1 }
+    if ($script:PushAttempted) { Write-Log 'publish was attempted; its effect on the remote is NOT known'; Finish 'PUBLISH_OUTCOME_UNCERTAIN' 2 } else { Finish 'FAIL' 1 }
 }
 
 # ================================================================== 0. setup
-Write-Log ("Hark-dispatch-14/15 handoff sync :: mode={0} test={1}" -f $Result.mode, $IsTest)
+Write-Log ("Hark-dispatch-14/15/16 handoff sync :: mode={0} test={1}" -f $Result.mode, $IsTest)
 if ($IsTest) {
     $why = Test-LocalFixtureRemote $RemoteUrl
     if ($why) { Write-Log ('FAIL test mode remote refused before any git transport: ' + $why); exit 1 }
@@ -376,28 +414,52 @@ if ($specs.Count -gt 0) {
     }
     $leaseRefs = @(); foreach ($sp in $specs) { $leaseRefs += $sp.Split(':')[1] }
     $script:PushAttempted = $true
-    $push = Invoke-Git -GitArgs (@('push', '--atomic', '--porcelain') + (Get-CreateOnlyLeaseArgs $leaseRefs) + @('origin') + $specs) -AllowFail
-    $Result.push = [ordered]@{ refspecs = $specs; exit = $push.Code; output = $push.Text }
+    $push = Invoke-PublishPush (@('push', '--atomic', '--porcelain') + (Get-CreateOnlyLeaseArgs $leaseRefs) + @('origin') + $specs)
+    $Result.push = [ordered]@{ refspecs = $specs; exit = $push.Code; output = $push.Text; receipt = $push.StdOut }
     Write-Log ("push exit {0}" -f $push.Code)
 } else {
-    $Result.push = [ordered]@{ refspecs = @(); exit = 0; output = 'both refs already at the expected commits; nothing pushed' }
+    $Result.push = [ordered]@{ refspecs = @(); exit = 0; output = 'both refs already at the expected commits; nothing pushed'; receipt = '' }
     Write-Log 'both refs already at expected commits; idempotent re-check only'
 }
 
 # ================================================================== 6. re-read the remote, fresh repository, no alternates
+if ($IsTest -and $Cfg.ContainsKey('inject_after_push')) {          # test-only: someone/something changes the fixture after the push
+    foreach ($inj in @($Cfg.inject_after_push)) {
+        if ($inj.sha) { Invoke-Git -GitArgs @('update-ref', $inj.ref, $inj.sha) -Dir $RemoteUrl | Out-Null }
+        else { Invoke-Git -GitArgs @('update-ref', '-d', $inj.ref) -Dir $RemoteUrl | Out-Null }
+        Write-Log ("TEST after-push change {0} -> {1}" -f $inj.ref, $inj.sha)
+    }
+}
+$verifyUrl = $RemoteUrl
+if ($IsTest -and $Cfg.ContainsKey('verify_unavailable') -and $Cfg.verify_unavailable) { $verifyUrl = Join-Path $RemoteUrl 'verify-unavailable-for-test' }
 $ver = Join-Path $WorkDir 'verify.git'
 Invoke-Git -GitArgs @('init', '--bare', '-q', $ver) -Dir $null | Out-Null
 $script:GitDir = $ver
-Invoke-Git -GitArgs @('remote', 'add', 'origin', $RemoteUrl) | Out-Null
-$va = Invoke-Git -GitArgs @('fetch', '-q', '--no-tags', 'origin', ('+{0}:refs/verify/a' -f $Cfg.ref_a)) -AllowFail
-$vb = Invoke-Git -GitArgs @('fetch', '-q', '--no-tags', 'origin', ('+{0}:refs/verify/b' -f $Cfg.ref_b)) -AllowFail
+Invoke-Git -GitArgs @('remote', 'add', 'origin', $verifyUrl) | Out-Null
+$script:VerifyComplete = $true                                    # did the re-read itself fully succeed?
+$ls2 = Invoke-Git -GitArgs @('ls-remote', 'origin', $Cfg.ref_a, $Cfg.ref_b) -AllowFail
 $ra = $null; $rb = $null
-if ($va.Code -eq 0) { $ra = (Invoke-Git -GitArgs @('rev-parse', 'refs/verify/a')).Text }
-if ($vb.Code -eq 0) { $rb = (Invoke-Git -GitArgs @('rev-parse', 'refs/verify/b')).Text }
-$Result.remote_after = [ordered]@{ ref_a = $ra; ref_b = $rb }
+if ($ls2.Code -ne 0) { $script:VerifyComplete = $false; Write-Log ('re-read unavailable: ls-remote exit {0}' -f $ls2.Code) }
+else {
+    foreach ($ln in $ls2.Text.Split("`n")) {
+        $f2 = $ln.Trim().Split("`t")
+        if ($f2.Count -eq 2 -and $f2[1] -eq $Cfg.ref_a) { $ra = $f2[0] }
+        if ($f2.Count -eq 2 -and $f2[1] -eq $Cfg.ref_b) { $rb = $f2[0] }
+    }
+    foreach ($pair in @(@($ra, $Cfg.ref_a, 'refs/verify/a'), @($rb, $Cfg.ref_b, 'refs/verify/b'))) {
+        if ($pair[0]) {
+            $src = $pair[1]
+            if ($IsTest -and $Cfg.ContainsKey('verify_fetch_fail') -and (@($Cfg.verify_fetch_fail) -contains $pair[1])) { $src = $pair[1] + '-missing-for-test' }
+            $fx = Invoke-Git -GitArgs @('fetch', '-q', '--no-tags', 'origin', ('+{0}:{1}' -f $src, $pair[2])) -AllowFail
+            if ($fx.Code -ne 0) { $script:VerifyComplete = $false; Write-Log ('re-read incomplete: fetch {0} exit {1}' -f $pair[1], $fx.Code) }
+        }
+    }
+}
+$Result.remote_after = [ordered]@{ readable = $script:VerifyComplete; ref_a = $ra; ref_b = $rb }
+Add-Check 'after.reread_complete' $script:VerifyComplete ('ls-remote and fetch of the present target refs: ' + $(if ($script:VerifyComplete) { 'ok' } else { 'unavailable or incomplete' }))
 Add-Check 'after.ref_a_exact' (Test-RemoteRefExact $ra $Cfg.evidence_sha) ("remote {0} = {1}" -f $Cfg.ref_a, $ra)
 Add-Check 'after.ref_b_exact' (Test-RemoteRefExact $rb $archive) ("remote {0} = {1}" -f $Cfg.ref_b, $rb)
-if ($rb) {
+if ($rb -and $script:VerifyComplete) {
     $p = (Invoke-Git -GitArgs @('rev-list', '--parents', '-n', '1', $rb)).Text.Split(' ')
     Add-Check 'after.ref_b_parent_is_base' ($p.Count -eq 2 -and $p[1] -eq $Cfg.base_sha) ('parents: ' + (($p | Select-Object -Skip 1) -join ','))
     $d2 = @((Invoke-Git -GitArgs @('diff-tree', '-r', '--no-renames', '--name-status', $Cfg.base_sha, $rb) -AllowFail).Text.Split("`n") | Where-Object { $_ -ne '' })
@@ -412,10 +474,28 @@ if ($rb) {
     }
     Add-Check 'after.remote_blobs_equal_package_bytes' ($bad.Count -eq 0) ($(if ($bad.Count) { ($bad | Select-Object -First 5) -join ', ' } else { '{0} blobs re-read from the remote match the package bytes (re-hashed now)' -f $files.Count }))
 }
-if (-not $script:Failed) { Finish 'PUBLISHED_VERIFIED' 0 }
-if ($null -ne $Result.push -and $Result.push.exit -ne 0) {
-    $updated = @($Result.push.output.Split("`n") | Where-Object { $_ -match '^[\* +]\t' })
-    $Result.push.updated_lines = $updated
-    if ($updated.Count -eq 0) { Write-Log 'push rejected as a whole; this run updated no remote ref (remote_after shows what others left)'; Finish 'FAIL' 1 }
+
+# ================================================================== 7. outcome (R4: never infer "no side effect" from a missing receipt)
+$pushExit = 0; if ($null -ne $Result.push) { $pushExit = $Result.push.exit }
+if (-not $script:Failed -and $pushExit -eq 0) { Finish 'PUBLISHED_VERIFIED' 0 }
+if (-not $script:Failed) {
+    Write-Log ('targets independently verified as present and exact, but push exited {0}: this run is NOT confirmed to have created them' -f $pushExit)
+    Finish 'TARGETS_VERIFIED_PUSH_UNCONFIRMED' 2
+}
+if ($pushExit -ne 0 -and $script:VerifyComplete) {
+    $ourValueOnRemote = (($ra -and $ra -eq $Cfg.evidence_sha -and ($specs -match [regex]::Escape($Cfg.ref_a))) -or
+                         ($rb -and $rb -eq $archive -and ($specs -match [regex]::Escape($Cfg.ref_b))))
+    if ((Test-CompleteAtomicRejection $Result.push.receipt $specs) -and -not $ourValueOnRemote) {
+        Write-Log 'complete atomic rejection receipt for every refspec, and the complete re-read shows none of the pushed values: nothing was written by this run'
+        Finish 'REJECTED_VERIFIED' 1
+    }
+}
+if (-not $script:VerifyComplete) {
+    Write-Log 'publish was attempted and the remote could not be completely re-read: the remote may or may not have been updated. Do not retry; forward this output.'
+    Finish 'PUBLISH_OUTCOME_UNCERTAIN' 2
+}
+if ($pushExit -ne 0) {
+    Write-Log 'push failed without a complete rejection receipt (or a pushed value is on the remote): the outcome of this run is NOT known. Do not retry; forward this output.'
+    Finish 'PUBLISH_OUTCOME_UNCERTAIN' 2
 }
 Finish 'PARTIAL_OR_MISMATCH' 2

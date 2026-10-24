@@ -379,6 +379,7 @@ class TestSourceAndRefs(_Base):
         code, out, result = f.run(publish=True)
         self.assertEqual(code, EXIT_FAIL, out)
         self.assertNotEqual(result["push"]["exit"], 0)
+        self.assertEqual(result["verdict"], "REJECTED_VERIFIED")
         self.assertEqual(f.remote_refs().get(REF_A), None)                  # atomic: A not left behind
         self.assertEqual(f.remote_refs().get(REF_B), None)
 
@@ -420,7 +421,7 @@ class TestR1CreateOnly(_Base):
             if r not in injected:
                 self.assertNotIn(r, refs, f"{r} must not be left behind")
         self.assertNotEqual(result["push"]["exit"], 0)
-        self.assertEqual(result["push"]["updated_lines"], [])
+        self.assertEqual(result["verdict"], "REJECTED_VERIFIED")
 
     def test_ancestor_race_a(self):
         f = self.fixture(); inj = {REF_A: f.base}
@@ -466,6 +467,114 @@ class TestR1CreateOnly(_Base):
         self.assertEqual(f.remote_refs()[REF_A], f.evidence)
 
 
+HUNG_UP = "fatal: the remote end hung up unexpectedly"
+
+
+class TestR4Outcome(_Base):
+    """R4: after a push attempt, a missing/garbled receipt never proves that nothing was written."""
+
+    def _run(self, f, **cfg):
+        f.write_config(**cfg)
+        code, out, result = f.run(publish=True)
+        return code, out, result, f.remote_refs()
+
+    def _uncertain(self, code, out, result):
+        self.assertEqual(code, EXIT_PARTIAL, out)
+        self.assertEqual(result["verdict"], "PUBLISH_OUTCOME_UNCERTAIN")
+        self.assertNotIn("nothing was written", out)
+        self.assertNotIn("updated no remote ref", out)
+
+    def test_committed_receipt_lost_reread_unavailable(self):
+        f = self.fixture()
+        code, out, result, refs = self._run(f, fake_push={"mode": "commit_hide", "exit": 128, "output": HUNG_UP}, verify_unavailable=True)
+        self._uncertain(code, out, result)
+        self.assertEqual(refs.get(REF_A), f.evidence)                 # the fixture really was written
+        self.assertIn(REF_B, refs)
+        self.assertEqual(result["push"]["exit"], 128)
+        self.assertEqual(result["push"]["output"], HUNG_UP)
+
+    def test_not_committed_receipt_lost_reread_unavailable(self):
+        f = self.fixture()
+        code, out, result, refs = self._run(f, fake_push={"mode": "nocommit_hide", "exit": 128, "output": HUNG_UP}, verify_unavailable=True)
+        self._uncertain(code, out, result)
+        self.assertNotIn(REF_A, refs); self.assertNotIn(REF_B, refs)   # really not written - same verdict as above
+
+    def test_same_observation_same_verdict(self):
+        f, g = self.fixture(), self.fixture()
+        a = self._run(f, fake_push={"mode": "commit_hide", "exit": 128, "output": HUNG_UP}, verify_unavailable=True)
+        b = self._run(g, fake_push={"mode": "nocommit_hide", "exit": 128, "output": HUNG_UP}, verify_unavailable=True)
+        self.assertEqual((a[0], a[2]["verdict"]), (b[0], b[2]["verdict"]))
+
+    def test_committed_receipt_lost_reread_complete_targets_verified(self):
+        f = self.fixture()
+        code, out, result, refs = self._run(f, fake_push={"mode": "commit_hide", "exit": 128, "output": HUNG_UP})
+        self.assertEqual(code, EXIT_PARTIAL, out)
+        self.assertEqual(result["verdict"], "TARGETS_VERIFIED_PUSH_UNCONFIRMED")
+        self.assertIn("NOT confirmed to have created them", out)
+        self.assertEqual(result["push"]["exit"], 128)                 # original exit kept
+
+    def test_not_committed_receipt_lost_reread_complete_is_uncertain(self):
+        f = self.fixture()
+        code, out, result, refs = self._run(f, fake_push={"mode": "nocommit_hide", "exit": 128, "output": HUNG_UP})
+        self._uncertain(code, out, result)
+        self.assertTrue(result["remote_after"]["readable"])
+
+    def test_partial_success_receipt(self):
+        for unavailable, verdict in ((True, "PUBLISH_OUTCOME_UNCERTAIN"), (False, "TARGETS_VERIFIED_PUSH_UNCONFIRMED")):
+            with self.subTest(reread_unavailable=unavailable):
+                f = self.fixture()
+                code, out, result, refs = self._run(f, fake_push={"mode": "truncate", "keep": 2, "exit": 128}, verify_unavailable=unavailable)
+                self.assertEqual(code, EXIT_PARTIAL, out)
+                self.assertEqual(result["verdict"], verdict)
+
+    def test_garbled_rejection_receipt_is_not_proof(self):
+        f = self.fixture()
+        spec_a = f"{f.evidence}:{REF_A}"
+        garbled = f"To {f.remote}\n!\t{spec_a}\t[rejected] (stale info)"   # only one refspec, no 'Done'
+        code, out, result, refs = self._run(f, fake_push={"mode": "nocommit_hide", "exit": 1, "output": garbled})
+        self._uncertain(code, out, result)
+
+    def test_one_reread_fails(self):
+        f = self.fixture()
+        code, out, result, refs = self._run(f, verify_fetch_fail=[REF_B])
+        self._uncertain(code, out, result)
+        self.assertEqual(result["push"]["exit"], 0)
+        self.assertIn(REF_B, refs)
+
+    def test_one_reread_mismatch_after_successful_push(self):
+        f = self.fixture()
+        code, out, result, refs = self._run(f, inject_after_push=[{"ref": REF_B, "sha": ""}])
+        self.assertEqual(code, EXIT_PARTIAL, out)
+        self.assertEqual(result["verdict"], "PARTIAL_OR_MISMATCH")
+
+    def test_one_reread_mismatch_after_failed_push(self):
+        f = self.fixture()
+        code, out, result, refs = self._run(f, fake_push={"mode": "commit_hide", "exit": 128, "output": HUNG_UP},
+                                            inject_after_push=[{"ref": REF_B, "sha": f.base}])
+        self._uncertain(code, out, result)
+
+    def test_complete_rejection_but_reread_unavailable_is_uncertain(self):
+        f = self.fixture()
+        code, out, result, refs = self._run(f, inject_before_push=[{"ref": REF_A, "sha": f.base}], verify_unavailable=True)
+        self._uncertain(code, out, result)
+        self.assertEqual(refs.get(REF_A), f.base)                     # still never moved
+        self.assertNotIn(REF_B, refs)
+
+    def test_complete_rejection_verified(self):
+        f = self.fixture()
+        code, out, result, refs = self._run(f, inject_before_push=[{"ref": REF_A, "sha": f.base}])
+        self.assertEqual(code, EXIT_FAIL, out)
+        self.assertEqual(result["verdict"], "REJECTED_VERIFIED")
+
+    def test_prepare_never_attempts(self):
+        f = self.fixture()
+        f.write_config(fake_push={"mode": "commit_hide", "exit": 128, "output": HUNG_UP}, verify_unavailable=True)
+        code, out, result = f.run(publish=False)
+        self.assertEqual(code, EXIT_PREPARED, out)
+        self.assertIsNone(result["push"])
+        self.assertEqual(f.remote_refs().get(REF_A), None)
+
+
 GUARDS = {
     "digest": (r"function Test-ManifestDigest\(\[string\]\$actual\) \{ return \(.*?\) \}",
                "function Test-ManifestDigest([string]$actual) { return $true }",
@@ -491,6 +600,13 @@ GUARDS = {
     "testremote": (r"function Test-LocalFixtureRemote\(\[string\]\$u\) \{",
                    "function Test-LocalFixtureRemote([string]$u) { return $null",
                    "TestR2TestModeRemote.test_unmarked_local_repo_refused"),
+    "rejectreceipt": (r"function Test-CompleteAtomicRejection\(\[string\]\$receipt, \[string\[\]\]\$specs\) \{",
+                      "function Test-CompleteAtomicRejection([string]$receipt, [string[]]$specs) { return $true",
+                      "TestR4Outcome.test_garbled_rejection_receipt_is_not_proof"),
+    "uncertain": (r"if \(-not \$script:VerifyComplete\) \{\n    Write-Log 'publish was attempted",
+                  "if (@($Result.push.output.Split(\"`n\") | Where-Object { $_ -match '^[\\* +]\\t' }).Count -eq 0) { Finish 'FAIL' 1 }\n"
+                  "if (-not $script:VerifyComplete) {\n    Write-Log 'publish was attempted",
+                  "TestR4Outcome.test_committed_receipt_lost_reread_unavailable"),
 }
 
 
