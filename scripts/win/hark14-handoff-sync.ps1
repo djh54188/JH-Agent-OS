@@ -28,6 +28,9 @@ Exit codes / verdicts:
   2  TARGETS_VERIFIED_PUSH_UNCONFIRMED  re-read shows both targets exact, but push exited non-zero:
                               targets usable, this run is not confirmed to have created them
   2  PARTIAL_OR_MISMATCH      push exit 0 but the complete re-read differs from the expected state
+  2  NOT_VERIFIED_NOTHING_PUSHED  nothing needed pushing, but the re-read does not verify the targets
+  The re-read binds every identity/parent/diff/byte check to the commit ACTUALLY fetched for each
+  target; if it differs from the ls-remote answer the re-read counts as unstable (not complete).
 No exit-2 path retries, overwrites, rolls back or cleans up anything.
 #>
 [CmdletBinding()]
@@ -202,6 +205,24 @@ function Invoke-PublishPush([string[]]$pushArgs) {
     }
     return $real
 }
+function Invoke-TestBetweenQueryAndFetch {
+    # Test mode only: change the fixture after the ls-remote query and before the fetch (R5 race injection).
+    # op: ancestor (ref^), fork (ref^{tree} on ref^), descendant (ref^{tree} on ref), delete.
+    if (-not ($IsTest -and $Cfg.ContainsKey('inject_between_query_and_fetch'))) { return }
+    foreach ($inj in @($Cfg.inject_between_query_and_fetch)) {
+        $cur = (Invoke-Git -GitArgs @('rev-parse', $inj.ref) -Dir $RemoteUrl).Text
+        $id = @('-c', 'user.name=hark-test', '-c', 'user.email=hark-test@invalid')
+        switch ($inj.op) {
+            'ancestor'   { $new = (Invoke-Git -GitArgs @('rev-parse', ($cur + '^')) -Dir $RemoteUrl).Text }
+            'fork'       { $new = (Invoke-Git -GitArgs ($id + @('commit-tree', ($cur + '^{tree}'), '-p', ($cur + '^'), '-m', 'test fork')) -Dir $RemoteUrl).Text }
+            'descendant' { $new = (Invoke-Git -GitArgs ($id + @('commit-tree', ($cur + '^{tree}'), '-p', $cur, '-m', 'test descendant')) -Dir $RemoteUrl).Text }
+            'delete'     { $new = $null }
+            default      { throw ('unknown test op ' + $inj.op) }
+        }
+        if ($new) { Invoke-Git -GitArgs @('update-ref', $inj.ref, $new) -Dir $RemoteUrl | Out-Null } else { Invoke-Git -GitArgs @('update-ref', '-d', $inj.ref) -Dir $RemoteUrl | Out-Null }
+        Write-Log ("TEST between query and fetch: {0} {1} -> {2}" -f $inj.op, $inj.ref, $new)
+    }
+}
 function Test-RemoteBlob([string]$remoteBlob, [string]$expectedBlob) { return ($remoteBlob -eq $expectedBlob) }   # GUARD:postverify
 function Test-RemoteRefExact([string]$remoteSha, [string]$expected) { return ((-not [string]::IsNullOrEmpty($remoteSha)) -and $remoteSha -eq $expected) }   # GUARD:postverify-ref
 
@@ -212,7 +233,7 @@ trap {
 }
 
 # ================================================================== 0. setup
-Write-Log ("Hark-dispatch-14/15/16 handoff sync :: mode={0} test={1}" -f $Result.mode, $IsTest)
+Write-Log ("Hark-dispatch-14/15/16/17 handoff sync :: mode={0} test={1}" -f $Result.mode, $IsTest)
 if ($IsTest) {
     $why = Test-LocalFixtureRemote $RemoteUrl
     if ($why) { Write-Log ('FAIL test mode remote refused before any git transport: ' + $why); exit 1 }
@@ -438,25 +459,46 @@ $script:GitDir = $ver
 Invoke-Git -GitArgs @('remote', 'add', 'origin', $verifyUrl) | Out-Null
 $script:VerifyComplete = $true                                    # did the re-read itself fully succeed?
 $ls2 = Invoke-Git -GitArgs @('ls-remote', 'origin', $Cfg.ref_a, $Cfg.ref_b) -AllowFail
-$ra = $null; $rb = $null
-if ($ls2.Code -ne 0) { $script:VerifyComplete = $false; Write-Log ('re-read unavailable: ls-remote exit {0}' -f $ls2.Code) }
+$qa = $null; $qb = $null                                          # what the query (ls-remote) reported
+$ra = $null; $rb = $null                                          # R5: what was ACTUALLY fetched - the only identity used below
+$rereadReasons = @()
+if ($ls2.Code -ne 0) { $script:VerifyComplete = $false; $rereadReasons += ('ls-remote exit {0}' -f $ls2.Code); Write-Log ('re-read unavailable: ls-remote exit {0}' -f $ls2.Code) }
 else {
     foreach ($ln in $ls2.Text.Split("`n")) {
         $f2 = $ln.Trim().Split("`t")
-        if ($f2.Count -eq 2 -and $f2[1] -eq $Cfg.ref_a) { $ra = $f2[0] }
-        if ($f2.Count -eq 2 -and $f2[1] -eq $Cfg.ref_b) { $rb = $f2[0] }
+        if ($f2.Count -eq 2 -and $f2[1] -eq $Cfg.ref_a) { $qa = $f2[0] }
+        if ($f2.Count -eq 2 -and $f2[1] -eq $Cfg.ref_b) { $qb = $f2[0] }
     }
-    foreach ($pair in @(@($ra, $Cfg.ref_a, 'refs/verify/a'), @($rb, $Cfg.ref_b, 'refs/verify/b'))) {
+    Invoke-TestBetweenQueryAndFetch
+    $fetched = @{}
+    foreach ($pair in @(@($qa, $Cfg.ref_a, 'refs/verify/a'), @($qb, $Cfg.ref_b, 'refs/verify/b'))) {
         if ($pair[0]) {
             $src = $pair[1]
             if ($IsTest -and $Cfg.ContainsKey('verify_fetch_fail') -and (@($Cfg.verify_fetch_fail) -contains $pair[1])) { $src = $pair[1] + '-missing-for-test' }
             $fx = Invoke-Git -GitArgs @('fetch', '-q', '--no-tags', 'origin', ('+{0}:{1}' -f $src, $pair[2])) -AllowFail
-            if ($fx.Code -ne 0) { $script:VerifyComplete = $false; Write-Log ('re-read incomplete: fetch {0} exit {1}' -f $pair[1], $fx.Code) }
+            $got = $null
+            if ($fx.Code -eq 0) {
+                $rp = Invoke-Git -GitArgs @('rev-parse', '--verify', '-q', ($pair[2] + '^{commit}')) -AllowFail
+                if ($rp.Code -eq 0 -and $rp.Text -cmatch '^[0-9a-f]{40}$') { $got = $rp.Text }
+            }
+            if (-not $got) {
+                $script:VerifyComplete = $false; $rereadReasons += ('fetch {0} exit {1}' -f $pair[1], $fx.Code)
+                Write-Log ('re-read incomplete: fetch {0} exit {1}' -f $pair[1], $fx.Code)
+            } else {
+                $fetched[$pair[1]] = $got                             # GUARD:fetchedidentity
+                if ($got -ne $pair[0]) {
+                    $script:VerifyComplete = $false
+                    $rereadReasons += ('{0} changed during re-read: query {1}, fetched {2}' -f $pair[1], $pair[0], $got)
+                    Write-Log ('re-read unstable: {0} query {1} but fetched {2} (changed by someone other than this check; not attributed to this run)' -f $pair[1], $pair[0], $got)
+                }
+            }
         }
     }
+    if ($fetched.ContainsKey($Cfg.ref_a)) { $ra = $fetched[$Cfg.ref_a] }
+    if ($fetched.ContainsKey($Cfg.ref_b)) { $rb = $fetched[$Cfg.ref_b] }
 }
-$Result.remote_after = [ordered]@{ readable = $script:VerifyComplete; ref_a = $ra; ref_b = $rb }
-Add-Check 'after.reread_complete' $script:VerifyComplete ('ls-remote and fetch of the present target refs: ' + $(if ($script:VerifyComplete) { 'ok' } else { 'unavailable or incomplete' }))
+$Result.remote_after = [ordered]@{ readable = $script:VerifyComplete; ref_a = $ra; ref_b = $rb; query_ref_a = $qa; query_ref_b = $qb; reasons = $rereadReasons }
+Add-Check 'after.reread_complete' $script:VerifyComplete ('ls-remote, fetch and fetched identity of the present target refs: ' + $(if ($script:VerifyComplete) { 'ok, fetched = queried' } else { 'unavailable, incomplete or changed: ' + ($rereadReasons -join '; ') }))
 Add-Check 'after.ref_a_exact' (Test-RemoteRefExact $ra $Cfg.evidence_sha) ("remote {0} = {1}" -f $Cfg.ref_a, $ra)
 Add-Check 'after.ref_b_exact' (Test-RemoteRefExact $rb $archive) ("remote {0} = {1}" -f $Cfg.ref_b, $rb)
 if ($rb -and $script:VerifyComplete) {
@@ -489,6 +531,10 @@ if ($pushExit -ne 0 -and $script:VerifyComplete) {
         Write-Log 'complete atomic rejection receipt for every refspec, and the complete re-read shows none of the pushed values: nothing was written by this run'
         Finish 'REJECTED_VERIFIED' 1
     }
+}
+if ($specs.Count -eq 0) {
+    Write-Log ('this run pushed nothing (both targets were already exact at the pre-push check); the re-read does not verify them now: ' + ($rereadReasons -join '; ') + '. Any change is not attributed to this run. Do not retry; forward this output.')
+    Finish 'NOT_VERIFIED_NOTHING_PUSHED' 2
 }
 if (-not $script:VerifyComplete) {
     Write-Log 'publish was attempted and the remote could not be completely re-read: the remote may or may not have been updated. Do not retry; forward this output.'

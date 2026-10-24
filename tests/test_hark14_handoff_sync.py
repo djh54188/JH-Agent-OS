@@ -575,6 +575,78 @@ class TestR4Outcome(_Base):
         self.assertEqual(f.remote_refs().get(REF_A), None)
 
 
+SUCCESS_VERDICTS = {"PUBLISHED_VERIFIED", "TARGETS_VERIFIED_PUSH_UNCONFIRMED"}
+
+
+class TestR5FetchedIdentity(_Base):
+    """R5: identity/parent/diff/byte evidence is bound to the ref actually fetched, not to the ls-remote answer."""
+
+    def _race(self, injections, **extra):
+        f = self.fixture()
+        f.write_config(inject_between_query_and_fetch=injections, **extra)
+        code, out, result = f.run(publish=True)
+        return f, code, out, result, f.remote_refs()
+
+    def _not_success(self, code, out, result, verdict="PUBLISH_OUTCOME_UNCERTAIN"):
+        self.assertNotEqual(code, EXIT_PUBLISHED, out)
+        self.assertNotIn(result["verdict"], SUCCESS_VERDICTS)
+        self.assertEqual(result["verdict"], verdict, out)
+        self.assertIn("after.reread_complete", failed_checks(result))
+
+    def _check_identity_kept(self, result, refs, ref, key):
+        self.assertEqual(result["remote_after"][key], refs.get(ref))       # the ACTUAL fetched identity is reported
+
+    def test_a_changed_after_query(self):
+        for op in ("ancestor", "fork", "descendant"):
+            with self.subTest(op=op):
+                f, code, out, result, refs = self._race([{"ref": REF_A, "op": op}])
+                self._not_success(code, out, result)
+                self.assertEqual(result["remote_after"]["query_ref_a"], f.evidence)
+                self.assertNotEqual(refs[REF_A], f.evidence)
+                self._check_identity_kept(result, refs, REF_A, "ref_a")
+                self.assertTrue(any("changed during re-read" in r for r in result["remote_after"]["reasons"]))
+
+    def test_b_descendant_old_archive_still_reachable(self):
+        f, code, out, result, refs = self._race([{"ref": REF_B, "op": "descendant"}])
+        self._not_success(code, out, result)
+        old_b = result["remote_after"]["query_ref_b"]
+        self.assertEqual(git(f.remote, "rev-parse", refs[REF_B] + "^", env=f.env), old_b)   # old archive reachable
+        self._check_identity_kept(result, refs, REF_B, "ref_b")
+        self.assertNotIn("after.ref_b_parent_is_base", [c["name"] for c in result["checks"] if c["ok"]])
+
+    def test_both_changed(self):
+        f, code, out, result, refs = self._race([{"ref": REF_A, "op": "descendant"}, {"ref": REF_B, "op": "descendant"}])
+        self._not_success(code, out, result)
+        self._check_identity_kept(result, refs, REF_A, "ref_a")
+        self._check_identity_kept(result, refs, REF_B, "ref_b")
+
+    def test_target_disappears_after_query(self):
+        f, code, out, result, refs = self._race([{"ref": REF_B, "op": "delete"}])
+        self._not_success(code, out, result)
+        self.assertIsNone(result["remote_after"]["ref_b"])
+
+    def test_race_with_nonzero_push_keeps_code(self):
+        f, code, out, result, refs = self._race([{"ref": REF_A, "op": "descendant"}],
+                                                fake_push={"mode": "commit_hide", "exit": 128, "output": HUNG_UP})
+        self._not_success(code, out, result)
+        self.assertEqual(result["push"]["exit"], 128)
+
+    def test_idempotent_rerun_with_race_is_not_verified_and_not_attributed(self):
+        f = self.fixture()
+        code, out, _ = f.run(publish=True)
+        self.assertEqual(code, EXIT_PUBLISHED, out)
+        f.write_config(inject_between_query_and_fetch=[{"ref": REF_B, "op": "descendant"}])
+        code, out, result = f.run(publish=True)
+        self.assertEqual(result["push"]["refspecs"], [])
+        self._not_success(code, out, result, verdict="NOT_VERIFIED_NOTHING_PUSHED")
+        self.assertIn("not attributed to this run", out)
+
+    def test_no_change_still_verifies(self):
+        f, code, out, result, refs = self._race([])
+        self.assertEqual(code, EXIT_PUBLISHED, out)
+        self.assertEqual(result["remote_after"]["ref_a"], result["remote_after"]["query_ref_a"])
+
+
 GUARDS = {
     "digest": (r"function Test-ManifestDigest\(\[string\]\$actual\) \{ return \(.*?\) \}",
                "function Test-ManifestDigest([string]$actual) { return $true }",
@@ -607,6 +679,12 @@ GUARDS = {
                   "if (@($Result.push.output.Split(\"`n\") | Where-Object { $_ -match '^[\\* +]\\t' }).Count -eq 0) { Finish 'FAIL' 1 }\n"
                   "if (-not $script:VerifyComplete) {\n    Write-Log 'publish was attempted",
                   "TestR4Outcome.test_committed_receipt_lost_reread_unavailable"),
+    "fetchedidentity": (r"\$fetched\[\$pair\[1\]\] = \$got +# GUARD:fetchedidentity\n +if \(\$got -ne \$pair\[0\]\) \{",
+                        "$fetched[$pair[1]] = $pair[0]\n                if ($false) {",
+                        "TestR5FetchedIdentity.test_b_descendant_old_archive_still_reachable"),
+    "rereadstable": (r"if \(\$got -ne \$pair\[0\]\) \{",
+                     "if ($false) {",
+                     "TestR5FetchedIdentity.test_both_changed"),
 }
 
 
