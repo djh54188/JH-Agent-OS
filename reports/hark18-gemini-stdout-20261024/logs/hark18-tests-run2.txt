@@ -1,0 +1,25 @@
+test_collect_again_does_not_redispatch (tests.test_hark18_gemini_stdout.TestAdapter.test_collect_again_does_not_redispatch) ... ok
+test_combined_faults_still_fail (tests.test_hark18_gemini_stdout.TestAdapter.test_combined_faults_still_fail) ... ok
+test_control_without_preamble (tests.test_hark18_gemini_stdout.TestAdapter.test_control_without_preamble) ... ok
+test_final_save_failure_on_stderr_fails (tests.test_hark18_gemini_stdout.TestAdapter.test_final_save_failure_on_stderr_fails) ... ok
+test_known_preamble_collects_and_keeps_bytes (tests.test_hark18_gemini_stdout.TestAdapter.test_known_preamble_collects_and_keeps_bytes) ... ok
+test_requested_model_honored_with_preamble (tests.test_hark18_gemini_stdout.TestAdapter.test_requested_model_honored_with_preamble) ... ok
+test_stderr_unavailable_fails (tests.test_hark18_gemini_stdout.TestAdapter.test_stderr_unavailable_fails) ... ok
+test_unknown_preamble_still_fails (tests.test_hark18_gemini_stdout.TestAdapter.test_unknown_preamble_still_fails) ... ok
+test_each_guard_is_effective_then_detected (tests.test_hark18_gemini_stdout.TestGuardWeakening.test_each_guard_is_effective_then_detected) ... ok
+test_original_bytes (tests.test_hark18_gemini_stdout.TestOriginalRun1Replay.test_original_bytes) ... skipped 'original node22-run1 stdout not provided (Windows cell)'
+test_accepted_bounded_forms (tests.test_hark18_gemini_stdout.TestParser.test_accepted_bounded_forms) ... ok
+test_bad_utf8_after_preamble (tests.test_hark18_gemini_stdout.TestParser.test_bad_utf8_after_preamble) ... ok
+test_baseline_reproduces_known_line_failure (tests.test_hark18_gemini_stdout.TestParser.test_baseline_reproduces_known_line_failure) ... ok
+test_known_line_kept_as_diagnostic (tests.test_hark18_gemini_stdout.TestParser.test_known_line_kept_as_diagnostic) ... ok
+test_known_line_not_followed_by_init (tests.test_hark18_gemini_stdout.TestParser.test_known_line_not_followed_by_init) ... ok
+test_line_numbers_are_original (tests.test_hark18_gemini_stdout.TestParser.test_line_numbers_are_original) ... ok
+test_no_preamble_control_unchanged (tests.test_hark18_gemini_stdout.TestParser.test_no_preamble_control_unchanged) ... ok
+test_rejected_forms_keep_strict_result (tests.test_hark18_gemini_stdout.TestParser.test_rejected_forms_keep_strict_result) ... ok
+test_same_text_elsewhere_is_still_a_problem (tests.test_hark18_gemini_stdout.TestParser.test_same_text_elsewhere_is_still_a_problem) ... ok
+test_same_text_inside_json_field_is_not_stripped (tests.test_hark18_gemini_stdout.TestParser.test_same_text_inside_json_field_is_not_stripped) ... ok
+
+----------------------------------------------------------------------
+Ran 20 tests in 3.297s
+
+OK (skipped=1)

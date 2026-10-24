@@ -1,0 +1,170 @@
+test_address_mismatch (tests.test_hark11_gemini_session.TestAssociationErrors.test_address_mismatch) ... ok
+test_duplicate_init (tests.test_hark11_gemini_session.TestAssociationErrors.test_duplicate_init) ... ok
+test_foreign_session_is_not_adopted (tests.test_hark11_gemini_session.TestAssociationErrors.test_foreign_session_is_not_adopted) ... ok
+test_missing_result_event (tests.test_hark11_gemini_session.TestAssociationErrors.test_missing_result_event) ... ok
+test_non_native_line (tests.test_hark11_gemini_session.TestAssociationErrors.test_non_native_line) ... ok
+test_nonzero_exit (tests.test_hark11_gemini_session.TestAssociationErrors.test_nonzero_exit) ... ok
+test_requested_model_not_honored (tests.test_hark11_gemini_session.TestAssociationErrors.test_requested_model_not_honored) ... ok
+test_tool_result_without_tool_use (tests.test_hark11_gemini_session.TestAssociationErrors.test_tool_result_without_tool_use) ... ok
+test_tool_use_without_result (tests.test_hark11_gemini_session.TestAssociationErrors.test_tool_use_without_result) ... ok
+test_chat_record_missing_is_listed (tests.test_hark11_gemini_session.TestEvidenceMissing.test_chat_record_missing_is_listed) ... ok
+test_stdout_missing_fails (tests.test_hark11_gemini_session.TestEvidenceMissing.test_stdout_missing_fails) ... ok
+test_tampered_before_manifest_fails (tests.test_hark11_gemini_session.TestEvidenceMissing.test_tampered_before_manifest_fails) ... ok
+test_each_weakened_guard_fails_its_test (tests.test_hark11_gemini_session.TestGuardWeakening.test_each_weakened_guard_fails_its_test) ... /home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py:1139: ResourceWarning: subprocess 3986 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py:1139: ResourceWarning: subprocess 3989 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py:1139: ResourceWarning: subprocess 3995 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_ancestor_env_file_refused (tests.test_hark11_gemini_session.TestReadOnly.test_ancestor_env_file_refused) ... ok
+test_existing_session_refused (tests.test_hark11_gemini_session.TestReadOnly.test_existing_session_refused) ... ok
+test_overlapping_evidence_refused (tests.test_hark11_gemini_session.TestReadOnly.test_overlapping_evidence_refused) ... ok
+test_path_scope_and_budget_refused (tests.test_hark11_gemini_session.TestReadOnly.test_path_scope_and_budget_refused) ... ok
+test_relative_workspace_refused (tests.test_hark11_gemini_session.TestReadOnly.test_relative_workspace_refused) ... ok
+test_successful_write_tool_is_a_breach (tests.test_hark11_gemini_session.TestReadOnly.test_successful_write_tool_is_a_breach) ... ok
+test_unpinned_version_refused (tests.test_hark11_gemini_session.TestReadOnly.test_unpinned_version_refused) ... ok
+test_workspace_env_file_refused (tests.test_hark11_gemini_session.TestReadOnly.test_workspace_env_file_refused) ... ok
+test_workspace_host_config_refused (tests.test_hark11_gemini_session.TestReadOnly.test_workspace_host_config_refused) ... ok
+test_workspace_modification_is_detected (tests.test_hark11_gemini_session.TestReadOnly.test_workspace_modification_is_detected) ... ok
+test_refs_resolve_only_inside_workspace (tests.test_hark11_gemini_session.TestSourceRefs.test_refs_resolve_only_inside_workspace) ... ok
+test_bounded_wait_and_no_redispatch (tests.test_hark11_gemini_session.TestUnknownNotResent.test_bounded_wait_and_no_redispatch) ... ok
+test_collected_result_survives_reopen (tests.test_hark11_gemini_session.TestUnknownNotResent.test_collected_result_survives_reopen) ... ok
+test_same_key_different_request_conflicts (tests.test_hark11_gemini_session.TestUnknownNotResent.test_same_key_different_request_conflicts) ... /home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py:1139: ResourceWarning: subprocess 4068 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_unreadable_registry_refuses (tests.test_hark11_gemini_session.TestUnknownNotResent.test_unreadable_registry_refuses) ... ok
+test_capabilities_and_unsupported_operations (tests.test_hark11_gemini_session.TestValidDelivery.test_capabilities_and_unsupported_operations) ... ok
+test_evidence_bytes_are_verified_on_disk (tests.test_hark11_gemini_session.TestValidDelivery.test_evidence_bytes_are_verified_on_disk) ... ok
+test_host_restriction_flags_are_passed (tests.test_hark11_gemini_session.TestValidDelivery.test_host_restriction_flags_are_passed) ... ok
+test_valid_delivery_is_declared_not_succeeded (tests.test_hark11_gemini_session.TestValidDelivery.test_valid_delivery_is_declared_not_succeeded) ... ok
+test_each_weakened_guard_fails_its_test (tests.test_hark12_gemini_admission.TestGuardWeakening.test_each_weakened_guard_fails_its_test) ... /home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py:1139: ResourceWarning: subprocess 4087 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/work/h18-base/tests/test_hark12_gemini_admission.py:261: ResourceWarning: unclosed file <_io.BufferedReader name='/tmp/hark12-zfowk3_i/evidence/registry.jsonl'>
+  lines = open(self.h.registry, "rb").read().splitlines(keepends=True)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/work/h18-base/tests/test_hark12_gemini_admission.py:261: ResourceWarning: unclosed file <_io.BufferedReader name='/tmp/hark12-vykfmm9w/evidence/registry.jsonl'>
+  lines = open(self.h.registry, "rb").read().splitlines(keepends=True)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py:1139: ResourceWarning: subprocess 4094 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/home/sandbox/.local/share/uv/python/cpython-3.14.8-linux-aarch64-gnu/lib/python3.14/subprocess.py:1139: ResourceWarning: subprocess 4104 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_committed_h11_registries_are_legal (tests.test_hark12_gemini_admission.TestR1RegistryState.test_committed_h11_registries_are_legal) ... ok
+test_corrupted_after_construction_refuses (tests.test_hark12_gemini_admission.TestR1RegistryState.test_corrupted_after_construction_refuses) ... ok
+test_corrupted_line_appended_after_construction_refuses (tests.test_hark12_gemini_admission.TestR1RegistryState.test_corrupted_line_appended_after_construction_refuses) ... ok
+test_deleted_registry_refuses_owner (tests.test_hark12_gemini_admission.TestR1RegistryState.test_deleted_registry_refuses_owner) ... ok
+test_derived_illegal_histories_refuse_new_dispatch (tests.test_hark12_gemini_admission.TestR1RegistryState.test_derived_illegal_histories_refuse_new_dispatch) ... ok
+test_legal_prefix_is_kept (tests.test_hark12_gemini_admission.TestR1RegistryState.test_legal_prefix_is_kept) ... ok
+test_reserved_only_prefix_is_unknown_not_resent (tests.test_hark12_gemini_admission.TestR1RegistryState.test_reserved_only_prefix_is_unknown_not_resent) ... ok
+test_tail_cut_registry_refuses_reader (tests.test_hark12_gemini_admission.TestR1RegistryState.test_tail_cut_registry_refuses_reader) ... /workspace/work/h18-base/tests/test_hark12_gemini_admission.py:261: ResourceWarning: unclosed file <_io.BufferedReader name='/tmp/hark12-4ehpml27/evidence/registry.jsonl'>
+  lines = open(self.h.registry, "rb").read().splitlines(keepends=True)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_truncated_registry_refuses (tests.test_hark12_gemini_admission.TestR1RegistryState.test_truncated_registry_refuses) ... ok
+test_unreadable_registry_refuses (tests.test_hark12_gemini_admission.TestR1RegistryState.test_unreadable_registry_refuses) ... ok
+test_processes_dispatch_once (tests.test_hark12_gemini_admission.TestR1SharedRegistry.test_processes_dispatch_once) ... ok
+test_threads_synchronised_in_version_probe_dispatch_once (tests.test_hark12_gemini_admission.TestR1SharedRegistry.test_threads_synchronised_in_version_probe_dispatch_once) ... ok
+test_two_adapters_same_root_dispatch_once (tests.test_hark12_gemini_admission.TestR1SharedRegistry.test_two_adapters_same_root_dispatch_once) ... ok
+test_bad_shapes_are_diagnosed_not_raised (tests.test_hark12_gemini_admission.TestR2Observation.test_bad_shapes_are_diagnosed_not_raised) ... ok
+test_chat_record_first_line_shapes (tests.test_hark12_gemini_admission.TestR2Observation.test_chat_record_first_line_shapes) ... ok
+test_fifo_in_workspace_is_recorded_not_opened (tests.test_hark12_gemini_admission.TestR2Observation.test_fifo_in_workspace_is_recorded_not_opened) ... ok
+test_real_permission_denied_subdir_refuses (tests.test_hark12_gemini_admission.TestR2Observation.test_real_permission_denied_subdir_refuses) ... ok
+test_root_unlistable_before_launch_refuses (tests.test_hark12_gemini_admission.TestR2Observation.test_root_unlistable_before_launch_refuses) ... ok
+test_subdir_unlistable_before_launch_refuses (tests.test_hark12_gemini_admission.TestR2Observation.test_subdir_unlistable_before_launch_refuses) ... ok
+test_tool_id_array_is_diagnosed (tests.test_hark12_gemini_admission.TestR2Observation.test_tool_id_array_is_diagnosed) ... ok
+test_tool_status_shapes_do_not_confirm_denial (tests.test_hark12_gemini_admission.TestR2Observation.test_tool_status_shapes_do_not_confirm_denial) ... ok
+test_unknown_tool_status_is_unconfirmed (tests.test_hark12_gemini_admission.TestR2Observation.test_unknown_tool_status_is_unconfirmed) ... ok
+test_unlistable_at_collect_only_is_not_unchanged (tests.test_hark12_gemini_admission.TestR2Observation.test_unlistable_at_collect_only_is_not_unchanged) ... ok
+test_unlistable_before_and_at_collect (tests.test_hark12_gemini_admission.TestR2Observation.test_unlistable_before_and_at_collect) ... ok
+test_valid_delivery_keeps_raw_bytes (tests.test_hark12_gemini_admission.TestR2Observation.test_valid_delivery_keeps_raw_bytes) ... ok
+test_old_text_substitution_would_be_invalid (tests.test_hark12_gemini_admission.TestR3Fixture.test_old_text_substitution_would_be_invalid) ... ok
+test_reencoding_reproduces_captured_native_bytes (tests.test_hark12_gemini_admission.TestR3Fixture.test_reencoding_reproduces_captured_native_bytes) ... ok
+test_windows_workspace_string_replays_as_valid_json (tests.test_hark12_gemini_admission.TestR3Fixture.test_windows_workspace_string_replays_as_valid_json) ... ok
+test_absolute_workspace_positive_control (tests.test_hark12_gemini_admission.TestR3Paths.test_absolute_workspace_positive_control) ... ok
+test_classifier_windows_and_posix_forms (tests.test_hark12_gemini_admission.TestR3Paths.test_classifier_windows_and_posix_forms) ... ok
+test_existing_relative_directory_refused (tests.test_hark12_gemini_admission.TestR3Paths.test_existing_relative_directory_refused) ... ok
+test_relative_inputs_refused (tests.test_hark12_gemini_admission.TestR3Paths.test_relative_inputs_refused) ... ok
+test_complete_registry_reopened (tests.test_hark13_registry_loss.TestControls.test_complete_registry_reopened) ... ok
+test_reserved_only_prefix (tests.test_hark13_registry_loss.TestControls.test_reserved_only_prefix) ... ok
+test_truly_fresh_store_dispatches (tests.test_hark13_registry_loss.TestControls.test_truly_fresh_store_dispatches) ... ok
+test_two_runs_each_reserved_only (tests.test_hark13_registry_loss.TestControls.test_two_runs_each_reserved_only) ... ok
+test_zero_byte_registry_without_runs_is_a_fresh_store (tests.test_hark13_registry_loss.TestControls.test_zero_byte_registry_without_runs_is_a_fresh_store) ... ok
+test_weakened_guard_fails_its_test (tests.test_hark13_registry_loss.TestGuardWeakening.test_weakened_guard_fails_its_test) ... ok
+test_constructed_before_loss_also_refuses (tests.test_hark13_registry_loss.TestLostRegistryNewObject.test_constructed_before_loss_also_refuses) ... ok
+test_non_empty_tail_lost (tests.test_hark13_registry_loss.TestLostRegistryNewObject.test_non_empty_tail_lost) ... ok
+test_registry_deleted (tests.test_hark13_registry_loss.TestLostRegistryNewObject.test_registry_deleted) ... ok
+test_registry_whitespace_only (tests.test_hark13_registry_loss.TestLostRegistryNewObject.test_registry_whitespace_only) ... ok
+test_registry_zero_bytes (tests.test_hark13_registry_loss.TestLostRegistryNewObject.test_registry_zero_bytes) ... ok
+test_restart_in_a_new_process (tests.test_hark13_registry_loss.TestLostRegistryNewObject.test_restart_in_a_new_process) ... ok
+test_runs_dir_listing_error_injected (tests.test_hark13_registry_loss.TestUnjudgeableRunEvidence.test_runs_dir_listing_error_injected) ... ok
+test_runs_dir_unreadable_with_intact_registry (tests.test_hark13_registry_loss.TestUnjudgeableRunEvidence.test_runs_dir_unreadable_with_intact_registry) ... ok
+test_runs_dir_unreadable_with_lost_registry (tests.test_hark13_registry_loss.TestUnjudgeableRunEvidence.test_runs_dir_unreadable_with_lost_registry) ... ok
+test_runs_path_not_a_directory (tests.test_hark13_registry_loss.TestUnjudgeableRunEvidence.test_runs_path_not_a_directory) ... ok
+test_stray_entries_refused (tests.test_hark13_registry_loss.TestUnjudgeableRunEvidence.test_stray_entries_refused) ... ok
+test_whitespace_registry_without_runs_refused (tests.test_hark13_registry_loss.TestUnjudgeableRunEvidence.test_whitespace_registry_without_runs_refused) ... ok
+test_cancel_without_confirmation_is_a_request (tests.test_jh018_agent_session_contract.TestCancelSemantics.test_cancel_without_confirmation_is_a_request) ... ok
+test_cancelled_only_after_native_confirmation (tests.test_jh018_agent_session_contract.TestCancelSemantics.test_cancelled_only_after_native_confirmation) ... ok
+test_repeated_cancel_after_confirmation_stays_cancelled (tests.test_jh018_agent_session_contract.TestCancelSemantics.test_repeated_cancel_after_confirmation_stays_cancelled)
+Confirming a cancel is terminal: repeating it must not append a turn ... ok
+test_dispatch_replay_query_cancel_sequence (tests.test_jh018_agent_session_contract.TestCombinedSequenceConsistency.test_dispatch_replay_query_cancel_sequence) ... ok
+test_every_adapter_implements_every_method (tests.test_jh018_agent_session_contract.TestContractSurface.test_every_adapter_implements_every_method) ... ok
+test_run_state_has_no_success_state (tests.test_jh018_agent_session_contract.TestContractSurface.test_run_state_has_no_success_state) ... ok
+test_six_capabilities_are_the_documented_set (tests.test_jh018_agent_session_contract.TestContractSurface.test_six_capabilities_are_the_documented_set) ... ok
+test_computed_dynamic_imports_are_documented_as_uncovered (tests.test_jh018_agent_session_contract.TestCoreHoldsNoConcreteAdapter.test_computed_dynamic_imports_are_documented_as_uncovered)
+A bounded static check cannot see a computed module name; that is a ... ok
+test_contract_consumers_are_real_adapters (tests.test_jh018_agent_session_contract.TestCoreHoldsNoConcreteAdapter.test_contract_consumers_are_real_adapters) ... ok
+test_contract_is_abstract (tests.test_jh018_agent_session_contract.TestCoreHoldsNoConcreteAdapter.test_contract_is_abstract) ... ok
+test_contract_module_has_no_native_app_imports (tests.test_jh018_agent_session_contract.TestCoreHoldsNoConcreteAdapter.test_contract_module_has_no_native_app_imports) ... ok
+test_every_equivalent_static_import_form_is_flagged (tests.test_jh018_agent_session_contract.TestCoreHoldsNoConcreteAdapter.test_every_equivalent_static_import_form_is_flagged) ... ok
+test_permitted_forms_are_not_flagged (tests.test_jh018_agent_session_contract.TestCoreHoldsNoConcreteAdapter.test_permitted_forms_are_not_flagged) ... ok
+test_production_modules_do_not_import_this_contract (tests.test_jh018_agent_session_contract.TestCoreHoldsNoConcreteAdapter.test_production_modules_do_not_import_this_contract) ... ok
+test_the_real_adapter_is_flagged (tests.test_jh018_agent_session_contract.TestCoreHoldsNoConcreteAdapter.test_the_real_adapter_is_flagged) ... ok
+test_same_key_different_artifact_conflicts (tests.test_jh018_agent_session_contract.TestFingerprintIsUnambiguous.test_same_key_different_artifact_conflicts) ... ok
+test_same_request_reuses_the_run (tests.test_jh018_agent_session_contract.TestFingerprintIsUnambiguous.test_same_request_reuses_the_run) ... ok
+test_scope_and_budget_are_part_of_the_fingerprint (tests.test_jh018_agent_session_contract.TestFingerprintIsUnambiguous.test_scope_and_budget_are_part_of_the_fingerprint) ... ok
+test_separator_collision_does_not_false_hit (tests.test_jh018_agent_session_contract.TestFingerprintIsUnambiguous.test_separator_collision_does_not_false_hit)
+A naive '|'.join would let these two collide; canonical JSON must not. ... ok
+test_snapshot_immune_to_caller_mutation (tests.test_jh018_agent_session_contract.TestFingerprintIsUnambiguous.test_snapshot_immune_to_caller_mutation)
+Registered facts must not change when the caller mutates its own dict. ... ok
+test_snapshot_is_the_canonical_pre_image (tests.test_jh018_agent_session_contract.TestFingerprintIsUnambiguous.test_snapshot_is_the_canonical_pre_image) ... ok
+test_distinct_keys_create_distinct_runs (tests.test_jh018_agent_session_contract.TestIdempotencyIsSeparateFromRunIndex.test_distinct_keys_create_distinct_runs) ... ok
+test_same_key_different_request_conflicts (tests.test_jh018_agent_session_contract.TestIdempotencyIsSeparateFromRunIndex.test_same_key_different_request_conflicts) ... ok
+test_same_key_same_request_reuses_the_run (tests.test_jh018_agent_session_contract.TestIdempotencyIsSeparateFromRunIndex.test_same_key_same_request_reuses_the_run) ... ok
+test_confirmed_cancel_refuses_remediation (tests.test_jh018_agent_session_contract.TestRemediationIdempotency.test_confirmed_cancel_refuses_remediation) ... ok
+test_interleaved_replay_returns_the_operations_own_turn (tests.test_jh018_agent_session_contract.TestRemediationIdempotency.test_interleaved_replay_returns_the_operations_own_turn)
+A(key=A), B(key=B), then replay A: the replay must identify A's turn, ... ok
+test_remediation_keeps_history_budget_and_scope (tests.test_jh018_agent_session_contract.TestRemediationIdempotency.test_remediation_keeps_history_budget_and_scope) ... ok
+test_replay_does_not_roll_back_current_state (tests.test_jh018_agent_session_contract.TestRemediationIdempotency.test_replay_does_not_roll_back_current_state) ... ok
+test_returned_state_matches_following_status_query (tests.test_jh018_agent_session_contract.TestRemediationIdempotency.test_returned_state_matches_following_status_query) ... ok
+test_same_key_different_request_conflicts (tests.test_jh018_agent_session_contract.TestRemediationIdempotency.test_same_key_different_request_conflicts) ... ok
+test_same_key_same_request_appends_one_turn (tests.test_jh018_agent_session_contract.TestRemediationIdempotency.test_same_key_same_request_appends_one_turn) ... ok
+test_remediation_does_not_widen_scope (tests.test_jh018_agent_session_contract.TestRemediationPreservesTaskContext.test_remediation_does_not_widen_scope) ... ok
+test_collect_never_reports_success (tests.test_jh018_agent_session_contract.TestReplacementNeedsNoCoreEdit.test_collect_never_reports_success) ... ok
+test_implementations_are_actually_different (tests.test_jh018_agent_session_contract.TestReplacementNeedsNoCoreEdit.test_implementations_are_actually_different) ... ok
+test_two_different_classes_share_one_call_site (tests.test_jh018_agent_session_contract.TestReplacementNeedsNoCoreEdit.test_two_different_classes_share_one_call_site) ... ok
+test_binding_records_task_and_attempt_and_ids_do_not_collide (tests.test_jh018_agent_session_contract.TestRunLookupAndAddressBinding.test_binding_records_task_and_attempt_and_ids_do_not_collide)
+A run is bound to its logical task and attempt; different tasks or ... ok
+test_cross_instance_and_cross_app_lookup_raise (tests.test_jh018_agent_session_contract.TestRunLookupAndAddressBinding.test_cross_instance_and_cross_app_lookup_raise) ... ok
+test_cross_session_lookup_raises_instead_of_unknown (tests.test_jh018_agent_session_contract.TestRunLookupAndAddressBinding.test_cross_session_lookup_raises_instead_of_unknown) ... ok
+test_returned_run_id_resolves_to_its_own_run (tests.test_jh018_agent_session_contract.TestRunLookupAndAddressBinding.test_returned_run_id_resolves_to_its_own_run) ... ok
+test_unknown_run_id_is_reported_unknown_for_a_known_address (tests.test_jh018_agent_session_contract.TestRunLookupAndAddressBinding.test_unknown_run_id_is_reported_unknown_for_a_known_address) ... ok
+test_every_capability_reported_not_claimed (tests.test_jh018_agent_session_contract.TestUnsupportedIsExplicit.test_every_capability_reported_not_claimed) ... ok
+test_missing_capability_raises_instead_of_simulating (tests.test_jh018_agent_session_contract.TestUnsupportedIsExplicit.test_missing_capability_raises_instead_of_simulating) ... ok
+
+----------------------------------------------------------------------
+Ran 125 tests in 10.206s
+
+OK
+
+real	0m10.410s
+user	0m3.175s
+sys	0m0.978s

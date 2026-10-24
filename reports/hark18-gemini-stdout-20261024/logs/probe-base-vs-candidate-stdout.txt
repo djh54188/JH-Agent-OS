@@ -1,0 +1,6 @@
+no_preamble base declared_complete [] diag: False
+no_preamble candidate declared_complete [] diag: False
+known_preamble base failed ['line 1: not JSON'] diag: False
+known_preamble candidate declared_complete [] diag: True
+known_preamble_exit1 base failed ['line 1: not JSON'] diag: False
+known_preamble_exit1 candidate failed [] diag: True

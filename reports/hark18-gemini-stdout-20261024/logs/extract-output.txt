@@ -1,0 +1,13 @@
+run1: ran=20 result=OK (skipped=1) skipped=['tests.test_hark18_gemini_stdout.TestOriginalRun1Replay.test_original_bytes'] guards=8 control_pass=8 detected=8
+run2: ran=20 result=OK (skipped=1) skipped=['tests.test_hark18_gemini_stdout.TestOriginalRun1Replay.test_original_bytes'] guards=8 control_pass=8 detected=8
+run3: ran=20 result=OK (skipped=1) skipped=['tests.test_hark18_gemini_stdout.TestOriginalRun1Replay.test_original_bytes'] guards=8 control_pass=8 detected=8
+regression base: ran=125 OK; candidate: ran=125 OK; per-test status identical=True (119 named)
+probe no_preamble base declared_complete [] host_diagnostics= False
+probe no_preamble candidate declared_complete [] host_diagnostics= False
+probe known_preamble base failed ['line 1: not JSON'] host_diagnostics= False
+probe known_preamble candidate declared_complete [] host_diagnostics= True
+probe known_preamble_exit1 base failed ['line 1: not JSON'] host_diagnostics= False
+probe known_preamble_exit1 candidate failed [] host_diagnostics= True
+constructed replay logic: {"constructed_input": true, "pair_sha256": "23da0c76537c273bad94a8af84cb60db6f90a94cef55ecd1a17bd9049dc59967", "constructed_sha256": "790bb150ba3d4a6a2ab0ae3784a71f52e93b0aaa6bcbca0086d2ae608d5f2d18", "ok": true}
+linux-dryrun-missing-original.txt ['VERDICT INCOMPLETE (exit 3)']
+linux-dryrun-wrong-original.txt ['VERDICT FAIL (exit 1)']

@@ -1,0 +1,15 @@
+HEAD 507315d63dd650731d50e78ccb301b91a780f91c
+parent f6bf47c59688c43d927dede01b59f772520815d8
+src blob 31d3cd7c111dfdd0d33a65ad097f9cbe3d0fac38 (base 0d523c93bab04bde4bf268053e178663b99e5179)
+diff vs e3b2017:
+A	scripts/win/hark18-gemini-stdout.ps1
+M	src/agent_session_gemini.py
+A	tests/fixtures/gemini_cli/fake_cli_h18.py
+A	tests/test_hark18_gemini_stdout.py
+AGENTS sha256 502aa8292c7b4e574156feecc7c09264992f0fea5b7092b30ec4d1cb8d9516cf  -
+script sha256 299c0b16df7d151c9aa8f3d1064d180d72cfc080a85a5c2b53fc7cba10cdcf7e  scripts/win/hark18-gemini-stdout.ps1
+ps parse errors: 0
+script non-ascii lines: 0
+Python 3.14.8
+git version 2.47.3
+Linux aarch64

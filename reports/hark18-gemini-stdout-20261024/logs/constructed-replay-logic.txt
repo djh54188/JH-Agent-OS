@@ -1,0 +1,7 @@
+test_original_bytes (test_hark18_gemini_stdout.TestOriginalRun1Replay.test_original_bytes) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+OK
+{"constructed_input": true, "pair_sha256": "23da0c76537c273bad94a8af84cb60db6f90a94cef55ecd1a17bd9049dc59967", "constructed_sha256": "790bb150ba3d4a6a2ab0ae3784a71f52e93b0aaa6bcbca0086d2ae608d5f2d18", "ok": true}

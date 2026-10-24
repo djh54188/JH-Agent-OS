@@ -1,0 +1,16 @@
+Hark-dispatch-18 Windows cell :: work dir <tmp-run>
+PASS checkout.head :: HEAD f6bf47c59688c43d927dede01b59f772520815d8
+PASS checkout.parent :: parent e3b2017ad5f5b2c208ca5e286dc67e7073307f42
+PASS checkout.clean :: status ''
+PASS checkout.blob src/agent_session_gemini.py :: tree 31d3cd7c111dfdd0d33a65ad097f9cbe3d0fac38 worktree 31d3cd7c111dfdd0d33a65ad097f9cbe3d0fac38
+PASS checkout.blob tests/test_hark18_gemini_stdout.py :: tree 373459c4be11eaa1ca9e3212c505e8e8f110819e worktree 373459c4be11eaa1ca9e3212c505e8e8f110819e
+PASS checkout.blob tests/fixtures/gemini_cli/fake_cli_h18.py :: tree 8ae04c94fa90e62e2557f2a7d7add8d6e68d4524 worktree 8ae04c94fa90e62e2557f2a7d7add8d6e68d4524
+FAIL original.digest :: 2 bytes sha256 73cb3858a687a8494ca3323053016282f3dad39d42cf62ca4e79dda2aac7d9ac
+PASS tests.exit :: unittest exit 0, ran 20
+FAIL tests.original_replay :: test_original_bytes: skipped
+FAIL tests.no_skips :: skipped: tests.test_hark18_gemini_stdout.TestOriginalRun1Replay.test_original_bytes
+PASS tests.weakening :: rows 8 control_pass 8 detected 8
+evidence commit 803d05fabed26d474c5888ece7e59cb5c9f36a10 on local branch win-evidence-hark18-20261024 (parent f6bf47c59688c43d927dede01b59f772520815d8); NOT pushed
+to hand it over (after reading the verdict): git -C "<tmp-run>/repo" push https://github.com/djh54188/JH-Agent-OS.git win-evidence-hark18-20261024:refs/heads/win-evidence-hark18-20261024
+VERDICT FAIL (exit 1)
+exit=1

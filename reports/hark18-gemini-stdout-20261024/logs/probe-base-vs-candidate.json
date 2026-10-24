@@ -1,0 +1,72 @@
+[
+  {
+    "case": "no_preamble",
+    "adapter": "base",
+    "exit": 0,
+    "state": "declared_complete",
+    "declared_status": "success",
+    "stdout_sha256": "a6cd536061da23ea2fd543f36e5a44d2a15675ad97bc3d4556d5a76d77073ecc",
+    "stdout_first_line": "{\"type\":\"init\",\"timestamp\":\"2026-10-21T14:50:38.775Z\",\"session_id\":\"4563aefb-1830-4d48-9145-0e85dec80da3\",\"model\":\"gemini-2.5-flash\"}",
+    "not_json_problems": [],
+    "host_diagnostics": false
+  },
+  {
+    "case": "no_preamble",
+    "adapter": "candidate",
+    "exit": 0,
+    "state": "declared_complete",
+    "declared_status": "success",
+    "stdout_sha256": "d46fdd4259e9d9d497c9a08b7fe2e3bce19b63e1915e9d981c9c86c1c4f8d5e5",
+    "stdout_first_line": "{\"type\":\"init\",\"timestamp\":\"2026-10-21T14:50:38.775Z\",\"session_id\":\"e238a8da-1d94-486c-9151-1938dbd704e8\",\"model\":\"gemini-2.5-flash\"}",
+    "not_json_problems": [],
+    "host_diagnostics": false
+  },
+  {
+    "case": "known_preamble",
+    "adapter": "base",
+    "exit": 0,
+    "state": "failed",
+    "declared_status": "success",
+    "stdout_sha256": "d8c6d85ad0d075827a93cf60cb73d827030421af357f1c751dd986ab95df22d6",
+    "stdout_first_line": "Rename failed with EPERM, retrying in 50ms (attempt 1/5)...",
+    "not_json_problems": [
+      "line 1: not JSON"
+    ],
+    "host_diagnostics": false
+  },
+  {
+    "case": "known_preamble",
+    "adapter": "candidate",
+    "exit": 0,
+    "state": "declared_complete",
+    "declared_status": "success",
+    "stdout_sha256": "4d9fcc0ca052c775aabdf014b9fa7dc789b37b2833a29a90a260dab988ceff24",
+    "stdout_first_line": "Rename failed with EPERM, retrying in 50ms (attempt 1/5)...",
+    "not_json_problems": [],
+    "host_diagnostics": true
+  },
+  {
+    "case": "known_preamble_exit1",
+    "adapter": "base",
+    "exit": 0,
+    "state": "failed",
+    "declared_status": "success",
+    "stdout_sha256": "667e81a68480c2e31facaee9e5e429d681d76c17a3a2998d543873034a61d326",
+    "stdout_first_line": "Rename failed with EPERM, retrying in 50ms (attempt 1/5)...",
+    "not_json_problems": [
+      "line 1: not JSON"
+    ],
+    "host_diagnostics": false
+  },
+  {
+    "case": "known_preamble_exit1",
+    "adapter": "candidate",
+    "exit": 0,
+    "state": "failed",
+    "declared_status": "success",
+    "stdout_sha256": "25a120c9c36e46e6be33b411f24094301275bf28fddadb4cb682d858c07f32f6",
+    "stdout_first_line": "Rename failed with EPERM, retrying in 50ms (attempt 1/5)...",
+    "not_json_problems": [],
+    "host_diagnostics": true
+  }
+]
