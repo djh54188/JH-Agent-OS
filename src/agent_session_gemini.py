@@ -379,13 +379,19 @@ def event_shape_problems(event: Dict[str, Any]) -> List[str]:
 def parse_stream(data: bytes) -> Tuple[List[Dict[str, Any]], List[str]]:
     """Native JSONL -> events, plus problems (never repaired or skipped silently).
     An event whose fields have the wrong shape is reported and left out."""
-    events: List[Dict[str, Any]] = []
-    problems: List[str] = []
     try:
         text = data.decode("utf-8")
     except UnicodeDecodeError as exc:
         return [], [f"stream is not UTF-8: {exc}"]
+    return _parse_lines(text, 0)
+
+
+def _parse_lines(text: str, skip: int) -> Tuple[List[Dict[str, Any]], List[str]]:
+    events: List[Dict[str, Any]] = []
+    problems: List[str] = []
     for number, line in enumerate(text.splitlines(), start=1):
+        if number <= skip:
+            continue
         if not line.strip():
             continue
         try:
@@ -406,6 +412,79 @@ def parse_stream(data: bytes) -> Tuple[List[Dict[str, Any]], List[str]]:
             continue
         events.append(value)
     return events, problems
+
+
+# Hark-派单-18: the one known host line that may precede the native stream.
+# Gemini CLI 0.65.0 ProjectRegistry.save (bundle/chunk-DKZARV6U.js, sha256 4d9cf6435503e528...8a28e)
+# renames its own projects.json (not a JH registry) and, on EPERM/EBUSY before the last of
+# 5 attempts, logs via debugLogger.debug -> console.debug -> stdout:
+#   `Rename failed with ${code}, retrying in ${2**attempt*50}ms (attempt ${attempt+1}/5)...`
+# Storage.initialize -> getShortId calls save at most twice (save({projects:{}}) when the
+# file is absent, then save(currentData)) and finishes before the headless `init` event.
+# The final failure is logged with debugLogger.error -> console.error (stderr).
+HOST_PREAMBLE_LINE = re.compile(
+    rb"Rename failed with (EPERM|EBUSY), retrying in (50|100|200|400)ms \(attempt ([1-4])/5\)\.\.\.")
+HOST_PREAMBLE_MAX_SAVES = 2
+HOST_PREAMBLE_MAX_LINES = 8
+HOST_PREAMBLE_SOURCE = ("gemini-cli 0.65.0 ProjectRegistry.save rename retry "
+                        "(bundle/chunk-DKZARV6U.js, console.debug to stdout)")
+HOST_SAVE_FINAL_FAILURE = b"Failed to save project registry"
+
+
+def split_host_preamble(data: bytes) -> List[Dict[str, Any]]:
+    """The known host retry lines at the very start of the stream, or [] (then nothing is
+    excused). Accepted only when every leading line is the exact known text with a coherent
+    attempt/back-off sequence, within the bounds, each ending in a bare LF, and the very next
+    line is a JSON `init` event. Anything else is left to the strict parser unchanged."""
+    lines: List[Dict[str, Any]] = []
+    pos, previous, saves = 0, 0, 0
+    while True:
+        end = data.find(b"\n", pos)
+        if end < 0:
+            break
+        match = HOST_PREAMBLE_LINE.fullmatch(data, pos, end)
+        if not match:
+            break
+        code, delay, attempt = match.group(1).decode("ascii"), int(match.group(2)), int(match.group(3))
+        if delay != 50 * 2 ** (attempt - 1):
+            return []
+        if attempt == 1:
+            saves += 1
+        elif attempt != previous + 1:
+            return []
+        if saves > HOST_PREAMBLE_MAX_SAVES or len(lines) >= HOST_PREAMBLE_MAX_LINES:
+            return []
+        raw = data[pos:end + 1]
+        lines.append({"line": len(lines) + 1, "text": raw[:-1].decode("ascii"), "bytes": len(raw),
+                      "sha256": hashlib.sha256(raw).hexdigest(), "code": code,
+                      "delay_ms": delay, "attempt": attempt, "max_attempts": 5})
+        previous, pos = attempt, end + 1
+    if not lines:
+        return []
+    end = data.find(b"\n", pos)
+    head = data[pos:] if end < 0 else data[pos:end]
+    try:
+        value = json.loads(head.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError, RecursionError):
+        return []
+    if not (isinstance(value, dict) and value.get("type") == "init"):
+        return []
+    return lines
+
+
+def parse_stream_with_host_preamble(data: bytes) -> Tuple[List[Dict[str, Any]], List[str], List[Dict[str, Any]]]:
+    """parse_stream, except that the known host preamble (split_host_preamble) is kept as
+    diagnostics instead of being a problem. Line numbers stay those of the original bytes."""
+    preamble = split_host_preamble(data)
+    if not preamble:
+        events, problems = parse_stream(data)
+        return events, problems, []
+    try:
+        text = data.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        return [], [f"stream is not UTF-8: {exc}"], []
+    events, problems = _parse_lines(text, len(preamble))
+    return events, problems, preamble
 
 
 def associate(events: List[Dict[str, Any]], session_id: str) -> Dict[str, Any]:
@@ -1314,7 +1393,35 @@ class GeminiCliAgentSessionAdapter(AgentSessionAdapter):
                 stdout_bytes = fh.read()
             if not digest_matches(evidence["stdout.jsonl"]["sha256"], hashlib.sha256(stdout_bytes).hexdigest()):
                 unverified.append("stdout evidence changed while being read")
-        events, parse_problems = parse_stream(stdout_bytes)
+        events, parse_problems, preamble = parse_stream_with_host_preamble(stdout_bytes)
+        host_diagnostics: Optional[Dict[str, Any]] = None
+        if preamble:
+            size = sum(p["bytes"] for p in preamble)
+            host_diagnostics = {
+                "kind": "host_stdout_preamble", "source": HOST_PREAMBLE_SOURCE,
+                "lines": preamble, "preamble_bytes": size,
+                "preamble_sha256": hashlib.sha256(stdout_bytes[:size]).hexdigest(),
+                "stdout_sha256": hashlib.sha256(stdout_bytes).hexdigest(),
+                "note": "host projects.json rename retries before init; not native events, "
+                        "not a JH registry write; the stdout evidence bytes are unchanged"}
+            stderr_meta = evidence.get("stderr.txt")
+            stderr_bytes: Optional[bytes] = None
+            if stderr_meta:
+                try:
+                    with open(stderr_meta["path"], "rb") as fh:
+                        stderr_bytes = fh.read()
+                except OSError:
+                    stderr_bytes = None
+                if stderr_bytes is not None and not digest_matches(
+                        stderr_meta["sha256"], hashlib.sha256(stderr_bytes).hexdigest()):
+                    stderr_bytes = None
+            if stderr_bytes is None:
+                parse_problems.append("host stdout preamble present but stderr evidence unavailable: "
+                                      "final project registry save failure cannot be ruled out")
+            elif HOST_SAVE_FINAL_FAILURE in stderr_bytes:
+                parse_problems.append("host project registry save failed (stderr)")
+            unverified.append(f"host stdout preamble: {len(preamble)} known ProjectRegistry.save retry "
+                              "line(s) before init kept as host diagnostics")
         assoc = associate(events, run.native_session_id) if events else {
             "problems": ["no native events"], "init": None, "result": None, "tool_calls": [],
             "assistant_text": "", "errors": [], "denied_requests": [], "unconfirmed_requests": []}
@@ -1403,6 +1510,8 @@ class GeminiCliAgentSessionAdapter(AgentSessionAdapter):
             "workspace_unchanged": workspace_unchanged,
             "exit_code": returncode,
         }
+        if host_diagnostics is not None:
+            artifact["host_diagnostics"] = host_diagnostics
         if any(not r["verified"] for r in refs):
             unverified.append("some source references did not resolve in the workspace")
         if not refs:
