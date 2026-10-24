@@ -1,0 +1,160 @@
+{
+  "old_script": "6cd4d51404faf129239076766b75c1e227cb8dcf + identical test hook",
+  "new_script": "scripts/win/hark14-handoff-sync.ps1",
+  "cases": [
+    {
+      "case": "no_change",
+      "script": "old",
+      "exit": 0,
+      "verdict": "PUBLISHED_VERIFIED",
+      "reported_ref_a": "0ebfb3db6fa84ab768526594805e70216a8566cd",
+      "actual_ref_a": "0ebfb3db6fa84ab768526594805e70216a8566cd",
+      "reported_ref_b": "63f3c0f415ddf50d663b79954783020a9dee83af",
+      "actual_ref_b": "63f3c0f415ddf50d663b79954783020a9dee83af",
+      "reported_matches_actual": true
+    },
+    {
+      "case": "no_change",
+      "script": "new",
+      "exit": 0,
+      "verdict": "PUBLISHED_VERIFIED",
+      "reported_ref_a": "32d40323cd95caf8f9850dad07f8ed1b83bf1259",
+      "actual_ref_a": "32d40323cd95caf8f9850dad07f8ed1b83bf1259",
+      "reported_ref_b": "c1d924da484fa3ef5c32e0995cf0e69ad0242b55",
+      "actual_ref_b": "c1d924da484fa3ef5c32e0995cf0e69ad0242b55",
+      "reported_matches_actual": true
+    },
+    {
+      "case": "a_ancestor",
+      "script": "old",
+      "exit": 0,
+      "verdict": "PUBLISHED_VERIFIED",
+      "reported_ref_a": "fc7675131b9bda7bdb97c7c967c47e28fe2e9ad5",
+      "actual_ref_a": "f7a5ec4a912c30fbc6e275a7af3caea623223631",
+      "reported_ref_b": "246ffb12145385f82a36759f4434f1a117a14e39",
+      "actual_ref_b": "246ffb12145385f82a36759f4434f1a117a14e39",
+      "reported_matches_actual": false
+    },
+    {
+      "case": "a_ancestor",
+      "script": "new",
+      "exit": 2,
+      "verdict": "PUBLISH_OUTCOME_UNCERTAIN",
+      "reported_ref_a": "06e9461a7dcc13eae6da46dc09a18af8ed6c6f8a",
+      "actual_ref_a": "06e9461a7dcc13eae6da46dc09a18af8ed6c6f8a",
+      "reported_ref_b": "ad58ab6160c6e9e71354db0f8a5edc89c3570e38",
+      "actual_ref_b": "ad58ab6160c6e9e71354db0f8a5edc89c3570e38",
+      "reported_matches_actual": true
+    },
+    {
+      "case": "a_fork",
+      "script": "old",
+      "exit": 0,
+      "verdict": "PUBLISHED_VERIFIED",
+      "reported_ref_a": "f3e463652d12d717cd2365a9b5fb2dfd50b962a4",
+      "actual_ref_a": "9f48d5d268341e93065c9d799354e3a4dce421b0",
+      "reported_ref_b": "23eb0d4f125df1c2677ec12892339282f2b0ae07",
+      "actual_ref_b": "23eb0d4f125df1c2677ec12892339282f2b0ae07",
+      "reported_matches_actual": false
+    },
+    {
+      "case": "a_fork",
+      "script": "new",
+      "exit": 2,
+      "verdict": "PUBLISH_OUTCOME_UNCERTAIN",
+      "reported_ref_a": "e4bb2a81b210172c000f871bd117e8388efb6cf5",
+      "actual_ref_a": "e4bb2a81b210172c000f871bd117e8388efb6cf5",
+      "reported_ref_b": "96804945020f9462d5c4c44a256c0a5bf29b0481",
+      "actual_ref_b": "96804945020f9462d5c4c44a256c0a5bf29b0481",
+      "reported_matches_actual": true
+    },
+    {
+      "case": "a_descendant",
+      "script": "old",
+      "exit": 0,
+      "verdict": "PUBLISHED_VERIFIED",
+      "reported_ref_a": "76264f3c0e3e4a9e789cfc27f4ccd8cf5f54f3d1",
+      "actual_ref_a": "86aa36bcd692a31de43cb031e0a9390fdf5fa0e6",
+      "reported_ref_b": "a24e368520a1a4fa426ab1bcb2ca973e11488327",
+      "actual_ref_b": "a24e368520a1a4fa426ab1bcb2ca973e11488327",
+      "reported_matches_actual": false
+    },
+    {
+      "case": "a_descendant",
+      "script": "new",
+      "exit": 2,
+      "verdict": "PUBLISH_OUTCOME_UNCERTAIN",
+      "reported_ref_a": "53740aeae9f7b5691cbf395c8d4cbe67f1a92f4b",
+      "actual_ref_a": "53740aeae9f7b5691cbf395c8d4cbe67f1a92f4b",
+      "reported_ref_b": "f7c11598be367444023307c91e34640dbd9fbb56",
+      "actual_ref_b": "f7c11598be367444023307c91e34640dbd9fbb56",
+      "reported_matches_actual": true
+    },
+    {
+      "case": "b_descendant",
+      "script": "old",
+      "exit": 0,
+      "verdict": "PUBLISHED_VERIFIED",
+      "reported_ref_a": "05a51b4ee29f32d3c7e5c6dbdcfaec5833edcd7b",
+      "actual_ref_a": "05a51b4ee29f32d3c7e5c6dbdcfaec5833edcd7b",
+      "reported_ref_b": "07cac9c58cdc9441d154fcf6edfbeeaf6032e2e9",
+      "actual_ref_b": "cf441a1729f08688dac7c6d8b9fcf52750792bc2",
+      "reported_matches_actual": false
+    },
+    {
+      "case": "b_descendant",
+      "script": "new",
+      "exit": 2,
+      "verdict": "PUBLISH_OUTCOME_UNCERTAIN",
+      "reported_ref_a": "3ac0fc2e249b7532290529b91dd35f7ead1fad2a",
+      "actual_ref_a": "3ac0fc2e249b7532290529b91dd35f7ead1fad2a",
+      "reported_ref_b": "21582c649569bb7db215f364577fa63447a285bc",
+      "actual_ref_b": "21582c649569bb7db215f364577fa63447a285bc",
+      "reported_matches_actual": true
+    },
+    {
+      "case": "a_and_b_descendant",
+      "script": "old",
+      "exit": 0,
+      "verdict": "PUBLISHED_VERIFIED",
+      "reported_ref_a": "cd09f3deb1687350f04b48aee7c04e68cca9ed90",
+      "actual_ref_a": "f4f23472f59a2fc80dc5b793bdcce962aecc5d3b",
+      "reported_ref_b": "2968fe4fc25f317581b5ac5662d984551b364556",
+      "actual_ref_b": "de6c01990f17a78a914437a0fb56359404c22d07",
+      "reported_matches_actual": false
+    },
+    {
+      "case": "a_and_b_descendant",
+      "script": "new",
+      "exit": 2,
+      "verdict": "PUBLISH_OUTCOME_UNCERTAIN",
+      "reported_ref_a": "35ddac69a20caec63e63c9b07e1a1b47cf54b0c9",
+      "actual_ref_a": "35ddac69a20caec63e63c9b07e1a1b47cf54b0c9",
+      "reported_ref_b": "b5ffc84a3e8141683613d2453318cfddb6a86038",
+      "actual_ref_b": "b5ffc84a3e8141683613d2453318cfddb6a86038",
+      "reported_matches_actual": true
+    },
+    {
+      "case": "b_deleted",
+      "script": "old",
+      "exit": 2,
+      "verdict": "PUBLISH_OUTCOME_UNCERTAIN",
+      "reported_ref_a": "4a03131dfaef9e118bfdf513e4dc06dceb36c501",
+      "actual_ref_a": "4a03131dfaef9e118bfdf513e4dc06dceb36c501",
+      "reported_ref_b": "00036789a1d9bb59cd56d6c198dc2476affff400",
+      "actual_ref_b": null,
+      "reported_matches_actual": false
+    },
+    {
+      "case": "b_deleted",
+      "script": "new",
+      "exit": 2,
+      "verdict": "PUBLISH_OUTCOME_UNCERTAIN",
+      "reported_ref_a": "2a80ea07c4dda0ac23d45bed1c89ecf6a274296c",
+      "actual_ref_a": "2a80ea07c4dda0ac23d45bed1c89ecf6a274296c",
+      "reported_ref_b": null,
+      "actual_ref_b": null,
+      "reported_matches_actual": true
+    }
+  ]
+}

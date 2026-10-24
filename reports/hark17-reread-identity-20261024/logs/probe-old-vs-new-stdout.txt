@@ -1,0 +1,14 @@
+no_change old 0 PUBLISHED_VERIFIED reported==actual: True
+no_change new 0 PUBLISHED_VERIFIED reported==actual: True
+a_ancestor old 0 PUBLISHED_VERIFIED reported==actual: False
+a_ancestor new 2 PUBLISH_OUTCOME_UNCERTAIN reported==actual: True
+a_fork old 0 PUBLISHED_VERIFIED reported==actual: False
+a_fork new 2 PUBLISH_OUTCOME_UNCERTAIN reported==actual: True
+a_descendant old 0 PUBLISHED_VERIFIED reported==actual: False
+a_descendant new 2 PUBLISH_OUTCOME_UNCERTAIN reported==actual: True
+b_descendant old 0 PUBLISHED_VERIFIED reported==actual: False
+b_descendant new 2 PUBLISH_OUTCOME_UNCERTAIN reported==actual: True
+a_and_b_descendant old 0 PUBLISHED_VERIFIED reported==actual: False
+a_and_b_descendant new 2 PUBLISH_OUTCOME_UNCERTAIN reported==actual: True
+b_deleted old 2 PUBLISH_OUTCOME_UNCERTAIN reported==actual: False
+b_deleted new 2 PUBLISH_OUTCOME_UNCERTAIN reported==actual: True
