@@ -1,0 +1,90 @@
+{
+    "schema":  "hark18-gemini-stdout-replay/v1",
+    "final":  false,
+    "note":  "replay stage only; the final verdict and the evidence commit identity are recorded outside this commit (out\\result.json)",
+    "replay":  {
+                   "status":  "PASS",
+                   "completed":  true
+               },
+    "candidate":  "f6bf47c59688c43d927dede01b59f772520815d8",
+    "original":  {
+                     "path":  "D:\\JH-Agent OS\\data\\gemini-node22-probe-20261023\\evidence\\node22-run1\\bridge\\runs\\gemini-run-92dc87c4d59a\\stdout.jsonl",
+                     "present":  true,
+                     "bytes":  3212,
+                     "sha256":  "4f8effca4110d539f64bf06a90cb830b593f706ec82a4e3a65a28c8a67ffa4aa",
+                     "last_write_utc":  "2026-10-23T12:34:03.2377621Z"
+                 },
+    "tests":  {
+                  "exit":  0,
+                  "ran":  20,
+                  "skipped":  [
+
+                              ],
+                  "original_replay":  "ok",
+                  "weakening_rows":  8,
+                  "control_pass":  8,
+                  "detected":  8
+              },
+    "python":  "3.14.7 Windows-11-10.0.26200-SP0",
+    "git":  "git version 2.55.0.windows.3",
+    "powershell":  "5.1.26100.9168",
+    "os":  "Microsoft Windows NT 10.0.26200.0",
+    "test_mode":  false,
+    "checks":  [
+                   {
+                       "name":  "checkout.head",
+                       "ok":  true,
+                       "detail":  "HEAD f6bf47c59688c43d927dede01b59f772520815d8"
+                   },
+                   {
+                       "name":  "checkout.parent",
+                       "ok":  true,
+                       "detail":  "parent e3b2017ad5f5b2c208ca5e286dc67e7073307f42"
+                   },
+                   {
+                       "name":  "checkout.clean",
+                       "ok":  true,
+                       "detail":  "status \u0027\u0027"
+                   },
+                   {
+                       "name":  "checkout.blob src/agent_session_gemini.py",
+                       "ok":  true,
+                       "detail":  "tree 31d3cd7c111dfdd0d33a65ad097f9cbe3d0fac38 worktree 31d3cd7c111dfdd0d33a65ad097f9cbe3d0fac38"
+                   },
+                   {
+                       "name":  "checkout.blob tests/test_hark18_gemini_stdout.py",
+                       "ok":  true,
+                       "detail":  "tree 373459c4be11eaa1ca9e3212c505e8e8f110819e worktree 373459c4be11eaa1ca9e3212c505e8e8f110819e"
+                   },
+                   {
+                       "name":  "checkout.blob tests/fixtures/gemini_cli/fake_cli_h18.py",
+                       "ok":  true,
+                       "detail":  "tree 8ae04c94fa90e62e2557f2a7d7add8d6e68d4524 worktree 8ae04c94fa90e62e2557f2a7d7add8d6e68d4524"
+                   },
+                   {
+                       "name":  "original.digest",
+                       "ok":  true,
+                       "detail":  "3212 bytes sha256 4f8effca4110d539f64bf06a90cb830b593f706ec82a4e3a65a28c8a67ffa4aa"
+                   },
+                   {
+                       "name":  "tests.exit",
+                       "ok":  true,
+                       "detail":  "unittest exit 0, ran 20"
+                   },
+                   {
+                       "name":  "tests.original_replay",
+                       "ok":  true,
+                       "detail":  "test_original_bytes: ok"
+                   },
+                   {
+                       "name":  "tests.no_skips",
+                       "ok":  true,
+                       "detail":  "skipped: "
+                   },
+                   {
+                       "name":  "tests.weakening",
+                       "ok":  true,
+                       "detail":  "rows 8 control_pass 8 detected 8"
+                   }
+               ]
+}

@@ -1,0 +1,32 @@
+Hark-dispatch-18 Windows cell (evidence gate v2) :: work dir D:\JH-Agent OS\data\hark18-gemini-stdout\run-20261025-223803
+  git init -q -> 0
+  git config --local core.autocrlf false -> 0
+  git fetch -q --no-tags https://github.com/djh54188/JH-Agent-OS.git f6bf47c59688c43d927dede01b59f772520815d8 -> 0
+  git checkout -q --detach f6bf47c59688c43d927dede01b59f772520815d8 -> 0
+  git rev-parse HEAD -> 0
+PASS checkout.head :: HEAD f6bf47c59688c43d927dede01b59f772520815d8
+  git rev-parse HEAD^ -> 0
+PASS checkout.parent :: parent e3b2017ad5f5b2c208ca5e286dc67e7073307f42
+  git status --porcelain -> 0
+PASS checkout.clean :: status ''
+  git rev-parse HEAD:src/agent_session_gemini.py -> 0
+  git hash-object --no-filters -- src/agent_session_gemini.py -> 0
+PASS checkout.blob src/agent_session_gemini.py :: tree 31d3cd7c111dfdd0d33a65ad097f9cbe3d0fac38 worktree 31d3cd7c111dfdd0d33a65ad097f9cbe3d0fac38
+  git rev-parse HEAD:tests/test_hark18_gemini_stdout.py -> 0
+  git hash-object --no-filters -- tests/test_hark18_gemini_stdout.py -> 0
+PASS checkout.blob tests/test_hark18_gemini_stdout.py :: tree 373459c4be11eaa1ca9e3212c505e8e8f110819e worktree 373459c4be11eaa1ca9e3212c505e8e8f110819e
+  git rev-parse HEAD:tests/fixtures/gemini_cli/fake_cli_h18.py -> 0
+  git hash-object --no-filters -- tests/fixtures/gemini_cli/fake_cli_h18.py -> 0
+PASS checkout.blob tests/fixtures/gemini_cli/fake_cli_h18.py :: tree 8ae04c94fa90e62e2557f2a7d7add8d6e68d4524 worktree 8ae04c94fa90e62e2557f2a7d7add8d6e68d4524
+PASS original.digest :: 3212 bytes sha256 4f8effca4110d539f64bf06a90cb830b593f706ec82a4e3a65a28c8a67ffa4aa
+PASS tests.exit :: unittest exit 0, ran 20
+PASS tests.original_replay :: test_original_bytes: ok
+PASS tests.no_skips :: skipped: 
+PASS tests.weakening :: rows 8 control_pass 8 detected 8
+REPLAY PASS (not the final verdict)
+EVIDENCE stage identity_before
+  git rev-parse --verify HEAD^{commit} -> 0
+  git status --porcelain -> 0
+EVIDENCE stage prepare_dir
+EVIDENCE stage snapshot
+EVIDENCE snapshot of run-log follows this line
