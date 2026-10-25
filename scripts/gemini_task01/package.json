@@ -1,0 +1,92 @@
+{
+ "core_points": {
+  "B2": {
+   "functions": [
+    "GeminiCliAgentSessionAdapter._reload_locked",
+    "unaccounted_run_traces",
+    "registry_text_problem",
+    "registry_prefix_intact"
+   ]
+  },
+  "B3": {
+   "focus": {
+    "end": 1141,
+    "sha256": "ed885ecbddb0b9a259d08f58bb149a47e3f58f5ee1570d6fa6cb18c284d039cd",
+    "start": 1134
+   },
+   "functions": [
+    "GeminiCliAgentSessionAdapter._reload_locked"
+   ]
+  },
+  "B4": {
+   "functions": [
+    "GeminiCliAgentSessionAdapter._replay_locked",
+    "GeminiCliAgentSessionAdapter.submit"
+   ]
+  },
+  "B6": {
+   "focus": {
+    "end": 1297,
+    "sha256": "b266d95ddba859cfaea433fa6b6055af789dd5e5e14f845bdd7a9eaa65ddd396",
+    "start": 1286
+   },
+   "functions": [
+    "GeminiCliAgentSessionAdapter._dispatch_locked"
+   ]
+  },
+  "B7": {
+   "focus": {
+    "end": 1333,
+    "sha256": "d4e3c691d36cf37b9c23ba70a613c2de56d148b65459021988449588ebfd579b",
+    "start": 1318
+   },
+   "functions": [
+    "GeminiCliAgentSessionAdapter._dispatch_locked"
+   ]
+  }
+ },
+ "function_ranges": {
+  "GeminiCliAgentSessionAdapter._dispatch_locked": [
+   1261,
+   1333
+  ],
+  "GeminiCliAgentSessionAdapter._reload_locked": [
+   1062,
+   1143
+  ],
+  "GeminiCliAgentSessionAdapter._replay_locked": [
+   1218,
+   1233
+  ],
+  "GeminiCliAgentSessionAdapter.submit": [
+   1235,
+   1259
+  ],
+  "registry_prefix_intact": [
+   200,
+   203
+  ],
+  "registry_text_problem": [
+   914,
+   924
+  ],
+  "unaccounted_run_traces": [
+   879,
+   911
+  ]
+ },
+ "note": "Fixed input for one future real Gemini CLI read-only task. Not a run result, not an acceptance.",
+ "p_text": "Carry out the task given on standard input.",
+ "pinned_cli_version": "0.65.0",
+ "review_baseline_file": "review-baseline.md",
+ "review_baseline_sha256": "e07841a842c400842fa44154b50f20d27de6ed539c8b1f7c4c7e13e55e4fd57f",
+ "schema": "hark21/gemini-task01/package/v1",
+ "source_commit": "f6bf47c59688c43d927dede01b59f772520815d8",
+ "source_prefix": "src/",
+ "stdin_prefix": "JH task (read-only; cite sources as path:line):\n",
+ "target_blob": "31d3cd7c111dfdd0d33a65ad097f9cbe3d0fac38",
+ "target_file": "src/agent_session_gemini.py",
+ "task_file": "task.txt",
+ "task_id": "gemini-task01-registry-unknown-no-resend",
+ "task_sha256": "5ed4f438c57918d7924ea00bf02134c529b20bf9556e6b01c6dffa7830e80518"
+}
