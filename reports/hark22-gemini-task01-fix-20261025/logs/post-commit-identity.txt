@@ -1,0 +1,42 @@
+HEAD 3a90ca9b9511ed913ea3488f461608390ccf6162 parent 24bd54096145fd1436c20f70f15f2d281b4d20ea
+dirty_entries 0
+--- diff names 24bd540..HEAD
+scripts/gemini_task01/check_run.py
+scripts/gemini_task01/export_source.py
+scripts/gemini_task01/package.json
+scripts/gemini_task01/pins.py
+scripts/gemini_task01/review-baseline.md
+tests/fixtures/hark21/build.py
+tests/fixtures/hark21/fake_cli_t01.py
+tests/test_hark21_gemini_task01.py
+--- src tree vs 59b221ce
+src unchanged
+--- A-owned paths vs 24bd540
+unchanged
+--- AGENTS sha256
+502aa8292c7b4e574156feecc7c09264992f0fea5b7092b30ec4d1cb8d9516cf  AGENTS.md
+--- file sha256
+5ed4f438c57918d7924ea00bf02134c529b20bf9556e6b01c6dffa7830e80518  scripts/gemini_task01/task.txt
+f5ddcbad182fa91ebd48625d59743c6c07c396db47ba828b0fdb512abd58b8c7  scripts/gemini_task01/review-baseline.md
+92346a5ffd6f06e07939c269b899f57eed242ddfdfe6dbe850c6abdf3abe746c  scripts/gemini_task01/package.json
+bb774033cf248c163eb5d4da72b1a5fc20379c51f4a962581f867693acae0dbd  scripts/gemini_task01/pins.py
+b76c6f027f2415ac777c6121ceca2c2b547734baf6cf2c6e51542a73fcfcb248  scripts/gemini_task01/export_source.py
+7deab1b46262aea6eea83f338d44d5f584f65a6f4720be7910484594112621c5  scripts/gemini_task01/check_run.py
+94c7dd11ad9d5242e4e61b5df6a5f513b2d76328c2fff6c786fdc1fa7e99b441  tests/test_hark21_gemini_task01.py
+2aef0f2e181941d378e6d1d1fa62ffd6041c54ff693ca9c491ca86e6c4204686  tests/fixtures/hark21/build.py
+a6448c370e50fe72902ce8c95ad9250a1a560cabe9c0566f694737b9c2e48861  tests/fixtures/hark21/fake_cli_t01.py
+--- pins self-check
+package True task True baseline True src_files 26
+--- checker imports
+65:from __future__ import annotations
+67:import argparse
+68:import ast
+69:import hashlib
+70:import json
+71:import os
+72:import re
+73:import stat as _stat
+74:import sys
+75:from typing import Any, Dict, List, Optional, Tuple
+82:import pins  # noqa: E402  (trusted anchors)
+83:from src.agent_session_gemini import (  # noqa: E402  (read-only use of the adapter's parsers)

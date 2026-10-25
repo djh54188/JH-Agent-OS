@@ -1,0 +1,173 @@
+Python 3.12.15
+24bd54096145fd1436c20f70f15f2d281b4d20ea
+test_no_explicit_model (tests.test_hark21_gemini_task01.TestBinding.test_no_explicit_model) ... ok
+test_old_host_probe_run_is_another_task (tests.test_hark21_gemini_task01.TestBinding.test_old_host_probe_run_is_another_task) ... ok
+test_other_task_id (tests.test_hark21_gemini_task01.TestBinding.test_other_task_id) ... ok
+test_other_task_text (tests.test_hark21_gemini_task01.TestBinding.test_other_task_text) ... ok
+test_prompt_received_differs (tests.test_hark21_gemini_task01.TestBinding.test_prompt_received_differs) ... ok
+test_uncollected_run_is_unknown_not_resent (tests.test_hark21_gemini_task01.TestBinding.test_uncollected_run_is_unknown_not_resent) ... ok
+test_unknown_run_id (tests.test_hark21_gemini_task01.TestBinding.test_unknown_run_id) ... ok
+test_exit_codes (tests.test_hark21_gemini_task01.TestCli.test_exit_codes) ... MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+--out must be outside the export and the evidence root
+MECHANICAL UNDETERMINED - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+ok
+test_b7_meaning_omitted_is_not_a_verdict (tests.test_hark21_gemini_task01.TestControlAndSemanticBoundary.test_b7_meaning_omitted_is_not_a_verdict) ... ok
+test_b7_not_cited_fails_location (tests.test_hark21_gemini_task01.TestControlAndSemanticBoundary.test_b7_not_cited_fails_location) ... ok
+test_checker_starts_no_process_and_no_network (tests.test_hark21_gemini_task01.TestControlAndSemanticBoundary.test_checker_starts_no_process_and_no_network) ... ok
+test_constructed_good_run_all_mechanical_pass_but_no_verdict (tests.test_hark21_gemini_task01.TestControlAndSemanticBoundary.test_constructed_good_run_all_mechanical_pass_but_no_verdict) ... ok
+test_reversed_explanation_with_correct_refs_is_not_a_verdict (tests.test_hark21_gemini_task01.TestControlAndSemanticBoundary.test_reversed_explanation_with_correct_refs_is_not_a_verdict) ... ok
+test_export_is_src_only_and_byte_exact (tests.test_hark21_gemini_task01.TestExport.test_export_is_src_only_and_byte_exact) ... ok
+test_export_refuses_non_empty_out_and_manifest_inside (tests.test_hark21_gemini_task01.TestExport.test_export_refuses_non_empty_out_and_manifest_inside) ... ok
+test_task_text_and_baseline_kept_apart (tests.test_hark21_gemini_task01.TestExport.test_task_text_and_baseline_kept_apart) ... ok
+test_each_guard_control_then_weakened (tests.test_hark21_gemini_task01.TestGuardWeakening.test_each_guard_control_then_weakened) ... MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL UNDETERMINED - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL UNDETERMINED - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+ok
+test_real_sample_binds (tests.test_hark21_gemini_task01.TestHostFormatBindingSample.test_real_sample_binds) ... ok
+test_parsers_match_real_cli_output_sample (tests.test_hark21_gemini_task01.TestHostFormatSample.test_parsers_match_real_cli_output_sample) ... ok
+test_exporter_refuses_unpinned_package (tests.test_hark21_gemini_task01.TestR1Anchors.test_exporter_refuses_unpinned_package) ... ok
+test_file_added (tests.test_hark21_gemini_task01.TestR1Anchors.test_file_added) ... ok
+test_file_deleted (tests.test_hark21_gemini_task01.TestR1Anchors.test_file_deleted) ... ok
+test_focus_moved (tests.test_hark21_gemini_task01.TestR1Anchors.test_focus_moved) ... ok
+test_non_target_changed (tests.test_hark21_gemini_task01.TestR1Anchors.test_non_target_changed) ... ok
+test_package_files_match_pins (tests.test_hark21_gemini_task01.TestR1Anchors.test_package_files_match_pins) ... ok
+test_pins_are_the_git_objects_of_the_fixed_commit (tests.test_hark21_gemini_task01.TestR1Anchors.test_pins_are_the_git_objects_of_the_fixed_commit) ... ok
+test_task_swapped (tests.test_hark21_gemini_task01.TestR1Anchors.test_task_swapped) ... ok
+test_auto_model (tests.test_hark21_gemini_task01.TestR2Native.test_auto_model) ... ok
+test_chat_model_differs (tests.test_hark21_gemini_task01.TestR2Native.test_chat_model_differs) ... ok
+test_chat_session_differs (tests.test_hark21_gemini_task01.TestR2Native.test_chat_session_differs) ... ok
+test_errors_mismatch (tests.test_hark21_gemini_task01.TestR2Native.test_errors_mismatch) ... ok
+test_function_response_name_differs (tests.test_hark21_gemini_task01.TestR2Native.test_function_response_name_differs) ... ok
+test_illegal_tool_call (tests.test_hark21_gemini_task01.TestR2Native.test_illegal_tool_call) ... ok
+test_init_model_differs (tests.test_hark21_gemini_task01.TestR2Native.test_init_model_differs) ... ok
+test_known_preamble_alone_is_accepted (tests.test_hark21_gemini_task01.TestR2Native.test_known_preamble_alone_is_accepted) ... ok
+test_preamble_with_stderr_final_failure (tests.test_hark21_gemini_task01.TestR2Native.test_preamble_with_stderr_final_failure) ... ok
+test_real_chat_record_sample_is_supported_shape (tests.test_hark21_gemini_task01.TestR2Native.test_real_chat_record_sample_is_supported_shape) ... ok
+test_result_error_but_collected_success (tests.test_hark21_gemini_task01.TestR2Native.test_result_error_but_collected_success) ... ok
+test_rewrite_changes_tool_call (tests.test_hark21_gemini_task01.TestR2Native.test_rewrite_changes_tool_call) ... ok
+test_tool_call_not_in_stream (tests.test_hark21_gemini_task01.TestR2Native.test_tool_call_not_in_stream) ... ok
+test_tool_calls_not_a_list (tests.test_hark21_gemini_task01.TestR2Native.test_tool_calls_not_a_list) ... ok
+test_usage_differs_from_stats (tests.test_hark21_gemini_task01.TestR2Native.test_usage_differs_from_stats) ... ok
+test_usage_field_missing_is_unknown (tests.test_hark21_gemini_task01.TestR2Native.test_usage_field_missing_is_unknown) ... ok
+test_usage_missing_is_unknown (tests.test_hark21_gemini_task01.TestR2Native.test_usage_missing_is_unknown) ... ok
+test_grep_context_window_differs (tests.test_hark21_gemini_task01.TestR3Binding.test_grep_context_window_differs) ... ok
+test_grep_header_pattern_differs (tests.test_hark21_gemini_task01.TestR3Binding.test_grep_header_pattern_differs) ... ok
+test_read_end_beyond_file_is_unknown (tests.test_hark21_gemini_task01.TestR3Binding.test_read_end_beyond_file_is_unknown) ... ok
+test_read_range_differs_from_request (tests.test_hark21_gemini_task01.TestR3Binding.test_read_range_differs_from_request) ... ok
+test_read_without_explicit_range_is_unknown (tests.test_hark21_gemini_task01.TestR3Binding.test_read_without_explicit_range_is_unknown) ... ok
+test_unexplained_default_value_is_unknown (tests.test_hark21_gemini_task01.TestR3Binding.test_unexplained_default_value_is_unknown) ... ok
+test_unexplained_grep_parameter_is_unknown (tests.test_hark21_gemini_task01.TestR3Binding.test_unexplained_grep_parameter_is_unknown) ... ok
+test_evidence_file_link_not_followed (tests.test_hark21_gemini_task01.TestR4Boundaries.test_evidence_file_link_not_followed) ... ok
+test_evidence_root_link_not_followed (tests.test_hark21_gemini_task01.TestR4Boundaries.test_evidence_root_link_not_followed) ... ok
+test_export_entry_link_recorded_not_read (tests.test_hark21_gemini_task01.TestR4Boundaries.test_export_entry_link_recorded_not_read) ... ok
+test_export_root_link_not_followed (tests.test_hark21_gemini_task01.TestR4Boundaries.test_export_root_link_not_followed) ... ok
+test_exporter_refuses_link_parent (tests.test_hark21_gemini_task01.TestR4Boundaries.test_exporter_refuses_link_parent) ... ok
+test_exporter_refuses_link_root_and_writes_nothing (tests.test_hark21_gemini_task01.TestR4Boundaries.test_exporter_refuses_link_root_and_writes_nothing) ... ok
+test_input_shapes_give_stable_diagnostics (tests.test_hark21_gemini_task01.TestR4Boundaries.test_input_shapes_give_stable_diagnostics) ... ok
+test_main_refuses_weakened_hook_outside_tests (tests.test_hark21_gemini_task01.TestR4Boundaries.test_main_refuses_weakened_hook_outside_tests) ... guard weakening is a test-only hook; refusing to run with it set
+ok
+test_root_relative_reference_is_judged_not_skipped (tests.test_hark21_gemini_task01.TestR4Boundaries.test_root_relative_reference_is_judged_not_skipped) ... ok
+test_run_dir_link_not_followed (tests.test_hark21_gemini_task01.TestR4Boundaries.test_run_dir_link_not_followed) ... ok
+test_run_id_traversal_not_opened (tests.test_hark21_gemini_task01.TestR4Boundaries.test_run_id_traversal_not_opened) ... ok
+test_task_file_outside_not_read (tests.test_hark21_gemini_task01.TestR4Boundaries.test_task_file_outside_not_read) ... ok
+test_windows_path_kinds (tests.test_hark21_gemini_task01.TestR4Boundaries.test_windows_path_kinds) ... ok
+test_chat_record_absent_at_collect_is_unknown (tests.test_hark21_gemini_task01.TestSourceAndEvidence.test_chat_record_absent_at_collect_is_unknown) ... ok
+test_crlf_task_copy_is_reported (tests.test_hark21_gemini_task01.TestSourceAndEvidence.test_crlf_task_copy_is_reported) ... ok
+test_evidence_byte_changed (tests.test_hark21_gemini_task01.TestSourceAndEvidence.test_evidence_byte_changed) ... ok
+test_evidence_missing_is_unknown (tests.test_hark21_gemini_task01.TestSourceAndEvidence.test_evidence_missing_is_unknown) ... ok
+test_export_byte_changed (tests.test_hark21_gemini_task01.TestSourceAndEvidence.test_export_byte_changed) ... ok
+test_export_extra_file_at_run_time (tests.test_hark21_gemini_task01.TestSourceAndEvidence.test_export_extra_file_at_run_time) ... ok
+test_manifest_for_other_commit (tests.test_hark21_gemini_task01.TestSourceAndEvidence.test_manifest_for_other_commit) ... ok
+test_nonzero_exit (tests.test_hark21_gemini_task01.TestSourceAndEvidence.test_nonzero_exit) ... ok
+test_registry_field_shape_wrong (tests.test_hark21_gemini_task01.TestSourceAndEvidence.test_registry_field_shape_wrong) ... ok
+test_tool_result_field_shape_wrong (tests.test_hark21_gemini_task01.TestSourceAndEvidence.test_tool_result_field_shape_wrong) ... ok
+test_workspace_mutated_by_run (tests.test_hark21_gemini_task01.TestSourceAndEvidence.test_workspace_mutated_by_run) ... ok
+test_chat_args_disagree (tests.test_hark21_gemini_task01.TestToolContent.test_chat_args_disagree) ... ok
+test_chat_call_missing_is_unknown (tests.test_hark21_gemini_task01.TestToolContent.test_chat_call_missing_is_unknown) ... ok
+test_core_point_not_cited (tests.test_hark21_gemini_task01.TestToolContent.test_core_point_not_cited) ... ok
+test_grep_line_differs_from_source (tests.test_hark21_gemini_task01.TestToolContent.test_grep_line_differs_from_source) ... ok
+test_no_grep_at_all (tests.test_hark21_gemini_task01.TestToolContent.test_no_grep_at_all) ... ok
+test_read_content_shifted (tests.test_hark21_gemini_task01.TestToolContent.test_read_content_shifted) ... ok
+test_read_outside_workspace_is_not_read (tests.test_hark21_gemini_task01.TestToolContent.test_read_outside_workspace_is_not_read) ... ok
+test_ref_to_missing_line (tests.test_hark21_gemini_task01.TestToolContent.test_ref_to_missing_line) ... ok
+test_stream_summary_disagrees (tests.test_hark21_gemini_task01.TestToolContent.test_stream_summary_disagrees) ... ok
+test_unknown_grep_format (tests.test_hark21_gemini_task01.TestToolContent.test_unknown_grep_format) ... ok
+test_untruncated_read_format_is_unknown (tests.test_hark21_gemini_task01.TestToolContent.test_untruncated_read_format_is_unknown) ... ok
+
+----------------------------------------------------------------------
+Ran 86 tests in 27.539s
+
+OK
+WEAKENING {"R1.file_added": {"control": "fail", "control_exit": 1, "guard": "src_anchor", "weakened": "all_pass", "weakened_exit": 0}, "R1.file_deleted": {"control": "fail", "control_exit": 1, "guard": "src_anchor", "weakened": "all_pass", "weakened_exit": 0}, "R1.focus_moved": {"control": "fail", "control_exit": 1, "guard": "package_anchor", "weakened": "all_pass", "weakened_exit": 0}, "R1.non_target_changed": {"control": "fail", "control_exit": 1, "guard": "src_anchor", "weakened": "all_pass", "weakened_exit": 0}, "R1.task_swapped": {"control": "fail", "control_exit": 1, "guard": "package_anchor", "weakened": "all_pass", "weakened_exit": 0}, "R2.auto_model": {"control": "fail", "control_exit": 1, "guard": "explicit_model", "weakened": "all_pass", "weakened_exit": 0}, "R2.chat_model": {"control": "fail", "control_exit": 1, "guard": "chat_record", "weakened": "all_pass", "weakened_exit": 0}, "R2.chat_session": {"control": "fail", "control_exit": 1, "guard": "chat_record", "weakened": "all_pass", "weakened_exit": 0}, "R2.errors_mismatch": {"control": "fail", "control_exit": 1, "guard": "host_errors", "weakened": "all_pass", "weakened_exit": 0}, "R2.fr_name": {"control": "fail", "control_exit": 1, "guard": "chat_record", "weakened": "all_pass", "weakened_exit": 0}, "R2.ghost_tool_call": {"control": "fail", "control_exit": 1, "guard": "chat_record", "weakened": "all_pass", "weakened_exit": 0}, "R2.illegal_tool_call": {"control": "fail", "control_exit": 1, "guard": "chat_record", "weakened": "all_pass", "weakened_exit": 0}, "R2.init_model": {"control": "fail", "control_exit": 1, "guard": "native_model", "weakened": "all_pass", "weakened_exit": 0}, "R2.preamble_stderr_failure": {"control": "fail", "control_exit": 1, "guard": "host_preamble", "weakened": "all_pass", "weakened_exit": 0}, "R2.result_error": {"control": "fail", "control_exit": 1, "guard": "native_status", "weakened": "all_pass", "weakened_exit": 0}, "R2.tool_calls_int": {"control": "fail", "control_exit": 1, "guard": "chat_record", "weakened": "all_pass", "weakened_exit": 0}, "R2.usage_field_missing": {"control": "undetermined", "control_exit": 3, "guard": "usage", "weakened": "all_pass", "weakened_exit": 0}, "R2.usage_missing": {"control": "undetermined", "control_exit": 3, "guard": "usage", "weakened": "all_pass", "weakened_exit": 0}, "R3.grep_header": {"control": "fail", "control_exit": 1, "guard": "grep_binding", "weakened": "all_pass", "weakened_exit": 0}, "R3.grep_window": {"control": "fail", "control_exit": 1, "guard": "grep_binding", "weakened": "all_pass", "weakened_exit": 0}, "R3.read_range": {"control": "fail", "control_exit": 1, "guard": "read_binding", "weakened": "all_pass", "weakened_exit": 0}, "R4.evidence_file_link": {"control": "fail", "control_exit": 1, "guard": "evidence_paths", "sentinel_access_control": 0, "sentinel_access_weakened": 1, "weakened": "all_pass", "weakened_exit": 0}, "R4.evidence_root_link": {"control": "fail", "control_exit": 1, "guard": "evidence_paths", "sentinel_access_control": 0, "sentinel_access_weakened": 6, "weakened": "all_pass", "weakened_exit": 0}, "R4.export_root_link": {"control": "fail", "control_exit": 1, "guard": "export_root", "sentinel_access_control": 0, "sentinel_access_weakened": 30, "weakened": "all_pass", "weakened_exit": 0}, "R4.run_dir_link": {"control": "fail", "control_exit": 1, "guard": "evidence_paths", "sentinel_access_control": 0, "sentinel_access_weakened": 5, "weakened": "all_pass", "weakened_exit": 0}, "R4.task_outside": {"control": "fail", "control_exit": 1, "guard": "input_paths", "sentinel_access_control": 0, "sentinel_access_weakened": 1, "weakened": "all_pass", "weakened_exit": 0}, "adapter_gates": {"control": "fail", "control_exit": 1, "guard": "adapter_gates", "weakened": "all_pass", "weakened_exit": 0}, "binding_request": {"control": "fail", "control_exit": 1, "guard": "binding_request", "weakened": "all_pass", "weakened_exit": 0}, "evidence_digest": {"control": "fail", "control_exit": 1, "guard": "evidence_digest", "weakened": "all_pass", "weakened_exit": 0}, "export_tree": {"control": "fail", "control_exit": 1, "guard": "export_tree", "weakened": "all_pass", "weakened_exit": 0}, "package_digest": {"control": "fail", "control_exit": 1, "guard": "package_digest", "weakened": "all_pass", "weakened_exit": 0}, "refs_core": {"control": "fail", "control_exit": 1, "guard": "refs_core", "weakened": "all_pass", "weakened_exit": 0}, "refs_exist": {"control": "fail", "control_exit": 1, "guard": "refs_exist", "weakened": "all_pass", "weakened_exit": 0}, "required_tools": {"control": "fail", "control_exit": 1, "guard": "required_tools", "weakened": "all_pass", "weakened_exit": 0}, "stdin": {"control": "fail", "control_exit": 1, "guard": "stdin", "weakened": "all_pass", "weakened_exit": 0}, "tool_content": {"control": "fail", "control_exit": 1, "guard": "tool_content", "weakened": "all_pass", "weakened_exit": 0}, "workspace_manifest": {"control": "fail", "control_exit": 1, "guard": "workspace_manifest", "weakened": "all_pass", "weakened_exit": 0}}

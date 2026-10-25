@@ -1,0 +1,35 @@
+............................................................/usr/local/lib/python3.12/subprocess.py:1127: ResourceWarning: subprocess 22058 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/usr/local/lib/python3.12/subprocess.py:1127: ResourceWarning: subprocess 22064 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/usr/local/lib/python3.12/subprocess.py:1127: ResourceWarning: subprocess 22055 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+......../usr/local/lib/python3.12/subprocess.py:1127: ResourceWarning: subprocess 22078 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+....../usr/local/lib/python3.12/subprocess.py:1127: ResourceWarning: subprocess 22097 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/work/jhos-b/tests/test_hark12_gemini_admission.py:261: ResourceWarning: unclosed file <_io.BufferedReader name='/tmp/hark12-2t8168s_/evidence/registry.jsonl'>
+  lines = open(self.h.registry, "rb").read().splitlines(keepends=True)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/work/jhos-b/tests/test_hark12_gemini_admission.py:261: ResourceWarning: unclosed file <_io.BufferedReader name='/tmp/hark12-bvz51ai1/evidence/registry.jsonl'>
+  lines = open(self.h.registry, "rb").read().splitlines(keepends=True)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/usr/local/lib/python3.12/subprocess.py:1127: ResourceWarning: subprocess 22104 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+...../usr/local/lib/python3.12/subprocess.py:1127: ResourceWarning: subprocess 22114 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+.../workspace/work/jhos-b/tests/test_hark12_gemini_admission.py:261: ResourceWarning: unclosed file <_io.BufferedReader name='/tmp/hark12-97f_hvby/evidence/registry.jsonl'>
+  lines = open(self.h.registry, "rb").read().splitlines(keepends=True)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+....................................................s..........sssssss
+----------------------------------------------------------------------
+Ran 152 tests in 18.435s
+
+OK (skipped=8)

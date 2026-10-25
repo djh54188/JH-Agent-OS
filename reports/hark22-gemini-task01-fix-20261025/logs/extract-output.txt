@@ -1,0 +1,195 @@
+{
+ "ast_test_methods": 86,
+ "run1": {
+  "cases": 37,
+  "control_not_all_pass": 37,
+  "control_unknown_only": [
+   "R2.usage_field_missing",
+   "R2.usage_missing"
+  ],
+  "guards": [
+   "adapter_gates",
+   "binding_request",
+   "chat_record",
+   "evidence_digest",
+   "evidence_paths",
+   "explicit_model",
+   "export_root",
+   "export_tree",
+   "grep_binding",
+   "host_errors",
+   "host_preamble",
+   "input_paths",
+   "native_model",
+   "native_status",
+   "package_anchor",
+   "package_digest",
+   "read_binding",
+   "refs_core",
+   "refs_exist",
+   "required_tools",
+   "src_anchor",
+   "stdin",
+   "tool_content",
+   "usage",
+   "workspace_manifest"
+  ],
+  "io_sentinel_access_control_weakened": {
+   "R4.evidence_file_link": [
+    0,
+    1
+   ],
+   "R4.evidence_root_link": [
+    0,
+    6
+   ],
+   "R4.export_root_link": [
+    0,
+    30
+   ],
+   "R4.run_dir_link": [
+    0,
+    5
+   ],
+   "R4.task_outside": [
+    0,
+    1
+   ]
+  },
+  "ran": [
+   "86"
+  ],
+  "status": [
+   "OK"
+  ],
+  "weakened_all_pass_exit0": 37
+ },
+ "run2": {
+  "cases": 37,
+  "control_not_all_pass": 37,
+  "control_unknown_only": [
+   "R2.usage_field_missing",
+   "R2.usage_missing"
+  ],
+  "guards": [
+   "adapter_gates",
+   "binding_request",
+   "chat_record",
+   "evidence_digest",
+   "evidence_paths",
+   "explicit_model",
+   "export_root",
+   "export_tree",
+   "grep_binding",
+   "host_errors",
+   "host_preamble",
+   "input_paths",
+   "native_model",
+   "native_status",
+   "package_anchor",
+   "package_digest",
+   "read_binding",
+   "refs_core",
+   "refs_exist",
+   "required_tools",
+   "src_anchor",
+   "stdin",
+   "tool_content",
+   "usage",
+   "workspace_manifest"
+  ],
+  "io_sentinel_access_control_weakened": {
+   "R4.evidence_file_link": [
+    0,
+    1
+   ],
+   "R4.evidence_root_link": [
+    0,
+    6
+   ],
+   "R4.export_root_link": [
+    0,
+    30
+   ],
+   "R4.run_dir_link": [
+    0,
+    5
+   ],
+   "R4.task_outside": [
+    0,
+    1
+   ]
+  },
+  "ran": [
+   "86"
+  ],
+  "status": [
+   "OK"
+  ],
+  "weakened_all_pass_exit0": 37
+ },
+ "run3": {
+  "cases": 37,
+  "control_not_all_pass": 37,
+  "control_unknown_only": [
+   "R2.usage_field_missing",
+   "R2.usage_missing"
+  ],
+  "guards": [
+   "adapter_gates",
+   "binding_request",
+   "chat_record",
+   "evidence_digest",
+   "evidence_paths",
+   "explicit_model",
+   "export_root",
+   "export_tree",
+   "grep_binding",
+   "host_errors",
+   "host_preamble",
+   "input_paths",
+   "native_model",
+   "native_status",
+   "package_anchor",
+   "package_digest",
+   "read_binding",
+   "refs_core",
+   "refs_exist",
+   "required_tools",
+   "src_anchor",
+   "stdin",
+   "tool_content",
+   "usage",
+   "workspace_manifest"
+  ],
+  "io_sentinel_access_control_weakened": {
+   "R4.evidence_file_link": [
+    0,
+    1
+   ],
+   "R4.evidence_root_link": [
+    0,
+    6
+   ],
+   "R4.export_root_link": [
+    0,
+    30
+   ],
+   "R4.run_dir_link": [
+    0,
+    5
+   ],
+   "R4.task_outside": [
+    0,
+    1
+   ]
+  },
+  "ran": [
+   "86"
+  ],
+  "status": [
+   "OK"
+  ],
+  "weakened_all_pass_exit0": 37
+ }
+}
