@@ -1,0 +1,242 @@
+[
+  {
+    "fault": "none",
+    "entry": "old",
+    "exit": 0,
+    "terminal_verdict": [
+      [
+        "PASS",
+        "0"
+      ]
+    ],
+    "result_json_verdict": "PASS",
+    "evidence": null,
+    "failed_stage": null,
+    "push_line_printed": true
+  },
+  {
+    "fault": "none",
+    "entry": "new",
+    "exit": 0,
+    "terminal_verdict": [
+      [
+        "PASS",
+        "0"
+      ]
+    ],
+    "result_json_verdict": "PASS",
+    "evidence": "verified",
+    "failed_stage": null,
+    "push_line_printed": true
+  },
+  {
+    "fault": "fail:checkout-b",
+    "entry": "old",
+    "exit": 0,
+    "terminal_verdict": [
+      [
+        "PASS",
+        "0"
+      ]
+    ],
+    "result_json_verdict": "PASS",
+    "evidence": null,
+    "failed_stage": null,
+    "push_line_printed": false
+  },
+  {
+    "fault": "fail:checkout-b",
+    "entry": "new",
+    "exit": 4,
+    "terminal_verdict": [
+      [
+        "EVIDENCE_NOT_DELIVERED",
+        "4"
+      ]
+    ],
+    "result_json_verdict": "EVIDENCE_NOT_DELIVERED",
+    "evidence": "failed",
+    "failed_stage": "branch",
+    "push_line_printed": false
+  },
+  {
+    "fault": "fail:add",
+    "entry": "old",
+    "exit": 0,
+    "terminal_verdict": [
+      [
+        "PASS",
+        "0"
+      ]
+    ],
+    "result_json_verdict": "PASS",
+    "evidence": null,
+    "failed_stage": null,
+    "push_line_printed": false
+  },
+  {
+    "fault": "fail:add",
+    "entry": "new",
+    "exit": 4,
+    "terminal_verdict": [
+      [
+        "EVIDENCE_NOT_DELIVERED",
+        "4"
+      ]
+    ],
+    "result_json_verdict": "EVIDENCE_NOT_DELIVERED",
+    "evidence": "failed",
+    "failed_stage": "add",
+    "push_line_printed": false
+  },
+  {
+    "fault": "fail:commit",
+    "entry": "old",
+    "exit": 0,
+    "terminal_verdict": [
+      [
+        "PASS",
+        "0"
+      ]
+    ],
+    "result_json_verdict": "PASS",
+    "evidence": null,
+    "failed_stage": null,
+    "push_line_printed": false
+  },
+  {
+    "fault": "fail:commit",
+    "entry": "new",
+    "exit": 4,
+    "terminal_verdict": [
+      [
+        "EVIDENCE_NOT_DELIVERED",
+        "4"
+      ]
+    ],
+    "result_json_verdict": "EVIDENCE_NOT_DELIVERED",
+    "evidence": "failed",
+    "failed_stage": "commit",
+    "push_line_printed": false
+  },
+  {
+    "fault": "noop:commit",
+    "entry": "old",
+    "exit": 0,
+    "terminal_verdict": [
+      [
+        "PASS",
+        "0"
+      ]
+    ],
+    "result_json_verdict": "PASS",
+    "evidence": null,
+    "failed_stage": null,
+    "push_line_printed": true
+  },
+  {
+    "fault": "noop:commit",
+    "entry": "new",
+    "exit": 4,
+    "terminal_verdict": [
+      [
+        "EVIDENCE_NOT_DELIVERED",
+        "4"
+      ]
+    ],
+    "result_json_verdict": "EVIDENCE_NOT_DELIVERED",
+    "evidence": "failed",
+    "failed_stage": "verify_identity",
+    "push_line_printed": false
+  },
+  {
+    "fault": "fail:post-commit-rev-parse",
+    "entry": "old",
+    "exit": 0,
+    "terminal_verdict": [
+      [
+        "PASS",
+        "0"
+      ]
+    ],
+    "result_json_verdict": "PASS",
+    "evidence": null,
+    "failed_stage": null,
+    "push_line_printed": false
+  },
+  {
+    "fault": "fail:post-commit-rev-parse",
+    "entry": "new",
+    "exit": 4,
+    "terminal_verdict": [
+      [
+        "EVIDENCE_NOT_DELIVERED",
+        "4"
+      ]
+    ],
+    "result_json_verdict": "EVIDENCE_NOT_DELIVERED",
+    "evidence": "failed",
+    "failed_stage": "verify_identity",
+    "push_line_printed": false
+  },
+  {
+    "fault": "extra:commit",
+    "entry": "old",
+    "exit": 0,
+    "terminal_verdict": [
+      [
+        "PASS",
+        "0"
+      ]
+    ],
+    "result_json_verdict": "PASS",
+    "evidence": null,
+    "failed_stage": null,
+    "push_line_printed": true
+  },
+  {
+    "fault": "extra:commit",
+    "entry": "new",
+    "exit": 4,
+    "terminal_verdict": [
+      [
+        "EVIDENCE_NOT_DELIVERED",
+        "4"
+      ]
+    ],
+    "result_json_verdict": "EVIDENCE_NOT_DELIVERED",
+    "evidence": "failed",
+    "failed_stage": "verify_paths",
+    "push_line_printed": false
+  },
+  {
+    "fault": "mutate:commit",
+    "entry": "old",
+    "exit": 0,
+    "terminal_verdict": [
+      [
+        "PASS",
+        "0"
+      ]
+    ],
+    "result_json_verdict": "PASS",
+    "evidence": null,
+    "failed_stage": null,
+    "push_line_printed": true
+  },
+  {
+    "fault": "mutate:commit",
+    "entry": "new",
+    "exit": 4,
+    "terminal_verdict": [
+      [
+        "EVIDENCE_NOT_DELIVERED",
+        "4"
+      ]
+    ],
+    "result_json_verdict": "EVIDENCE_NOT_DELIVERED",
+    "evidence": "failed",
+    "failed_stage": "verify_content",
+    "push_line_printed": false
+  }
+]

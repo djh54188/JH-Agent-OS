@@ -1,0 +1,18 @@
+HEAD e2935d4da76c96c03b8177e4bf2edda1025647cb
+parent 02cef57f0e9bd93456f87db7385f3a0cee15b74b
+diff vs 02cef57:
+M	scripts/win/hark18-gemini-stdout.ps1
+A	tests/fixtures/hark19/git_stub.py
+A	tests/fixtures/hark19/python_stub.py
+A	tests/test_hark19_win_evidence_gate.py
+src/agent_session_gemini.py 31d3cd7c111dfdd0d33a65ad097f9cbe3d0fac38
+tests/test_hark18_gemini_stdout.py 373459c4be11eaa1ca9e3212c505e8e8f110819e
+tests/fixtures/gemini_cli/fake_cli_h18.py 8ae04c94fa90e62e2557f2a7d7add8d6e68d4524
+AGENTS sha256 502aa8292c7b4e574156feecc7c09264992f0fea5b7092b30ec4d1cb8d9516cf  -
+script sha256 a7212cfafe73e8d00de152d9c96b23e4efcc4927d0eb61219613695fb40de600  scripts/win/hark18-gemini-stdout.ps1
+ps parse errors: 0
+pwsh 7.4.6
+script non-ascii lines: 0
+Python 3.14.8
+git version 2.47.3
+Linux aarch64

@@ -1,0 +1,12 @@
+test_evidence_failures_never_pass (tests.test_hark19_win_evidence_gate.TestEvidenceGate.test_evidence_failures_never_pass) ... ok
+test_normal_control_pass_and_commit_matches (tests.test_hark19_win_evidence_gate.TestEvidenceGate.test_normal_control_pass_and_commit_matches) ... ok
+test_placeholder_is_never_pass (tests.test_hark19_win_evidence_gate.TestEvidenceGate.test_placeholder_is_never_pass) ... ok
+test_replay_outcomes_keep_their_verdict (tests.test_hark19_win_evidence_gate.TestEvidenceGate.test_replay_outcomes_keep_their_verdict) ... ok
+test_result_write_failure (tests.test_hark19_win_evidence_gate.TestEvidenceGate.test_result_write_failure) ... ok
+test_each_gate_effective_then_detected (tests.test_hark19_win_evidence_gate.TestGateWeakening.test_each_gate_effective_then_detected) ... ok
+test_real_replay_incomplete_with_verified_evidence (tests.test_hark19_win_evidence_gate.TestRealInterpreter.test_real_replay_incomplete_with_verified_evidence) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 63.754s
+
+OK

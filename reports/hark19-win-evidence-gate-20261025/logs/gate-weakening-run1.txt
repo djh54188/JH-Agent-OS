@@ -1,0 +1,7 @@
+final	control=pass	weakened=detected	control_exit=4	weak_exit=0
+push	control=pass	weakened=detected	control_exit=4	weak_exit=4
+branch_binding	control=pass	weakened=detected	control_exit=4	weak_exit=0
+parent	control=pass	weakened=detected	control_exit=4	weak_exit=0
+paths	control=pass	weakened=detected	control_exit=4	weak_exit=0
+content	control=pass	weakened=detected	control_exit=4	weak_exit=0
+clean	control=pass	weakened=detected	control_exit=4	weak_exit=0
