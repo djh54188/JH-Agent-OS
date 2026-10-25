@@ -1,0 +1,50 @@
+test_no_explicit_model (tests.test_hark21_gemini_task01.TestBinding.test_no_explicit_model) ... ok
+test_old_host_probe_run_is_another_task (tests.test_hark21_gemini_task01.TestBinding.test_old_host_probe_run_is_another_task) ... ok
+test_other_task_id (tests.test_hark21_gemini_task01.TestBinding.test_other_task_id) ... ok
+test_other_task_text (tests.test_hark21_gemini_task01.TestBinding.test_other_task_text) ... ok
+test_prompt_received_differs (tests.test_hark21_gemini_task01.TestBinding.test_prompt_received_differs) ... ok
+test_uncollected_run_is_unknown_not_resent (tests.test_hark21_gemini_task01.TestBinding.test_uncollected_run_is_unknown_not_resent) ... ok
+test_unknown_run_id (tests.test_hark21_gemini_task01.TestBinding.test_unknown_run_id) ... ok
+test_exit_codes (tests.test_hark21_gemini_task01.TestCli.test_exit_codes) ... MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+--out must be outside the export and the evidence root
+MECHANICAL UNDETERMINED - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+ok
+test_b7_meaning_omitted_is_not_a_verdict (tests.test_hark21_gemini_task01.TestControlAndSemanticBoundary.test_b7_meaning_omitted_is_not_a_verdict) ... ok
+test_b7_not_cited_fails_location (tests.test_hark21_gemini_task01.TestControlAndSemanticBoundary.test_b7_not_cited_fails_location) ... ok
+test_checker_starts_no_process_and_no_network (tests.test_hark21_gemini_task01.TestControlAndSemanticBoundary.test_checker_starts_no_process_and_no_network) ... ok
+test_constructed_good_run_all_mechanical_pass_but_no_verdict (tests.test_hark21_gemini_task01.TestControlAndSemanticBoundary.test_constructed_good_run_all_mechanical_pass_but_no_verdict) ... ok
+test_reversed_explanation_with_correct_refs_is_not_a_verdict (tests.test_hark21_gemini_task01.TestControlAndSemanticBoundary.test_reversed_explanation_with_correct_refs_is_not_a_verdict) ... ok
+test_export_is_src_only_and_byte_exact (tests.test_hark21_gemini_task01.TestExport.test_export_is_src_only_and_byte_exact) ... ok
+test_export_refuses_non_empty_out_and_manifest_inside (tests.test_hark21_gemini_task01.TestExport.test_export_refuses_non_empty_out_and_manifest_inside) ... ok
+test_task_text_and_baseline_kept_apart (tests.test_hark21_gemini_task01.TestExport.test_task_text_and_baseline_kept_apart) ... ok
+test_each_guard_control_then_weakened (tests.test_hark21_gemini_task01.TestGuardWeakening.test_each_guard_control_then_weakened) ... ok
+test_parsers_match_real_cli_output_sample (tests.test_hark21_gemini_task01.TestHostFormatSample.test_parsers_match_real_cli_output_sample) ... ok
+test_chat_record_absent_at_collect_is_unknown (tests.test_hark21_gemini_task01.TestSourceAndEvidence.test_chat_record_absent_at_collect_is_unknown) ... ok
+test_crlf_task_copy_is_reported (tests.test_hark21_gemini_task01.TestSourceAndEvidence.test_crlf_task_copy_is_reported) ... ok
+test_evidence_byte_changed (tests.test_hark21_gemini_task01.TestSourceAndEvidence.test_evidence_byte_changed) ... ok
+test_evidence_missing_is_unknown (tests.test_hark21_gemini_task01.TestSourceAndEvidence.test_evidence_missing_is_unknown) ... ok
+test_export_byte_changed (tests.test_hark21_gemini_task01.TestSourceAndEvidence.test_export_byte_changed) ... ok
+test_export_extra_file_at_run_time (tests.test_hark21_gemini_task01.TestSourceAndEvidence.test_export_extra_file_at_run_time) ... ok
+test_manifest_for_other_commit (tests.test_hark21_gemini_task01.TestSourceAndEvidence.test_manifest_for_other_commit) ... ok
+test_nonzero_exit (tests.test_hark21_gemini_task01.TestSourceAndEvidence.test_nonzero_exit) ... ok
+test_registry_field_shape_wrong (tests.test_hark21_gemini_task01.TestSourceAndEvidence.test_registry_field_shape_wrong) ... ok
+test_tool_result_field_shape_wrong (tests.test_hark21_gemini_task01.TestSourceAndEvidence.test_tool_result_field_shape_wrong) ... ok
+test_workspace_mutated_by_run (tests.test_hark21_gemini_task01.TestSourceAndEvidence.test_workspace_mutated_by_run) ... ok
+test_chat_args_disagree (tests.test_hark21_gemini_task01.TestToolContent.test_chat_args_disagree) ... ok
+test_chat_call_missing_is_unknown (tests.test_hark21_gemini_task01.TestToolContent.test_chat_call_missing_is_unknown) ... ok
+test_core_point_not_cited (tests.test_hark21_gemini_task01.TestToolContent.test_core_point_not_cited) ... ok
+test_grep_line_differs_from_source (tests.test_hark21_gemini_task01.TestToolContent.test_grep_line_differs_from_source) ... ok
+test_no_grep_at_all (tests.test_hark21_gemini_task01.TestToolContent.test_no_grep_at_all) ... ok
+test_read_content_shifted (tests.test_hark21_gemini_task01.TestToolContent.test_read_content_shifted) ... ok
+test_read_outside_workspace_is_not_read (tests.test_hark21_gemini_task01.TestToolContent.test_read_outside_workspace_is_not_read) ... ok
+test_ref_to_missing_line (tests.test_hark21_gemini_task01.TestToolContent.test_ref_to_missing_line) ... ok
+test_stream_summary_disagrees (tests.test_hark21_gemini_task01.TestToolContent.test_stream_summary_disagrees) ... ok
+test_unknown_grep_format (tests.test_hark21_gemini_task01.TestToolContent.test_unknown_grep_format) ... ok
+test_untruncated_read_format_is_unknown (tests.test_hark21_gemini_task01.TestToolContent.test_untruncated_read_format_is_unknown) ... ok
+
+----------------------------------------------------------------------
+Ran 40 tests in 10.292s
+
+OK
+WEAKENING {"adapter_gates": ["fail", "all_pass"], "binding_request": ["fail", "all_pass"], "evidence_digest": ["fail", "all_pass"], "export_tree": ["fail", "all_pass"], "package_digest": ["fail", "all_pass"], "refs_core": ["fail", "all_pass"], "refs_exist": ["fail", "all_pass"], "required_tools": ["fail", "all_pass"], "stdin": ["fail", "all_pass"], "tool_content": ["fail", "all_pass"], "workspace_manifest": ["fail", "all_pass"]}

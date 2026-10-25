@@ -1,0 +1,26 @@
+CONSTRUCTED inputs (fake CLI, builder-written tool outputs and delivery). Not a real run.
+== good overall: all_pass | semantic_review: required | task_outcome: not decided by this tool
+   pass package.task_file - bytes match package digest
+   pass package.review_baseline_file - bytes match package digest
+   pass export.tree - 26 files equal the manifest; target blob pinned
+   pass registry.legal - 3 records, legal adapter history
+   pass binding.request - run is reserved->dispatched->collected for this task text
+   pass workspace.workspace-before.json - run workspace == exported files
+   pass workspace.workspace-after.json - run workspace == exported files
+   pass evidence.stdout.jsonl - bytes = registered
+   pass evidence.stderr.txt - bytes = registered
+   pass evidence.host-chat-record.jsonl - bytes = registered
+   pass adapter.gates - recorded adapter gates hold and stdout re-parses to the same artifact
+   pass binding.stdin - host echoed exactly prefix + package task text + -p text
+   pass tools.grep_search__1 - 23 lines equal the exported source
+   pass tools.read_file__1 - src/agent_session_gemini.py:1060-1145 equals the exported source
+   pass tools.read_file__2 - src/agent_session_gemini.py:1261-1333 equals the exported source
+   pass required.tools - 19 verified grep hit(s) and 2 verified read(s) of the target
+   pass refs.exist - 7 references exist in the export
+   pass refs.B2 - a reference falls in the point's range (location only, not meaning)
+   pass refs.B3 - a reference falls in the point's range (location only, not meaning)
+   pass refs.B4 - a reference falls in the point's range (location only, not meaning)
+   pass refs.B6 - a reference falls in the point's range (location only, not meaning)
+   pass refs.B7 - a reference falls in the point's range (location only, not meaning)
+== reversed overall: all_pass | semantic_review: required | task_outcome: not decided by this tool
+== b7_omitted overall: all_pass | semantic_review: required | task_outcome: not decided by this tool

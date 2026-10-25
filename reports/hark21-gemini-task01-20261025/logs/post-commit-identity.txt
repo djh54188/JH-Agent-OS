@@ -1,0 +1,26 @@
+HEAD=2d47d3a7c878b7af15c8116b5208af8216a13088 parent=59b221cec6d4bbac8f8ee8fd6386167dff6edf08
+status_lines=0
+diff vs 59b221ce:
+A	scripts/gemini_task01/check_run.py
+A	scripts/gemini_task01/export_source.py
+A	scripts/gemini_task01/package.json
+A	scripts/gemini_task01/review-baseline.md
+A	scripts/gemini_task01/task.txt
+A	tests/fixtures/hark21/build.py
+A	tests/fixtures/hark21/fake_cli_t01.py
+A	tests/test_hark21_gemini_task01.py
+AGENTS blob sha256=502aa8292c7b4e574156feecc7c09264992f0fea5b7092b30ec4d1cb8d9516cf
+src/agent_session_gemini.py blob=31d3cd7c111dfdd0d33a65ad097f9cbe3d0fac38
+src tree unchanged vs 59b221ce: yes
+file sha256:
+95d17fe419d31590ab3fc251a330d87dff14b9a5e5822d4582f12f894b0bda22  scripts/gemini_task01/check_run.py
+1422f5d881911717001312fb79b3d03f32c6fa33c28bcaf63248329456479d24  scripts/gemini_task01/export_source.py
+ebf8e8ed343f7c4fc9242bcb98e80afd6ec2862c74e18ef7361763045ee1f7f1  scripts/gemini_task01/package.json
+e07841a842c400842fa44154b50f20d27de6ed539c8b1f7c4c7e13e55e4fd57f  scripts/gemini_task01/review-baseline.md
+5ed4f438c57918d7924ea00bf02134c529b20bf9556e6b01c6dffa7830e80518  scripts/gemini_task01/task.txt
+d27b9be123afd7b595c07b5548c223474102e3658761848baf55bb79de0c0648  tests/test_hark21_gemini_task01.py
+b38dd03215810fb0ecab976488c10684afc1b87bdbd702a83de06517f8bbfa23  tests/fixtures/hark21/build.py
+eeb5aefbf5812ab78010940d2846d654d7b3751f050f3001887f47a792d7c6fa  tests/fixtures/hark21/fake_cli_t01.py
+package task_sha256 check: True True
+Python 3.12.15
+Linux aarch64

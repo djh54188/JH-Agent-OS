@@ -1,0 +1,36 @@
+{
+ "ast_test_methods": 40,
+ "run1": {
+  "control_fail": 11,
+  "guards": 11,
+  "ran": [
+   "40"
+  ],
+  "status": [
+   "OK"
+  ],
+  "weakened_no_longer_fail": 11
+ },
+ "run2": {
+  "control_fail": 11,
+  "guards": 11,
+  "ran": [
+   "40"
+  ],
+  "status": [
+   "OK"
+  ],
+  "weakened_no_longer_fail": 11
+ },
+ "run3": {
+  "control_fail": 11,
+  "guards": 11,
+  "ran": [
+   "40"
+  ],
+  "status": [
+   "OK"
+  ],
+  "weakened_no_longer_fail": 11
+ }
+}

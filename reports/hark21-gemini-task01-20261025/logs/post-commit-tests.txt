@@ -1,0 +1,4 @@
+Ran 40 tests in 10.334s
+
+OK
+WEAKENING {"adapter_gates": ["fail", "all_pass"], "binding_request": ["fail", "all_pass"], "evidence_digest": ["fail", "all_pass"], "export_tree": ["fail", "all_pass"], "package_digest": ["fail", "all_pass"], "refs_core": ["fail", "all_pass"], "refs_exist": ["fail", "all_pass"], "required_tools": ["fail", "all_pass"], "stdin": ["fail", "all_pass"], "tool_content": ["fail", "all_pass"], "workspace_manifest": ["fail", "all_pass"]}
