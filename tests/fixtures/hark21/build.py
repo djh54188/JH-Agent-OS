@@ -109,16 +109,24 @@ def good_tools(export):
     ]
 
 
-GOOD_DELIVERY = (
+# CONSTRUCTED semantic positive control, worded after the CURRENT review baseline
+# (Hark-派单-22 B2/B7 conditional text). It is a fixture for the checker only: its
+# name does not mean any semantic review has accepted it, and the checker never
+# judges meaning. (Hark-派单-23: replaces the earlier GOOD_DELIVERY, whose B7 point
+# claimed unconditionally that other readers only see `reserved`.)
+ALIGNED_DELIVERY = (
     "1. 粘滞拒绝（A）：GeminiCliAgentSessionAdapter._reload_locked 在登记前缀被改、文本不合法、"
     "不是合法历史或 runs/ 下有未登记目录时设置粘滞问题，见 src/agent_session_gemini.py:1069-1093，"
-    "unaccounted_run_traces 见 src/agent_session_gemini.py:879-911。\n"
+    "unaccounted_run_traces 见 src/agent_session_gemini.py:879-911。零字节或不存在且无运行痕迹的新存储是合法空历史；"
+    "只含合法记录的前缀也合法。\n"
     "2. 重开后未收集的运行标为未知（C），不重发：src/agent_session_gemini.py:1134-1141。\n"
     "3. 幂等重放（B）：_replay_locked 同键同指纹返回已有状态，src/agent_session_gemini.py:1218-1233；"
     "submit 两次判定 src/agent_session_gemini.py:1237-1256。\n"
     "4. 启动前先写 reserved：src/agent_session_gemini.py:1292-1297，写不成则 RegistryUnavailable，零派发。\n"
     "5. dispatched 写失败：src/agent_session_gemini.py:1324-1330。当前运行仍为 running，进程不被终止；"
-    "本对象之后的 submit 被拒；其他读者只见 reserved，按未知处理，不重发。\n")
+    "本对象之后的 submit 被拒；其他读者按磁盘实际内容判断：完全没写入时只见 reserved，"
+    "完整写入但 flush/fsync 报错时见 reserved+dispatched，两种都是未收集、按未知处理、不重发；"
+    "只写入半行或留下非法历史时，读者粘滞拒绝。\n")
 
 # Same references, explanation reversed: mechanically identical locations.
 REVERSED_DELIVERY = (
@@ -130,7 +138,7 @@ REVERSED_DELIVERY = (
     "5. dispatched 写失败时会杀掉进程并补写登记后再派发：src/agent_session_gemini.py:1324-1330。\n")
 
 # B7 location cited, but its meaning omitted (no three-layer distinction).
-B7_OMITTED_DELIVERY = GOOD_DELIVERY.split("5. ")[0] + "5. 另见 src/agent_session_gemini.py:1324-1330（未展开）。\n"
+B7_OMITTED_DELIVERY = ALIGNED_DELIVERY.split("5. ")[0] + "5. 另见 src/agent_session_gemini.py:1324-1330（未展开）。\n"
 
 
 def write_scenario(base, scenario):

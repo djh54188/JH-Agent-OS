@@ -88,7 +88,7 @@ class _Base(unittest.TestCase):
         check_run.WEAKEN.clear()
         shutil.rmtree(self.base, ignore_errors=True)
 
-    def run_case(self, tools=None, delivery=build.GOOD_DELIVERY, **scenario):
+    def run_case(self, tools=None, delivery=build.ALIGNED_DELIVERY, **scenario):
         sc = {"tools": build.good_tools(self.export) if tools is None else tools, "delivery": delivery}
         sc.update(scenario.pop("scenario", {}))
         self.evidence, self.run_id = build.run_adapter(self.base, self.export, sc, **scenario)
@@ -133,7 +133,7 @@ class TestExport(_Base):
 
 
 class TestControlAndSemanticBoundary(_Base):
-    def test_constructed_good_run_all_mechanical_pass_but_no_verdict(self):
+    def test_constructed_aligned_run_all_mechanical_pass_but_no_verdict(self):
         self.run_case()
         ev_before = tree_digest(self.evidence)
         ex_before = tree_digest(self.export)
@@ -163,7 +163,7 @@ class TestControlAndSemanticBoundary(_Base):
         self.assertTrue(no_verdict_words(result))
 
     def test_b7_not_cited_fails_location(self):
-        self.run_case(delivery=build.GOOD_DELIVERY.split("5. ")[0])
+        self.run_case(delivery=build.ALIGNED_DELIVERY.split("5. ")[0])
         result = self.check()
         self.assertEqual(statuses(result, "refs.B7"), ["fail"])
 
@@ -363,11 +363,11 @@ class TestToolContent(_Base):
         self.assertEqual(statuses(self.check(), "required.tools"), ["fail"])
 
     def test_ref_to_missing_line(self):
-        self.run_case(delivery=build.GOOD_DELIVERY + "另见 src/agent_session_gemini.py:99999。\n")
+        self.run_case(delivery=build.ALIGNED_DELIVERY + "另见 src/agent_session_gemini.py:99999。\n")
         self.assertEqual(statuses(self.check(), "refs.exist"), ["fail"])
 
     def test_core_point_not_cited(self):
-        delivery = build.GOOD_DELIVERY.replace("src/agent_session_gemini.py:1218-1233", "_replay_locked") \
+        delivery = build.ALIGNED_DELIVERY.replace("src/agent_session_gemini.py:1218-1233", "_replay_locked") \
             .replace("submit 两次判定 src/agent_session_gemini.py:1237-1256", "submit 两次判定")
         self.run_case(delivery=delivery)
         self.assertEqual(statuses(self.check(), "refs.B4"), ["fail"])
@@ -556,12 +556,12 @@ def _w_required(t):
 
 
 def _w_refs_exist(t):
-    t.run_case(delivery=build.GOOD_DELIVERY + "另见 src/agent_session_gemini.py:99999。\n")
+    t.run_case(delivery=build.ALIGNED_DELIVERY + "另见 src/agent_session_gemini.py:99999。\n")
     return {}
 
 
 def _w_refs_core(t):
-    t.run_case(delivery=build.GOOD_DELIVERY.split("5. ")[0])
+    t.run_case(delivery=build.ALIGNED_DELIVERY.split("5. ")[0])
     return {}
 
 
@@ -698,7 +698,7 @@ def _r1_focus_moved(t):
         f["start"], f["end"] = 1235, 1259            # consistent digest of other lines
         f["sha256"] = hashlib.sha256("\n".join(src[1234:1259]).encode("utf-8")).hexdigest()
     pkg = package_copy(t.base, edit=edit)
-    t.run_case(delivery=build.GOOD_DELIVERY.replace("src/agent_session_gemini.py:1324-1330",
+    t.run_case(delivery=build.ALIGNED_DELIVERY.replace("src/agent_session_gemini.py:1324-1330",
                                                     "src/agent_session_gemini.py:1240-1250"))
     return {"package": pkg}
 
@@ -916,6 +916,200 @@ WEAKENING = [
     ("R4.evidence_root_link", "evidence_paths", _r4_evidence_root_link),
     ("R4.evidence_file_link", "evidence_paths", _r4_evidence_file_link),
     ("R4.export_root_link", "export_root", _r4_export_root_link),
+]
+
+
+# ===================================================================== Hark-派单-23 =====
+# Remaining same-class branches of R2 / R3 / R4. Original files are changed together
+# with their registered bytes/sha256, and request and record parameters together.
+
+def edit_chat(t, fn):
+    """Rewrite the run's host chat record (list of decoded line objects) and re-register it."""
+    path = Path(t.run_dir(), "host-chat-record.jsonl")
+    objs = [json.loads(l) for l in path.read_text("utf-8").splitlines()]
+    fn(objs)
+    data = "".join(json.dumps(o, ensure_ascii=False, separators=(",", ":")) + "\n" for o in objs)
+    build.replace_evidence(t.evidence, t.run_id, "host-chat-record.jsonl", data.encode("utf-8"))
+
+
+def _calls_line(objs, cid):
+    for o in objs:
+        for c in o.get("toolCalls") or []:
+            if isinstance(c, dict) and c.get("id") == cid:
+                return o, c
+    raise AssertionError(cid)
+
+
+def _user_line(objs, cid):
+    for o in objs:
+        if o.get("type") == "user" and isinstance(o.get("content"), list):
+            for p in o["content"]:
+                if isinstance(p, dict) and p.get("functionResponse", {}).get("id") == cid:
+                    return o
+    raise AssertionError(cid)
+
+
+def _r23_artifact_session(t):
+    t.run_case()
+    build.edit_collected(t.evidence, t.run_id,
+                         lambda r: r["artifacts"][0].update(native_session_id=str(uuid.uuid4())))
+    return {}
+
+
+def _r23_artifact_model(t):
+    t.run_case()
+    build.edit_collected(t.evidence, t.run_id, lambda r: r["artifacts"][0].update(requested_model="other-model"))
+    return {}
+
+
+def _r23_dup_call_identical(t):
+    t.run_case()
+
+    def fn(objs):
+        o, c = _calls_line(objs, "read_file__1")
+        o["toolCalls"].append(copy.deepcopy(c))
+    edit_chat(t, fn)
+    return {}
+
+
+def _r23_dup_call_differing(t):
+    t.run_case()
+
+    def fn(objs):
+        o, c = _calls_line(objs, "read_file__1")
+        other = copy.deepcopy(c)
+        other["args"] = dict(other["args"], start_line=1, end_line=5)
+        o["toolCalls"].insert(0, other)
+    edit_chat(t, fn)
+    return {}
+
+
+def _second_fr(objs, cid, change):
+    o, c = _calls_line(objs, cid)
+    fr2 = copy.deepcopy(c["result"][0])
+    change(fr2["functionResponse"]["response"])
+    c["result"].append(fr2)
+    _user_line(objs, cid)["content"].append(copy.deepcopy(fr2))
+
+
+def _r23_fr_conflict(t):
+    t.run_case()
+    edit_chat(t, lambda objs: _second_fr(objs, "read_file__1",
+                                         lambda resp: resp.update(output=resp["output"].replace("def ", "DEF "))))
+    return {}
+
+
+def _r23_fr_duplicate(t):
+    t.run_case()
+    edit_chat(t, lambda objs: _second_fr(objs, "read_file__1", lambda resp: None))
+    return {}
+
+
+def _r23_result_int(t):
+    t.run_case()
+    edit_chat(t, lambda objs: _calls_line(objs, "read_file__1")[1]["result"].append(7))
+    return {}
+
+
+def _r23_header_hash_int(t):
+    t.run_case()
+    edit_chat(t, lambda objs: objs[0].update(projectHash=12345))
+    return {}
+
+
+def _r23_user_content_int(t):
+    t.run_case()
+    edit_chat(t, lambda objs: objs[1].update(content=7))
+    return {}
+
+
+def _r23_gemini_content_int(t):
+    t.run_case()
+    edit_chat(t, lambda objs: _calls_line(objs, "read_file__1")[0].update(content=7))
+    return {}
+
+
+def _r23_user_fr_missing(t):
+    t.run_case()
+
+    def fn(objs):
+        u = _user_line(objs, "read_file__2")
+        u["content"] = [p for p in u["content"] if p.get("functionResponse", {}).get("id") != "read_file__2"]
+    edit_chat(t, fn)
+    return {}
+
+
+def _grep0(t, params, output):
+    tools = build.good_tools(t.export)
+    tools[0]["params"] = params
+    tools[0]["chat_output"] = output
+    t.run_case(tools=tools)
+    return {}
+
+
+def _r23_grep_pattern_int(t):
+    return _grep0(t, {"pattern": 17, "context": 0}, "No matches found")
+
+
+def _r23_grep_context_negative(t):
+    return _grep0(t, {"pattern": "_registry_problem", "context": -1}, "No matches found")
+
+
+def _r23_grep_unobserved_option(t):
+    return _grep0(t, {"pattern": "_registry_problem", "context": 0, "unobserved_option": True}, "No matches found")
+
+
+def _r23_grep_nomatch_unknown_format(t):
+    return _grep0(t, {"pattern": "_registry_problem", "context": 0},
+                  "No matches found SYNTHETIC UNOBSERVED FORMAT\nL1: anything")
+
+
+def _r23_grep_nomatch_plain(t):
+    return _grep0(t, {"pattern": "zz_no_such_symbol_zz", "context": 0}, "No matches found")
+
+
+def _r23_read_param_type(t, unknown_format=False):
+    tools = build.good_tools(t.export)
+    tools[2]["params"] = dict(tools[2]["params"], start_line="1261")
+    if unknown_format:
+        tools[2]["chat_output"] = "UNOBSERVED FORMAT"
+    t.run_case(tools=tools)
+    return {}
+
+
+DEVICE_Q = "\\\\?\\D:\\jh\\target\\src\\agent_session_gemini.py"
+DEVICE_DOT = "\\\\.\\D:\\jh\\target\\src\\agent_session_gemini.py"
+ADS = "src/agent_session_gemini.py:ADS"
+
+
+def _ref(path):
+    def make(t):
+        t.run_case(delivery=build.ALIGNED_DELIVERY + f"另见 {path}:10。\n")
+        return {}
+    return make
+
+
+WEAKENING += [
+    ("R23.artifact_session", "artifact_identity", _r23_artifact_session),
+    ("R23.artifact_model", "artifact_identity", _r23_artifact_model),
+    ("R23.dup_call_identical", "chat_record", _r23_dup_call_identical),
+    ("R23.dup_call_differing", "chat_record", _r23_dup_call_differing),
+    ("R23.fr_conflict", "chat_record", _r23_fr_conflict),
+    ("R23.fr_duplicate", "chat_record", _r23_fr_duplicate),
+    ("R23.result_int", "chat_record", _r23_result_int),
+    ("R23.header_hash_int", "chat_record", _r23_header_hash_int),
+    ("R23.user_content_int", "chat_record", _r23_user_content_int),
+    ("R23.gemini_content_int", "chat_record", _r23_gemini_content_int),
+    ("R23.user_fr_missing", "chat_record", _r23_user_fr_missing),
+    ("R23.grep_pattern_int", "grep_binding", _r23_grep_pattern_int),
+    ("R23.grep_context_negative", "grep_binding", _r23_grep_context_negative),
+    ("R23.grep_unobserved_option", "grep_binding", _r23_grep_unobserved_option),
+    ("R23.grep_nomatch_unknown_format", "grep_binding", _r23_grep_nomatch_unknown_format),
+    ("R23.grep_nomatch_plain", "grep_binding", _r23_grep_nomatch_plain),
+    ("R23.read_param_type", "read_binding", _r23_read_param_type),
+    ("R23.ref_device_q", "ref_extraction", _ref(DEVICE_Q)),
+    ("R23.ref_device_dot", "ref_extraction", _ref(DEVICE_DOT)),
+    ("R23.ref_ads", "ref_extraction", _ref(ADS)),
 ]
 
 
@@ -1247,7 +1441,7 @@ class TestR4Boundaries(_Base):
         refs = [m.group(1) for m in check_run.SOURCE_REF.finditer(
             "见 /src/agent_session_gemini.py:1134 与 \\src\\agent_session_gemini.py:1135 和 C:src\\a.py:3")]
         self.assertEqual(refs, ["/src/agent_session_gemini.py", "\\src\\agent_session_gemini.py", "C:src\\a.py"])
-        self.run_case(delivery=build.GOOD_DELIVERY + "另见 /src/agent_session_gemini.py:1134。\n")
+        self.run_case(delivery=build.ALIGNED_DELIVERY + "另见 /src/agent_session_gemini.py:1134。\n")
         self.assertEqual(statuses(self.check(), "refs.exist"), ["fail"])
 
     def test_input_shapes_give_stable_diagnostics(self):
@@ -1303,6 +1497,167 @@ class TestR4Boundaries(_Base):
         finally:
             check_run.WEAKEN.clear()
         self.assertEqual(code, 2)
+
+
+class TestR23(_Base):
+    def _expect(self, make, check, status):
+        make(self)
+        r = self.check()
+        got = [i["status"] for i in r["mechanical"]["items"] if i["check"] == check or
+               (check.endswith(".") and i["check"].startswith(check))]
+        self.assertIn(status, got, r["mechanical"]["items"])
+        self.assertNotEqual(r["mechanical"]["overall"], "all_pass")
+        return r
+
+    # R2 identity / response ambiguity / wrong shapes
+    def test_artifact_session(self):
+        self._expect(_r23_artifact_session, "native.identity", "fail")
+
+    def test_artifact_model(self):
+        self._expect(_r23_artifact_model, "native.identity", "fail")
+
+    def test_duplicate_call_in_one_array(self):
+        self._expect(_r23_dup_call_identical, "chat.record", "fail")
+
+    def test_differing_call_copies_in_one_array(self):
+        self._expect(_r23_dup_call_differing, "chat.record", "fail")
+
+    def test_conflicting_function_responses(self):
+        self._expect(_r23_fr_conflict, "chat.record", "fail")
+
+    def test_identical_function_response_copies_unknown(self):
+        r = self._expect(_r23_fr_duplicate, "chat.record", "unknown")
+        self.assertEqual(r["mechanical"]["overall"], "undetermined")
+
+    def test_result_int(self):
+        self._expect(_r23_result_int, "chat.record", "fail")
+
+    def test_header_project_hash_int(self):
+        self._expect(_r23_header_hash_int, "chat.record", "fail")
+
+    def test_user_content_int(self):
+        self._expect(_r23_user_content_int, "chat.record", "fail")
+
+    def test_gemini_content_int(self):
+        self._expect(_r23_gemini_content_int, "chat.record", "fail")
+
+    def test_call_without_function_response(self):
+        def make(t):
+            t.run_case()
+            edit_chat(t, lambda objs: _calls_line(objs, "read_file__1")[1].update(result=[]))
+        self._expect(make, "chat.record", "fail")
+
+    def test_user_function_response_conflicts_with_call(self):
+        def make(t):
+            t.run_case()
+
+            def fn(objs):
+                u = _user_line(objs, "read_file__1")
+                for part in u["content"]:
+                    part["functionResponse"]["response"]["output"] = "other"
+            edit_chat(t, fn)
+        self._expect(make, "chat.record", "fail")
+
+    def test_user_function_response_missing_unknown(self):
+        self._expect(_r23_user_fr_missing, "chat.record", "unknown")
+
+    def test_observed_rewrite_still_supported(self):
+        # every constructed run writes each gemini record twice (without, then with toolCalls)
+        self.run_case()
+        lines = Path(self.run_dir(), "host-chat-record.jsonl").read_text("utf-8").splitlines()
+        ids = [json.loads(l).get("id") for l in lines]
+        self.assertTrue(any(ids.count(i) == 2 for i in ids if i and i.startswith("g-")))
+        self.assertEqual(statuses(self.check(), "chat.record"), ["pass"])
+
+    # R3 every output branch keeps the request boundaries
+    def test_grep_pattern_int(self):
+        self._expect(_r23_grep_pattern_int, "tools.grep_search__1", "fail")
+
+    def test_grep_context_negative(self):
+        self._expect(_r23_grep_context_negative, "tools.grep_search__1", "fail")
+
+    def test_grep_unobserved_option(self):
+        self._expect(_r23_grep_unobserved_option, "tools.grep_search__1", "unknown")
+
+    def test_grep_nomatch_unknown_format(self):
+        self._expect(_r23_grep_nomatch_unknown_format, "tools.grep_search__1", "unknown")
+
+    def test_grep_nomatch_plain_is_unknown_not_pass(self):
+        r = self._expect(_r23_grep_nomatch_plain, "tools.grep_search__1", "unknown")
+        # the other valid grep and reads still satisfy `required`, but the whole check is not all_pass
+        self.assertEqual(statuses(r, "required.tools"), ["pass"])
+        self.assertEqual(r["mechanical"]["overall"], "undetermined")
+
+    def test_read_param_type_checked_before_format(self):
+        self._expect(lambda t: _r23_read_param_type(t, unknown_format=True), "tools.read_file__2", "fail")
+
+    def test_read_param_type_with_observed_format(self):
+        self._expect(_r23_read_param_type, "tools.read_file__2", "fail")
+
+    # R4 refused paths reach the whole reference check
+    def test_device_and_ads_references_fail_beside_valid_refs(self):
+        for path in (DEVICE_Q, DEVICE_DOT, ADS):
+            with self.subTest(path=path):
+                shutil.rmtree(self.base, ignore_errors=True)
+                os.makedirs(self.base)
+                self.export, self.manifest = build.make_export(self.base)
+                _ref(path)(self)
+                r = self.check()
+                item_ = [i for i in r["mechanical"]["items"] if i["check"] == "refs.exist"][0]
+                self.assertEqual(item_["status"], "fail")
+                self.assertIn(path + ":10", item_["bad_refs"])
+                self.assertEqual(statuses(r, "refs.B7"), ["pass"])     # valid refs still found
+
+    def test_declared_path_table_sweep_end_to_end(self):
+        bad = ["C:\\jh\\target\\src\\agent_session_gemini.py", "src\\agent_session_gemini.py",
+               "\\src\\agent_session_gemini.py", "/src/agent_session_gemini.py", "C:src\\agent_session_gemini.py",
+               "\\\\server\\share\\src\\agent_session_gemini.py", DEVICE_Q, DEVICE_DOT,
+               "src/../src/agent_session_gemini.py", "src/agent_session_gemini.py:stream",
+               "src/agent_session_gemini.py.", "../target/src/agent_session_gemini.py"]
+        delivery = build.ALIGNED_DELIVERY + "".join(f"另见 {p}:10。\n" for p in bad)
+        self.run_case(delivery=delivery)
+        item_ = [i for i in self.check()["mechanical"]["items"] if i["check"] == "refs.exist"][0]
+        self.assertEqual(item_["status"], "fail")
+        self.assertEqual(sorted(item_["bad_refs"]), sorted(p + ":10" for p in bad))
+
+    def test_extraction_covers_the_declared_windows_table(self):
+        ws = "C:\\jh\\target"
+        table = ["C:\\jh\\target\\src\\agent_session_gemini.py", "c:/JH/target/src/agent_session_gemini.py",
+                 "src\\agent_session_gemini.py", "src/agent_session_gemini.py", "\\src\\agent_session_gemini.py",
+                 "/src/agent_session_gemini.py", "C:src\\agent_session_gemini.py",
+                 "D:\\jh\\target\\src\\agent_session_gemini.py",
+                 "\\\\server\\share\\src\\agent_session_gemini.py", DEVICE_Q, DEVICE_DOT,
+                 "C:\\jh\\target\\..\\target\\src\\x.py", "src\\..\\src\\agent_session_gemini.py",
+                 "src\\agent_session_gemini.py:stream", "src\\agent_session_gemini.py."]
+        for p in table:
+            with self.subTest(path=p):
+                got = check_run.extract_refs(f"见 {p}:10-12，")
+                self.assertEqual([(g[0], g[1], g[2]) for g in got], [(p, 10, 12)])
+        mapped = {p: check_run.map_to_export(p, ws) for p in table}
+        self.assertEqual(sorted(p for p, v in mapped.items() if v), sorted(table[:4]))
+
+    def test_non_reference_colons_ignored(self):
+        self.assertEqual(check_run.extract_refs("exit:0;result:success 在 10:30，B7:2"), [])
+
+    # fixtures / wording
+    def test_aligned_control_follows_current_baseline_b7(self):
+        b7 = build.ALIGNED_DELIVERY.split("5. ")[1]
+        self.assertIn("reserved+dispatched", b7)
+        self.assertIn("半行", b7)
+        self.assertNotIn("其他读者只见 reserved", b7)
+        self.assertFalse(hasattr(build, "GOOD_DELIVERY"))
+
+    def test_exporter_ancestor_scope_is_out_and_direct_parent_only(self):
+        # accepted scope (Hark-派单-23): a link ABOVE the direct parent is not refused
+        real = os.path.join(self.base, "gp-target")
+        os.makedirs(os.path.join(real, "parent"))
+        link = os.path.join(self.base, "gp-link")
+        os.symlink(real, link, target_is_directory=True)
+        res = export_source.export(str(ROOT), os.path.join(link, "parent", "out"),
+                                   os.path.join(self.base, "m-gp.json"), build.package())
+        self.assertEqual(res["files"], 26)
+        doc = export_source.__doc__ + export_source._plain_dir_chain.__doc__
+        self.assertIn("higher ancestors are NOT checked", doc)
 
 
 if __name__ == "__main__":

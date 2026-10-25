@@ -19,9 +19,11 @@ policy of the adapter), not a property of this directory.
 Hark-派单-22 additions:
   * the package bytes must be the pinned approved package and the listed tree must
     be exactly the pinned src/ file set (pins.py), before anything is written;
-  * --out must not be a link / junction (or under a component that is one): it is
-    created fresh as a plain directory and checked with lstat before every write;
-    files are created with O_CREAT|O_EXCL (and O_NOFOLLOW where the OS has it).
+  * --out itself and its DIRECT parent must not be a link / junction (lstat, before
+    anything is written); higher ancestors are NOT checked (Hark-派单-23 wording
+    correction: an export under a grandparent junction still proceeds). Directories
+    below --out are created fresh and checked with lstat before every write; files
+    are created with O_CREAT|O_EXCL (and O_NOFOLLOW where the OS has it).
 
 Exit codes: 0 exported and verified; 2 could not export (nothing is claimed).
 """
@@ -64,8 +66,8 @@ def _link_like(path: str) -> bool:
 
 
 def _plain_dir_chain(out: str) -> None:
-    """Refuse when --out, or any existing component from its parent down, is a link /
-    junction (checked with lstat, before anything is created or written)."""
+    """Refuse when --out or its direct parent is a link / junction (checked with lstat,
+    before anything is created or written). Higher ancestors are not checked."""
     if os.path.lexists(out) and _link_like(out):
         raise SystemExit(f"--out {out!r} is a link or junction; refusing")
     parent = os.path.dirname(out)

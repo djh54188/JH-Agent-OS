@@ -42,9 +42,12 @@ What it checks (each item: pass / fail / unknown):
   refs        every path:line in the delivery exists in the export; for each core
               point B2/B3/B4/B6/B7 at least one reference falls in its range
 
-Boundaries (R4): every file is reached by walking from its root one component at
-a time with lstat; a link, junction / reparse point, non-plain component, '..',
-absolute or drive / root-relative name is refused BEFORE anything is opened.
+Boundaries (R4): every file is reached by walking from its root (the package
+directory, the manifest's directory, the export root, the evidence root) one
+component at a time with lstat; a link, junction / reparse point, non-plain
+component, '..', absolute or drive / root-relative name is refused BEFORE anything
+is opened. Components ABOVE those roots are not checked: this is not a sandbox and
+proves nothing about the roots' ancestors.
 Input JSON of an unsupported shape gives a stable non-pass diagnostic.
 
 What it does NOT do: judge whether the explanation is right. `semantic_review`
@@ -112,6 +115,12 @@ READ_SUMMARY = re.compile(r"^Read lines (\d+)-(\d+) of (\d+) from (.+)$")
 # that such a reference is judged (and refused) instead of silently skipped.
 SOURCE_REF = re.compile(r"(?<![\w/\\.:-])((?:[A-Za-z]:)?[\\/]{0,2}(?:[\w.-]+[/\\])*[\w.-]+\.[A-Za-z0-9]{1,8})"
                         r":(\d+)(?:-(\d+))?")
+# Hark-派单-23 R4: reference tokens. Any non-space token (CJK / ASCII punctuation and
+# brackets end a token) followed by :<line>[-<line>] whose text contains '.', '/' or
+# '\\' is a path reference and is judged by map_to_export; device (\\?\, \\.\),
+# UNC, drive-relative, root-relative and ':'-bearing (ADS) tokens are therefore
+# reported as references that do not exist, never dropped at extraction.
+REF_TOKEN = re.compile(r"([^\s，。；：、（）【】「」《》“”‘’\"'`()\[\]{}<>,;|]+):(\d+)(?:-(\d+))?(?!\d)")
 # Observed host default: a grep_search request without `context` is recorded by the
 # host with context 50 (host-probe: stream parameters {pattern}, chat args
 # {pattern, context: 50}, 50 lines either side of the single match).
@@ -700,6 +709,27 @@ def gate_native_model(ctx: Dict[str, Any], rep: Report) -> None:
         rep.add("native.model", PASS, "init.model = requested = recorded", init_model=init_model)
 
 
+def gate_artifact_identity(ctx: Dict[str, Any], rep: Report) -> None:
+    """R2 (Hark-派单-23): identity claims the collected record makes about this run."""
+    run, art = ctx.get("run"), ctx.get("art")
+    if run is None or art is None:
+        rep.add("native.identity", UNKNOWN, "no bound run / artifact")
+        return
+    res, col = run["reserved"], run["collected"]
+    raw = col.get("raw_refs")
+    problems = []
+    if art.get("native_session_id") != res["native_session_id"]:
+        problems.append("artifact native_session_id != the run's native session")
+    if art.get("requested_model") != res["requested_model"]:
+        problems.append("artifact requested_model != the run's requested model")
+    if not isinstance(raw, list) or not raw or raw[0] != res["native_session_id"]:
+        problems.append("collected raw_refs do not start with the run's native session")
+    if problems and "artifact_identity" not in WEAKEN:
+        rep.add("native.identity", FAIL, "; ".join(problems))
+    else:
+        rep.add("native.identity", PASS, "artifact session/model identity = the run's")
+
+
 def gate_usage(ctx: Dict[str, Any], rep: Report) -> None:
     nat, run = native_view(ctx), ctx.get("run")
     if nat is None or nat["assoc"] is None:
@@ -788,15 +818,51 @@ def _fr_parts(parts: Any) -> Optional[List[Dict[str, Any]]]:
     return out
 
 
+def part_problem(part: Any) -> Optional[Tuple[str, str]]:
+    """(FAIL|UNKNOWN, why) for one content / result part, or None when it is one of the
+    observed shapes: {"text": str} or {"functionResponse": {id: str, name: str,
+    response: {output: str} | {error: str}}}."""
+    if not isinstance(part, dict):
+        return FAIL, f"part is {type(part).__name__}, not an object"
+    if "functionResponse" in part:
+        fr = part["functionResponse"]
+        if set(part) != {"functionResponse"}:
+            return UNKNOWN, "functionResponse part with extra keys (not observed)"
+        if not isinstance(fr, dict) or not isinstance(fr.get("id"), str) or not isinstance(fr.get("name"), str) \
+                or not isinstance(fr.get("response"), dict):
+            return FAIL, "functionResponse id/name/response of the wrong type"
+        resp = fr["response"]
+        if set(fr) != {"id", "name", "response"} or len(resp) != 1 or set(resp) - {"output", "error"}:
+            return UNKNOWN, "functionResponse of an unobserved shape"
+        if not all(isinstance(v, str) for v in resp.values()):
+            return FAIL, "functionResponse output/error is not a string"
+        return None
+    if set(part) == {"text"}:
+        return None if isinstance(part["text"], str) else (FAIL, "text part is not a string")
+    return UNKNOWN, "content part of an unobserved shape"
+
+
+def _same_or_conflict(items: List[Any]) -> Optional[str]:
+    """None for exactly one item; 'duplicate' for identical copies; 'conflict' otherwise."""
+    if len(items) == 1:
+        return None
+    first = json.dumps(items[0], sort_keys=True)
+    return "duplicate" if all(json.dumps(i, sort_keys=True) == first for i in items[1:]) else "conflict"
+
+
 def parse_chat(data: bytes, session_id: str, model: Optional[str]) -> Dict[str, Any]:
     """The host chat record of CLI 0.65.0 in its observed shape.
 
-    Line 1: session header {sessionId, projectHash, startTime, lastUpdated, kind}.
-    Later lines: {"$set": {lastUpdated}} updates, or message records {id, type,...}
-    (type user / gemini). The host rewrites a message by appending a record with the
-    same id: the last write is used, and a rewrite must keep the type, the model and
-    every tool call of the earlier write. Tool calls live on gemini records; their
-    functionResponse parts are repeated in the following user record.
+    Line 1: session header {sessionId, projectHash, startTime, lastUpdated, kind}, all
+    strings. Later lines: {"$set": {lastUpdated: str}} updates, or message records
+    {id: str, type: user|gemini, ...}. user content is a list of parts; gemini content
+    is a string. The host rewrites a message by appending a record with the SAME id
+    (an observed rewrite): the last write is used, and it must keep the type, the model
+    and every tool call of the earlier write. Inside ONE toolCalls array a tool id may
+    appear once. Each tool call's result holds exactly one functionResponse with the
+    call's id/name; the following user record repeats it once. Identical extra copies
+    are unknown (not observed); differing copies are a conflict (fail) - no copy is
+    ever chosen over another. Wrong types fail; other unobserved shapes are unknown.
     Returns calls (id -> last tool call), fail / unknown lists."""
     if "chat_record" in WEAKEN:            # weakened (tests only): the Hark-21 lenient reading
         calls_w, _ = chat_tool_calls(data)
@@ -816,6 +882,13 @@ def parse_chat(data: bytes, session_id: str, model: Optional[str]) -> Dict[str, 
         lines = lines[:-1]
     else:
         unknown.append("chat record does not end with a newline")
+
+    def note(problem: Optional[Tuple[str, str]], where: str) -> bool:
+        if problem is None:
+            return False
+        (fail if problem[0] == FAIL else unknown).append(f"{where}: {problem[1]}")
+        return True
+
     for n, line in enumerate(lines, 1):
         try:
             rec = json.loads(line)
@@ -828,60 +901,96 @@ def parse_chat(data: bytes, session_id: str, model: Optional[str]) -> Dict[str, 
         if n == 1:
             if any(k not in rec for k in CHAT_HEADER_KEYS):
                 fail.append("line 1 is not a session header")
+            elif any(not isinstance(rec[k], str) for k in CHAT_HEADER_KEYS):
+                fail.append("line 1: session header field of the wrong type")
             elif rec["sessionId"] != session_id:
                 fail.append(f"header sessionId {rec['sessionId']!r} != this run's session {session_id!r}")
             elif rec.get("kind") != "main":
                 unknown.append(f"header kind {rec.get('kind')!r} not observed")
+            elif set(rec) != set(CHAT_HEADER_KEYS):
+                unknown.append("line 1: session header with unobserved keys")
             continue
         if "sessionId" in rec:
             (fail if rec["sessionId"] != session_id else unknown).append(
                 f"line {n}: sessionId on a non-header line ({rec['sessionId']!r})")
             continue
         if set(rec) == {"$set"}:
-            if not isinstance(rec["$set"], dict) or any(k not in CHAT_SET_KEYS for k in rec["$set"]):
+            upd = rec["$set"]
+            if not isinstance(upd, dict) or any(not isinstance(v, str) for v in upd.values()):
+                fail.append(f"line {n}: $set update of the wrong type")
+            elif any(k not in CHAT_SET_KEYS for k in upd):
                 unknown.append(f"line {n}: $set update of an unobserved shape")
             continue
         mid, mtype = rec.get("id"), rec.get("type")
         if not isinstance(mid, str) or not isinstance(mtype, str):
-            unknown.append(f"line {n}: record of an unobserved shape")
+            (fail if "id" in rec or "type" in rec else unknown).append(f"line {n}: record id/type missing or not strings")
             continue
         if mtype not in CHAT_TYPES:
             unknown.append(f"line {n}: message type {mtype!r} not observed")
             continue
+        if "timestamp" in rec and not isinstance(rec["timestamp"], str):
+            fail.append(f"line {n}: timestamp is not a string")
         prev = messages.get(mid)
-        if mtype == "gemini" and model is not None and rec.get("model") != model:
-            fail.append(f"line {n}: gemini record model {rec.get('model')!r} != requested {model!r}")
-        tcs = rec.get("toolCalls", [])
+        tcs: Any = []
         if mtype == "user":
             if "toolCalls" in rec:
                 fail.append(f"line {n}: user record carries toolCalls")
-            for fr in _fr_parts(rec.get("content")) or []:
-                if not isinstance(fr, dict) or not isinstance(fr.get("id"), str):
-                    fail.append(f"line {n}: user functionResponse without id")
-                    continue
-                user_frs.setdefault(fr["id"], []).append(fr)
-            tcs = []
-        if not isinstance(tcs, list):
-            fail.append(f"line {n}: toolCalls is {type(tcs).__name__}, not a list")
-            tcs = []
-        this_ids = []
+            content = rec.get("content")
+            if not isinstance(content, list):
+                fail.append(f"line {n}: user content is {type(content).__name__}, not a list")
+            else:
+                for k, part in enumerate(content):
+                    if note(part_problem(part), f"line {n} content[{k}]"):
+                        continue
+                    if "functionResponse" in part:
+                        user_frs.setdefault(part["functionResponse"]["id"], []).append(part["functionResponse"])
+        else:
+            if model is not None and rec.get("model") != model:
+                fail.append(f"line {n}: gemini record model {rec.get('model')!r} != requested {model!r}")
+            if not isinstance(rec.get("content"), str):
+                fail.append(f"line {n}: gemini content is not a string")
+            tcs = rec.get("toolCalls", [])
+            if not isinstance(tcs, list):
+                fail.append(f"line {n}: toolCalls is {type(tcs).__name__}, not a list")
+                tcs = []
+        this_ids: List[str] = []
         for call in tcs:
             if not (isinstance(call, dict) and isinstance(call.get("id"), str) and isinstance(call.get("name"), str)
                     and isinstance(call.get("args"), dict) and isinstance(call.get("status"), str)
                     and isinstance(call.get("result"), list)):
                 fail.append(f"line {n}: tool call of an illegal shape")
                 continue
-            frs = _fr_parts(call["result"])
-            if not frs or any(not isinstance(fr, dict) or fr.get("id") != call["id"] or fr.get("name") != call["name"]
-                              or not isinstance(fr.get("response"), dict) for fr in frs):
-                fail.append(f"line {n}: functionResponse id/name/response disagree with tool call {call['id']!r}")
+            cid = call["id"]
+            if cid in this_ids:
+                fail.append(f"line {n}: tool call {cid!r} repeated inside one toolCalls array "
+                            "(not an observed rewrite)")
                 continue
-            if owner.get(call["id"], mid) != mid:
-                fail.append(f"line {n}: tool call {call['id']!r} appears under two messages")
+            frs = []
+            for k, part in enumerate(call["result"]):
+                if note(part_problem(part), f"line {n} {cid!r} result[{k}]"):
+                    continue
+                if "functionResponse" in part:
+                    frs.append(part["functionResponse"])
+                else:
+                    unknown.append(f"line {n} {cid!r} result[{k}]: non-functionResponse part (not observed)")
+            if not frs:
+                fail.append(f"line {n}: tool call {cid!r} carries no functionResponse")
                 continue
-            owner[call["id"]] = mid
-            this_ids.append(call["id"])
-            calls[call["id"]] = call
+            if any(fr["id"] != cid or fr["name"] != call["name"] for fr in frs):
+                fail.append(f"line {n}: functionResponse id/name disagree with tool call {cid!r}")
+                continue
+            kind = _same_or_conflict(frs)
+            if kind == "conflict":
+                fail.append(f"line {n}: tool call {cid!r} has conflicting functionResponses")
+                continue
+            if kind == "duplicate":
+                unknown.append(f"line {n}: tool call {cid!r} has repeated identical functionResponses")
+            if owner.get(cid, mid) != mid:
+                fail.append(f"line {n}: tool call {cid!r} appears under two messages")
+                continue
+            owner[cid] = mid
+            this_ids.append(cid)
+            calls[cid] = call
         if prev is not None:
             if prev["type"] != mtype or prev.get("model") != rec.get("model"):
                 fail.append(f"line {n}: rewrite of {mid!r} changes its type or model")
@@ -899,9 +1008,12 @@ def parse_chat(data: bytes, session_id: str, model: Optional[str]) -> Dict[str, 
         if call is None:
             fail.append(f"user functionResponse {cid!r} has no tool call")
             continue
-        own = _fr_parts(call["result"]) or []
-        if any(fr.get("name") != call["name"] or fr not in own for fr in frs):
-            fail.append(f"user functionResponse {cid!r} disagrees with its tool call")
+        own = [p["functionResponse"] for p in call["result"] if isinstance(p, dict) and "functionResponse" in p]
+        kind = _same_or_conflict(frs)
+        if kind == "conflict" or any(fr != own[0] for fr in frs):
+            fail.append(f"user functionResponse {cid!r} conflicts with its tool call or another copy")
+        elif kind == "duplicate":
+            unknown.append(f"user functionResponse {cid!r} repeated (not observed)")
     for cid in calls:
         if cid not in user_frs:
             unknown.append(f"tool call {cid!r} has no user functionResponse record")
@@ -1009,15 +1121,24 @@ def check_grep(ctx: Dict[str, Any], args: Dict[str, Any], output: str) -> Tuple[
     weak = "grep_binding" in WEAKEN
     ws = ctx["run"]["reserved"]["workspace"]
     lines = output.split("\n")
-    head = GREP_HEAD.match(lines[0]) if lines else None
-    if not head:
-        if output.startswith("No matches found"):
-            return PASS, "no matches reported", 0
-        return UNKNOWN, "unrecognised grep output header", 0
+    if weak and output.startswith("No matches found"):          # weakened: the Hark-21/22 shortcut
+        return PASS, "no matches reported", 0
+    # Request boundaries first: they hold for EVERY output branch (Hark-派单-23 R3).
     if not weak:
         extra = sorted(k for k in args if k not in GREP_KEYS)
+        pattern, context = args.get("pattern"), args.get("context")
+        if not isinstance(pattern, str):
+            return FAIL, f"pattern {pattern!r} is not a string", 0
+        if context is not None and (not isinstance(context, int) or isinstance(context, bool) or context < 0):
+            return FAIL, f"context {context!r} is not a non-negative integer", 0
         if extra:
             return UNKNOWN, f"grep parameters {extra} not observed; result cannot be bound", 0
+    head = GREP_HEAD.match(lines[0]) if lines else None
+    if not head:
+        if not weak and output.startswith("No matches found"):
+            return UNKNOWN, "no-match output: format not observed for CLI 0.65.0 (cannot bind to the request)", 0
+        return UNKNOWN, "unrecognised grep output header", 0
+    if not weak:
         if head.group(3) != args.get("pattern"):
             return FAIL, "output header pattern differs from the requested pattern", 0
         if head.group(4) != ".":
@@ -1097,6 +1218,13 @@ def check_read(ctx: Dict[str, Any], params: Dict[str, Any], output: str,
     src = export_lines(ctx, rel)
     if src is None:
         return FAIL, f"read_file path {rel!r} is not an exported file", False
+    start, end = params.get("start_line"), params.get("end_line")
+    if not weak:
+        if any(v is not None and (not isinstance(v, int) or isinstance(v, bool)) for v in (start, end)):
+            return FAIL, "start_line/end_line are not integers", False
+        extra = sorted(k for k in params if k not in READ_KEYS)
+        if extra:
+            return UNKNOWN, f"read_file parameters {extra} not observed; result cannot be bound", False
     m = READ_TRUNC.match(output)
     if not m:
         return UNKNOWN, "unrecognised read_file output format (e.g. untruncated whole file)", False
@@ -1106,15 +1234,9 @@ def check_read(ctx: Dict[str, Any], params: Dict[str, Any], output: str,
     if content != "\n".join(src[a - 1:b]) and "tool_content" not in WEAKEN:
         return FAIL, f"read content {rel}:{a}-{b} does not equal the exported source", False
     if not weak:
-        extra = sorted(k for k in params if k not in READ_KEYS)
-        if extra:
-            return UNKNOWN, f"read_file parameters {extra} not observed; result cannot be bound", False
-        start, end = params.get("start_line"), params.get("end_line")
         if start is None or end is None:
             return UNKNOWN, "read_file without an explicit start_line/end_line: host default range not observed", \
                 False
-        if any(not isinstance(v, int) or isinstance(v, bool) for v in (start, end)):
-            return FAIL, "start_line/end_line are not integers", False
         if (a, b) != (start, end):
             if a == start and end > total and b == total:
                 return UNKNOWN, "requested end beyond the file; host clamping not observed", False
@@ -1236,6 +1358,21 @@ def function_ranges(source: str) -> Dict[str, Tuple[int, int]]:
     return out
 
 
+def extract_refs(text: str) -> List[Tuple[str, int, int, str]]:
+    """(path text, start, end, whole token) for every path:line reference in text."""
+    out = []
+    if "ref_extraction" in WEAKEN:                  # weakened: the Hark-22 extraction
+        for m in SOURCE_REF.finditer(text):
+            out.append((m.group(1), int(m.group(2)), int(m.group(3) or m.group(2)), m.group(0)))
+        return out
+    for m in REF_TOKEN.finditer(text):
+        path = m.group(1)
+        if not any(c in path for c in "./\\"):
+            continue
+        out.append((path, int(m.group(2)), int(m.group(3) or m.group(2)), m.group(0)))
+    return out
+
+
 def gate_refs(ctx: Dict[str, Any], rep: Report) -> None:
     assoc, pkg = ctx.get("assoc"), ctx["package"]
     if assoc is None or not ctx.get("export_ok"):
@@ -1250,20 +1387,18 @@ def gate_refs(ctx: Dict[str, Any], rep: Report) -> None:
             rep.add("refs.ranges", FAIL, f"package range for {fname} does not match the source AST")
             return
     refs, bad = [], []
-    for m in SOURCE_REF.finditer(text):
-        rel = map_to_export(m.group(1), ctx["run"]["reserved"]["workspace"])
-        start = int(m.group(2))
-        end = int(m.group(3)) if m.group(3) else start
+    for path, start, end, token in extract_refs(text):
+        rel = map_to_export(path, ctx["run"]["reserved"]["workspace"])
         lines = export_lines(ctx, rel) if rel else None
         if lines is None or not 1 <= start <= end <= len(lines):
-            bad.append(m.group(0))
+            bad.append(token)
         else:
             refs.append((rel, start, end))
     if not refs and not bad:
         rep.add("refs.exist", FAIL, "delivery carries no path:line reference")
         return
     if bad and "refs_exist" not in WEAKEN:
-        rep.add("refs.exist", FAIL, f"references that do not exist in the export: {bad[:6]}")
+        rep.add("refs.exist", FAIL, f"references that do not exist in the export: {bad[:6]}", bad_refs=bad)
     else:
         rep.add("refs.exist", PASS, f"{len(refs)} references exist in the export")
     for point in CORE_POINTS:
@@ -1288,7 +1423,7 @@ def gate_refs(ctx: Dict[str, Any], rep: Report) -> None:
 
 
 GATES = [gate_package, gate_export, gate_registry, gate_binding, gate_workspace, gate_evidence,
-         gate_adapter, gate_native_status, gate_native_model, gate_usage, gate_host_preamble,
+         gate_adapter, gate_native_status, gate_native_model, gate_artifact_identity, gate_usage, gate_host_preamble,
          gate_host_errors, gate_stdin, gate_tools, gate_required, gate_refs]
 
 
