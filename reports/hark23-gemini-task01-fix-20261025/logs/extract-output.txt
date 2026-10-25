@@ -1,0 +1,582 @@
+{
+ "ast_test_methods": 113,
+ "run1": {
+  "cases": 57,
+  "control_not_all_pass": 57,
+  "control_unknown_only": [
+   "R2.usage_field_missing",
+   "R2.usage_missing",
+   "R23.fr_duplicate",
+   "R23.grep_nomatch_plain",
+   "R23.grep_nomatch_unknown_format",
+   "R23.grep_unobserved_option",
+   "R23.user_fr_missing"
+  ],
+  "guards": [
+   "adapter_gates",
+   "artifact_identity",
+   "binding_request",
+   "chat_record",
+   "evidence_digest",
+   "evidence_paths",
+   "explicit_model",
+   "export_root",
+   "export_tree",
+   "grep_binding",
+   "host_errors",
+   "host_preamble",
+   "input_paths",
+   "native_model",
+   "native_status",
+   "package_anchor",
+   "package_digest",
+   "read_binding",
+   "ref_extraction",
+   "refs_core",
+   "refs_exist",
+   "required_tools",
+   "src_anchor",
+   "stdin",
+   "tool_content",
+   "usage",
+   "workspace_manifest"
+  ],
+  "io_sentinel_access_control_weakened": {
+   "R4.evidence_file_link": [
+    0,
+    1
+   ],
+   "R4.evidence_root_link": [
+    0,
+    6
+   ],
+   "R4.export_root_link": [
+    0,
+    30
+   ],
+   "R4.run_dir_link": [
+    0,
+    5
+   ],
+   "R4.task_outside": [
+    0,
+    1
+   ]
+  },
+  "r23_cases": {
+   "R23.artifact_model": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.artifact_session": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.dup_call_differing": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.dup_call_identical": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.fr_conflict": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.fr_duplicate": [
+    "undetermined",
+    3,
+    "all_pass",
+    0
+   ],
+   "R23.gemini_content_int": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.grep_context_negative": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.grep_nomatch_plain": [
+    "undetermined",
+    3,
+    "all_pass",
+    0
+   ],
+   "R23.grep_nomatch_unknown_format": [
+    "undetermined",
+    3,
+    "all_pass",
+    0
+   ],
+   "R23.grep_pattern_int": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.grep_unobserved_option": [
+    "undetermined",
+    3,
+    "all_pass",
+    0
+   ],
+   "R23.header_hash_int": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.read_param_type": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.ref_ads": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.ref_device_dot": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.ref_device_q": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.result_int": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.user_content_int": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.user_fr_missing": [
+    "undetermined",
+    3,
+    "all_pass",
+    0
+   ]
+  },
+  "ran": [
+   "113"
+  ],
+  "status": [
+   "OK"
+  ],
+  "weakened_all_pass_exit0": 57
+ },
+ "run2": {
+  "cases": 57,
+  "control_not_all_pass": 57,
+  "control_unknown_only": [
+   "R2.usage_field_missing",
+   "R2.usage_missing",
+   "R23.fr_duplicate",
+   "R23.grep_nomatch_plain",
+   "R23.grep_nomatch_unknown_format",
+   "R23.grep_unobserved_option",
+   "R23.user_fr_missing"
+  ],
+  "guards": [
+   "adapter_gates",
+   "artifact_identity",
+   "binding_request",
+   "chat_record",
+   "evidence_digest",
+   "evidence_paths",
+   "explicit_model",
+   "export_root",
+   "export_tree",
+   "grep_binding",
+   "host_errors",
+   "host_preamble",
+   "input_paths",
+   "native_model",
+   "native_status",
+   "package_anchor",
+   "package_digest",
+   "read_binding",
+   "ref_extraction",
+   "refs_core",
+   "refs_exist",
+   "required_tools",
+   "src_anchor",
+   "stdin",
+   "tool_content",
+   "usage",
+   "workspace_manifest"
+  ],
+  "io_sentinel_access_control_weakened": {
+   "R4.evidence_file_link": [
+    0,
+    1
+   ],
+   "R4.evidence_root_link": [
+    0,
+    6
+   ],
+   "R4.export_root_link": [
+    0,
+    30
+   ],
+   "R4.run_dir_link": [
+    0,
+    5
+   ],
+   "R4.task_outside": [
+    0,
+    1
+   ]
+  },
+  "r23_cases": {
+   "R23.artifact_model": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.artifact_session": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.dup_call_differing": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.dup_call_identical": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.fr_conflict": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.fr_duplicate": [
+    "undetermined",
+    3,
+    "all_pass",
+    0
+   ],
+   "R23.gemini_content_int": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.grep_context_negative": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.grep_nomatch_plain": [
+    "undetermined",
+    3,
+    "all_pass",
+    0
+   ],
+   "R23.grep_nomatch_unknown_format": [
+    "undetermined",
+    3,
+    "all_pass",
+    0
+   ],
+   "R23.grep_pattern_int": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.grep_unobserved_option": [
+    "undetermined",
+    3,
+    "all_pass",
+    0
+   ],
+   "R23.header_hash_int": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.read_param_type": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.ref_ads": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.ref_device_dot": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.ref_device_q": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.result_int": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.user_content_int": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.user_fr_missing": [
+    "undetermined",
+    3,
+    "all_pass",
+    0
+   ]
+  },
+  "ran": [
+   "113"
+  ],
+  "status": [
+   "OK"
+  ],
+  "weakened_all_pass_exit0": 57
+ },
+ "run3": {
+  "cases": 57,
+  "control_not_all_pass": 57,
+  "control_unknown_only": [
+   "R2.usage_field_missing",
+   "R2.usage_missing",
+   "R23.fr_duplicate",
+   "R23.grep_nomatch_plain",
+   "R23.grep_nomatch_unknown_format",
+   "R23.grep_unobserved_option",
+   "R23.user_fr_missing"
+  ],
+  "guards": [
+   "adapter_gates",
+   "artifact_identity",
+   "binding_request",
+   "chat_record",
+   "evidence_digest",
+   "evidence_paths",
+   "explicit_model",
+   "export_root",
+   "export_tree",
+   "grep_binding",
+   "host_errors",
+   "host_preamble",
+   "input_paths",
+   "native_model",
+   "native_status",
+   "package_anchor",
+   "package_digest",
+   "read_binding",
+   "ref_extraction",
+   "refs_core",
+   "refs_exist",
+   "required_tools",
+   "src_anchor",
+   "stdin",
+   "tool_content",
+   "usage",
+   "workspace_manifest"
+  ],
+  "io_sentinel_access_control_weakened": {
+   "R4.evidence_file_link": [
+    0,
+    1
+   ],
+   "R4.evidence_root_link": [
+    0,
+    6
+   ],
+   "R4.export_root_link": [
+    0,
+    30
+   ],
+   "R4.run_dir_link": [
+    0,
+    5
+   ],
+   "R4.task_outside": [
+    0,
+    1
+   ]
+  },
+  "r23_cases": {
+   "R23.artifact_model": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.artifact_session": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.dup_call_differing": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.dup_call_identical": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.fr_conflict": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.fr_duplicate": [
+    "undetermined",
+    3,
+    "all_pass",
+    0
+   ],
+   "R23.gemini_content_int": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.grep_context_negative": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.grep_nomatch_plain": [
+    "undetermined",
+    3,
+    "all_pass",
+    0
+   ],
+   "R23.grep_nomatch_unknown_format": [
+    "undetermined",
+    3,
+    "all_pass",
+    0
+   ],
+   "R23.grep_pattern_int": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.grep_unobserved_option": [
+    "undetermined",
+    3,
+    "all_pass",
+    0
+   ],
+   "R23.header_hash_int": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.read_param_type": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.ref_ads": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.ref_device_dot": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.ref_device_q": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.result_int": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.user_content_int": [
+    "fail",
+    1,
+    "all_pass",
+    0
+   ],
+   "R23.user_fr_missing": [
+    "undetermined",
+    3,
+    "all_pass",
+    0
+   ]
+  },
+  "ran": [
+   "113"
+  ],
+  "status": [
+   "OK"
+  ],
+  "weakened_all_pass_exit0": 57
+ }
+}
