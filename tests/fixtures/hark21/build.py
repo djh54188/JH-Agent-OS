@@ -49,20 +49,30 @@ def lines_of(export, rel):
         return fh.read().decode("utf-8").split("\n")
 
 
-def grep_output(export, pattern):
-    """CLI 0.65.0 grep_search output shape (observed), matches only, all exported files."""
-    rx = re.compile(pattern)
+def grep_output(export, pattern, context=0, header_pattern=None):
+    """CLI 0.65.0 grep_search output shape (observed). context>0 only with one match
+    per file (the only shape observed: the match with `context` lines either side)."""
+    rx = re.compile(pattern, re.I)
     blocks, count = [], 0
     for dirpath, dirs, files in os.walk(export):
         dirs.sort()
         for name in sorted(files):
             rel = os.path.relpath(os.path.join(dirpath, name), export).replace(os.sep, "/")
-            hits = [(i + 1, l) for i, l in enumerate(lines_of(export, rel)) if rx.search(l)]
-            if hits:
-                count += len(hits)
-                blocks.append(f"File: {rel}\n" + "\n".join(f"L{n}: {l}" for n, l in hits))
+            src = lines_of(export, rel)
+            hits = [i + 1 for i, l in enumerate(src) if rx.search(l)]
+            if not hits:
+                continue
+            count += len(hits)
+            if context:
+                assert len(hits) == 1, "constructed context output supports one match per file"
+                shown = range(max(1, hits[0] - context), min(len(src), hits[0] + context) + 1)
+            else:
+                shown = hits
+            blocks.append(f"File: {rel}\n" + "\n".join(
+                f"L{n}{':' if n in hits else '-'} {src[n - 1]}" for n in shown))
     word = "match" if count == 1 else "matches"
-    return f'Found {count} {word} for pattern "{pattern}" in path ".":\n---\n' + "\n---\n".join(blocks) + "\n---"
+    return (f'Found {count} {word} for pattern "{header_pattern or pattern}" in path ".":\n---\n'
+            + "\n---\n".join(blocks) + "\n---")
 
 
 def read_output(export, rel, a, b):
@@ -75,20 +85,27 @@ def read_output(export, rel, a, b):
         f"Read lines {a}-{b} of {len(src)} from {rel}"
 
 
+DEFAULT_GREP = "^def registry_text_problem"
+
+
 def good_tools(export):
-    g = grep_output(export, "_registry_problem")
+    g = grep_output(export, "_registry_problem", context=0)
+    g2 = grep_output(export, DEFAULT_GREP, context=50)
     r, summary = read_output(export, TARGET, 1060, 1145)
     r2, summary2 = read_output(export, TARGET, 1261, 1333)
     return [
-        {"id": "grep_search__1", "name": "grep_search", "params": {"pattern": "_registry_problem"},
-         "chat_args": {"pattern": "_registry_problem", "context": 0}, "status": "success",
-         "chat_output": g},
+        # explicit context 0: stream parameters and chat args are identical
+        {"id": "grep_search__1", "name": "grep_search", "params": {"pattern": "_registry_problem", "context": 0},
+         "status": "success", "chat_output": g},
         {"id": "read_file__1", "name": "read_file",
          "params": {"file_path": "{WORKSPACE}/" + TARGET, "start_line": 1060, "end_line": 1145},
          "status": "success", "chat_output": r, "stream_output": summary},
         {"id": "read_file__2", "name": "read_file",
          "params": {"file_path": "{WORKSPACE}/" + TARGET, "start_line": 1261, "end_line": 1333},
          "status": "success", "chat_output": r2, "stream_output": summary2},
+        # no context requested: the host records its observed default context 50
+        {"id": "grep_search__2", "name": "grep_search", "params": {"pattern": DEFAULT_GREP},
+         "chat_args": {"pattern": DEFAULT_GREP, "context": 50}, "status": "success", "chat_output": g2},
     ]
 
 
@@ -141,3 +158,49 @@ def run_adapter(base, export, scenario, instructions=None, task_id=None, model=M
     status = adapter.submit(request)
     adapter.collect(address, status.run_id, timeout=60)
     return evidence, status.run_id
+
+
+# ------------------------------------------------------------------ forging --
+# Post-hoc edits of a CONSTRUCTED evidence root, used to build counter-examples in
+# which the registry / evidence digests are updated together with the bytes they
+# describe (so only the cross-evidence checks can catch them).
+
+def canon(obj):
+    return json.dumps(obj, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+
+
+def read_registry(evidence):
+    with open(os.path.join(evidence, "registry.jsonl"), "rb") as fh:
+        return [json.loads(l) for l in fh.read().decode("utf-8").splitlines()]
+
+
+def write_registry(evidence, records):
+    with open(os.path.join(evidence, "registry.jsonl"), "wb") as fh:
+        fh.write(b"".join(canon(r) + b"\n" for r in records))
+
+
+def edit_collected(evidence, run_id, fn):
+    recs = read_registry(evidence)
+    for r in recs:
+        if r["run_id"] == run_id and r["event"] == "collected":
+            fn(r)
+    write_registry(evidence, recs)
+
+
+def replace_evidence(evidence, run_id, name, data):
+    """Write new bytes for an evidence file and register its new size/sha256."""
+    import hashlib
+    path = os.path.join(evidence, "runs", run_id, name)
+    with open(path, "wb") as fh:
+        fh.write(data)
+
+    def fix(r):
+        r["evidence"][name]["bytes"] = len(data)
+        r["evidence"][name]["sha256"] = hashlib.sha256(data).hexdigest()
+    edit_collected(evidence, run_id, fix)
+
+
+def forge_clean(r):
+    """Make a collected record claim a clean run (as if the adapter had found no problem)."""
+    r["declared_status"] = "success"
+    r["state"] = "declared_complete"

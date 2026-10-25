@@ -7,7 +7,11 @@
 
 B2 登记不可证明时粘滞拒绝（结果类：A 拒绝派发）
 - GeminiCliAgentSessionAdapter._reload_locked（1062–1143）：前缀被截/改（registry_prefix_intact，1069）、文本不合法（registry_text_problem 914–924，调用于 1073–1076）、不是合法历史（validate_registry_records，约 1083–1085）、runs/ 下有登记无法解释的运行目录（unaccounted_run_traces 879–911，调用于 1086–1093）。任一成立即设置对象级粘滞 _registry_problem，之后提交以 RegistryUnavailable 拒绝。
-- 正确含义要点：空、零字节或缺尾的登记不被当作“从未派发”；不修复、不重建、不补发。
+- 正确含义要点（按实际状态区分，不能把空/短登记一律写成拒绝）：
+  1. 新存储：登记零字节或不存在，且 runs/ 下没有任何运行痕迹（unaccounted_run_traces 为空，879–911），是合法的空历史，可以派发。
+  2. 有效前缀：登记只含合法记录（例如只有 reserved，或 reserved+dispatched），是合法历史；重开后这些未收集的运行按 B3 恢复为 unknown，不重发，不是拒绝。
+  3. 拒绝：前缀被截/改、缺尾或空白行等文本不合法、不是合法历史，或 runs/ 下有登记无法解释的运行目录（空、零字节或过短的登记配上未登记的运行痕迹）。此时设置粘滞问题拒绝；不修复、不重建、不补发。
+  即：空或短的登记本身不能证明“从未派发”，须结合前缀合法性、历史和运行痕迹判断。
 
 B3 重开后未收集的运行标为未知（结果类：C）
 - _reload_locked 焦点 1134–1141：不是本对象存活进程、未收集、状态为 queued/running 的运行置为 unknown，native_state=outcome-unknown-after-reopen。
@@ -27,7 +31,11 @@ B7 已启动但 dispatched 写失败（结果类：本对象后续 A；其他读
 - 正确含义要点（三层必须区分）：
   1. 当前已启动的这次运行仍是 running，进程不会被杀；本对象之后仍可对它 status/collect。
   2. 同一适配器对象之后的任何 submit 因粘滞问题被拒绝（RegistryUnavailable）。
-  3. 其他读者或重新打开登记的对象只看到 reserved 记录：该 run 未收集，按 B3 保守标为 unknown，不重发。
+  3. 其他读者或重新打开登记的对象：OSError 只说明这次追加未被确认，不保证磁盘上只剩 reserved。_persist_locked（1161–1178）先 write 再 flush/fsync，须按实际登记内容分别判断：
+     a. 完全未写入：磁盘上只有 reserved，读者按 B3 标为 unknown，不重发；
+     b. 完整 dispatched 行已写入，但 flush/fsync 报错：磁盘上是合法的 reserved+dispatched，读者同样按 B3 标为 unknown（未收集），不重发；
+     c. 只写入半行或留下非法/不一致的历史：读者在 _reload_locked 中因文本不合法或非法历史设置粘滞问题并拒绝（B2），不把它当作未知运行，也不重发。
+     因此不能声称其他读者都只看到 reserved，或总得到同一种结果；各情形的共同点只是不重发。
 - 错误理解示例（应判语义不通过）：说会自动杀进程、自动恢复/补写登记、自动重试或再次派发；或把三层混为一谈；或遗漏 B7。
 
 ## 辅助点（加分，不强制）

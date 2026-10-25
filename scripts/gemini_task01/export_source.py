@@ -16,6 +16,13 @@ No tests/, docs/, reports/, .git, task text, review baseline or checker code is
 written into --out. Read-only access to the host tools is the host's job (admin
 policy of the adapter), not a property of this directory.
 
+Hark-派单-22 additions:
+  * the package bytes must be the pinned approved package and the listed tree must
+    be exactly the pinned src/ file set (pins.py), before anything is written;
+  * --out must not be a link / junction (or under a component that is one): it is
+    created fresh as a plain directory and checked with lstat before every write;
+    files are created with O_CREAT|O_EXCL (and O_NOFOLLOW where the OS has it).
+
 Exit codes: 0 exported and verified; 2 could not export (nothing is claimed).
 """
 from __future__ import annotations
@@ -24,10 +31,15 @@ import argparse
 import hashlib
 import json
 import os
+import stat
 import subprocess
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+
+import pins  # noqa: E402
+
 SCHEMA = "hark21/gemini-task01/export-manifest/v1"
 
 
@@ -37,7 +49,36 @@ def git_blob_id(data: bytes) -> str:
 
 def load_package(path: str) -> dict:
     with open(path, "rb") as fh:
-        return json.loads(fh.read().decode("utf-8"))
+        data = fh.read()
+    if hashlib.sha256(data).hexdigest() != pins.PACKAGE_SHA256:
+        raise SystemExit("package bytes are not the pinned approved package; refusing")
+    pkg = json.loads(data.decode("utf-8"))
+    if not isinstance(pkg, dict):
+        raise SystemExit("package is not a JSON object; refusing")
+    return pkg
+
+
+def _link_like(path: str) -> bool:
+    st = os.lstat(path)
+    return stat.S_ISLNK(st.st_mode) or bool(getattr(st, "st_file_attributes", 0) & 0x400)
+
+
+def _plain_dir_chain(out: str) -> None:
+    """Refuse when --out, or any existing component from its parent down, is a link /
+    junction (checked with lstat, before anything is created or written)."""
+    if os.path.lexists(out) and _link_like(out):
+        raise SystemExit(f"--out {out!r} is a link or junction; refusing")
+    parent = os.path.dirname(out)
+    if os.path.lexists(parent) and _link_like(parent):
+        raise SystemExit(f"parent of --out {parent!r} is a link or junction; refusing")
+
+
+def _make_plain_dir(path: str) -> None:
+    if not os.path.lexists(path):
+        os.mkdir(path)
+    st = os.lstat(path)
+    if stat.S_ISLNK(st.st_mode) or (getattr(st, "st_file_attributes", 0) & 0x400) or not stat.S_ISDIR(st.st_mode):
+        raise SystemExit(f"{path!r} is not a plain directory; refusing")
 
 
 def _within(child: str, parent: str) -> bool:
@@ -62,11 +103,16 @@ def list_tree(repo: str, commit: str, prefix: str):
 
 
 def export(repo: str, out: str, manifest_path: str, package: dict) -> dict:
+    if (package.get("source_commit"), package.get("source_prefix"), package.get("target_file"),
+            package.get("target_blob")) != (pins.SOURCE_COMMIT, pins.SOURCE_PREFIX, pins.TARGET_FILE,
+                                            pins.TARGET_BLOB):
+        raise SystemExit("package does not pin the fixed commit/prefix/target/blob; refusing")
     commit = package["source_commit"]
     prefix = package["source_prefix"]
     resolved = _git(repo, "rev-parse", "--verify", commit + "^{commit}").decode("ascii").strip()
     if resolved != commit:
         raise SystemExit(f"commit {commit} resolves to {resolved}; refusing")
+    _plain_dir_chain(out)
     if os.path.lexists(out) and (not os.path.isdir(out) or os.listdir(out)):
         raise SystemExit(f"--out {out!r} exists and is not an empty directory; refusing")
     if _within(manifest_path, out):
@@ -79,15 +125,25 @@ def export(repo: str, out: str, manifest_path: str, package: dict) -> dict:
             raise SystemExit(f"{path}: mode {mode} type {kind} is not a regular file; refusing")
         if not path.startswith(prefix) or ".." in path.split("/") or path.startswith("/"):
             raise SystemExit(f"{path}: unexpected path; refusing")
-    os.makedirs(out, exist_ok=True)
+    listed = {path: obj for mode, kind, obj, path in entries}
+    if listed != {p: v[0] for p, v in pins.SOURCE_FILES.items()}:
+        raise SystemExit("the listed tree is not the pinned src/ file set; refusing")
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    _make_plain_dir(out)
     files = {}
     for mode, kind, obj, path in entries:
         data = _git(repo, "cat-file", "blob", obj)
         if git_blob_id(data) != obj:
             raise SystemExit(f"{path}: object bytes do not hash to {obj}")
-        dest = os.path.join(out, *path.split("/"))
-        os.makedirs(os.path.dirname(dest), exist_ok=True)
-        with open(dest, "xb") as fh:
+        parts = path.split("/")
+        cur = out
+        for part in parts[:-1]:
+            cur = os.path.join(cur, part)
+            _make_plain_dir(cur)
+        dest = os.path.join(cur, parts[-1])
+        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_BINARY", 0)
+        fd = os.open(dest, flags, 0o644)
+        with os.fdopen(fd, "wb") as fh:
             fh.write(data)
         with open(dest, "rb") as fh:          # verify the bytes on disk, not in memory
             disk = fh.read()
