@@ -1,0 +1,155 @@
+.......MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+--out must be outside the export and the evidence root
+MECHANICAL UNDETERMINED - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+.........MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL UNDETERMINED - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL UNDETERMINED - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL UNDETERMINED - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL UNDETERMINED - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL UNDETERMINED - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL UNDETERMINED - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL UNDETERMINED - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+MECHANICAL FAIL - semantic review required; this is not a task verdict
+MECHANICAL ALL_PASS - semantic review required; this is not a task verdict
+.....................................................................guard weakening is a test-only hook; refusing to run with it set
+......................................................................................../usr/local/lib/python3.12/subprocess.py:1127: ResourceWarning: subprocess 20701 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/usr/local/lib/python3.12/subprocess.py:1127: ResourceWarning: subprocess 20704 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/usr/local/lib/python3.12/subprocess.py:1127: ResourceWarning: subprocess 20710 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+......../usr/local/lib/python3.12/subprocess.py:1127: ResourceWarning: subprocess 20724 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+....../usr/local/lib/python3.12/subprocess.py:1127: ResourceWarning: subprocess 20743 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/work/jhos-b/tests/test_hark12_gemini_admission.py:261: ResourceWarning: unclosed file <_io.BufferedReader name='/tmp/hark12-n635p6mg/evidence/registry.jsonl'>
+  lines = open(self.h.registry, "rb").read().splitlines(keepends=True)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/work/jhos-b/tests/test_hark12_gemini_admission.py:261: ResourceWarning: unclosed file <_io.BufferedReader name='/tmp/hark12-jhezdvrn/evidence/registry.jsonl'>
+  lines = open(self.h.registry, "rb").read().splitlines(keepends=True)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/usr/local/lib/python3.12/subprocess.py:1127: ResourceWarning: subprocess 20750 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+...../usr/local/lib/python3.12/subprocess.py:1127: ResourceWarning: subprocess 20760 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+.../workspace/work/jhos-b/tests/test_hark12_gemini_admission.py:261: ResourceWarning: unclosed file <_io.BufferedReader name='/tmp/hark12-tf9oz7ha/evidence/registry.jsonl'>
+  lines = open(self.h.registry, "rb").read().splitlines(keepends=True)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+...WEAKENING {"R1.file_added": {"control": "fail", "control_exit": 1, "guard": "src_anchor", "weakened": "all_pass", "weakened_exit": 0}, "R1.file_deleted": {"control": "fail", "control_exit": 1, "guard": "src_anchor", "weakened": "all_pass", "weakened_exit": 0}, "R1.focus_moved": {"control": "fail", "control_exit": 1, "guard": "package_anchor", "weakened": "all_pass", "weakened_exit": 0}, "R1.non_target_changed": {"control": "fail", "control_exit": 1, "guard": "src_anchor", "weakened": "all_pass", "weakened_exit": 0}, "R1.task_swapped": {"control": "fail", "control_exit": 1, "guard": "package_anchor", "weakened": "all_pass", "weakened_exit": 0}, "R2.auto_model": {"control": "fail", "control_exit": 1, "guard": "explicit_model", "weakened": "all_pass", "weakened_exit": 0}, "R2.chat_model": {"control": "fail", "control_exit": 1, "guard": "chat_record", "weakened": "all_pass", "weakened_exit": 0}, "R2.chat_session": {"control": "fail", "control_exit": 1, "guard": "chat_record", "weakened": "all_pass", "weakened_exit": 0}, "R2.errors_mismatch": {"control": "fail", "control_exit": 1, "guard": "host_errors", "weakened": "all_pass", "weakened_exit": 0}, "R2.fr_name": {"control": "fail", "control_exit": 1, "guard": "chat_record", "weakened": "all_pass", "weakened_exit": 0}, "R2.ghost_tool_call": {"control": "fail", "control_exit": 1, "guard": "chat_record", "weakened": "all_pass", "weakened_exit": 0}, "R2.illegal_tool_call": {"control": "fail", "control_exit": 1, "guard": "chat_record", "weakened": "all_pass", "weakened_exit": 0}, "R2.init_model": {"control": "fail", "control_exit": 1, "guard": "native_model", "weakened": "all_pass", "weakened_exit": 0}, "R2.preamble_stderr_failure": {"control": "fail", "control_exit": 1, "guard": "host_preamble", "weakened": "all_pass", "weakened_exit": 0}, "R2.result_error": {"control": "fail", "control_exit": 1, "guard": "native_status", "weakened": "all_pass", "weakened_exit": 0}, "R2.tool_calls_int": {"control": "fail", "control_exit": 1, "guard": "chat_record", "weakened": "all_pass", "weakened_exit": 0}, "R2.usage_field_missing": {"control": "undetermined", "control_exit": 3, "guard": "usage", "weakened": "all_pass", "weakened_exit": 0}, "R2.usage_missing": {"control": "undetermined", "control_exit": 3, "guard": "usage", "weakened": "all_pass", "weakened_exit": 0}, "R23.artifact_model": {"control": "fail", "control_exit": 1, "guard": "artifact_identity", "weakened": "all_pass", "weakened_exit": 0}, "R23.artifact_session": {"control": "fail", "control_exit": 1, "guard": "artifact_identity", "weakened": "all_pass", "weakened_exit": 0}, "R23.dup_call_differing": {"control": "fail", "control_exit": 1, "guard": "chat_record", "weakened": "all_pass", "weakened_exit": 0}, "R23.dup_call_identical": {"control": "fail", "control_exit": 1, "guard": "chat_record", "weakened": "all_pass", "weakened_exit": 0}, "R23.fr_conflict": {"control": "fail", "control_exit": 1, "guard": "chat_record", "weakened": "all_pass", "weakened_exit": 0}, "R23.fr_duplicate": {"control": "undetermined", "control_exit": 3, "guard": "chat_record", "weakened": "all_pass", "weakened_exit": 0}, "R23.gemini_content_int": {"control": "fail", "control_exit": 1, "guard": "chat_record", "weakened": "all_pass", "weakened_exit": 0}, "R23.grep_context_negative": {"control": "fail", "control_exit": 1, "guard": "grep_binding", "weakened": "all_pass", "weakened_exit": 0}, "R23.grep_nomatch_plain": {"control": "undetermined", "control_exit": 3, "guard": "grep_binding", "weakened": "all_pass", "weakened_exit": 0}, "R23.grep_nomatch_unknown_format": {"control": "undetermined", "control_exit": 3, "guard": "grep_binding", "weakened": "all_pass", "weakened_exit": 0}, "R23.grep_pattern_int": {"control": "fail", "control_exit": 1, "guard": "grep_binding", "weakened": "all_pass", "weakened_exit": 0}, "R23.grep_unobserved_option": {"control": "undetermined", "control_exit": 3, "guard": "grep_binding", "weakened": "all_pass", "weakened_exit": 0}, "R23.header_hash_int": {"control": "fail", "control_exit": 1, "guard": "chat_record", "weakened": "all_pass", "weakened_exit": 0}, "R23.read_param_type": {"control": "fail", "control_exit": 1, "guard": "read_binding", "weakened": "all_pass", "weakened_exit": 0}, "R23.ref_ads": {"control": "fail", "control_exit": 1, "guard": "ref_extraction", "weakened": "all_pass", "weakened_exit": 0}, "R23.ref_device_dot": {"control": "fail", "control_exit": 1, "guard": "ref_extraction", "weakened": "all_pass", "weakened_exit": 0}, "R23.ref_device_q": {"control": "fail", "control_exit": 1, "guard": "ref_extraction", "weakened": "all_pass", "weakened_exit": 0}, "R23.result_int": {"control": "fail", "control_exit": 1, "guard": "chat_record", "weakened": "all_pass", "weakened_exit": 0}, "R23.user_content_int": {"control": "fail", "control_exit": 1, "guard": "chat_record", "weakened": "all_pass", "weakened_exit": 0}, "R23.user_fr_missing": {"control": "undetermined", "control_exit": 3, "guard": "chat_record", "weakened": "all_pass", "weakened_exit": 0}, "R3.grep_header": {"control": "fail", "control_exit": 1, "guard": "grep_binding", "weakened": "all_pass", "weakened_exit": 0}, "R3.grep_window": {"control": "fail", "control_exit": 1, "guard": "grep_binding", "weakened": "all_pass", "weakened_exit": 0}, "R3.read_range": {"control": "fail", "control_exit": 1, "guard": "read_binding", "weakened": "all_pass", "weakened_exit": 0}, "R4.evidence_file_link": {"control": "fail", "control_exit": 1, "guard": "evidence_paths", "sentinel_access_control": 0, "sentinel_access_weakened": 1, "weakened": "all_pass", "weakened_exit": 0}, "R4.evidence_root_link": {"control": "fail", "control_exit": 1, "guard": "evidence_paths", "sentinel_access_control": 0, "sentinel_access_weakened": 6, "weakened": "all_pass", "weakened_exit": 0}, "R4.export_root_link": {"control": "fail", "control_exit": 1, "guard": "export_root", "sentinel_access_control": 0, "sentinel_access_weakened": 30, "weakened": "all_pass", "weakened_exit": 0}, "R4.run_dir_link": {"control": "fail", "control_exit": 1, "guard": "evidence_paths", "sentinel_access_control": 0, "sentinel_access_weakened": 5, "weakened": "all_pass", "weakened_exit": 0}, "R4.task_outside": {"control": "fail", "control_exit": 1, "guard": "input_paths", "sentinel_access_control": 0, "sentinel_access_weakened": 1, "weakened": "all_pass", "weakened_exit": 0}, "adapter_gates": {"control": "fail", "control_exit": 1, "guard": "adapter_gates", "weakened": "all_pass", "weakened_exit": 0}, "binding_request": {"control": "fail", "control_exit": 1, "guard": "binding_request", "weakened": "all_pass", "weakened_exit": 0}, "evidence_digest": {"control": "fail", "control_exit": 1, "guard": "evidence_digest", "weakened": "all_pass", "weakened_exit": 0}, "export_tree": {"control": "fail", "control_exit": 1, "guard": "export_tree", "weakened": "all_pass", "weakened_exit": 0}, "package_digest": {"control": "fail", "control_exit": 1, "guard": "package_digest", "weakened": "all_pass", "weakened_exit": 0}, "refs_core": {"control": "fail", "control_exit": 1, "guard": "refs_core", "weakened": "all_pass", "weakened_exit": 0}, "refs_exist": {"control": "fail", "control_exit": 1, "guard": "refs_exist", "weakened": "all_pass", "weakened_exit": 0}, "required_tools": {"control": "fail", "control_exit": 1, "guard": "required_tools", "weakened": "all_pass", "weakened_exit": 0}, "stdin": {"control": "fail", "control_exit": 1, "guard": "stdin", "weakened": "all_pass", "weakened_exit": 0}, "tool_content": {"control": "fail", "control_exit": 1, "guard": "tool_content", "weakened": "all_pass", "weakened_exit": 0}, "workspace_manifest": {"control": "fail", "control_exit": 1, "guard": "workspace_manifest", "weakened": "all_pass", "weakened_exit": 0}}
+.................................................s..........sssssss
+----------------------------------------------------------------------
+Ran 265 tests in 59.805s
+
+OK (skipped=8)

@@ -1,0 +1,135 @@
+d88efc0bf26533ecb098fc5481aee91e456eff57
+status-lines: 0
+diff-vs-95d941e:
+A	scripts/gemini_task01_run/entry.py
+A	scripts/win/hark24-gemini-task01.ps1
+A	tests/fixtures/hark24/fake_node.py
+A	tests/fixtures/hark24/guarded_prepare.py
+A	tests/test_hark24_gemini_task01_entry.py
+B+src+win-other diffs: 0
+502aa8292c7b4e574156feecc7c09264992f0fea5b7092b30ec4d1cb8d9516cf  AGENTS.md
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+test_each_guard_control_then_weakened (tests.test_hark24_gemini_task01_entry.TestGuardWeakening.test_each_guard_control_then_weakened) ... hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+ok
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+test_endpoint_with_credentials_or_query_is_refused_without_echo (tests.test_hark24_gemini_task01_entry.TestPrepare.test_endpoint_with_credentials_or_query_is_refused_without_echo) ... ok
+test_existing_work_root_and_wrong_entry_commit_refused (tests.test_hark24_gemini_task01_entry.TestPrepare.test_existing_work_root_and_wrong_entry_commit_refused) ... ok
+test_export_keeps_task_and_source_bytes (tests.test_hark24_gemini_task01_entry.TestPrepare.test_export_keeps_task_and_source_bytes) ... ok
+test_missing_or_unverified_settings_are_needs_setup (tests.test_hark24_gemini_task01_entry.TestPrepare.test_missing_or_unverified_settings_are_needs_setup) ... ok
+test_prepare_never_looks_up_secret_variables_and_starts_only_git (tests.test_hark24_gemini_task01_entry.TestPrepare.test_prepare_never_looks_up_secret_variables_and_starts_only_git) ... ok
+test_prepared_context_is_non_sensitive_and_dispatches_nothing (tests.test_hark24_gemini_task01_entry.TestPrepare.test_prepared_context_is_non_sensitive_and_dispatches_nothing) ... ok
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+test_candidate_commit_verified_whitelisted_and_not_pushed (tests.test_hark24_gemini_task01_entry.TestRunReal.test_candidate_commit_verified_whitelisted_and_not_pushed) ... ok
+test_concurrent_entries_dispatch_once (tests.test_hark24_gemini_task01_entry.TestRunReal.test_concurrent_entries_dispatch_once) ... ok
+test_host_failure_kept_as_is (tests.test_hark24_gemini_task01_entry.TestRunReal.test_host_failure_kept_as_is) ... ok
+test_launch_failure_recorded_and_frozen (tests.test_hark24_gemini_task01_entry.TestRunReal.test_launch_failure_recorded_and_frozen) ... ok
+test_one_dispatch_through_the_real_adapter_and_checker (tests.test_hark24_gemini_task01_entry.TestRunReal.test_one_dispatch_through_the_real_adapter_and_checker) ... ok
+test_refusals_before_dispatch_leave_no_marker (tests.test_hark24_gemini_task01_entry.TestRunReal.test_refusals_before_dispatch_leave_no_marker) ... ok
+test_reversed_explanation_never_becomes_a_task_pass (tests.test_hark24_gemini_task01_entry.TestRunReal.test_reversed_explanation_never_becomes_a_task_pass) ... ok
+test_second_run_same_context_and_new_context_same_parent_frozen (tests.test_hark24_gemini_task01_entry.TestRunReal.test_second_run_same_context_and_new_context_same_parent_frozen) ... ok
+test_tampered_context_export_or_needs_setup_context_refused (tests.test_hark24_gemini_task01_entry.TestRunReal.test_tampered_context_export_or_needs_setup_context_refused) ... ok
+test_timeout_is_unknown_frozen_and_not_killed (tests.test_hark24_gemini_task01_entry.TestRunReal.test_timeout_is_unknown_frozen_and_not_killed) ... ok
+test_entry_has_no_test_hooks_and_no_translation_layer (tests.test_hark24_gemini_task01_entry.TestStatic.test_entry_has_no_test_hooks_and_no_translation_layer) ... ok
+test_ps1_boundaries (tests.test_hark24_gemini_task01_entry.TestStatic.test_ps1_boundaries) ... ok
+
+----------------------------------------------------------------------
+Ran 19 tests in 24.742s
+
+OK
+WEAKENING24 {"authorize": {"control": "REFUSED", "control_dispatches": 0, "control_exit": 2, "weakened": "COLLECTED", "weakened_dispatches": 1, "weakened_exit": 0, "weakened_mechanical": "all_pass"}, "context_sidecar": {"control": "REFUSED", "control_dispatches": 0, "control_exit": 2, "weakened": "COLLECTED", "weakened_dispatches": 1, "weakened_exit": 0, "weakened_mechanical": "all_pass"}, "endpoint": {"control": "REFUSED", "control_dispatches": 0, "control_exit": 2, "weakened": "COLLECTED", "weakened_dispatches": 1, "weakened_exit": 0, "weakened_mechanical": "all_pass"}, "export_verify": {"control": "REFUSED", "control_dispatches": 0, "control_exit": 2, "weakened": "COLLECTED", "weakened_dispatches": 1, "weakened_exit": 1, "weakened_mechanical": "fail"}, "key_presence": {"control": "NEEDS_SETUP", "control_dispatches": 0, "control_exit": 4, "weakened": "COLLECTED", "weakened_dispatches": 1, "weakened_exit": 0, "weakened_mechanical": "all_pass"}, "node_version": {"control": "REFUSED", "control_dispatches": 0, "control_exit": 2, "weakened": "COLLECTED", "weakened_dispatches": 1, "weakened_exit": 0, "weakened_mechanical": "all_pass"}, "single_dispatch": {"control": "FROZEN", "control_dispatches": 0, "control_exit": 5, "weakened": "COLLECTED", "weakened_dispatches": 1, "weakened_exit": 0, "weakened_mechanical": "all_pass"}}

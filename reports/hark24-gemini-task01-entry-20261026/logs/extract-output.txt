@@ -1,0 +1,236 @@
+{
+ "ast_test_methods": 19,
+ "related": {
+  "ran": [
+   "265"
+  ],
+  "status": [
+   "OK (skipped=8)"
+  ]
+ },
+ "run1": {
+  "ok_lines": 19,
+  "ran": [
+   "19"
+  ],
+  "skipped": 0,
+  "status": [
+   "OK"
+  ],
+  "weakening": {
+   "authorize": [
+    "REFUSED",
+    2,
+    0,
+    "COLLECTED",
+    "all_pass",
+    0,
+    1
+   ],
+   "context_sidecar": [
+    "REFUSED",
+    2,
+    0,
+    "COLLECTED",
+    "all_pass",
+    0,
+    1
+   ],
+   "endpoint": [
+    "REFUSED",
+    2,
+    0,
+    "COLLECTED",
+    "all_pass",
+    0,
+    1
+   ],
+   "export_verify": [
+    "REFUSED",
+    2,
+    0,
+    "COLLECTED",
+    "fail",
+    1,
+    1
+   ],
+   "key_presence": [
+    "NEEDS_SETUP",
+    4,
+    0,
+    "COLLECTED",
+    "all_pass",
+    0,
+    1
+   ],
+   "node_version": [
+    "REFUSED",
+    2,
+    0,
+    "COLLECTED",
+    "all_pass",
+    0,
+    1
+   ],
+   "single_dispatch": [
+    "FROZEN",
+    5,
+    0,
+    "COLLECTED",
+    "all_pass",
+    0,
+    1
+   ]
+  }
+ },
+ "run2": {
+  "ok_lines": 19,
+  "ran": [
+   "19"
+  ],
+  "skipped": 0,
+  "status": [
+   "OK"
+  ],
+  "weakening": {
+   "authorize": [
+    "REFUSED",
+    2,
+    0,
+    "COLLECTED",
+    "all_pass",
+    0,
+    1
+   ],
+   "context_sidecar": [
+    "REFUSED",
+    2,
+    0,
+    "COLLECTED",
+    "all_pass",
+    0,
+    1
+   ],
+   "endpoint": [
+    "REFUSED",
+    2,
+    0,
+    "COLLECTED",
+    "all_pass",
+    0,
+    1
+   ],
+   "export_verify": [
+    "REFUSED",
+    2,
+    0,
+    "COLLECTED",
+    "fail",
+    1,
+    1
+   ],
+   "key_presence": [
+    "NEEDS_SETUP",
+    4,
+    0,
+    "COLLECTED",
+    "all_pass",
+    0,
+    1
+   ],
+   "node_version": [
+    "REFUSED",
+    2,
+    0,
+    "COLLECTED",
+    "all_pass",
+    0,
+    1
+   ],
+   "single_dispatch": [
+    "FROZEN",
+    5,
+    0,
+    "COLLECTED",
+    "all_pass",
+    0,
+    1
+   ]
+  }
+ },
+ "run3": {
+  "ok_lines": 19,
+  "ran": [
+   "19"
+  ],
+  "skipped": 0,
+  "status": [
+   "OK"
+  ],
+  "weakening": {
+   "authorize": [
+    "REFUSED",
+    2,
+    0,
+    "COLLECTED",
+    "all_pass",
+    0,
+    1
+   ],
+   "context_sidecar": [
+    "REFUSED",
+    2,
+    0,
+    "COLLECTED",
+    "all_pass",
+    0,
+    1
+   ],
+   "endpoint": [
+    "REFUSED",
+    2,
+    0,
+    "COLLECTED",
+    "all_pass",
+    0,
+    1
+   ],
+   "export_verify": [
+    "REFUSED",
+    2,
+    0,
+    "COLLECTED",
+    "fail",
+    1,
+    1
+   ],
+   "key_presence": [
+    "NEEDS_SETUP",
+    4,
+    0,
+    "COLLECTED",
+    "all_pass",
+    0,
+    1
+   ],
+   "node_version": [
+    "REFUSED",
+    2,
+    0,
+    "COLLECTED",
+    "all_pass",
+    0,
+    1
+   ],
+   "single_dispatch": [
+    "FROZEN",
+    5,
+    0,
+    "COLLECTED",
+    "all_pass",
+    0,
+    1
+   ]
+  }
+ }
+}
