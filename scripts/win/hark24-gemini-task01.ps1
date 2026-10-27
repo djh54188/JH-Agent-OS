@@ -1,33 +1,31 @@
 #requires -Version 5.1
 <#
-Hark-dispatch-24: thin Windows entry for the FIRST real Gemini CLI task01 run (candidate).
+Hark-dispatch-24/25: thin Windows entry for the FIRST real Gemini CLI task01 run (candidate).
+DO NOT RUN ANY MODE before the architect has reviewed this script and admitted the command.
 
 Modes
-  Prepare   (default; the only mode the user may run after the architect reviewed this script)
-            1. Creates NEW directories under -Parent: repo-<stamp> (git init + fetch of ONLY -Commit
-               from GitHub + detached checkout, core.autocrlf=false in that repo only) and the work
-               root ctx-<stamp> (created by the Python driver).
-            2. Verifies HEAD = -Commit and that this script's own bytes are the blob of
-               scripts/win/hark24-gemini-task01.ps1 at -Commit.
-            3. Runs `python -m scripts.gemini_task01_run.entry prepare`, which exports the fixed src/,
-               writes a NON-sensitive context.json and prints PREPARED / NEEDS_SETUP / REFUSED.
-            Prepare never reads a key value, never starts Node, the Gemini CLI, a model or a proxy,
-            never dispatches. Static file checks are not a version or authentication check.
-  RunReal   REVIEW TEMPLATE ONLY. Do NOT run it until the architect admits it and you accepted
-            the real-call terms. Needs -Context, -AuthorizeRealModelCall and the exact
-            -AcceptBoundary phrase. At most one submit; frozen on any dispatched/unknown run.
-  Candidate After RunReal: commits the whitelisted small result files on a NEW local branch and
-            verifies the commit. Never pushes.
+  Prepare   (default) Creates NEW <Parent>\repo-<stamp> (git init, origin = the fixed GitHub URL,
+            fetch of ONLY -Commit, detached checkout, repo-local core.autocrlf=false) and lets the
+            driver create <Parent>\ctx-<stamp>. Before ANY repo code runs it verifies: HEAD = -Commit,
+            origin URL, this script's bytes = its blob at -Commit, the fixed trees below, and a clean
+            worktree (ignored files included). The process environment is first reduced to a minimal
+            whitelist (process scope only), so no key / endpoint / proxy variable reaches git or Python.
+            Prints PREPARED / NEEDS_SETUP / REFUSED and the context sha256 to be reviewed.
+  RunReal   REVIEW TEMPLATE ONLY (not admitted). Needs -Context, the REVIEWED -ContextSha256,
+            -AuthorizeRealModelCall and the exact -AcceptBoundary phrase. At most one submit.
+  Candidate Commits one whitelisted public summary on a NEW local branch; never pushes.
 
-The key is passed ONLY by variable NAME (-KeyEnvName); its value stays in this process's
-environment and is handed to the host by the adapter's whitelist at RunReal. Never put a key in
--Endpoint, on the command line or in any file. Nothing global (PATH, git config, env) is changed.
+For RunReal / Candidate the repo is DERIVED from the context path (<Parent>\ctx-<stamp> ->
+<Parent>\repo-<stamp>); no path from the JSON is used to choose code. The context file must match
+-ContextSha256 and the repo must pass the same tree / clean checks before Python starts.
+The driver's output is shown on the console; the exit code of this script is the driver's exit code
+(a single integer), never its printed text.
 #>
 [CmdletBinding()]
 param(
     [ValidateSet('Prepare', 'RunReal', 'Candidate')] [string]$Mode = 'Prepare',
     [string]$Commit = '',
-    [string]$Parent = 'D:\hark24-gemini-task01',
+    [string]$Parent = '',
     [string]$Python = 'python',
     [string]$Node = '',
     [string]$CliJs = '',
@@ -35,26 +33,54 @@ param(
     [string]$Model = '',
     [string]$KeyEnvName = '',
     [string[]]$ProxyEnvName = @(),
+    [string]$GitHttpsProxy = '',
     [string]$Context = '',
+    [string]$ContextSha256 = '',
     [switch]$AuthorizeRealModelCall,
     [string]$AcceptBoundary = '',
-    [int]$CollectTimeout = 900
+    [int]$CollectTimeout = 900,
+    # Test-only. The production command passes none of it.
+    [string]$TestConfig = ''
 )
 
 Set-StrictMode -Version 2.0
 $ErrorActionPreference = 'Stop'
 try { [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding($false) } catch { }
-$Remote = 'https://github.com/djh54188/JH-Agent-OS.git'
+
+$Cfg = @{
+    remote           = 'https://github.com/djh54188/JH-Agent-OS.git'
+    allowed_protocol = 'https'
+    trees            = [ordered]@{
+        'src'                       = 'eef830e74b3d12223de484b598563144f12208e3'
+        'scripts/gemini_task01'     = 'a7cbc257b7a17ff9178f0fcc728f133d0f138d40'
+        'scripts/gemini_task01_run' = '24280ad051befe05416693dc1ebecaa336fac106'
+    }
+}
+if ($TestConfig -ne '') {
+    $over = Get-Content -LiteralPath $TestConfig -Raw -Encoding UTF8 | ConvertFrom-Json
+    if (-not (Test-Path -LiteralPath (Join-Path ([string]$over.remote) 'hark24-test-fixture') -PathType Leaf)) {
+        Write-Host 'HARK24-PS REFUSED: test config remote is not a marked local fixture'; exit 2
+    }
+    $Cfg.remote = [string]$over.remote
+    $Cfg.allowed_protocol = 'file'
+    if ($over.PSObject.Properties.Name -contains 'trees') {
+        foreach ($p in $over.trees.PSObject.Properties) { $Cfg.trees[$p.Name] = [string]$p.Value }
+    }
+}
 $Self = 'scripts/win/hark24-gemini-task01.ps1'
-$env:PYTHONDONTWRITEBYTECODE = '1'      # this process only
+$KeepEnv = @('PATH', 'SYSTEMROOT', 'WINDIR', 'COMSPEC', 'PATHEXT', 'TEMP', 'TMP', 'LANG', 'LC_ALL')
+$script:DriverExit = 9
+
+function Stop-Refused([string]$why) { Write-Host ('HARK24-PS REFUSED: ' + $why); exit 2 }
 
 function Invoke-Git([string]$Repo, [string[]]$GitArgs) {
-    $all = @('-c', 'core.autocrlf=false', '-c', 'core.safecrlf=false', '-c', 'protocol.allow=never',
-             '-c', 'protocol.https.allow=always', '-C', $Repo) + $GitArgs
+    $all = @('-c', 'core.autocrlf=false', '-c', 'core.safecrlf=false', '-c', 'core.quotepath=false',
+             '-c', 'protocol.allow=never', '-c', ('protocol.{0}.allow=always' -f $Cfg.allowed_protocol),
+             '-C', $Repo) + $GitArgs
     $prev = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
     try { $out = & git @all 2>&1; $code = $LASTEXITCODE } finally { $ErrorActionPreference = $prev }
     $text = ((@($out) | ForEach-Object { "$_" }) -join "`n").Trim()
-    if ($code -ne 0) { throw ("git {0} failed ({1}): {2}" -f ($GitArgs -join ' '), $code, $text) }
+    if ($code -ne 0) { throw ("git {0} failed ({1})" -f $GitArgs[0], $code) }
     return $text
 }
 function Get-GitBlobSha1([byte[]]$b) {
@@ -62,56 +88,98 @@ function Get-GitBlobSha1([byte[]]$b) {
     $h = [Security.Cryptography.SHA1]::Create()
     try { return (-join ($h.ComputeHash([byte[]]($hdr + $b)) | ForEach-Object { $_.ToString('x2') })) } finally { $h.Dispose() }
 }
+function Get-FileSha256([string]$path) {
+    $h = [Security.Cryptography.SHA256]::Create()
+    try { return (-join ($h.ComputeHash([IO.File]::ReadAllBytes($path)) | ForEach-Object { $_.ToString('x2') })) } finally { $h.Dispose() }
+}
+function Assert-Repo([string]$Repo, [string]$Want) {
+    # Fixed source BEFORE any of its code runs: commit, fixed trees, clean (ignored files included).
+    if (-not (Test-Path -LiteralPath (Join-Path $Repo '.git'))) { throw 'repo is not a git checkout' }
+    $head = Invoke-Git $Repo @('rev-parse', 'HEAD')
+    if ($head -ne $Want) { throw 'repo HEAD is not the expected commit' }
+    foreach ($k in $Cfg.trees.Keys) {
+        $t = Invoke-Git $Repo @('rev-parse', ($Want + ':' + $k))
+        if ($t -ne $Cfg.trees[$k]) { throw ('tree ' + $k + ' is not the reviewed tree') }
+    }
+    $st = Invoke-Git $Repo @('status', '--porcelain', '--ignored', '--untracked-files=all')
+    if ($st -ne '') { throw 'repo worktree is not clean (ignored files included)' }
+}
 function Invoke-Driver([string]$Repo, [string[]]$DriverArgs) {
-    Push-Location -LiteralPath $Repo
+    # Output goes to the console (Out-Host), NOT to this function's pipeline; the exit code is kept apart.
+    $entry = [IO.Path]::Combine($Repo, 'scripts', 'gemini_task01_run', 'entry.py')
+    $prev = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
     try {
-        $prev = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
-        & $Python -m scripts.gemini_task01_run.entry @DriverArgs
-        $code = $LASTEXITCODE
-        $ErrorActionPreference = $prev
-    } finally { Pop-Location }
-    return $code
+        & $Python -I -B $entry @DriverArgs | Out-Host
+        $script:DriverExit = [int]$LASTEXITCODE
+    } finally { $ErrorActionPreference = $prev }
 }
 
 if ($Mode -eq 'Prepare') {
-    if ($Commit -notmatch '^[0-9a-f]{40}$') { Write-Host 'REFUSED: -Commit must be the full 40-hex entry commit'; exit 2 }
+    if ($Commit -notmatch '^[0-9a-f]{40}$') { Stop-Refused '-Commit must be the full 40-hex entry commit' }
+    if ($Parent -eq '') { Stop-Refused '-Parent must be given explicitly (the reviewed command names it)' }
+    if ($GitHttpsProxy -ne '' -and $GitHttpsProxy -notmatch '^https?://[A-Za-z0-9.-]+(:[0-9]{1,5})?/?$') {
+        Stop-Refused '-GitHttpsProxy must be http(s)://host[:port] without credentials'
+    }
+    foreach ($e in @(Get-ChildItem Env:)) {                  # process scope only
+        if ($KeepEnv -notcontains $e.Name.ToUpperInvariant()) { Remove-Item -LiteralPath ('Env:' + $e.Name) }
+    }
+    $Parent = [IO.Path]::GetFullPath($Parent)
     $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
     $RepoDir = Join-Path $Parent ('repo-' + $stamp)
     $WorkRoot = Join-Path $Parent ('ctx-' + $stamp)
-    if ((Test-Path -LiteralPath $RepoDir) -or (Test-Path -LiteralPath $WorkRoot)) { Write-Host 'REFUSED: target directories exist'; exit 2 }
-    New-Item -ItemType Directory -Path $RepoDir | Out-Null
+    if ((Test-Path -LiteralPath $RepoDir) -or (Test-Path -LiteralPath $WorkRoot)) { Stop-Refused 'target directories exist' }
+    New-Item -ItemType Directory -Path $RepoDir -Force | Out-Null
     try {
         Invoke-Git $RepoDir @('init', '-q') | Out-Null
         Invoke-Git $RepoDir @('config', '--local', 'core.autocrlf', 'false') | Out-Null
-        Invoke-Git $RepoDir @('fetch', '-q', '--no-tags', $Remote, $Commit) | Out-Null
+        Invoke-Git $RepoDir @('remote', 'add', 'origin', $Cfg.remote) | Out-Null
+        if ((Invoke-Git $RepoDir @('remote', 'get-url', 'origin')) -ne $Cfg.remote) { throw 'origin URL not set as expected' }
+        $fetch = @('fetch', '-q', '--no-tags', 'origin', $Commit)
+        if ($GitHttpsProxy -ne '') { $fetch = @('-c', ('http.proxy=' + $GitHttpsProxy)) + $fetch }
+        Invoke-Git $RepoDir $fetch | Out-Null
         Invoke-Git $RepoDir @('checkout', '-q', '--detach', $Commit) | Out-Null
-        $head = Invoke-Git $RepoDir @('rev-parse', 'HEAD')
-        if ($head -ne $Commit) { throw "HEAD $head is not $Commit" }
         $selfBlob = Get-GitBlobSha1 ([IO.File]::ReadAllBytes($PSCommandPath))
-        $repoBlob = Invoke-Git $RepoDir @('rev-parse', ($Commit + ':' + $Self))
-        if ($selfBlob -ne $repoBlob) { throw 'this script is not the one at -Commit' }
-    } catch { Write-Host ('REFUSED: ' + $_.Exception.Message); exit 2 }
-    $a = @('prepare', '--work-root', $WorkRoot, '--repo', $RepoDir, '--entry-commit', $Commit)
+        if ($selfBlob -ne (Invoke-Git $RepoDir @('rev-parse', ($Commit + ':' + $Self)))) { throw 'this script is not the one at -Commit' }
+        Assert-Repo $RepoDir $Commit
+    } catch { Stop-Refused $_.Exception.Message }
+    $a = @('prepare', '--work-root', $WorkRoot, '--entry-commit', $Commit)
     if ($Node) { $a += @('--node', $Node) }
     if ($CliJs) { $a += @('--cli-js', $CliJs) }
     if ($Endpoint) { $a += @('--endpoint', $Endpoint) }
     if ($Model) { $a += @('--model', $Model) }
     if ($KeyEnvName) { $a += @('--key-env-name', $KeyEnvName) }
     foreach ($n in $ProxyEnvName) { $a += @('--proxy-env-name', $n) }
-    $code = Invoke-Driver $RepoDir $a
-    Write-Host ('Prepare finished (exit {0}). Context: {1}\context.json. Nothing was dispatched.' -f $code, $WorkRoot)
-    exit $code
+    Invoke-Driver $RepoDir $a
+    Write-Host ('HARK24-PS Prepare exit {0}; nothing was dispatched. Context: {1}' -f $script:DriverExit, (Join-Path $WorkRoot 'context.json'))
+    exit $script:DriverExit
 }
 
-# RunReal / Candidate need an existing prepared context; its repo is read from context.json.
-if (-not $Context -or -not (Test-Path -LiteralPath $Context -PathType Leaf)) { Write-Host 'REFUSED: -Context <work root>\context.json is required'; exit 2 }
-$ctx = Get-Content -LiteralPath $Context -Raw -Encoding UTF8 | ConvertFrom-Json
+# ---- RunReal / Candidate: derive, bind to the reviewed digest, verify the repo, only then run it
+if ($Context -eq '' -or $ContextSha256 -notmatch '^[0-9a-f]{64}$') { Stop-Refused '-Context and the reviewed 64-hex -ContextSha256 are required' }
+try {
+    $ctxPath = [IO.Path]::GetFullPath($Context)
+    if ([IO.Path]::GetFileName($ctxPath) -ne 'context.json') { throw 'context must be <Parent>\ctx-<stamp>\context.json' }
+    $WorkRoot = [IO.Path]::GetDirectoryName($ctxPath)
+    $leaf = [IO.Path]::GetFileName($WorkRoot)
+    if ($leaf -notmatch '^ctx-([0-9]{8}-[0-9]{6})$') { throw 'work root is not ctx-<stamp>' }
+    $RepoDir = Join-Path ([IO.Path]::GetDirectoryName($WorkRoot)) ('repo-' + $Matches[1])
+    if (-not (Test-Path -LiteralPath $ctxPath -PathType Leaf)) { throw 'context file missing' }
+    if ((Get-FileSha256 $ctxPath) -ne $ContextSha256) { throw 'context bytes are not the reviewed context' }
+    $ctx = [IO.File]::ReadAllText($ctxPath, (New-Object System.Text.UTF8Encoding($false))) | ConvertFrom-Json
+    if ($null -eq $ctx -or -not ($ctx -is [pscustomobject]) -or -not ($ctx.PSObject.Properties.Name -contains 'entry_commit')) { throw 'context is not an object with entry_commit' }
+    $want = [string]$ctx.entry_commit
+    if ($want -notmatch '^[0-9a-f]{40}$') { throw 'entry_commit not 40-hex' }
+    Assert-Repo $RepoDir $want
+} catch { Stop-Refused $_.Exception.Message }
+
 if ($Mode -eq 'RunReal') {
-    if (-not $AuthorizeRealModelCall) { Write-Host 'REFUSED: -AuthorizeRealModelCall is required'; exit 2 }
-    $code = Invoke-Driver $ctx.repo @('run-real', '--context', $Context, '--authorize-real-model-call',
-                                      '--accept-boundary', $AcceptBoundary, '--collect-timeout', [string]$CollectTimeout)
-    Write-Host ('RunReal finished (exit {0}). Send the result back before any push.' -f $code)
-    exit $code
+    if (-not $AuthorizeRealModelCall) { Stop-Refused '-AuthorizeRealModelCall is required' }
+    Invoke-Driver $RepoDir @('run-real', '--context', $ctxPath, '--context-sha256', $ContextSha256,
+                             '--authorize-real-model-call', '--accept-boundary', $AcceptBoundary,
+                             '--collect-timeout', [string]$CollectTimeout)
+    Write-Host ('HARK24-PS RunReal exit {0}. Send the result back before any push.' -f $script:DriverExit)
+    exit $script:DriverExit
 }
-$code = Invoke-Driver $ctx.repo @('candidate', '--context', $Context)
-exit $code
+Invoke-Driver $RepoDir @('candidate', '--context', $ctxPath, '--context-sha256', $ContextSha256)
+Write-Host ('HARK24-PS Candidate exit {0}; nothing pushed.' -f $script:DriverExit)
+exit $script:DriverExit

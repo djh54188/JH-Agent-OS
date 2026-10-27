@@ -35,6 +35,12 @@ def main() -> int:
             os.chmod(os.path.abspath(sys.argv[0]), 0o644)      # the next launch of this "node" fails
     if "--version" not in sys.argv[2:]:
         time.sleep(float(cfg.get("sleep", 0)))
+        if cfg.get("sabotage_registry"):
+            # cwd is <work root>/target: replace the registry by a directory (evidence lost / unwritable)
+            reg = os.path.join(os.getcwd(), "..", "evidence", "registry.jsonl")
+            time.sleep(1.0)
+            os.replace(reg, reg + ".moved-by-test")
+            os.mkdir(reg)
     os.environ["FAKE_T01_SCENARIO"] = cfg["scenario"]
     os.execv(sys.executable, [sys.executable] + sys.argv[1:])
     return 1
