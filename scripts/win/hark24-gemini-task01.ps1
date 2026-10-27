@@ -15,6 +15,10 @@ Modes
             -AuthorizeRealModelCall and the exact -AcceptBoundary phrase. At most one submit.
   Candidate Commits one whitelisted public summary on a NEW local branch; never pushes.
 
+Before ANY repo code runs (all modes), the actual bytes on disk of every file Python may import
+(src, scripts/gemini_task01, scripts/gemini_task01_run recursively, repo top level) must equal the
+commit's blobs and the file sets must be equal; links / reparse points are refused. Index flags
+(assume-unchanged, skip-worktree) are neither trusted nor cleared.
 For RunReal / Candidate the repo is DERIVED from the context path (<Parent>\ctx-<stamp> ->
 <Parent>\repo-<stamp>); no path from the JSON is used to choose code. The context file must match
 -ContextSha256 and the repo must pass the same tree / clean checks before Python starts.
@@ -53,7 +57,7 @@ $Cfg = @{
     trees            = [ordered]@{
         'src'                       = 'eef830e74b3d12223de484b598563144f12208e3'
         'scripts/gemini_task01'     = 'a7cbc257b7a17ff9178f0fcc728f133d0f138d40'
-        'scripts/gemini_task01_run' = '24280ad051befe05416693dc1ebecaa336fac106'
+        'scripts/gemini_task01_run' = '4675e834281dec392bda64ab42ab6c6ec9f4c204'
     }
 }
 if ($TestConfig -ne '') {
@@ -84,9 +88,71 @@ function Invoke-Git([string]$Repo, [string[]]$GitArgs) {
     return $text
 }
 function Get-GitBlobSha1([byte[]]$b) {
-    $hdr = [Text.Encoding]::ASCII.GetBytes(('blob {0}' -f $b.Length)) + [byte[]](0)
+    $hdr = [Text.Encoding]::ASCII.GetBytes(('blob {0}' -f $b.Length) + [char]0)
     $h = [Security.Cryptography.SHA1]::Create()
-    try { return (-join ($h.ComputeHash([byte[]]($hdr + $b)) | ForEach-Object { $_.ToString('x2') })) } finally { $h.Dispose() }
+    try {
+        [void]$h.TransformBlock($hdr, 0, $hdr.Length, $null, 0)
+        [void]$h.TransformFinalBlock($b, 0, $b.Length)
+        return (-join ($h.Hash | ForEach-Object { $_.ToString('x2') }))
+    } finally { $h.Dispose() }
+}
+function Get-TreeMap([string]$Repo, [string[]]$LsArgs) {
+    $map = @{}
+    foreach ($line in ((Invoke-Git $Repo (@('ls-tree') + $LsArgs)) -split "`n")) {
+        if ($line -eq '') { continue }
+        $tab = $line.IndexOf("`t")
+        $meta = $line.Substring(0, $tab) -split ' '
+        $path = $line.Substring($tab + 1)
+        if ($path.StartsWith('"')) { throw 'unsupported path name in the commit' }
+        $map[$path] = $meta
+    }
+    return $map
+}
+function Get-DiskFiles([string]$Repo, [string]$RelDir) {
+    $found = @{}
+    $stack = New-Object System.Collections.Stack
+    $stack.Push($RelDir)
+    while ($stack.Count -gt 0) {
+        $cur = [string]$stack.Pop()
+        $info = New-Object IO.DirectoryInfo ([IO.Path]::Combine([string[]](@($Repo) + ($cur -split '/'))))
+        if ($info.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw ($cur + ': link / reparse point') }
+        foreach ($e in $info.GetFileSystemInfos()) {
+            $rel = $cur + '/' + $e.Name
+            if ($e.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw ($rel + ': link / reparse point') }
+            if ($e -is [IO.DirectoryInfo]) { $stack.Push($rel) } else { $found[$rel] = $true }
+        }
+    }
+    return $found
+}
+function Assert-DiskBytes([string]$Repo, [string]$Want) {
+    # The bytes Python will actually import, read from disk (index flags such as assume-unchanged or
+    # skip-worktree do not matter), must be the commit's blobs; the file sets must be equal.
+    $expected = @{}
+    $disk = @{}
+    foreach ($k in $Cfg.trees.Keys) {
+        $m = Get-TreeMap $Repo @('-r', $Want, '--', $k)
+        foreach ($p in $m.Keys) {
+            if ($m[$p][1] -ne 'blob' -or @('100644', '100755') -notcontains $m[$p][0]) { throw ($p + ': not a plain file in the commit') }
+            $expected[$p] = $m[$p][2]
+        }
+        foreach ($p in (Get-DiskFiles $Repo $k).Keys) { $disk[$p] = $true }
+    }
+    $top = Get-TreeMap $Repo @($Want)
+    $topDisk = @((New-Object IO.DirectoryInfo $Repo).GetFileSystemInfos() | Where-Object { $_.Name -ne '.git' })
+    if ($topDisk.Count -ne $top.Count) { throw 'repo top-level entries differ from the commit' }
+    foreach ($e in $topDisk) {
+        if (-not $top.ContainsKey($e.Name)) { throw 'repo top-level entries differ from the commit' }
+        if ($e.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw ($e.Name + ': link / reparse point') }
+        $isBlob = $top[$e.Name][1] -eq 'blob'
+        if ($isBlob -eq ($e -is [IO.DirectoryInfo])) { throw ($e.Name + ': top-level entry is not what the commit has') }
+        if ($isBlob) { $expected[$e.Name] = $top[$e.Name][2]; $disk[$e.Name] = $true }
+    }
+    foreach ($p in $disk.Keys) { if (-not $expected.ContainsKey($p)) { throw ('extra importable file on disk: ' + $p) } }
+    foreach ($p in $expected.Keys) {
+        if (-not $disk.ContainsKey($p)) { throw ('file missing on disk: ' + $p) }
+        $bytes = [IO.File]::ReadAllBytes([IO.Path]::Combine([string[]](@($Repo) + ($p -split '/'))))
+        if ((Get-GitBlobSha1 $bytes) -ne $expected[$p]) { throw ('bytes on disk differ from the commit: ' + $p) }
+    }
 }
 function Get-FileSha256([string]$path) {
     $h = [Security.Cryptography.SHA256]::Create()
@@ -141,6 +207,7 @@ if ($Mode -eq 'Prepare') {
         $selfBlob = Get-GitBlobSha1 ([IO.File]::ReadAllBytes($PSCommandPath))
         if ($selfBlob -ne (Invoke-Git $RepoDir @('rev-parse', ($Commit + ':' + $Self)))) { throw 'this script is not the one at -Commit' }
         Assert-Repo $RepoDir $Commit
+        Assert-DiskBytes $RepoDir $Commit
     } catch { Stop-Refused $_.Exception.Message }
     $a = @('prepare', '--work-root', $WorkRoot, '--entry-commit', $Commit)
     if ($Node) { $a += @('--node', $Node) }
@@ -170,6 +237,7 @@ try {
     $want = [string]$ctx.entry_commit
     if ($want -notmatch '^[0-9a-f]{40}$') { throw 'entry_commit not 40-hex' }
     Assert-Repo $RepoDir $want
+    Assert-DiskBytes $RepoDir $want
 } catch { Stop-Refused $_.Exception.Message }
 
 if ($Mode -eq 'RunReal') {

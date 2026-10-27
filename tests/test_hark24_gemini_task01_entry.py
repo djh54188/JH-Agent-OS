@@ -36,7 +36,8 @@ SHORT_SENTINEL = "Zq9"
 ENDPOINT = "https://constructed-endpoint.invalid/base"
 MODEL = "constructed-explicit-model"
 NEW_FILES = (ENTRY_REL, PS1_REL) + tuple(f"{FIX}/{n}" for n in (
-    "fake_node.py", "git_spy.py", "audit_run.py", "inproc_run.py", "stub_entry.py", "probe_entry.py"))
+    "fake_node.py", "git_spy.py", "audit_run.py", "inproc_run.py", "stub_entry.py", "probe_entry.py",
+    "boundary_run.py"))
 PWSH = os.environ.get("HARK24_PWSH") or ("/workspace/work/pwsh/pwsh" if os.path.exists("/workspace/work/pwsh/pwsh")
                                          else shutil.which("pwsh"))
 REAL_GIT = shutil.which("git")
@@ -671,6 +672,56 @@ class TestCandidate(_Base):
                 self.assert_public_clean(c, [value])
 
 
+# ------------------------------------------------------------------ Hark-派单-26 helpers
+def probe_source(sentinel_file):
+    return f"open({sentinel_file!r}, 'a').write('probe executed\\n')\n"
+
+
+def hide_change(clone, rel, kind, sentinel_file):
+    """Change a tracked file on disk while HEAD, trees and `git status` stay unchanged."""
+    path = os.path.join(clone.repo, *rel.split("/"))
+    flag = "--assume-unchanged" if kind == "assume" else "--skip-worktree"
+    _git(clone.repo, "update-index", flag, rel)
+    if kind == "delete":
+        os.remove(path)
+    elif kind == "unreadable":
+        os.chmod(path, 0)
+    elif kind == "append":                      # runs when the module is imported
+        with open(path, "a", encoding="utf-8") as fh:
+            fh.write("\n" + probe_source(sentinel_file))
+    else:
+        with open(path, "w", encoding="utf-8") as fh:
+            fh.write(probe_source(sentinel_file))
+    assert _git(clone.repo, "status", "--porcelain", "--ignored", "--untracked-files=all") == ""
+
+
+DISK_CASES = {
+    "assume_unchanged_entry": (ENTRY_REL, "assume"),
+    "skip_worktree_entry": (ENTRY_REL, "replace"),
+    "hidden_import_change": ("src/agent_session.py", "append"),
+    "replaced_import_component": ("scripts/gemini_task01/pins.py", "replace"),
+    "extra_shadow_module": ("scripts/gemini_task01/ast.py", "extra"),
+    "missing_file": ("src/memory.py", "delete"),
+    "unreadable_file": ("src/memory.py", "unreadable"),
+}
+
+
+def make_disk_case(name, sentinel_file):
+    clone = Clone()
+    rel, kind = DISK_CASES[name]
+    if kind == "extra":
+        with open(os.path.join(clone.repo, *rel.split("/")), "w", encoding="utf-8") as fh:
+            fh.write(probe_source(sentinel_file))
+        with open(os.path.join(clone.repo, ".git", "info", "exclude"), "a") as fh:
+            fh.write("\n" + rel + "\n")
+    else:
+        hide_change(clone, rel, kind, sentinel_file)
+    return clone
+
+
+HOST_VALUES = ("secretkey", "secret_key", SHORT_SENTINEL, SENTINEL)
+
+
 # ------------------------------------------------------------------ guard weakening (Python entry)
 def _w_ready(t):
     return t.ready()
@@ -773,6 +824,52 @@ def _probe_stage_label(t, clone):
     return {"outcome": c["outcome"], "exit": code, "bad": code == 0 or c["outcome"] == "CANDIDATE_COLLECTED"}
 
 
+def _probe_disk_identity(t, clone):
+    ran = os.path.join(t.parent, f"ran-{time.time_ns()}.txt")
+    case = make_disk_case("hidden_import_change", ran)
+    try:
+        src = read(os.path.join(clone.repo, *ENTRY_REL.split("/")))
+        _git(case.repo, "update-index", "--no-skip-worktree", "src/agent_session.py")
+        data = read(os.path.join(case.repo, "src", "agent_session.py"))
+        _git(case.repo, "checkout", "--", "src/agent_session.py")
+        with open(os.path.join(case.repo, *ENTRY_REL.split("/")), "w", encoding="utf-8") as fh:
+            fh.write(src)
+        case.commit_all("test: entry under test")
+        _git(case.repo, "update-index", "--skip-worktree", "src/agent_session.py")
+        with open(os.path.join(case.repo, "src", "agent_session.py"), "w", encoding="utf-8") as fh:
+            fh.write(data)
+        ctxp, sha = TestPowerShell.fake_context(t, case)
+        done = subprocess.run([sys.executable, "-I", "-B", os.path.join(case.repo, *ENTRY_REL.split("/")),
+                               "candidate", "--context", ctxp, "--context-sha256", sha], env=t.env,
+                              capture_output=True, text=True, timeout=120)
+        return {"exit": done.returncode, "probe_ran": os.path.exists(ran), "bad": os.path.exists(ran)}
+    finally:
+        case.close()
+
+
+def _probe_export_boundary(t, clone):
+    wr, sha = t.ready()
+    target = os.path.join(wr, "target")
+    copy = os.path.join(t.parent, f"outside-copy-{time.time_ns()}")
+    shutil.copytree(target, copy, symlinks=True)
+    shutil.rmtree(target)
+    os.symlink(copy, target)
+    obs = os.path.join(t.parent, f"bnd-{time.time_ns()}.json")
+    code, out, err = t.entry(*t.run_args(wr, sha), wrapper=[os.path.join(clone.repo, FIX, "boundary_run.py"), obs, "-"])
+    outside = [o for o in json.loads(read(obs))["opened"] if os.path.realpath(o).startswith(copy)]
+    return {"outcome": json.loads(out)["outcome"], "exit": code, "outside_reads": len(outside), "bad": bool(outside)}
+
+
+def _probe_host_fields(t, clone):
+    wr, sha = t.ready(exit_code=1, result_status="secret_key")
+    code, out, err = t.entry(*t.run_args(wr, sha))
+    c_code, c = t.candidate(wr, sha)
+    blob = subprocess.run(["git", "-C", clone.repo, "show", f"{c['commit']}:{c['files'][0]}"],
+                          capture_output=True).stdout if c.get("commit") else b""
+    shown = "secret_key" in out + err or b"secret_key" in blob
+    return {"terminal": "secret_key" in out + err, "candidate": b"secret_key" in blob, "bad": shown}
+
+
 WEAKENING = [
     ("authorize", [("    if not args.authorize_real_model_call or args.accept_boundary != ACCEPT_PHRASE:\n",
                     "    if False:\n")], lambda t, c: _check_dispatch(t, *_w_ready(t), {"authorize": False})),
@@ -811,6 +908,16 @@ WEAKENING = [
      _probe_prepare_env),
     ("candidate_stage", [("            stage = \"prepare-archive\"\n", "            stage = \"collected\"\n")],
      _probe_stage_label),
+    ("disk_identity", [("    if _early:\n", "    if False:\n")], _probe_disk_identity),
+    ("export_boundary", [("    problems, found = export_tree(d[\"workspace\"], d[\"work_root\"])\n"
+                          "    if problems:\n        return problems                                   # stop: nothing under the export is read\n",
+                          "    problems, found = [], set()\n"
+                          "    for dirpath, dirnames, filenames in os.walk(d[\"workspace\"], followlinks=False):\n"
+                          "        for f in filenames:\n"
+                          "            found.add(os.path.relpath(os.path.join(dirpath, f), d[\"workspace\"]).replace(os.sep, \"/\"))\n")],
+     _probe_export_boundary),
+    ("host_fields", [("        out[\"declared_status\"] = v if v in _DECLARED else (\"host-other\" if v is not None else None)\n",
+                      "        out[\"declared_status\"] = v\n")], _probe_host_fields),
 ]
 
 
@@ -985,7 +1092,9 @@ class TestPowerShell(_Base):
         old_style = src.replace("        & $Python -I -B $entry @DriverArgs | Out-Host\n        $script:DriverExit = [int]$LASTEXITCODE\n",
                                 "        & $Python -I -B $entry @DriverArgs\n        return $LASTEXITCODE\n")
         old_style = old_style.replace("    Invoke-Driver $RepoDir @('run-real',", "    $script:DriverExit = Invoke-Driver $RepoDir @('run-real',")
-        no_bind = src.replace("    Assert-Repo $RepoDir $want\n", "")
+        no_bind = src.replace("    Assert-Repo $RepoDir $want\n    Assert-DiskBytes $RepoDir $want\n", "")
+        no_disk = src.replace("    Assert-DiskBytes $RepoDir $want\n", "")
+        self.assertNotEqual(no_disk, src)
         self.assertNotEqual(old_style, src)
         self.assertNotEqual(no_bind, src)
         stub = self.stub_clone()
@@ -1025,10 +1134,219 @@ class TestPowerShell(_Base):
             report["source_binding"] = results
             self.assertFalse(results["control"]["probe_ran"])
             self.assertTrue(results["weakened"]["probe_ran"])
+            results = {}
+            for label, text in (("control", src), ("weakened", no_disk)):
+                ps1 = os.path.join(self.parent, f"{label}-disk.ps1")
+                with open(ps1, "w", encoding="utf-8") as fh:
+                    fh.write(text)
+                ran = os.path.join(self.parent, f"disk-ran-{label}.txt")
+                case = make_disk_case("skip_worktree_entry", ran)
+                try:
+                    pparent = os.path.join(self.parent, f"dp-{label}")
+                    os.makedirs(pparent)
+                    ctxp, sha = self.fake_context(case, pparent)
+                    code, out, err = self.ps("-Mode", "Candidate", "-Context", ctxp, "-ContextSha256", sha,
+                                             "-Python", sys.executable, ps1=ps1)
+                    results[label] = {"exit": code, "probe_ran": os.path.exists(ran)}
+                finally:
+                    case.close()
+            report["disk_bytes"] = results
+            self.assertFalse(results["control"]["probe_ran"])
+            self.assertTrue(results["weakened"]["probe_ran"])
         finally:
             stub.close()
             probe.close()
         print("PSWEAKENING25 " + json.dumps(report, sort_keys=True))
+
+
+@unittest.skipUnless(HAVE, "baseline not available")
+class TestDiskIdentity(_Base):
+    """Hark-26 item 1: the bytes actually on disk, not HEAD / trees / status / index flags."""
+
+    def fake_ctx(self, clone):
+        return TestPowerShell.fake_context(self, clone)
+
+    def test_python_refuses_hidden_import_changes_before_importing(self):
+        for name in ("hidden_import_change", "replaced_import_component", "extra_shadow_module",
+                     "missing_file", "unreadable_file"):
+            with self.subTest(case=name):
+                ran = os.path.join(self.parent, f"ran-{name}.txt")
+                case = make_disk_case(name, ran)
+                try:
+                    ctxp, sha = self.fake_ctx(case)
+                    done = subprocess.run([sys.executable, "-I", "-B", os.path.join(case.repo, *ENTRY_REL.split("/")),
+                                           "candidate", "--context", ctxp, "--context-sha256", sha], env=self.env,
+                                          capture_output=True, text=True, timeout=120)
+                    self.assertEqual(done.returncode, 2, done)
+                    self.assertIn("repo files on disk are not the commit's bytes", done.stdout)
+                    self.assertNotIn("Traceback", done.stderr)
+                    self.assertFalse(os.path.exists(ran))
+                finally:
+                    case.close()
+
+    def test_python_control_passes_the_disk_check(self):
+        ctxp, sha = self.fake_ctx(self.clone)
+        code, out, err = self.entry("candidate", "--context", ctxp, "--context-sha256", sha)
+        self.assertNotIn("repo files on disk", out)
+        self.assertEqual(json.loads(out)["mode"], "candidate")
+
+    @unittest.skipUnless(PWSH, "pwsh not available")
+    def test_ps_refuses_every_hidden_change_before_running_repo_code(self):
+        ps = TestPowerShell.ps
+        for name in DISK_CASES:
+            for mode in ("Candidate", "RunReal"):
+                with self.subTest(case=name, mode=mode):
+                    ran = os.path.join(self.parent, f"ran-{name}-{mode}.txt")
+                    case = make_disk_case(name, ran)
+                    try:
+                        ctxp, sha = self.fake_ctx(case)
+                        extra = ["-AuthorizeRealModelCall", "-AcceptBoundary", "x"] if mode == "RunReal" else []
+                        code, out, err = ps(self, "-Mode", mode, "-Context", ctxp, "-ContextSha256", sha,
+                                            "-Python", sys.executable, *extra)
+                        self.assertEqual(code, 2, (out, err))
+                        self.assertIn("HARK24-PS REFUSED", out)
+                        self.assertFalse(os.path.exists(ran))
+                    finally:
+                        case.close()
+        ctxp, sha = self.fake_ctx(self.clone)                 # control: passes the PS checks, driver runs
+        code, out, err = ps(self, "-Mode", "Candidate", "-Context", ctxp, "-ContextSha256", sha, "-Python", sys.executable)
+        self.assertNotIn("HARK24-PS REFUSED", out)
+        self.assertIn('"mode": "candidate"', out)
+
+
+@unittest.skipUnless(HAVE, "baseline not available")
+class TestExportBoundary(_Base):
+    """Hark-26 item 2: nothing under the export is read unless the tree is plain and in place."""
+
+    def bnd(self, wr, sha, sim="-"):
+        obs = os.path.join(self.parent, f"bnd-{time.time_ns()}.json")
+        code, out, err = self.entry(*self.run_args(wr, sha),
+                                    wrapper=[os.path.join(self.clone.repo, FIX, "boundary_run.py"), obs, sim])
+        return code, json.loads(out), json.loads(read(obs))["opened"]
+
+    def outside_copy(self, src):
+        copy = os.path.join(self.parent, f"outside-copy-{time.time_ns()}")
+        if os.path.isdir(src):
+            shutil.copytree(src, copy)
+        else:
+            shutil.copyfile(src, copy)
+        return copy
+
+    def redirect(self, path):
+        copy = self.outside_copy(path)
+        if os.path.isdir(path):
+            shutil.rmtree(path)
+        else:
+            os.remove(path)
+        os.symlink(copy, path)
+        return copy
+
+    def test_redirected_root_inner_dir_and_file_read_nothing_outside(self):
+        for name, rel in (("root", "target"), ("inner-dir", "target/src"), ("file", "target/src/memory.py")):
+            with self.subTest(case=name):
+                self.setUp()
+                wr, sha = self.ready()
+                copy = self.redirect(os.path.join(wr, *rel.split("/")))
+                code, res, opened = self.bnd(wr, sha)
+                self.assertEqual((code, res["outcome"]), (2, "REFUSED"), res)
+                self.assertIn("redirected", res["summary"])
+                self.assertEqual([o for o in opened if os.path.realpath(o).startswith(copy)], [])
+                self.assertEqual([o for o in opened if o.startswith(os.path.join(wr, "target"))], [])
+                self.assertEqual(self.dispatches(), [])
+
+    def test_simulated_reparse_points_stop_before_reading(self):
+        for name, rel in (("root", "target"), ("inner-dir", "target/src"), ("file", "target/src/memory.py")):
+            with self.subTest(case=name):
+                self.setUp()
+                wr, sha = self.ready()
+                code, res, opened = self.bnd(wr, sha, sim=os.path.join(wr, *rel.split("/")))
+                self.assertEqual((code, res["outcome"]), (2, "REFUSED"), res)
+                self.assertEqual([o for o in opened if o.startswith(os.path.join(wr, "target"))], [])
+                self.assertEqual(self.dispatches(), [])
+
+    def test_missing_or_unreadable_export_stops(self):
+        wr, sha = self.ready()
+        shutil.rmtree(os.path.join(wr, "target"))
+        code, res, opened = self.bnd(wr, sha)
+        self.assertEqual(res["outcome"], "REFUSED")
+        self.setUp()
+        wr, sha = self.ready()
+        inner = os.path.join(wr, "target", "src")
+        os.chmod(inner, 0)
+        try:
+            code, res, opened = self.bnd(wr, sha)
+        finally:
+            os.chmod(inner, 0o755)
+        self.assertEqual(res["outcome"], "REFUSED")
+        self.assertIn("not enumerable", res["summary"])
+        self.assertEqual([o for o in opened if o.startswith(os.path.join(wr, "target"))], [])
+        self.assertEqual(self.dispatches(), [])
+
+    def test_plain_export_control_reads_only_inside(self):
+        wr, sha = self.ready()
+        code, res, opened = self.bnd(wr, sha)
+        self.assertEqual((code, res["outcome"], res["mechanical"]), (0, "COLLECTED", "all_pass"), res)
+        self.assertEqual(len(self.dispatches()), 1)
+
+
+@unittest.skipUnless(HAVE, "baseline not available")
+class TestHostFields(_Base):
+    """Hark-26 item 3: host / checker derived values are enums or fixed labels in public output."""
+
+    def blob(self, c):
+        return subprocess.run(["git", "-C", self.clone.repo, "show", f"{c['commit']}:{c['files'][0]}"],
+                              capture_output=True, check=True).stdout
+
+    def test_reflected_host_status_is_never_echoed(self):
+        for value in HOST_VALUES:
+            for keep_env in (True, False):
+                with self.subTest(value=value, env_kept=keep_env):
+                    self.setUp()
+                    env = dict(self.env, GEMINI_API_KEY=value)
+                    wr, sha = self.ready(exit_code=1, result_status=value)
+                    code, out, err = self.entry(*self.run_args(wr, sha), env=env)
+                    res = json.loads(out)
+                    self.assertNotIn(value, out + err)
+                    self.assertNotEqual(code, 0)
+                    self.assertEqual(res["declared_status"], "host-other")
+                    self.assertEqual(res["state"], "failed")
+                    stored = read(os.path.join(wr, "run-real-result.json"))
+                    self.assertIn(value, stored)                       # private original keeps raw bytes
+                    cenv = env if keep_env else {k: v for k, v in env.items() if k != "GEMINI_API_KEY"}
+                    code, out, err = self.entry("candidate", "--context", os.path.join(wr, "context.json"),
+                                                "--context-sha256", sha, env=cenv)
+                    c = json.loads(out)
+                    self.assertNotIn(value, out + err)
+                    self.assertNotIn(value.encode(), self.blob(c))
+                    pub = json.loads(self.blob(c))
+                    self.assertEqual(pub["run"]["declared_status"], "host-other")
+                    self.assertNotEqual(pub["check"]["overall"], "all_pass")
+
+    def test_ordinary_failure_and_success_keep_known_values(self):
+        wr, sha = self.ready(exit_code=1, result_status="error")
+        code, res = self.run_real(wr, sha)
+        self.assertEqual((res["declared_status"], res["state"]), ("host-other", "failed"))
+        self.setUp()
+        wr, sha = self.ready()
+        code, res = self.run_real(wr, sha)
+        self.assertEqual((res["declared_status"], res["state"], res["mechanical"]),
+                         ("success", "declared_complete", "all_pass"))
+        code, c = self.candidate(wr, sha)
+        pub = json.loads(self.blob(c))
+        self.assertEqual(pub["check"]["unlisted_items"], 0)
+        self.assertEqual(pub["run"]["host_versions"], {"node": "v22.23.4", "cli": "0.65.0"})
+
+    def test_reflected_host_version_is_never_echoed(self):
+        for value in HOST_VALUES:
+            with self.subTest(value=value):
+                self.setUp()
+                wr, sha = self.ready()
+                self.write_node_cfg(version="v22.23.4-" + value)
+                code, out, err = self.entry(*self.run_args(wr, sha))
+                self.assertEqual(json.loads(out)["outcome"], "REFUSED")
+                self.assertEqual(json.loads(out)["host_versions"]["node"], "mismatch")
+                self.assertNotIn(value, out + err)
+                self.assertEqual(self.dispatches(), [])
 
 
 @unittest.skipUnless(HAVE, "baseline not available")

@@ -24,6 +24,12 @@ scripts/win/hark24-gemini-task01.ps1 verifies the repo's fixed trees BEFORE it r
              failure/unknown archive, collected) is explicit; a verified commit is not task
              success; never pushes; a push hint only when origin is the verified remote.
 
+Hark-26: before importing anything from the repo, the bytes on disk of every importable file are
+compared with HEAD's blobs (index flags ignored); the export tree is enumerated without reading
+content and refused on any link / junction / reparse point / misplaced realpath; host- or
+checker-derived values reach the terminal and the public candidate only as known enums or fixed
+labels (the private result file keeps the raw bytes).
+
 Facts relied on: CLI 0.65.0 API-key path = env GEMINI_API_KEY + settings auth "gemini-api-key";
 base address from env GOOGLE_GEMINI_BASE_URL; host POSTs <base>/v1beta/models/<model>:
 streamGenerateContent?alt=sse (reports/hark-gemini-bridge-20261021/host, synthetic endpoint). A
@@ -50,6 +56,102 @@ from urllib.parse import urlsplit
 HERE = os.path.dirname(os.path.realpath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 PKG_DIR = os.path.join(ROOT, "scripts", "gemini_task01")
+#: Directories whose files Python may import from this repo; every file is checked against the
+#: commit before anything is imported (the repo top level is checked non-recursively).
+VERIFY_DIRS = ("src", "scripts/gemini_task01", "scripts/gemini_task01_run")
+_REPARSE = 0x400                                   # FILE_ATTRIBUTE_REPARSE_POINT (junctions etc.)
+
+
+def _redirected(st: Any) -> bool:
+    import stat as _st
+    return bool(_st.S_ISLNK(st.st_mode) or (getattr(st, "st_file_attributes", 0) & _REPARSE)
+                or getattr(st, "st_reparse_tag", 0))
+
+
+def _git_blob_id(data: bytes) -> str:
+    return hashlib.sha1(b"blob %d\0" % len(data) + data).hexdigest()
+
+
+def disk_identity_problems(root: str) -> List[str]:
+    """Actual on-disk bytes == the blobs of HEAD for every importable file (index flags such as
+    assume-unchanged / skip-worktree are irrelevant here). Runs before any repo module is imported."""
+    import stat as _st
+
+    def git_out(*a: str) -> bytes:
+        env = {k: os.environ[k] for k in ("PATH", "SYSTEMROOT", "SystemRoot", "WINDIR") if k in os.environ}
+        return subprocess.run(["git", "-c", "core.quotepath=false", "-C", root, *a], capture_output=True,
+                              check=True, env=env).stdout
+
+    def tree(*a: str) -> Dict[str, Tuple[str, str, str]]:
+        out = {}
+        for rec in git_out("ls-tree", "-z", *a).split(b"\0"):
+            if rec:
+                meta, path = rec.split(b"\t", 1)
+                mode, kind, oid = meta.decode().split()
+                out[path.decode("utf-8")] = (mode, kind, oid)
+        return out
+
+    def disk_files(rel_dir: str) -> Dict[str, str]:
+        found, stack = {}, [rel_dir]
+        while stack:
+            cur = stack.pop()
+            for name in os.listdir(os.path.join(root, *cur.split("/"))):
+                rel = f"{cur}/{name}"
+                st = os.lstat(os.path.join(root, *rel.split("/")))
+                if _redirected(st):
+                    raise ValueError(f"{rel}: link / reparse point")
+                if _st.S_ISDIR(st.st_mode):
+                    stack.append(rel)
+                elif _st.S_ISREG(st.st_mode):
+                    found[rel] = rel
+                else:
+                    raise ValueError(f"{rel}: not a regular file")
+        return found
+
+    problems: List[str] = []
+    try:
+        expected: Dict[str, str] = {}
+        for rel_dir in VERIFY_DIRS:
+            for path, (mode, kind, oid) in tree("-r", "HEAD", "--", rel_dir).items():
+                if kind != "blob" or mode not in ("100644", "100755"):
+                    problems.append(f"{path}: not a plain file in the commit")
+                expected[path] = oid
+        top = tree("HEAD")
+        disk: Dict[str, str] = {}
+        for rel_dir in VERIFY_DIRS:
+            disk.update(disk_files(rel_dir))
+        if set(disk) != set(expected):
+            problems.append("importable file set on disk differs from the commit "
+                            f"(extra {len(set(disk) - set(expected))}, missing {len(set(expected) - set(disk))})")
+        top_disk = {n for n in os.listdir(root) if n != ".git"}
+        if top_disk != set(top):
+            problems.append("repo top-level entries differ from the commit")
+        for name, (mode, kind, oid) in top.items():
+            full = os.path.join(root, name)
+            st = os.lstat(full)
+            if _redirected(st) or (kind == "blob") != _st.S_ISREG(st.st_mode):
+                problems.append(f"{name}: top-level entry is not what the commit has")
+            elif kind == "blob":
+                expected[name] = oid
+                disk[name] = name
+        for path in sorted(set(disk) & set(expected)):
+            with open(os.path.join(root, *path.split("/")), "rb") as fh:
+                if _git_blob_id(fh.read()) != expected[path]:
+                    problems.append(f"{path}: bytes on disk differ from the commit")
+    except (OSError, ValueError, subprocess.CalledProcessError, UnicodeDecodeError) as exc:
+        problems.append(f"disk identity not determinable: {exc if isinstance(exc, ValueError) else type(exc).__name__}")
+    return problems
+
+
+if __name__ == "__main__":
+    _early = disk_identity_problems(ROOT)
+    if _early:
+        sys.stdout.write(json.dumps({"schema": "hark24/gemini-task01/entry-result/v2", "outcome": "REFUSED",
+                                     "summary": "repo files on disk are not the commit's bytes; nothing imported: "
+                                     + "; ".join(_early)[:2000]}, ensure_ascii=False, indent=1) + "\n")
+        print("HARK24 REFUSED: repo files on disk are not the commit's bytes", file=sys.stderr)
+        sys.exit(2)
+
 for _p in (PKG_DIR, ROOT):
     if _p not in sys.path:
         sys.path.insert(0, _p)
@@ -262,8 +364,50 @@ def derive(work_root: str) -> Dict[str, str]:
     return d
 
 
+_STATES = frozenset({"unknown", "queued", "accepted", "running", "declared_complete", "failed",
+                      "cancel_requested", "cancelled"})
+_DECLARED = frozenset({"success", "unreported", "unattributed"})
+_MECH = frozenset({"all_pass", "fail", "undetermined"})
+_CHECK_STATUS = frozenset({"pass", "fail", "unknown"})
+
+
+def _exc_name(name: Any) -> Any:
+    import builtins
+    if name is None:
+        return None
+    known = isinstance(name, str) and (isinstance(getattr(builtins, name, None), type)
+                                       or isinstance(gem.__dict__.get(name), type))
+    return name if known else "other"
+
+
+def public_host_fields(src: Dict[str, Any]) -> Dict[str, Any]:
+    """Host / checker derived values -> known enums or fixed labels. Never the raw value."""
+    out: Dict[str, Any] = {}
+    if "state" in src:
+        out["state"] = src["state"] if src["state"] in _STATES else "unrecognized"
+    if "declared_status" in src:
+        v = src["declared_status"]
+        out["declared_status"] = v if v in _DECLARED else ("host-other" if v is not None else None)
+    if "mechanical" in src:
+        out["mechanical"] = src["mechanical"] if src["mechanical"] in _MECH else "unrecognized"
+    if "check_exit" in src:
+        out["check_exit"] = src["check_exit"] if src["check_exit"] in (0, 1, 3) else "unrecognized"
+    if "host_versions" in src:
+        hv = src["host_versions"] if isinstance(src["host_versions"], dict) else {}
+        node, cli = hv.get("node"), hv.get("cli")
+        out["host_versions"] = {"node": PINNED_NODE_VERSION if node == PINNED_NODE_VERSION else
+                                ("absent" if not node else "mismatch"),
+                                "cli": gem.PINNED_CLI_VERSION if gem.version_is_pinned(cli) else
+                                ("absent" if not cli else "mismatch")}
+    if "error_class" in src:
+        out["error_class"] = _exc_name(src["error_class"])
+    return out
+
+
 def terminal_view(result: Dict[str, Any]) -> Dict[str, Any]:
-    return {k: result[k] for k in TERMINAL_FIELDS if k in result}
+    view = {k: result[k] for k in TERMINAL_FIELDS if k in result}
+    view.update(public_host_fields(result))
+    return view
 
 
 def emit(result: Dict[str, Any], path: Optional[str]) -> int:
@@ -432,21 +576,48 @@ def manifest_problems(d: Dict[str, str], want_sha: str) -> List[str]:
         if not isinstance(meta, dict) or meta.get("sha256") != pins.SOURCE_FILES[rel][2] \
                 or meta.get("size") != pins.SOURCE_FILES[rel][1]:
             return [f"export manifest entry {rel} is not the pinned file"]
-    out = []
-    found = set()
-    for dirpath, dirnames, filenames in os.walk(d["workspace"], followlinks=False):
-        for name in dirnames + filenames:
-            if os.path.islink(os.path.join(dirpath, name)):
-                out.append("export contains a link")
-        for f in filenames:
-            found.add(os.path.relpath(os.path.join(dirpath, f), d["workspace"]).replace(os.sep, "/"))
+    problems, found = export_tree(d["workspace"], d["work_root"])
+    if problems:
+        return problems                                   # stop: nothing under the export is read
     if found != set(pins.SOURCE_FILES):
-        return out + ["export file set differs from the pinned set"]
+        return ["export file set differs from the pinned set"]
+    out = []
     for rel, (_, size, digest) in pins.SOURCE_FILES.items():
         got = sha256_file(os.path.join(d["workspace"], *rel.split("/")))
         if got != (size, digest):
             out.append(f"{rel}: bytes differ")
     return out
+
+
+def export_tree(workspace: str, work_root: str) -> Tuple[List[str], set]:
+    """Enumerate the export WITHOUT reading any content: the root and every directory / file must
+    be a plain directory / regular file at its own place (no symlink, junction or other reparse
+    point; realpath equal to the joined path). Anything not determinable stops the check."""
+    import stat as _st
+    found: set = set()
+    try:
+        expect_root = os.path.join(os.path.realpath(work_root), "target")
+        st = os.lstat(workspace)
+        if _redirected(st) or not _st.S_ISDIR(st.st_mode) or os.path.realpath(workspace) != expect_root:
+            return ["export root is redirected or not a plain directory"], found
+        stack = [("", expect_root)]
+        while stack:
+            rel_dir, real_dir = stack.pop()
+            for name in sorted(os.listdir(os.path.join(workspace, *rel_dir.split("/")) if rel_dir else workspace)):
+                rel = f"{rel_dir}/{name}" if rel_dir else name
+                path = os.path.join(workspace, *rel.split("/"))
+                st = os.lstat(path)
+                if _redirected(st) or os.path.realpath(path) != os.path.join(real_dir, name):
+                    return [f"export path {rel} is redirected (link / junction / reparse point)"], found
+                if _st.S_ISDIR(st.st_mode):
+                    stack.append((rel, os.path.join(real_dir, name)))
+                elif _st.S_ISREG(st.st_mode):
+                    found.add(rel)
+                else:
+                    return [f"export path {rel} is not a regular file"], found
+    except OSError as exc:
+        return [f"export not enumerable: {type(exc).__name__}"], found
+    return [], found
 
 
 def _registry_view(evidence_root: str) -> Tuple[str, List[str]]:
@@ -638,7 +809,8 @@ def _dispatch(base, ctx, d, config, task_bytes, timeout) -> int:
                     summary=f"dispatched; failed at stage {base['stage']}; frozen: no re-dispatch, kill or repair")
         return emit(base, d["result"])
     base.update(outcome="COLLECTED", stage="done", mechanical=mech, check_exit=check_run.EXIT[mech],
-                summary=f"collected; mechanical {mech}; semantic review required; this is not a task verdict")
+                summary=f"collected; mechanical {mech if mech in _MECH else 'unrecognized'}; semantic review required; "
+                "this is not a task verdict")
     return emit(base, d["result"])        # exit = mechanical 0/1/3, never a task verdict
 
 
@@ -662,6 +834,28 @@ _SAFE = {
     "relpath": re.compile(r"^[A-Za-z0-9._/-]{1,200}$"), "host": re.compile(r"^[A-Za-z0-9.-]{1,253}$"),
 }
 WITHHELD = "<withheld>"
+_STAGES = frozenset({"admission", "submit", "collect", "status", "check", "check-write", "digests", "done"})
+#: Check names B's checker writes (fixed by B's code); anything else is only counted.
+_CHECK_NAMES = frozenset((
+    "adapter.gates binding.model binding.request binding.run binding.stdin boundary chat.record "
+    "checker.input_shape evidence.files export.manifest export.manifest_files export.manifest_pins export.root "
+    "export.scan export.src_anchor export.target_blob export.tree native.errors native.host_preamble "
+    "native.identity native.model native.status native.usage package.anchor package.pins package.read "
+    "package.shape refs.exist refs.ranges registry.legal registry.parse registry.read registry.run_id "
+    "required.tools tools.content workspace.manifest package.task_file package.review_baseline_file "
+    "workspace.workspace-before.json workspace.workspace-after.json").split()
+    + [f"refs.{p}" for p in check_run.CORE_POINTS] + [f"evidence.{n}" for n in check_run.EVIDENCE_NAMES])
+#: Per-call check names carry the HOST's tool name; only the two verified tools are shown.
+_TOOL_CHECK = re.compile(r"^tools\.(read_file|grep_search)__[0-9]{1,3}$")
+_EVIDENCE_NAMES = frozenset(("registry.jsonl", "registry.lock", "runs", "stdout.jsonl", "stderr.txt", "admin-policy.toml",
+                             "host-chat-record.jsonl", "workspace-before.json", "workspace-after.json"))
+
+
+def _evidence_label(rel: Any, n: int) -> str:
+    parts = rel.split("/") if isinstance(rel, str) else []
+    if parts and all(p in _EVIDENCE_NAMES or _SAFE["run_id"].match(p) for p in parts):
+        return rel
+    return f"file-{n:02d}"                       # host-named file: name withheld, digest kept
 
 
 def _safe(kind: str, value: Any) -> Any:
@@ -708,35 +902,42 @@ def public_summary(d: Dict[str, str], ctx: Dict[str, Any], ctx_sha: str) -> Tupl
         res = _load_json(d["result"])
         if not isinstance(res, dict) or res.get("context_id") != ctx["context_id"]:
             raise Refused("run-real-result does not belong to this context")
-        hv = res.get("host_versions") if isinstance(res.get("host_versions"), dict) else {}
-        out["run"] = {"outcome": _safe("outcome", res.get("outcome")), "stage": _safe("stage", res.get("stage")),
+        mapped = public_host_fields(res)
+        out["run"] = {"outcome": res.get("outcome") if res.get("outcome") in EXIT else "unrecognized",
+                      "stage": res.get("stage") if res.get("stage") in _STAGES else "unrecognized",
                       "dispatched": res.get("dispatched") if res.get("dispatched") in (True, False, None) else WITHHELD,
-                      "run_id": _safe("run_id", res.get("run_id")), "state": _safe("state", res.get("state")),
-                      "declared_status": _safe("declared_status", res.get("declared_status")),
-                      "mechanical": _safe("mechanical", res.get("mechanical")),
-                      "check_exit": _safe("int", res.get("check_exit")),
-                      "error_class": _safe("error_class", res.get("error_class")),
-                      "host_versions": {"node": _safe("version", hv.get("node")), "cli": _safe("version", hv.get("cli"))}}
+                      "run_id": _safe("run_id", res.get("run_id")), "state": mapped.get("state"),
+                      "declared_status": mapped.get("declared_status"), "mechanical": mapped.get("mechanical"),
+                      "check_exit": mapped.get("check_exit"), "error_class": mapped.get("error_class"),
+                      "host_versions": mapped.get("host_versions")}
         report_path = os.path.join(d["work_root"], "check-report.json")
         digest_path = os.path.join(d["work_root"], "evidence-digests.json")
         if res.get("outcome") == "COLLECTED" and os.path.isfile(report_path) and os.path.isfile(digest_path):
             stage = "collected"
             rep = _load_json(report_path)
             sem = rep.get("semantic_review") or {}
-            out["check"] = {"overall": _safe("mechanical", (rep.get("mechanical") or {}).get("overall")),
-                            "items": [{"check": _safe("check", i.get("check")), "status": _safe("status", i.get("status"))}
-                                      for i in (rep.get("mechanical") or {}).get("items", []) if isinstance(i, dict)],
+            mech = rep.get("mechanical") or {}
+            items = [i for i in mech.get("items", []) if isinstance(i, dict)]
+            listed = [i for i in items if i.get("check") in _CHECK_NAMES
+                      or (isinstance(i.get("check"), str) and _TOOL_CHECK.match(i["check"]))]
+            out["check"] = {"overall": mech.get("overall") if mech.get("overall") in _MECH else "unrecognized",
+                            "items": [{"check": i["check"], "status": i.get("status") if i.get("status") in
+                                       _CHECK_STATUS else "unrecognized"} for i in listed],
+                            "unlisted_items": len(items) - len(listed),
                             "semantic_status": "required" if sem.get("status") == "required" else WITHHELD,
-                            "points": [{"point": _safe("check", p.get("point")),
-                                        "location_check": _safe("status", p.get("location_check"))}
-                                       for p in sem.get("points", []) if isinstance(p, dict)],
+                            "points": [{"point": p.get("point"), "location_check": p.get("location_check")
+                                        if p.get("location_check") in _CHECK_STATUS else "unrecognized"}
+                                       for p in sem.get("points", []) if isinstance(p, dict)
+                                       and p.get("point") in check_run.CORE_POINTS],
                             "delivery_text_sha256": _safe("hex64", sem.get("delivery_text_sha256")),
                             "full_report_sha256": sha256_file(report_path)[1],
                             "note": "full report (free text, host messages) stays on this machine"}
             dig = _load_json(digest_path).get("files", {})
-            out["evidence_digests"] = {_safe("relpath", k): {"bytes": _safe("int", v.get("bytes")),
-                                                              "sha256": _safe("hex64", v.get("sha256"))}
-                                       for k, v in sorted(dig.items()) if isinstance(v, dict)}
+            out["evidence_digests"] = {}
+            for n, (k, v) in enumerate(sorted(dig.items()), 1):
+                if isinstance(v, dict):
+                    out["evidence_digests"][_evidence_label(k, n)] = {"bytes": _safe("int", v.get("bytes")),
+                                                                      "sha256": _safe("hex64", v.get("sha256"))}
         else:
             stage = "failure-archive"
     out["stage"] = stage
