@@ -1,0 +1,84 @@
+hark25-tests-run1.txt ran ['31'] result ['OK'] skipped_mentions 0
+  W authorize control {'dispatches': 0, 'exit': 2, 'mechanical': None, 'outcome': 'REFUSED'} weakened {'dispatches': 1, 'exit': 0, 'mechanical': 'all_pass', 'outcome': 'COLLECTED'}
+  W candidate_stage control {'exit': 10, 'outcome': 'CANDIDATE_PREPARE_ARCHIVE'} weakened {'exit': 0, 'outcome': 'CANDIDATE_COLLECTED'}
+  W derived_paths control {'dispatches': 0, 'exit': 2, 'mechanical': None, 'outcome': 'REFUSED'} weakened {'dispatches': 1, 'exit': 0, 'mechanical': 'all_pass', 'outcome': 'COLLECTED'}
+  W endpoint control {'dispatches': 0, 'exit': 2, 'mechanical': None, 'outcome': 'REFUSED'} weakened {'dispatches': 1, 'exit': 0, 'mechanical': 'all_pass', 'outcome': 'COLLECTED'}
+  W key_presence control {'dispatches': 0, 'exit': 4, 'mechanical': None, 'outcome': 'NEEDS_SETUP'} weakened {'dispatches': 1, 'exit': 0, 'mechanical': 'all_pass', 'outcome': 'COLLECTED'}
+  W manifest_names control {'exit': 2, 'outcome': 'REFUSED', 'outside_opens': 0} weakened {'exit': 2, 'outcome': 'REFUSED', 'outside_opens': 1}
+  W node_version control {'dispatches': 0, 'exit': 2, 'mechanical': None, 'outcome': 'REFUSED'} weakened {'dispatches': 1, 'exit': 0, 'mechanical': 'all_pass', 'outcome': 'COLLECTED'}
+  W post_dispatch_stage control {'exit': 8, 'outcome': 'DISPATCHED_INCOMPLETE', 'result_file': True} weakened {'exit': 9, 'outcome': 'INTERNAL_ERROR', 'result_file': False}
+  W prepare_env_scrub control {'leaking_children': 0} weakened {'leaking_children': 28}
+  W public_whitelist control {'exit': 0, 'outcome': 'CANDIDATE_COLLECTED', 'sentinel_public': False} weakened {'exit': 0, 'outcome': 'CANDIDATE_COLLECTED', 'sentinel_public': True}
+  W reviewed_context_sha control {'dispatches': 0, 'exit': 2, 'mechanical': None, 'outcome': 'REFUSED'} weakened {'dispatches': 1, 'exit': 0, 'mechanical': 'all_pass', 'outcome': 'COLLECTED'}
+  W single_dispatch control {'dispatches': 0, 'exit': 5, 'mechanical': None, 'outcome': 'FROZEN'} weakened {'dispatches': 1, 'exit': 0, 'mechanical': 'all_pass', 'outcome': 'COLLECTED'}
+  W unknown_after_submit control {'dispatched': None, 'exit': 6, 'outcome': 'DISPATCH_UNKNOWN'} weakened {'dispatched': False, 'exit': 7, 'outcome': 'LAUNCH_FAILED_RECORDED'}
+  PS {"exit_separation": {"control": 4, "weakened": 0}, "source_binding": {"control": {"exit": 2, "probe_ran": false}, "weakened": {"exit": 0, "probe_ran": true}}}
+hark25-tests-run2.txt ran ['31'] result ['OK'] skipped_mentions 0
+  W authorize control {'dispatches': 0, 'exit': 2, 'mechanical': None, 'outcome': 'REFUSED'} weakened {'dispatches': 1, 'exit': 0, 'mechanical': 'all_pass', 'outcome': 'COLLECTED'}
+  W candidate_stage control {'exit': 10, 'outcome': 'CANDIDATE_PREPARE_ARCHIVE'} weakened {'exit': 0, 'outcome': 'CANDIDATE_COLLECTED'}
+  W derived_paths control {'dispatches': 0, 'exit': 2, 'mechanical': None, 'outcome': 'REFUSED'} weakened {'dispatches': 1, 'exit': 0, 'mechanical': 'all_pass', 'outcome': 'COLLECTED'}
+  W endpoint control {'dispatches': 0, 'exit': 2, 'mechanical': None, 'outcome': 'REFUSED'} weakened {'dispatches': 1, 'exit': 0, 'mechanical': 'all_pass', 'outcome': 'COLLECTED'}
+  W key_presence control {'dispatches': 0, 'exit': 4, 'mechanical': None, 'outcome': 'NEEDS_SETUP'} weakened {'dispatches': 1, 'exit': 0, 'mechanical': 'all_pass', 'outcome': 'COLLECTED'}
+  W manifest_names control {'exit': 2, 'outcome': 'REFUSED', 'outside_opens': 0} weakened {'exit': 2, 'outcome': 'REFUSED', 'outside_opens': 1}
+  W node_version control {'dispatches': 0, 'exit': 2, 'mechanical': None, 'outcome': 'REFUSED'} weakened {'dispatches': 1, 'exit': 0, 'mechanical': 'all_pass', 'outcome': 'COLLECTED'}
+  W post_dispatch_stage control {'exit': 8, 'outcome': 'DISPATCHED_INCOMPLETE', 'result_file': True} weakened {'exit': 9, 'outcome': 'INTERNAL_ERROR', 'result_file': False}
+  W prepare_env_scrub control {'leaking_children': 0} weakened {'leaking_children': 28}
+  W public_whitelist control {'exit': 0, 'outcome': 'CANDIDATE_COLLECTED', 'sentinel_public': False} weakened {'exit': 0, 'outcome': 'CANDIDATE_COLLECTED', 'sentinel_public': True}
+  W reviewed_context_sha control {'dispatches': 0, 'exit': 2, 'mechanical': None, 'outcome': 'REFUSED'} weakened {'dispatches': 1, 'exit': 0, 'mechanical': 'all_pass', 'outcome': 'COLLECTED'}
+  W single_dispatch control {'dispatches': 0, 'exit': 5, 'mechanical': None, 'outcome': 'FROZEN'} weakened {'dispatches': 1, 'exit': 0, 'mechanical': 'all_pass', 'outcome': 'COLLECTED'}
+  W unknown_after_submit control {'dispatched': None, 'exit': 6, 'outcome': 'DISPATCH_UNKNOWN'} weakened {'dispatched': False, 'exit': 7, 'outcome': 'LAUNCH_FAILED_RECORDED'}
+  PS {"exit_separation": {"control": 4, "weakened": 0}, "source_binding": {"control": {"exit": 2, "probe_ran": false}, "weakened": {"exit": 0, "probe_ran": true}}}
+hark25-tests-run3.txt ran ['31'] result ['OK'] skipped_mentions 0
+  W authorize control {'dispatches': 0, 'exit': 2, 'mechanical': None, 'outcome': 'REFUSED'} weakened {'dispatches': 1, 'exit': 0, 'mechanical': 'all_pass', 'outcome': 'COLLECTED'}
+  W candidate_stage control {'exit': 10, 'outcome': 'CANDIDATE_PREPARE_ARCHIVE'} weakened {'exit': 0, 'outcome': 'CANDIDATE_COLLECTED'}
+  W derived_paths control {'dispatches': 0, 'exit': 2, 'mechanical': None, 'outcome': 'REFUSED'} weakened {'dispatches': 1, 'exit': 0, 'mechanical': 'all_pass', 'outcome': 'COLLECTED'}
+  W endpoint control {'dispatches': 0, 'exit': 2, 'mechanical': None, 'outcome': 'REFUSED'} weakened {'dispatches': 1, 'exit': 0, 'mechanical': 'all_pass', 'outcome': 'COLLECTED'}
+  W key_presence control {'dispatches': 0, 'exit': 4, 'mechanical': None, 'outcome': 'NEEDS_SETUP'} weakened {'dispatches': 1, 'exit': 0, 'mechanical': 'all_pass', 'outcome': 'COLLECTED'}
+  W manifest_names control {'exit': 2, 'outcome': 'REFUSED', 'outside_opens': 0} weakened {'exit': 2, 'outcome': 'REFUSED', 'outside_opens': 1}
+  W node_version control {'dispatches': 0, 'exit': 2, 'mechanical': None, 'outcome': 'REFUSED'} weakened {'dispatches': 1, 'exit': 0, 'mechanical': 'all_pass', 'outcome': 'COLLECTED'}
+  W post_dispatch_stage control {'exit': 8, 'outcome': 'DISPATCHED_INCOMPLETE', 'result_file': True} weakened {'exit': 9, 'outcome': 'INTERNAL_ERROR', 'result_file': False}
+  W prepare_env_scrub control {'leaking_children': 0} weakened {'leaking_children': 28}
+  W public_whitelist control {'exit': 0, 'outcome': 'CANDIDATE_COLLECTED', 'sentinel_public': False} weakened {'exit': 0, 'outcome': 'CANDIDATE_COLLECTED', 'sentinel_public': True}
+  W reviewed_context_sha control {'dispatches': 0, 'exit': 2, 'mechanical': None, 'outcome': 'REFUSED'} weakened {'dispatches': 1, 'exit': 0, 'mechanical': 'all_pass', 'outcome': 'COLLECTED'}
+  W single_dispatch control {'dispatches': 0, 'exit': 5, 'mechanical': None, 'outcome': 'FROZEN'} weakened {'dispatches': 1, 'exit': 0, 'mechanical': 'all_pass', 'outcome': 'COLLECTED'}
+  W unknown_after_submit control {'dispatched': None, 'exit': 6, 'outcome': 'DISPATCH_UNKNOWN'} weakened {'dispatched': False, 'exit': 7, 'outcome': 'LAUNCH_FAILED_RECORDED'}
+  PS {"exit_separation": {"control": 4, "weakened": 0}, "source_binding": {"control": {"exit": 2, "probe_ran": false}, "weakened": {"exit": 0, "probe_ran": true}}}
+AST test methods: 31
+178fd9b46acdf42899d1ebd0745dfcc9cd503ea453593438fcc22866befeaa72 scripts/win/hark24-gemini-task01.ps1
+bf88f3a278cb4355d094a9bbe264639e660f0216b7c8a6d6bcdc814c8189e366 scripts/gemini_task01_run/entry.py
+e1d214fa788706ba701bd0379875c9a05a034d724f3b876ab870a8dab36ec7b3 tests/test_hark24_gemini_task01_entry.py
+a5b93f959d368913b9ea8e2115e8eeffcdbf11be7bec6f19348ac03b1302a8eb tests/fixtures/hark24/audit_run.py
+dc3aef50112952e06ad2e680bb70c1b18e75216493279ed29fce409fc520f3ac tests/fixtures/hark24/fake_node.py
+d78710130b9b8d54807a2d9ce211b322b09b990be0633d63f220635dd94e9da6 tests/fixtures/hark24/git_spy.py
+2905107aa4b65f68f320117b51dea7c25dd9ddf2dfb772ac8c9922f1fe2ede9e tests/fixtures/hark24/inproc_run.py
+738bdf1f4273f5ba56b04226c92a3682dbc020eb5cc5bc193f66aff80d064694 tests/fixtures/hark24/probe_entry.py
+3d833121ae78dcc88f676cdb55349abd151ae457a2868f5829d5f2cc5b1a9934 tests/fixtures/hark24/stub_entry.py
+diff vs 95d941e: A	reports/hark24-gemini-task01-entry-20261026.md
+A	reports/hark24-gemini-task01-entry-20261026/extract_counts.py
+A	reports/hark24-gemini-task01-entry-20261026/logs/extract-output.txt
+A	reports/hark24-gemini-task01-entry-20261026/logs/hark24-tests-run1.txt
+A	reports/hark24-gemini-task01-entry-20261026/logs/hark24-tests-run2.txt
+A	reports/hark24-gemini-task01-entry-20261026/logs/hark24-tests-run3.txt
+A	reports/hark24-gemini-task01-entry-20261026/logs/post-commit/tests.txt
+A	reports/hark24-gemini-task01-entry-20261026/logs/related-regression.txt
+A	scripts/gemini_task01_run/entry.py
+A	scripts/win/hark24-gemini-task01.ps1
+A	tests/fixtures/hark24/audit_run.py
+A	tests/fixtures/hark24/fake_node.py
+A	tests/fixtures/hark24/git_spy.py
+A	tests/fixtures/hark24/inproc_run.py
+A	tests/fixtures/hark24/probe_entry.py
+A	tests/fixtures/hark24/stub_entry.py
+A	tests/test_hark24_gemini_task01_entry.py
+
+diff vs c4b81c9: M	scripts/gemini_task01_run/entry.py
+M	scripts/win/hark24-gemini-task01.ps1
+A	tests/fixtures/hark24/audit_run.py
+M	tests/fixtures/hark24/fake_node.py
+A	tests/fixtures/hark24/git_spy.py
+D	tests/fixtures/hark24/guarded_prepare.py
+A	tests/fixtures/hark24/inproc_run.py
+A	tests/fixtures/hark24/probe_entry.py
+A	tests/fixtures/hark24/stub_entry.py
+M	tests/test_hark24_gemini_task01_entry.py
+

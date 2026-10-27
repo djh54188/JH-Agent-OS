@@ -1,0 +1,4 @@
+Ran 31 tests in 72.043s
+OK
+WEAKENING25 {"authorize": {"control": {"bad": false, "dispatches": 0, "exit": 2, "mechanical": null, "outcome": "REFUSED"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pas
+PSWEAKENING25 {"exit_separation": {"control": 4, "weakened": 0}, "source_binding": {"control": {"exit": 2, "probe_ran": false}, "weakened": {"exit": 0, "probe_ran": true}}}
