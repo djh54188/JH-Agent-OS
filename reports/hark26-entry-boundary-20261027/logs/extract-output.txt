@@ -1,0 +1,165 @@
+======== logs/hark26-tests-run1.txt
+  header: ['Python 3.12.15', 'pwsh 7.4.6', 'HEAD 5136d657a7455dff354ad642c66e5583ce7071fd']
+  totals: [('41', '109.269')] ['OK']
+  WEAKENING25 authorize {"control": {"bad": false, "dispatches": 0, "exit": 2, "mechanical": null, "outcome": "REFUSED"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}
+    verdict authorize: detected
+  WEAKENING25 candidate_stage {"control": {"bad": false, "exit": 10, "outcome": "CANDIDATE_PREPARE_ARCHIVE"}, "weakened": {"bad": true, "exit": 0, "outcome": "CANDIDATE_COLLECTED"}}
+    verdict candidate_stage: detected
+  WEAKENING25 derived_paths {"control": {"bad": false, "dispatches": 0, "exit": 2, "mechanical": null, "outcome": "REFUSED"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}
+    verdict derived_paths: detected
+  WEAKENING25 disk_identity {"control": {"bad": false, "exit": 2, "probe_ran": false}, "weakened": {"bad": true, "exit": 2, "probe_ran": true}}
+    verdict disk_identity: detected
+  WEAKENING25 endpoint {"control": {"bad": false, "dispatches": 0, "exit": 2, "mechanical": null, "outcome": "REFUSED"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}
+    verdict endpoint: detected
+  WEAKENING25 export_boundary {"control": {"bad": false, "exit": 2, "outcome": "REFUSED", "outside_reads": 0}, "weakened": {"bad": true, "exit": 1, "outcome": "COLLECTED", "outside_reads": 85}}
+    verdict export_boundary: detected
+  WEAKENING25 host_fields {"control": {"bad": false, "candidate": false, "terminal": false}, "weakened": {"bad": true, "candidate": true, "terminal": true}}
+    verdict host_fields: detected
+  WEAKENING25 key_presence {"control": {"bad": false, "dispatches": 0, "exit": 4, "mechanical": null, "outcome": "NEEDS_SETUP"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}
+    verdict key_presence: detected
+  WEAKENING25 manifest_names {"control": {"bad": false, "exit": 2, "outcome": "REFUSED", "outside_opens": 0}, "weakened": {"bad": true, "exit": 2, "outcome": "REFUSED", "outside_opens": 1}}
+    verdict manifest_names: detected
+  WEAKENING25 node_version {"control": {"bad": false, "dispatches": 0, "exit": 2, "mechanical": null, "outcome": "REFUSED"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}
+    verdict node_version: detected
+  WEAKENING25 post_dispatch_stage {"control": {"bad": false, "exit": 8, "outcome": "DISPATCHED_INCOMPLETE", "result_file": true}, "weakened": {"bad": true, "exit": 9, "outcome": "INTERNAL_ERROR", "result_file": false}}
+    verdict post_dispatch_stage: detected
+  WEAKENING25 prepare_env_scrub {"control": {"bad": false, "leaking_children": 0}, "weakened": {"bad": true, "leaking_children": 28}}
+    verdict prepare_env_scrub: detected
+  WEAKENING25 public_whitelist {"control": {"bad": false, "exit": 0, "outcome": "CANDIDATE_COLLECTED", "sentinel_public": false}, "weakened": {"bad": true, "exit": 0, "outcome": "CANDIDATE_COLLECTED", "sentinel_public": true}}
+    verdict public_whitelist: detected
+  WEAKENING25 reviewed_context_sha {"control": {"bad": false, "dispatches": 0, "exit": 2, "mechanical": null, "outcome": "REFUSED"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}
+    verdict reviewed_context_sha: detected
+  WEAKENING25 single_dispatch {"control": {"bad": false, "dispatches": 0, "exit": 5, "mechanical": null, "outcome": "FROZEN"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}
+    verdict single_dispatch: detected
+  WEAKENING25 unknown_after_submit {"control": {"bad": false, "dispatched": null, "exit": 6, "outcome": "DISPATCH_UNKNOWN"}, "weakened": {"bad": true, "dispatched": false, "exit": 7, "outcome": "LAUNCH_FAILED_RECORDED"}}
+    verdict unknown_after_submit: detected
+  PSWEAKENING25 disk_bytes {"control": {"exit": 2, "probe_ran": false}, "weakened": {"exit": 0, "probe_ran": true}}
+    verdict disk_bytes: detected
+  PSWEAKENING25 exit_separation {"control": 4, "weakened": 0}
+    verdict exit_separation: detected
+  PSWEAKENING25 source_binding {"control": {"exit": 2, "probe_ran": false}, "weakened": {"exit": 0, "probe_ran": true}}
+    verdict source_binding: detected
+======== logs/hark26-tests-run2.txt
+  header: ['Python 3.12.15', 'pwsh 7.4.6', 'HEAD 5136d657a7455dff354ad642c66e5583ce7071fd']
+  totals: [('41', '111.933')] ['OK']
+  WEAKENING25 authorize {"control": {"bad": false, "dispatches": 0, "exit": 2, "mechanical": null, "outcome": "REFUSED"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}
+    verdict authorize: detected
+  WEAKENING25 candidate_stage {"control": {"bad": false, "exit": 10, "outcome": "CANDIDATE_PREPARE_ARCHIVE"}, "weakened": {"bad": true, "exit": 0, "outcome": "CANDIDATE_COLLECTED"}}
+    verdict candidate_stage: detected
+  WEAKENING25 derived_paths {"control": {"bad": false, "dispatches": 0, "exit": 2, "mechanical": null, "outcome": "REFUSED"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}
+    verdict derived_paths: detected
+  WEAKENING25 disk_identity {"control": {"bad": false, "exit": 2, "probe_ran": false}, "weakened": {"bad": true, "exit": 2, "probe_ran": true}}
+    verdict disk_identity: detected
+  WEAKENING25 endpoint {"control": {"bad": false, "dispatches": 0, "exit": 2, "mechanical": null, "outcome": "REFUSED"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}
+    verdict endpoint: detected
+  WEAKENING25 export_boundary {"control": {"bad": false, "exit": 2, "outcome": "REFUSED", "outside_reads": 0}, "weakened": {"bad": true, "exit": 1, "outcome": "COLLECTED", "outside_reads": 85}}
+    verdict export_boundary: detected
+  WEAKENING25 host_fields {"control": {"bad": false, "candidate": false, "terminal": false}, "weakened": {"bad": true, "candidate": true, "terminal": true}}
+    verdict host_fields: detected
+  WEAKENING25 key_presence {"control": {"bad": false, "dispatches": 0, "exit": 4, "mechanical": null, "outcome": "NEEDS_SETUP"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}
+    verdict key_presence: detected
+  WEAKENING25 manifest_names {"control": {"bad": false, "exit": 2, "outcome": "REFUSED", "outside_opens": 0}, "weakened": {"bad": true, "exit": 2, "outcome": "REFUSED", "outside_opens": 1}}
+    verdict manifest_names: detected
+  WEAKENING25 node_version {"control": {"bad": false, "dispatches": 0, "exit": 2, "mechanical": null, "outcome": "REFUSED"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}
+    verdict node_version: detected
+  WEAKENING25 post_dispatch_stage {"control": {"bad": false, "exit": 8, "outcome": "DISPATCHED_INCOMPLETE", "result_file": true}, "weakened": {"bad": true, "exit": 9, "outcome": "INTERNAL_ERROR", "result_file": false}}
+    verdict post_dispatch_stage: detected
+  WEAKENING25 prepare_env_scrub {"control": {"bad": false, "leaking_children": 0}, "weakened": {"bad": true, "leaking_children": 28}}
+    verdict prepare_env_scrub: detected
+  WEAKENING25 public_whitelist {"control": {"bad": false, "exit": 0, "outcome": "CANDIDATE_COLLECTED", "sentinel_public": false}, "weakened": {"bad": true, "exit": 0, "outcome": "CANDIDATE_COLLECTED", "sentinel_public": true}}
+    verdict public_whitelist: detected
+  WEAKENING25 reviewed_context_sha {"control": {"bad": false, "dispatches": 0, "exit": 2, "mechanical": null, "outcome": "REFUSED"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}
+    verdict reviewed_context_sha: detected
+  WEAKENING25 single_dispatch {"control": {"bad": false, "dispatches": 0, "exit": 5, "mechanical": null, "outcome": "FROZEN"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}
+    verdict single_dispatch: detected
+  WEAKENING25 unknown_after_submit {"control": {"bad": false, "dispatched": null, "exit": 6, "outcome": "DISPATCH_UNKNOWN"}, "weakened": {"bad": true, "dispatched": false, "exit": 7, "outcome": "LAUNCH_FAILED_RECORDED"}}
+    verdict unknown_after_submit: detected
+  PSWEAKENING25 disk_bytes {"control": {"exit": 2, "probe_ran": false}, "weakened": {"exit": 0, "probe_ran": true}}
+    verdict disk_bytes: detected
+  PSWEAKENING25 exit_separation {"control": 4, "weakened": 0}
+    verdict exit_separation: detected
+  PSWEAKENING25 source_binding {"control": {"exit": 2, "probe_ran": false}, "weakened": {"exit": 0, "probe_ran": true}}
+    verdict source_binding: detected
+======== logs/hark26-tests-run3.txt
+  header: ['Python 3.12.15', 'pwsh 7.4.6', 'HEAD 5136d657a7455dff354ad642c66e5583ce7071fd']
+  totals: [('41', '110.580')] ['OK']
+  WEAKENING25 authorize {"control": {"bad": false, "dispatches": 0, "exit": 2, "mechanical": null, "outcome": "REFUSED"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}
+    verdict authorize: detected
+  WEAKENING25 candidate_stage {"control": {"bad": false, "exit": 10, "outcome": "CANDIDATE_PREPARE_ARCHIVE"}, "weakened": {"bad": true, "exit": 0, "outcome": "CANDIDATE_COLLECTED"}}
+    verdict candidate_stage: detected
+  WEAKENING25 derived_paths {"control": {"bad": false, "dispatches": 0, "exit": 2, "mechanical": null, "outcome": "REFUSED"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}
+    verdict derived_paths: detected
+  WEAKENING25 disk_identity {"control": {"bad": false, "exit": 2, "probe_ran": false}, "weakened": {"bad": true, "exit": 2, "probe_ran": true}}
+    verdict disk_identity: detected
+  WEAKENING25 endpoint {"control": {"bad": false, "dispatches": 0, "exit": 2, "mechanical": null, "outcome": "REFUSED"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}
+    verdict endpoint: detected
+  WEAKENING25 export_boundary {"control": {"bad": false, "exit": 2, "outcome": "REFUSED", "outside_reads": 0}, "weakened": {"bad": true, "exit": 1, "outcome": "COLLECTED", "outside_reads": 85}}
+    verdict export_boundary: detected
+  WEAKENING25 host_fields {"control": {"bad": false, "candidate": false, "terminal": false}, "weakened": {"bad": true, "candidate": true, "terminal": true}}
+    verdict host_fields: detected
+  WEAKENING25 key_presence {"control": {"bad": false, "dispatches": 0, "exit": 4, "mechanical": null, "outcome": "NEEDS_SETUP"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}
+    verdict key_presence: detected
+  WEAKENING25 manifest_names {"control": {"bad": false, "exit": 2, "outcome": "REFUSED", "outside_opens": 0}, "weakened": {"bad": true, "exit": 2, "outcome": "REFUSED", "outside_opens": 1}}
+    verdict manifest_names: detected
+  WEAKENING25 node_version {"control": {"bad": false, "dispatches": 0, "exit": 2, "mechanical": null, "outcome": "REFUSED"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}
+    verdict node_version: detected
+  WEAKENING25 post_dispatch_stage {"control": {"bad": false, "exit": 8, "outcome": "DISPATCHED_INCOMPLETE", "result_file": true}, "weakened": {"bad": true, "exit": 9, "outcome": "INTERNAL_ERROR", "result_file": false}}
+    verdict post_dispatch_stage: detected
+  WEAKENING25 prepare_env_scrub {"control": {"bad": false, "leaking_children": 0}, "weakened": {"bad": true, "leaking_children": 28}}
+    verdict prepare_env_scrub: detected
+  WEAKENING25 public_whitelist {"control": {"bad": false, "exit": 0, "outcome": "CANDIDATE_COLLECTED", "sentinel_public": false}, "weakened": {"bad": true, "exit": 0, "outcome": "CANDIDATE_COLLECTED", "sentinel_public": true}}
+    verdict public_whitelist: detected
+  WEAKENING25 reviewed_context_sha {"control": {"bad": false, "dispatches": 0, "exit": 2, "mechanical": null, "outcome": "REFUSED"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}
+    verdict reviewed_context_sha: detected
+  WEAKENING25 single_dispatch {"control": {"bad": false, "dispatches": 0, "exit": 5, "mechanical": null, "outcome": "FROZEN"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}
+    verdict single_dispatch: detected
+  WEAKENING25 unknown_after_submit {"control": {"bad": false, "dispatched": null, "exit": 6, "outcome": "DISPATCH_UNKNOWN"}, "weakened": {"bad": true, "dispatched": false, "exit": 7, "outcome": "LAUNCH_FAILED_RECORDED"}}
+    verdict unknown_after_submit: detected
+  PSWEAKENING25 disk_bytes {"control": {"exit": 2, "probe_ran": false}, "weakened": {"exit": 0, "probe_ran": true}}
+    verdict disk_bytes: detected
+  PSWEAKENING25 exit_separation {"control": 4, "weakened": 0}
+    verdict exit_separation: detected
+  PSWEAKENING25 source_binding {"control": {"exit": 2, "probe_ran": false}, "weakened": {"exit": 0, "probe_ran": true}}
+    verdict source_binding: detected
+======== logs/post-commit/tests.txt
+  header: ['Python 3.12.15', 'HEAD 5136d657a7455dff354ad642c66e5583ce7071fd', 'status-lines 0']
+  totals: [('41', '108.823')] ['OK']
+  WEAKENING25 authorize {"control": {"bad": false, "dispatches": 0, "exit": 2, "mechanical": null, "outcome": "REFUSED"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}
+    verdict authorize: detected
+  WEAKENING25 candidate_stage {"control": {"bad": false, "exit": 10, "outcome": "CANDIDATE_PREPARE_ARCHIVE"}, "weakened": {"bad": true, "exit": 0, "outcome": "CANDIDATE_COLLECTED"}}
+    verdict candidate_stage: detected
+  WEAKENING25 derived_paths {"control": {"bad": false, "dispatches": 0, "exit": 2, "mechanical": null, "outcome": "REFUSED"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}
+    verdict derived_paths: detected
+  WEAKENING25 disk_identity {"control": {"bad": false, "exit": 2, "probe_ran": false}, "weakened": {"bad": true, "exit": 2, "probe_ran": true}}
+    verdict disk_identity: detected
+  WEAKENING25 endpoint {"control": {"bad": false, "dispatches": 0, "exit": 2, "mechanical": null, "outcome": "REFUSED"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}
+    verdict endpoint: detected
+  WEAKENING25 export_boundary {"control": {"bad": false, "exit": 2, "outcome": "REFUSED", "outside_reads": 0}, "weakened": {"bad": true, "exit": 1, "outcome": "COLLECTED", "outside_reads": 85}}
+    verdict export_boundary: detected
+  WEAKENING25 host_fields {"control": {"bad": false, "candidate": false, "terminal": false}, "weakened": {"bad": true, "candidate": true, "terminal": true}}
+    verdict host_fields: detected
+  WEAKENING25 key_presence {"control": {"bad": false, "dispatches": 0, "exit": 4, "mechanical": null, "outcome": "NEEDS_SETUP"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}
+    verdict key_presence: detected
+  WEAKENING25 manifest_names {"control": {"bad": false, "exit": 2, "outcome": "REFUSED", "outside_opens": 0}, "weakened": {"bad": true, "exit": 2, "outcome": "REFUSED", "outside_opens": 1}}
+    verdict manifest_names: detected
+  WEAKENING25 node_version {"control": {"bad": false, "dispatches": 0, "exit": 2, "mechanical": null, "outcome": "REFUSED"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}
+    verdict node_version: detected
+  WEAKENING25 post_dispatch_stage {"control": {"bad": false, "exit": 8, "outcome": "DISPATCHED_INCOMPLETE", "result_file": true}, "weakened": {"bad": true, "exit": 9, "outcome": "INTERNAL_ERROR", "result_file": false}}
+    verdict post_dispatch_stage: detected
+  WEAKENING25 prepare_env_scrub {"control": {"bad": false, "leaking_children": 0}, "weakened": {"bad": true, "leaking_children": 28}}
+    verdict prepare_env_scrub: detected
+  WEAKENING25 public_whitelist {"control": {"bad": false, "exit": 0, "outcome": "CANDIDATE_COLLECTED", "sentinel_public": false}, "weakened": {"bad": true, "exit": 0, "outcome": "CANDIDATE_COLLECTED", "sentinel_public": true}}
+    verdict public_whitelist: detected
+  WEAKENING25 reviewed_context_sha {"control": {"bad": false, "dispatches": 0, "exit": 2, "mechanical": null, "outcome": "REFUSED"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}
+    verdict reviewed_context_sha: detected
+  WEAKENING25 single_dispatch {"control": {"bad": false, "dispatches": 0, "exit": 5, "mechanical": null, "outcome": "FROZEN"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}
+    verdict single_dispatch: detected
+  WEAKENING25 unknown_after_submit {"control": {"bad": false, "dispatched": null, "exit": 6, "outcome": "DISPATCH_UNKNOWN"}, "weakened": {"bad": true, "dispatched": false, "exit": 7, "outcome": "LAUNCH_FAILED_RECORDED"}}
+    verdict unknown_after_submit: detected
+  PSWEAKENING25 disk_bytes {"control": {"exit": 2, "probe_ran": false}, "weakened": {"exit": 0, "probe_ran": true}}
+    verdict disk_bytes: detected
+  PSWEAKENING25 exit_separation {"control": 4, "weakened": 0}
+    verdict exit_separation: detected
+  PSWEAKENING25 source_binding {"control": {"exit": 2, "probe_ran": false}, "weakened": {"exit": 0, "probe_ran": true}}
+    verdict source_binding: detected
+RESULT all logs OK and every weakening detected

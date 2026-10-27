@@ -1,0 +1,81 @@
+Python 3.12.15
+pwsh 7.4.6
+HEAD 5136d657a7455dff354ad642c66e5583ce7071fd
+test_failure_archive_and_collected (tests.test_hark24_gemini_task01_entry.TestCandidate.test_failure_archive_and_collected) ... ok
+test_reflected_secret_in_host_text_is_not_public (tests.test_hark24_gemini_task01_entry.TestCandidate.test_reflected_secret_in_host_text_is_not_public) ... ok
+test_stages_are_explicit_and_not_collected_when_not_run (tests.test_hark24_gemini_task01_entry.TestCandidate.test_stages_are_explicit_and_not_collected_when_not_run) ... ok
+test_ps_refuses_every_hidden_change_before_running_repo_code (tests.test_hark24_gemini_task01_entry.TestDiskIdentity.test_ps_refuses_every_hidden_change_before_running_repo_code) ... ok
+test_python_control_passes_the_disk_check (tests.test_hark24_gemini_task01_entry.TestDiskIdentity.test_python_control_passes_the_disk_check) ... ok
+test_python_refuses_hidden_import_changes_before_importing (tests.test_hark24_gemini_task01_entry.TestDiskIdentity.test_python_refuses_hidden_import_changes_before_importing) ... ok
+test_missing_or_unreadable_export_stops (tests.test_hark24_gemini_task01_entry.TestExportBoundary.test_missing_or_unreadable_export_stops) ... ok
+test_plain_export_control_reads_only_inside (tests.test_hark24_gemini_task01_entry.TestExportBoundary.test_plain_export_control_reads_only_inside) ... ok
+test_redirected_root_inner_dir_and_file_read_nothing_outside (tests.test_hark24_gemini_task01_entry.TestExportBoundary.test_redirected_root_inner_dir_and_file_read_nothing_outside) ... ok
+test_simulated_reparse_points_stop_before_reading (tests.test_hark24_gemini_task01_entry.TestExportBoundary.test_simulated_reparse_points_stop_before_reading) ... ok
+test_each_guard_control_then_weakened (tests.test_hark24_gemini_task01_entry.TestGuardWeakening.test_each_guard_control_then_weakened) ... ok
+test_ordinary_failure_and_success_keep_known_values (tests.test_hark24_gemini_task01_entry.TestHostFields.test_ordinary_failure_and_success_keep_known_values) ... ok
+test_reflected_host_status_is_never_echoed (tests.test_hark24_gemini_task01_entry.TestHostFields.test_reflected_host_status_is_never_echoed) ... ok
+test_reflected_host_version_is_never_echoed (tests.test_hark24_gemini_task01_entry.TestHostFields.test_reflected_host_version_is_never_echoed) ... ok
+test_driver_output_never_becomes_the_exit_code (tests.test_hark24_gemini_task01_entry.TestPowerShell.test_driver_output_never_becomes_the_exit_code) ... hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+ok
+test_prepare_real_entry_exit_and_minimal_environment (tests.test_hark24_gemini_task01_entry.TestPowerShell.test_prepare_real_entry_exit_and_minimal_environment) ... hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+ok
+test_ps_weakening_exit_and_source_binding (tests.test_hark24_gemini_task01_entry.TestPowerShell.test_ps_weakening_exit_and_source_binding) ... hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+ok
+test_source_is_bound_before_any_repo_code_runs (tests.test_hark24_gemini_task01_entry.TestPowerShell.test_source_is_bound_before_any_repo_code_runs) ... ok
+test_endpoint_with_credentials_or_query_is_refused_without_echo (tests.test_hark24_gemini_task01_entry.TestPrepare.test_endpoint_with_credentials_or_query_is_refused_without_echo) ... ok
+test_export_keeps_task_and_source_bytes (tests.test_hark24_gemini_task01_entry.TestPrepare.test_export_keeps_task_and_source_bytes) ... ok
+test_layout_existing_root_and_wrong_commit_refused (tests.test_hark24_gemini_task01_entry.TestPrepare.test_layout_existing_root_and_wrong_commit_refused) ... ok
+test_missing_or_unverified_settings_are_needs_setup (tests.test_hark24_gemini_task01_entry.TestPrepare.test_missing_or_unverified_settings_are_needs_setup) ... ok
+test_prepare_children_get_a_minimal_environment (tests.test_hark24_gemini_task01_entry.TestPrepare.test_prepare_children_get_a_minimal_environment) ... ok
+test_prepared_context_is_non_sensitive_and_dispatches_nothing (tests.test_hark24_gemini_task01_entry.TestPrepare.test_prepared_context_is_non_sensitive_and_dispatches_nothing) ... ok
+test_concurrent_entries_dispatch_once (tests.test_hark24_gemini_task01_entry.TestRunReal.test_concurrent_entries_dispatch_once) ... ok
+test_host_failure_kept_as_is (tests.test_hark24_gemini_task01_entry.TestRunReal.test_host_failure_kept_as_is) ... ok
+test_launch_failure_recorded_and_frozen (tests.test_hark24_gemini_task01_entry.TestRunReal.test_launch_failure_recorded_and_frozen) ... ok
+test_manifest_and_export_tampering_refused_without_out_of_scope_open (tests.test_hark24_gemini_task01_entry.TestRunReal.test_manifest_and_export_tampering_refused_without_out_of_scope_open) ... ok
+test_needs_setup_context_refused (tests.test_hark24_gemini_task01_entry.TestRunReal.test_needs_setup_context_refused) ... ok
+test_one_dispatch_through_the_real_adapter_and_checker (tests.test_hark24_gemini_task01_entry.TestRunReal.test_one_dispatch_through_the_real_adapter_and_checker) ... ok
+test_post_dispatch_faults_are_classified_and_frozen (tests.test_hark24_gemini_task01_entry.TestRunReal.test_post_dispatch_faults_are_classified_and_frozen) ... ok
+test_refusals_before_dispatch_leave_no_marker (tests.test_hark24_gemini_task01_entry.TestRunReal.test_refusals_before_dispatch_leave_no_marker) ... ok
+test_registry_lost_by_host_side_is_incomplete_not_refused (tests.test_hark24_gemini_task01_entry.TestRunReal.test_registry_lost_by_host_side_is_incomplete_not_refused) ... ok
+test_result_not_writable_is_terminal_non_pass (tests.test_hark24_gemini_task01_entry.TestRunReal.test_result_not_writable_is_terminal_non_pass) ... ok
+test_reversed_explanation_never_becomes_a_task_pass (tests.test_hark24_gemini_task01_entry.TestRunReal.test_reversed_explanation_never_becomes_a_task_pass) ... ok
+test_second_run_and_rebound_marker_are_frozen (tests.test_hark24_gemini_task01_entry.TestRunReal.test_second_run_and_rebound_marker_are_frozen) ... ok
+test_timeout_is_unknown_frozen_and_not_killed (tests.test_hark24_gemini_task01_entry.TestRunReal.test_timeout_is_unknown_frozen_and_not_killed) ... ok
+test_wrong_shapes_and_types_are_stable_refusals (tests.test_hark24_gemini_task01_entry.TestRunReal.test_wrong_shapes_and_types_are_stable_refusals) ... ok
+test_entry_has_no_test_hooks_and_no_translation_layer (tests.test_hark24_gemini_task01_entry.TestStatic.test_entry_has_no_test_hooks_and_no_translation_layer) ... ok
+test_ps1_boundaries (tests.test_hark24_gemini_task01_entry.TestStatic.test_ps1_boundaries) ... ok
+test_ps1_pins_the_trees_of_this_commit (tests.test_hark24_gemini_task01_entry.TestStatic.test_ps1_pins_the_trees_of_this_commit) ... ok
+
+----------------------------------------------------------------------
+Ran 41 tests in 109.269s
+
+OK
+WEAKENING25 {"authorize": {"control": {"bad": false, "dispatches": 0, "exit": 2, "mechanical": null, "outcome": "REFUSED"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}, "candidate_stage": {"control": {"bad": false, "exit": 10, "outcome": "CANDIDATE_PREPARE_ARCHIVE"}, "weakened": {"bad": true, "exit": 0, "outcome": "CANDIDATE_COLLECTED"}}, "derived_paths": {"control": {"bad": false, "dispatches": 0, "exit": 2, "mechanical": null, "outcome": "REFUSED"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}, "disk_identity": {"control": {"bad": false, "exit": 2, "probe_ran": false}, "weakened": {"bad": true, "exit": 2, "probe_ran": true}}, "endpoint": {"control": {"bad": false, "dispatches": 0, "exit": 2, "mechanical": null, "outcome": "REFUSED"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}, "export_boundary": {"control": {"bad": false, "exit": 2, "outcome": "REFUSED", "outside_reads": 0}, "weakened": {"bad": true, "exit": 1, "outcome": "COLLECTED", "outside_reads": 85}}, "host_fields": {"control": {"bad": false, "candidate": false, "terminal": false}, "weakened": {"bad": true, "candidate": true, "terminal": true}}, "key_presence": {"control": {"bad": false, "dispatches": 0, "exit": 4, "mechanical": null, "outcome": "NEEDS_SETUP"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}, "manifest_names": {"control": {"bad": false, "exit": 2, "outcome": "REFUSED", "outside_opens": 0}, "weakened": {"bad": true, "exit": 2, "outcome": "REFUSED", "outside_opens": 1}}, "node_version": {"control": {"bad": false, "dispatches": 0, "exit": 2, "mechanical": null, "outcome": "REFUSED"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}, "post_dispatch_stage": {"control": {"bad": false, "exit": 8, "outcome": "DISPATCHED_INCOMPLETE", "result_file": true}, "weakened": {"bad": true, "exit": 9, "outcome": "INTERNAL_ERROR", "result_file": false}}, "prepare_env_scrub": {"control": {"bad": false, "leaking_children": 0}, "weakened": {"bad": true, "leaking_children": 28}}, "public_whitelist": {"control": {"bad": false, "exit": 0, "outcome": "CANDIDATE_COLLECTED", "sentinel_public": false}, "weakened": {"bad": true, "exit": 0, "outcome": "CANDIDATE_COLLECTED", "sentinel_public": true}}, "reviewed_context_sha": {"control": {"bad": false, "dispatches": 0, "exit": 2, "mechanical": null, "outcome": "REFUSED"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}, "single_dispatch": {"control": {"bad": false, "dispatches": 0, "exit": 5, "mechanical": null, "outcome": "FROZEN"}, "weakened": {"bad": true, "dispatches": 1, "exit": 0, "mechanical": "all_pass", "outcome": "COLLECTED"}}, "unknown_after_submit": {"control": {"bad": false, "dispatched": null, "exit": 6, "outcome": "DISPATCH_UNKNOWN"}, "weakened": {"bad": true, "dispatched": false, "exit": 7, "outcome": "LAUNCH_FAILED_RECORDED"}}}
+PSWEAKENING25 {"disk_bytes": {"control": {"exit": 2, "probe_ran": false}, "weakened": {"exit": 0, "probe_ran": true}}, "exit_separation": {"control": 4, "weakened": 0}, "source_binding": {"control": {"exit": 2, "probe_ran": false}, "weakened": {"exit": 0, "probe_ran": true}}}
