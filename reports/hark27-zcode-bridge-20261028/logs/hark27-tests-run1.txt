@@ -1,0 +1,44 @@
+Python 3.12.15
+pwsh 7.4.6
+HEAD cfc239f30be0998d023c6e54b7b882769f812ceb
+test_config_must_be_explicit (tests.test_hark27_zcode_session.TestAdmission.test_config_must_be_explicit) ... ok
+test_env_file_and_overlap_refusals (tests.test_hark27_zcode_session.TestAdmission.test_env_file_and_overlap_refusals) ... ok
+test_host_pin_and_missing_key_fail_before_launch (tests.test_hark27_zcode_session.TestAdmission.test_host_pin_and_missing_key_fail_before_launch) ... ok
+test_request_binding_refusals (tests.test_hark27_zcode_session.TestAdmission.test_request_binding_refusals) ... ok
+test_event_from_another_session_or_trace (tests.test_hark27_zcode_session.TestCorrelationAndScope.test_event_from_another_session_or_trace) ... ok
+test_host_failure_shapes_stay_non_pass (tests.test_hark27_zcode_session.TestCorrelationAndScope.test_host_failure_shapes_stay_non_pass) ... ok
+test_model_binding_fallback_and_missing_observation (tests.test_hark27_zcode_session.TestCorrelationAndScope.test_model_binding_fallback_and_missing_observation) ... ok
+test_permission_requests_are_never_approved (tests.test_hark27_zcode_session.TestCorrelationAndScope.test_permission_requests_are_never_approved) ... ok
+test_reads_outside_the_workspace_are_detected (tests.test_hark27_zcode_session.TestCorrelationAndScope.test_reads_outside_the_workspace_are_detected) ... ok
+test_result_for_unrequested_call_or_other_turn (tests.test_hark27_zcode_session.TestCorrelationAndScope.test_result_for_unrequested_call_or_other_turn) ... ok
+test_usage_absent_is_unknown_not_zero (tests.test_hark27_zcode_session.TestCorrelationAndScope.test_usage_absent_is_unknown_not_zero) ... ok
+test_write_shell_unknown_and_side_effect_tools (tests.test_hark27_zcode_session.TestCorrelationAndScope.test_write_shell_unknown_and_side_effect_tools) ... ok
+test_each_guard_control_then_weakened (tests.test_hark27_zcode_session.TestGuardWeakening.test_each_guard_control_then_weakened) ... ok
+test_capabilities_claim_only_the_four_and_nothing_verified (tests.test_hark27_zcode_session.TestNormalControl.test_capabilities_claim_only_the_four_and_nothing_verified) ... ok
+test_launch_shape_isolation_and_explicit_binding (tests.test_hark27_zcode_session.TestNormalControl.test_launch_shape_isolation_and_explicit_binding) ... ok
+test_read_search_run_collects_native_evidence (tests.test_hark27_zcode_session.TestNormalControl.test_read_search_run_collects_native_evidence) ... ok
+test_host_pin_is_hash_only (tests.test_hark27_zcode_session.TestPrepare.test_host_pin_is_hash_only) ... ok
+test_offline_replay_ok (tests.test_hark27_zcode_session.TestPrepare.test_offline_replay_ok) ... ok
+test_pins_match_the_fixture_commit (tests.test_hark27_zcode_session.TestPrepare.test_pins_match_the_fixture_commit) ... ok
+test_refusals_and_setup_codes (tests.test_hark27_zcode_session.TestPrepare.test_refusals_and_setup_codes) ... ok
+test_tampered_source_never_runs_and_weakening_runs_it (tests.test_hark27_zcode_session.TestPrepare.test_tampered_source_never_runs_and_weakening_runs_it) ... ok
+test_host_reflected_text_never_reaches_the_public_view (tests.test_hark27_zcode_session.TestPublicSummary.test_host_reflected_text_never_reaches_the_public_view) ... ok
+test_conflicts_and_rekeying_are_refused (tests.test_hark27_zcode_session.TestRegistry.test_conflicts_and_rekeying_are_refused) ... ok
+test_damaged_or_missing_registry_is_never_fresh (tests.test_hark27_zcode_session.TestRegistry.test_damaged_or_missing_registry_is_never_fresh) ... ok
+test_dispatched_without_exit_is_unknown_after_reopen (tests.test_hark27_zcode_session.TestRegistry.test_dispatched_without_exit_is_unknown_after_reopen) ... ok
+test_same_key_same_request_replays_without_relaunch (tests.test_hark27_zcode_session.TestRegistry.test_same_key_same_request_replays_without_relaunch) ... ok
+test_unknown_submit_outcome_is_frozen (tests.test_hark27_zcode_session.TestRegistry.test_unknown_submit_outcome_is_frozen) ... ok
+test_wrong_address_raises (tests.test_hark27_zcode_session.TestRegistry.test_wrong_address_raises) ... ok
+test_no_model_adapter_or_protocol_translation (tests.test_hark27_zcode_session.TestStatic.test_no_model_adapter_or_protocol_translation) ... ok
+
+----------------------------------------------------------------------
+Ran 29 tests in 12.882s
+
+OK
+WEAKENING27 {"duplicate_dispatch": {"control": {"bad": false, "launches": 1}, "weakened": {"bad": true, "launches": 2}}, "misassociation": {"control": {"bad": false, "state": "failed"}, "weakened": {"bad": true, "state": "declared_complete"}}, "model_binding": {"control": {"bad": false, "state": "failed"}, "weakened": {"bad": true, "state": "declared_complete"}}, "out_of_workspace": {"control": {"bad": false, "state": "failed"}, "weakened": {"bad": true, "state": "declared_complete"}}, "public_reflection": {"control": {"bad": false, "reflected": false}, "weakened": {"bad": true, "reflected": true}}, "rekey_after_unknown": {"control": {"bad": false, "launches": 0}, "weakened": {"bad": true, "launches": 1}}, "traces_without_registry": {"control": {"bad": false, "launches": 1}, "weakened": {"bad": true, "launches": 2}}, "unknown_approval": {"control": {"bad": false, "state": "failed"}, "weakened": {"bad": true, "state": "declared_complete"}}}
+PSWEAKENING27 {"source_identity": {"control": {"exit": 2, "probe_ran": false}, "weakened": {"exit": 0, "probe_ran": true}}}
+..........................................
+----------------------------------------------------------------------
+Ran 42 tests in 0.177s
+
+OK
