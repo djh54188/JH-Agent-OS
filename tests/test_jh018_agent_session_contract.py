@@ -521,7 +521,8 @@ class TestCoreHoldsNoConcreteAdapter(unittest.TestCase):
     # Real adapters implement the contract; everything else is core/orchestration
     # and must stay decoupled from it. Allowlisting a name is not enough — the
     # consumer must actually subclass AgentSessionAdapter (checked below).
-    CONTRACT_CONSUMERS = frozenset({"agent_session_codex.py", "agent_session_gemini.py"})
+    CONTRACT_CONSUMERS = frozenset({"agent_session_codex.py", "agent_session_gemini.py",
+                                    "agent_session_zcode.py"})
 
     CONTRACT_MODULE = "src.agent_session"
     # Literal call targets that import a module by name. Only a constant string
@@ -609,6 +610,8 @@ class TestCoreHoldsNoConcreteAdapter(unittest.TestCase):
         self.assertTrue(issubclass(CodexAgentSessionAdapter, AgentSessionAdapter))
         from src.agent_session_gemini import GeminiCliAgentSessionAdapter
         self.assertTrue(issubclass(GeminiCliAgentSessionAdapter, AgentSessionAdapter))
+        from src.agent_session_zcode import ZCodeAgentSessionAdapter
+        self.assertTrue(issubclass(ZCodeAgentSessionAdapter, AgentSessionAdapter))
 
     # Every static form that reaches the contract module, plus the literal
     # dynamic forms a bounded AST check can see. The computed-name cases are
